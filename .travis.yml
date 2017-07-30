@@ -1,7 +1,20 @@
 language: rust
+sudo: false
+
 rust:
   - stable
   - nightly
+
+addons:
+  apt:
+    packages:
+      - kcov
+
+after_success: |
+  kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/toml_edit-*[^\.d] &&
+  bash <(curl -s https://codecov.io/bash) &&
+  echo "Uploaded code coverage"
+
 branches:
   only:
     - staging
