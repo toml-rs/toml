@@ -134,14 +134,14 @@ fn test_insert_values() {
             let table = table.as_table_mut().unwrap();
             table.append_value(parse_key!("key1"), "value1");
             table.append_value(parse_key!("\"key2\""), 42);
-            table.append_value(parse_key!("'key3'"), 3.1415926);
+            table.append_value(parse_key!("'key3'"), 8.1415926);
         },
 
         r#"
 [tbl]
 key1 = "value1"
 "key2" = 42
-'key3' = 3.1415926
+'key3' = 8.1415926
 "#
     );
 }
