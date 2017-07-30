@@ -38,7 +38,7 @@ matrix:
     script:
     - cargo clippy -- -D warnings
     - cargo fmt -- --write-mode=diff
-    - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
+    # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
 
 os:
   - linux
