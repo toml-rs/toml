@@ -1,0 +1,23 @@
+language: rust
+rust:
+  - stable
+  - nightly
+branches:
+  only:
+    - staging
+    - trying
+    - master
+matrix:
+  allow_failures:
+    - rust: nightly
+  include:
+  - rust: nightly-2017-07-30
+    before_script:
+    - cargo install clippy --vers 0.0.146
+    - cargo install rustfmt-nightly --vers 0.2.1
+    script:
+    - cargo clippy -- -D warnings
+    - cargo fmt -- --write-mode=diff
+os:
+  - linux
+  - osx
