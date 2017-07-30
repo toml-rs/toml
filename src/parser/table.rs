@@ -12,6 +12,15 @@ use ::table::{Table, TableEntry, Header, HeaderKind};
 
 // table-key-sep   = ws %x2E ws  ; . Period
 const TABLE_KEY_SEP: &'static str = ".";
+// std-table-open  = %x5B ws     ; [ Left square bracket
+const STD_TABLE_OPEN: &'static str = "[";
+// std-table-close = ws %x5D     ; ] Right square bracket
+const STD_TABLE_CLOSE: &'static str = "]";
+// array-table-open  = %x5B.5B ws  ; [[ Double left square bracket
+const ARRAY_TABLE_OPEN: &'static str = "[[";
+// array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
+const ARRAY_TABLE_CLOSE: &'static str = "]]";
+
 
 // note: this rule is not present in the original grammar
 // key-path = key *( table-key-sep key)
@@ -58,20 +67,15 @@ impl Parser {
 
     // ;; Standard Table
 
-    // std-table-open  = %x5B ws     ; [ Left square bracket
-    const STD_TABLE_OPEN: &'static str = "[";
-    // std-table-close = ws %x5D     ; ] Right square bracket
-    const STD_TABLE_CLOSE: &'static str = "]";
-
     // std-table = std-table-open key *( table-key-sep key) std-table-close
     method!(std_table<Parser>(Span) -> (), mut self,
         do_parse!(
             w: ws >>
             h: delimited!(
-                   complete!(tag!(Parser::STD_TABLE_OPEN)),
+                   complete!(tag!(STD_TABLE_OPEN)),
                    key_path,
                    err_m!(self, ErrorKind::InvalidHeader,
-                          complete!(tag!(Parser::STD_TABLE_CLOSE)))) >>
+                          complete!(tag!(STD_TABLE_CLOSE)))) >>
             t: line_trailing >>
                err_parser!(self, Self::on_std_header,
                            call!(w.fragment, h, t.fragment)) >>
@@ -81,20 +85,15 @@ impl Parser {
 
     // ;; Array Table
 
-    // array-table-open  = %x5B.5B ws  ; [[ Double left square bracket
-    const ARRAY_TABLE_OPEN: &'static str = "[[";
-    // array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
-    const ARRAY_TABLE_CLOSE: &'static str = "]]";
-
     // array-table = array-table-open key *( table-key-sep key) array-table-close
     method!(array_table<Parser>(Span) -> (), mut self,
             do_parse!(
              w: ws >>
              h: delimited!(
-                    complete!(tag!(Parser::ARRAY_TABLE_OPEN)),
+                    complete!(tag!(ARRAY_TABLE_OPEN)),
                     key_path,
                     err_m!(self, ErrorKind::InvalidHeader,
-                           complete!(tag!(Parser::ARRAY_TABLE_CLOSE)))
+                           complete!(tag!(ARRAY_TABLE_CLOSE)))
                 ) >>
              t: line_trailing >>
                 err_parser!(self, Self::on_array_header,
