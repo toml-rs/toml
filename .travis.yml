@@ -10,6 +10,12 @@ addons:
     packages:
       - kcov
 
+cache:
+    apt: true
+    directories:
+        - target/debug/deps
+        - target/debug/build
+
 after_success: |
   kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/toml_edit-*[^\.d] &&
   bash <(curl -s https://codecov.io/bash) &&
@@ -20,6 +26,7 @@ branches:
     - staging
     - trying
     - master
+
 matrix:
   allow_failures:
     - rust: nightly
@@ -31,6 +38,7 @@ matrix:
     script:
     - cargo clippy -- -D warnings
     - cargo fmt -- --write-mode=diff
+
 os:
   - linux
   - osx
