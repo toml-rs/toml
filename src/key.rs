@@ -1,4 +1,4 @@
-use decor::{InternalString};
+use decor::InternalString;
 use parser;
 use nom;
 
@@ -58,13 +58,14 @@ impl Key {
     pub fn parse(s: &str) -> Option<Self> {
         let parsed = parser::key(parser::Span::new(s));
         match parsed {
-            nom::IResult::Done(i, (key, raw)) => {
-                if i.fragment.is_empty() {
-                    Some(Key { key: key, raw: raw.fragment.into() })
-                } else {
-                    None
-                }
-            }
+            nom::IResult::Done(i, (key, raw)) => if i.fragment.is_empty() {
+                Some(Key {
+                    key: key,
+                    raw: raw.fragment.into(),
+                })
+            } else {
+                None
+            },
             _ => None,
         }
     }

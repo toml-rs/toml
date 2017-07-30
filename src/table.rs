@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
-use value::{Value, KeyValuePairs, sort_key_value_pairs};
+use value::{sort_key_value_pairs, KeyValuePairs, Value};
 use decor::{InternalString, Repr};
 use key::Key;
 use array_of_tables::ArrayOfTables;
 use intrusive_collections::LinkedListLink;
 use document::{DocumentInner, ROOT_HEADER};
-use formatted::{to_key_value, decorate};
+use formatted::{decorate, to_key_value};
 
 // TODO: add method to extract a child table into an inline table
 // TODO: add non mutable API
@@ -406,4 +406,3 @@ pub(crate) fn remove_table_recursive(ptr: *mut Table, doc: &mut DocumentInner) {
     // remove from the list
     doc.remove(ptr);
 }
-

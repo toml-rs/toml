@@ -45,7 +45,7 @@ dc = "eqdc10"
             let beta = beta.as_table_mut().unwrap();
             beta.append_value(parse_key!("ip"), "10.0.0.2");
             beta.append_value(parse_key!("dc"), "eqdc10");
-          },
+        },
         r#"
 [servers]
 
@@ -58,7 +58,8 @@ ip = "10.0.0.2"
 dc = "eqdc10"
 
 [other.table]
-"#);
+"#
+    );
 }
 
 #[test]
@@ -86,7 +87,8 @@ fn test_insert_nonleaf_table() {
 [servers.alpha]
 ip = "10.0.0.1"
 dc = "eqdc10"
-"#);
+"#
+    );
 }
 
 #[test]
@@ -115,7 +117,8 @@ title = "withoutarray"
 hello = "world"
 
 [[bin]]
-"#);
+"#
+    );
 }
 
 
@@ -139,7 +142,8 @@ fn test_insert_values() {
 key1 = "value1"
 "key2" = 42
 'key3' = 3.1415926
-"#);
+"#
+    );
 }
 
 // removal
@@ -172,7 +176,8 @@ fn test_remove_leaf_table() {
     [servers.beta]
     ip = "10.0.0.2"
     dc = "eqdc10"
-"#);
+"#
+    );
 }
 
 
@@ -226,7 +231,8 @@ key2 = 2 # comment 2.2
    [some.other.table]
 
 
-"#);
+"#
+    );
 }
 
 #[test]
@@ -267,7 +273,8 @@ fn test_remove_array_entry() {
 
     [dependencies]
     nom = "4.0" # future is here
-"#);
+"#
+    );
 }
 
 #[test]
@@ -300,7 +307,8 @@ fn test_remove_array() {
 
     [dependencies]
     nom = "4.0" # future is here
-"#);
+"#
+    );
 }
 
 
@@ -325,5 +333,6 @@ fn test_remove_value() {
         r#"
     name = "hello"
     documentation = "https://docs.rs/hello"
-"#);
+"#
+    );
 }
