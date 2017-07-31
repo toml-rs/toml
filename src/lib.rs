@@ -1,7 +1,7 @@
 // #![deny(missing_docs)]
 #![deny(warnings)]
 
-//! # toml_edit
+//! # `toml_edit`
 //!
 //! This crate allows you to parse and modify toml
 //! documents, while preserving comments, spaces and
