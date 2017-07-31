@@ -14,17 +14,9 @@ notifications:
 
 sudo: false
 
-addons:
-  apt:
-    packages:
-    - libcurl4-openssl-dev
-    - libelf-dev
-    - libdw-dev
-
 cache:
   apt: true
   directories:
-    - kcov
     - target/debug/deps
     - target/debug/build
 
@@ -40,6 +32,15 @@ matrix:
   - rust: nightly-2017-07-25
     env:
       - RUSTFLAGS="-C link-dead-code"
+
+    addons:
+      apt:
+        packages:
+          - binutils-dev
+          - libcurl4-openssl-dev
+          - zlib1g-dev
+          - libdw-dev
+          - libiberty-dev
 
     before_script:
     - cargo install clippy --vers 0.0.145
