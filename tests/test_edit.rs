@@ -200,7 +200,7 @@ key3 = 3 # comment 3.2
 [[a.'array']]
 b = 1
 
-[[a.b.c.trololololololo]]
+[[a.b.c.trololololololo]] # ohohohohoho
 c = 2
 key3 = 42
 
@@ -333,6 +333,186 @@ fn test_remove_value() {
         r#"
     name = "hello"
     documentation = "https://docs.rs/hello"
+"#
+    );
+}
+
+// values
+
+#[test]
+fn test_sort_values() {
+    test!(
+        r#"
+[a.z]
+
+[a]
+# this comment is attached to b
+b = 2 # as well as this
+a = 1
+c = 3
+
+[a.y]
+"#,
+        root,
+        {
+            let mut a = root.entry("a");
+            assert!(a.is_table());
+            let a = a.as_table_mut().unwrap();
+            a.sort_values();
+        },
+        r#"
+[a.z]
+
+[a]
+a = 1
+# this comment is attached to b
+b = 2 # as well as this
+c = 3
+
+[a.y]
+"#
+    );
+}
+
+macro_rules! as_array {
+    ($entry:ident) => (
+        {
+            assert!($entry.is_value());
+            let mut a = $entry.as_value_mut().unwrap();
+            assert!(a.is_array());
+            a.as_array_mut().unwrap()
+        }
+    );
+}
+
+#[test]
+fn test_insert_into_array() {
+    test!(
+        r#"
+a = [1,2,3]
+b = []
+"#,
+        root,
+        {
+            {
+                let mut a = root.entry("a");
+                let mut a = as_array!(a);
+                assert_eq!(a.len(), 3);
+                assert!(a.get(2).is_some());
+                assert!(a.push(4));
+                assert_eq!(a.len(), 4);
+                a.fmt();
+            }
+            let mut b = root.entry("b");
+            let mut b = as_array!(b);
+            assert!(b.is_empty());
+            assert!(b.push("hello"));
+            assert_eq!(b.len(), 1);
+        },
+        r#"
+a = [1, 2, 3, 4]
+b = ["hello"]
+"#
+    );
+}
+
+#[test]
+fn test_remove_from_array() {
+    test!(
+        r#"
+a = [1, 2, 3, 4]
+b = ["hello"]
+"#,
+        root,
+        {
+            {
+                let mut a = root.entry("a");
+                let mut a = as_array!(a);
+                assert_eq!(a.len(), 4);
+                assert!(a.remove(3).is_integer());
+                assert_eq!(a.len(), 3);
+            }
+            let mut b = root.entry("b");
+            let mut b = as_array!(b);
+            assert_eq!(b.len(), 1);
+            assert!(b.remove(0).is_str());
+            assert!(b.is_empty());
+        },
+        r#"
+a = [1, 2, 3]
+b = []
+"#
+    );
+}
+
+macro_rules! as_table {
+    ($entry:ident) => (
+        {
+            assert!($entry.is_value());
+            let mut a = $entry.as_value_mut().unwrap();
+            assert!(a.is_inline_table());
+            a.as_inline_table_mut().unwrap()
+        }
+    );
+}
+
+#[test]
+fn test_insert_into_inline_table() {
+    test!(
+        r#"
+a = {a=2,  c = 3}
+b = {}
+"#,
+        root,
+        {
+            {
+                let mut a = root.entry("a");
+                let mut a = as_table!(a);
+                assert_eq!(a.len(), 2);
+                assert!(a.contains_key("a") && a.get("c").is_some());
+                assert!(a.insert(parse_key!("b"), 42).is_none());
+                assert_eq!(a.len(), 3);
+                a.fmt();
+            }
+            let mut b = root.entry("b");
+            let mut b = as_table!(b);
+            assert!(b.is_empty());
+            assert!(b.insert(parse_key!("'hello'"), "world").is_none());
+            assert_eq!(b.len(), 1);
+            b.fmt()
+        },
+        r#"
+a = { a = 2, c = 3, b = 42 }
+b = { 'hello' = "world" }
+"#
+    );
+}
+
+#[test]
+fn test_remove_from_inline_table() {
+    test!(
+        r#"
+a = {a=2,  c = 3, b = 42}
+b = {'hello' = "world"}
+"#,
+        root,
+        {
+            {
+                let mut a = root.entry("a");
+                let mut a = as_table!(a);
+                assert_eq!(a.len(), 3);
+                assert!(a.remove("c").is_some());
+                assert_eq!(a.len(), 2);
+            }
+            let mut b = root.entry("b");
+            let mut b = as_table!(b);
+            assert_eq!(b.len(), 1);
+            assert!(b.remove("hello").is_some());
+            assert!(b.is_empty());
+        },
+        r#"
+a = {a=2, b = 42}
+b = {}
 "#
     );
 }

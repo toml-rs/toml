@@ -3,22 +3,27 @@ use decor::{Decor, Formatted, InternalString, Repr};
 use std::iter::FromIterator;
 
 
-fn decorate_array(array: &mut Array) {
+pub(crate) fn decorate_array(array: &mut Array) {
     for (i, val) in array.values.iter_mut().enumerate() {
         // [value1, value2, value3]
         if i > 0 {
             decorate(val, " ", "");
+        } else {
+            decorate(val, "", "");
         }
     }
 }
 
-fn decorate_inline_table(table: &mut InlineTable) {
+pub(crate) fn decorate_inline_table(table: &mut InlineTable) {
     let n = table.key_value_pairs.len();
     for (i, (_, kv)) in table.key_value_pairs.iter_mut().enumerate() {
         // { key1 = value1, key2 = value2 }
         kv.key.decor.prefix = InternalString::from(" ");
+        kv.key.decor.suffix = InternalString::from(" ");
         if i == n - 1 {
             decorate(&mut kv.value, " ", " ");
+        } else {
+            decorate(&mut kv.value, " ", "");
         }
     }
 }

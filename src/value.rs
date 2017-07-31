@@ -2,7 +2,8 @@ use chrono::{self, FixedOffset};
 use formatted;
 use linked_hash_map::LinkedHashMap;
 use std::slice::Iter;
-use decor::*;
+use decor::{Decor, Formatted, InternalString, Repr};
+use key::Key;
 
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
@@ -97,6 +98,11 @@ impl Array {
         self.values.remove(index)
     }
 
+    /// Auto formats the array
+    pub fn fmt(&mut self) {
+        formatted::decorate_array(self);
+    }
+
     pub(crate) fn push_value(&mut self, v: Value, decorate: bool) -> bool {
         let mut value = v.into();
         if !self.is_empty() && decorate {
@@ -144,9 +150,14 @@ impl InlineTable {
         self.key_value_pairs.contains_key(key)
     }
 
-    pub fn insert<V: Into<Value>>(&mut self, key: &str, value: V) -> Option<Value> {
-        let kv = formatted::to_key_value(key, value.into());
+    pub fn insert<V: Into<Value>>(&mut self, key: Key, value: V) -> Option<Value> {
+        let kv = formatted::to_key_value(key.raw(), value.into());
         self.key_value_pairs.insert(key.into(), kv).map(|p| p.value)
+    }
+
+    /// Auto formats the table
+    pub fn fmt(&mut self) {
+        formatted::decorate_inline_table(self);
     }
 
     pub fn remove(&mut self, key: &str) -> Option<Value> {
