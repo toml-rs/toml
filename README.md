@@ -4,7 +4,7 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/ordian/toml_edit?svg=true)](https://ci.appveyor.com/project/ordian/toml-edit/branch/master)
 [![codecov](https://codecov.io/gh/ordian/toml_edit/branch/master/graph/badge.svg)](https://codecov.io/gh/ordian/toml_edit)
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
-[![docs]](https://docs.rs/toml_edit/badge.svg)
+[![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit/badge.svg)
 [![Join the chat at https://gitter.im/toml_edit/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_edit/Lobby)
 
 
