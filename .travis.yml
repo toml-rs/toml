@@ -1,14 +1,25 @@
 language: rust
-sudo: false
 
 rust:
   - stable
   - nightly
 
+os:
+  - linux
+  - osx
+
+notifications:
+  email:
+    on_success: never
+
+sudo: false
+
 addons:
   apt:
     packages:
-      - kcov
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
 
 cache:
     apt: true
@@ -16,30 +27,30 @@ cache:
         - target/debug/deps
         - target/debug/build
 
-after_success: |
-  kcov --exclude-pattern=/.cargo,/usr/lib --verify target/cov target/debug/toml_edit-*[^\.d] &&
-  bash <(curl -s https://codecov.io/bash) &&
-  echo "Uploaded code coverage"
-
 branches:
-  only:
-    - staging
-    - trying
-    - master
+  except:
+    - staging.tmp
 
 matrix:
   allow_failures:
     - rust: nightly
+
   include:
   - rust: nightly-2017-07-25
+    install:
+    - pip install --user travis-cargo
+    - export PATH=$PATH:$HOME/.local/bin
+
     before_script:
     - cargo install clippy --vers 0.0.145
     - cargo install rustfmt-nightly --vers 0.2.1
+
     script:
     - cargo clippy -- -D warnings
     - cargo fmt -- --write-mode=diff
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
 
-os:
-  - linux
-  - osx
+    after_success:
+    - travis-cargo coverage --no-sudo --verify --merge-into target/kcov
+    - bash <(curl -s https://codecov.io/bash) -s target/kcov
+
