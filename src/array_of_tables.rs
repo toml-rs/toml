@@ -22,6 +22,7 @@ impl ArrayOfTables {
             values: Default::default(),
         }
     }
+    /// Returns an optional reference to the table
     pub fn get(&self, index: usize) -> Option<&Table> {
         // safe, all pointer are valid
         self.values
@@ -29,10 +30,12 @@ impl ArrayOfTables {
             .map(|t| unsafe { (*t).as_ref().unwrap() })
     }
 
+    /// Returns an iterator over tables
     pub fn iter<'a>(&'a self) -> Box<Iterator<Item = &'a Table> + 'a> {
         Box::new(self.values.iter().map(|t| unsafe { &**t }))
     }
 
+    /// Returns an optional mutable reference to the table
     pub fn get_mut(&mut self, index: usize) -> Option<&mut Table> {
         // safe, all pointer are valid
         self.values
@@ -55,6 +58,8 @@ impl ArrayOfTables {
         self.append_with_header(header, after_ptr)
     }
 
+    /// Removes the table at the given index.
+    ///
     /// # Panics
     ///
     /// If `index >= self.len()`
@@ -64,6 +69,7 @@ impl ArrayOfTables {
         self.values.remove(index);
     }
 
+    /// Removes all the tables
     pub fn remove_all(&mut self) {
         let n = self.len();
         for i in (0..n).rev() {

@@ -36,6 +36,7 @@ pub(crate) struct DocumentInner {
     pub(crate) list: TableList,
 }
 
+/// Type representing a TOML document
 pub struct Document {
     // Note: box is needed in order to preserve
     // the same address of *mut DocumentInner
@@ -55,6 +56,7 @@ impl Default for Document {
 pub(crate) const ROOT_HEADER: &'static str = "$root$";
 
 impl Document {
+    /// Parses the document from string
     pub fn parse(input: &str) -> Result<Self, parser::Error> {
         parser::Parser::parse(input)
     }

@@ -4,6 +4,7 @@ use parser::Span;
 use std::fmt::{Display, Formatter, Result};
 use std::error;
 
+/// Type representing a TOML parse error
 #[derive(Debug, Clone)]
 pub struct Error {
     kind: ErrorKind,
