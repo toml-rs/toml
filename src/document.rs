@@ -6,7 +6,7 @@
 // Current design:
 // There are four main types: Value, Table, ArrayOfTables and Document(Inner).
 // Document allocates all tables in the typed arena.
-// Document also contains an intrusive list off all documents.
+// Document also contains an intrusive list of all tables.
 // Each table contains a link to previous and next table,
 // the order is same as in the toml string representation.
 // Also each table and array of tables contain a link to the document,
