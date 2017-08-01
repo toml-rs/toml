@@ -2,8 +2,10 @@
 
 set -o errexit
 
+KCOV=./kcov/usr/local/bin/kcov
+
 function install_kcov_from_master() {
-    if [ ! -d "kcov" ]; then
+    if [ ! -f "$KCOV" ]; then
         wget https://github.com/SimonKagstrom/kcov/archive/master.zip &&
             unzip master.zip &&
             mkdir kcov-master/build &&
@@ -17,17 +19,15 @@ function install_kcov_from_master() {
 }
 
 function build_coverage() {
-    local kcov=./kcov/usr/local/bin/kcov
-
     for file in target/debug/{toml_edit-,test_}*; do
         if [[ "${file: -2}" != ".d" ]]; then
-            local bin="target/kcov-$(basename $file)";
-            mkdir "$bin";
-            $kcov --exclude-pattern=/.cargo,/usr/lib --verify "$bin" "$file";
+            local kov_dir="target/kcov-$(basename $file)";
+            mkdir "$kov_dir";
+            $KCOV --exclude-pattern=/.cargo,/usr/lib --verify "$kov_dir" "$file";
         fi;
     done
 
-    $kcov --merge target/kcov target/kcov-*
+    $KCOV --merge target/kcov target/kcov-*
 }
 
 function report_coverage_to_codecov() {
