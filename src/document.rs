@@ -13,6 +13,7 @@
 // in order to be able to insert and delete subtables.
 // See comments in the Table struct for details about safety.
 use intrusive_collections::{LinkedList, LinkedListLink, UnsafeRef};
+use std::str::FromStr;
 use std::mem::size_of;
 use typed_arena::Arena;
 use table::{Header, HeaderKind, Table, TableRef};
@@ -56,11 +57,6 @@ impl Default for Document {
 pub(crate) const ROOT_HEADER: &'static str = "$root$";
 
 impl Document {
-    /// Parses the document from string
-    pub fn parse(input: &str) -> Result<Self, parser::Error> {
-        parser::Parser::parse(input)
-    }
-
     /// Creates an empty document
     pub fn new() -> Self {
         let list = LinkedList::new(intrusive::TableAdapter::new());
@@ -132,5 +128,14 @@ impl DocumentInner {
         // remove from the list
         let res = cursor.remove();
         debug_assert!(res.is_some());
+    }
+}
+
+impl FromStr for Document {
+    type Err = parser::Error;
+
+    /// Parses a document from a &str
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parser::Parser::parse(s)
     }
 }

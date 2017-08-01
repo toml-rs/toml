@@ -44,7 +44,7 @@ fn to_json<'a>(iter: Box<Iterator<Item = (&'a str, TableRef<'a>)> + 'a>) -> Json
 }
 
 fn run(json: &str, toml: &str) {
-    let doc = Document::parse(toml);
+    let doc = toml.parse::<Document>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
 

@@ -239,7 +239,7 @@ impl Table {
     /// # use toml_edit::Document;
     /// #
     /// # fn main() {
-    /// let mut doc = Document::parse("[a]\n[a.b]").unwrap();
+    /// let mut doc = "[a]\n[a.b]".parse::<Document>().unwrap();
     /// assert!(doc.root_mut().entry("a").as_table_mut().unwrap().set_implicit());
     /// assert_eq!(doc.to_string(), "[a.b]");
     /// # }

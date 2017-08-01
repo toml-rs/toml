@@ -35,7 +35,7 @@ pub struct Key {
 impl FromStr for Key {
     type Err = parser::Error;
 
-    /// Parses the key from a &str
+    /// Parses a key from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parsed = parser::key(parser::Span::new(s));
         match parsed {

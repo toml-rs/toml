@@ -8,7 +8,7 @@ use std::mem;
 macro_rules! parse_doc {
     ($toml:ident) => (
         {
-            let doc = Document::parse($toml);
+            let doc = $toml.parse::<Document>();
             assert!(doc.is_ok());
             doc.unwrap()
         }

@@ -3,7 +3,7 @@ extern crate toml_edit;
 use toml_edit::Document;
 
 fn run(toml: &str, msg: &str) {
-    let doc = Document::parse(toml);
+    let doc = toml.parse::<Document>();
     assert!(doc.is_err());
 
     let err = match doc {

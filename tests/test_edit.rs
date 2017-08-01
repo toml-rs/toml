@@ -7,7 +7,7 @@ macro_rules! test {
         let before = $before;
         let after = $after;
 
-        let doc = Document::parse(before);
+        let doc = before.parse::<Document>();
         assert!(doc.is_ok());
         let mut doc = doc.unwrap();
 
