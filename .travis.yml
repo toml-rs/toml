@@ -17,8 +17,8 @@ sudo: false
 cache:
   apt: true
   directories:
+    - $HOME/.cargo/bin
     - target/debug/deps
-    - target/debug/build
 
 branches:
   except:
@@ -43,14 +43,13 @@ matrix:
           - libiberty-dev
 
     before_script:
-    - cargo install clippy --vers 0.0.145
-    - cargo install rustfmt-nightly --vers 0.2.1
+    - cargo install clippy --vers 0.0.145 || true
+    - cargo install rustfmt-nightly --vers 0.2.1 || true
 
     script:
+    - cargo test --verbose
     - cargo clippy -- -D warnings
     - cargo fmt -- --write-mode=diff
-    - cargo clean
-    - cargo test --verbose
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
 
     after_success:
