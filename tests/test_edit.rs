@@ -1,6 +1,7 @@
 extern crate toml_edit;
 
-use toml_edit::{Document, Key};
+use toml_edit::{Document, Key, Value};
+use std::iter::FromIterator;
 
 macro_rules! test {
     ($before:expr, $root:ident, $ops:expr, $after:expr) => (
@@ -524,4 +525,26 @@ a = {a=2, b = 42}
 b = {}
 "#
     );
+}
+
+#[test]
+fn test_inline_table_append() {
+    let mut a = Value::from_iter(vec![
+        (parse_key!("a"), 1),
+        (parse_key!("b"), 2),
+        (parse_key!("c"), 3),
+    ]);
+    let a = a.as_inline_table_mut().unwrap();
+
+    let mut b = Value::from_iter(vec![
+        (parse_key!("c"), 4),
+        (parse_key!("d"), 5),
+        (parse_key!("e"), 6),
+    ]);
+    let b = b.as_inline_table_mut().unwrap();
+
+    a.append(b);
+    assert_eq!(a.len(), 5);
+    assert!(a.contains_key("e"));
+    assert!(b.is_empty());
 }
