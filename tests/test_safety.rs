@@ -40,11 +40,11 @@ b = 3
 [d]
 "#;
     let toml2 = r#"
-[b]
-a = 2
 [b.c]
 a = 3
-[d]
+[b]
+a = 2
+[e]
 "#;
     let mut doc1 = parse_doc!(toml1);
     let mut doc2 = parse_doc!(toml2);
@@ -70,6 +70,7 @@ a = 3
 
         // what's even worse,
         // `a.c` is now pointing to `[b.c]`
+        // also, the trailing tables list is swapped
         let mut a = r1.entry("a");
         let mut a = as_table!(a);
         let mut ac = a.entry("c");
@@ -89,21 +90,21 @@ a = 3
         r#"
 [a]
 b = 2
+
 [b.c]
 a = 3
 
 [b.c.bc]
 
 [b.c.'i am in [b.c]']
-[d]
+[b]
+a = 2
+[e]
 "#
     );
     assert_eq!(
         doc2.to_string(),
-        r#"
-[b]
-a = 2
-[a.c]
+        r#"[a.c]
 b = 3
 
 [a.c.ac]
