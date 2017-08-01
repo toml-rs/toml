@@ -18,6 +18,9 @@ mod document;
 mod key;
 
 pub(crate) use self::key::key;
+pub(crate) use self::value::value;
+pub(crate) use self::errors::ErrorKind;
+pub(crate) use self::errors::to_error;
 
 use nom_locate::LocatedSpan;
 use nom::InputLength;

@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use decor::InternalString;
 use parser;
 use nom;
@@ -23,53 +24,36 @@ use nom;
 /// 3. Literal quoted keys (`'literal key'`)
 ///
 /// For details see [toml spec](https://github.com/toml-lang/toml/#keyvalue-pair).
+///
+/// To parse a key use `FromStr` trait implementation: `"string".parse::<Key>()`.
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
 pub struct Key {
     key: InternalString,
     raw: InternalString,
 }
 
-/// Parses and unwraps the key from a &str
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate toml_edit;
-/// # use toml_edit::Key;
-/// #
-/// # fn main() {
-/// let version = parse_key!("version");
-/// assert_eq!(version.get(), "version");
-/// # }
-/// ```
-#[macro_export]
-macro_rules! parse_key {
-    ($e:expr) => (
-        {
-            let key = Key::parse($e);
-            assert!(key.is_some());
-            key.unwrap()
-        }
-    );
-}
+impl FromStr for Key {
+    type Err = parser::Error;
 
-
-impl Key {
     /// Parses the key from a &str
-    pub fn parse(s: &str) -> Option<Self> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parsed = parser::key(parser::Span::new(s));
         match parsed {
             nom::IResult::Done(i, (key, raw)) => if i.fragment.is_empty() {
-                Some(Key {
+                Ok(Self {
                     key: key,
                     raw: raw.fragment.into(),
                 })
             } else {
-                None
+                Err(Self::Err::new(parser::ErrorKind::Unknown, i))
             },
-            _ => None,
+            nom::IResult::Error(e) => Err(parser::to_error(&e)),
+            _ => unreachable!("key should be complete"),
         }
     }
+}
 
+impl Key {
     pub fn get(&self) -> &str {
         &self.key
     }

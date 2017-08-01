@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate toml_edit;
 
 use toml_edit::{Document, Key};
@@ -18,6 +17,16 @@ macro_rules! test {
         }
 
         assert_eq!(doc.to_string(), after);
+    );
+}
+
+macro_rules! parse_key {
+    ($s:expr) => (
+        {
+            let key = $s.parse::<Key>();
+            assert!(key.is_ok());
+            key.unwrap()
+        }
     );
 }
 

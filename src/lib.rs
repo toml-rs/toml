@@ -41,7 +41,6 @@ mod array_of_tables;
 mod table;
 mod document;
 
-pub use display::*;
 pub use value::{Array, InlineTable, Value};
 pub use key::Key;
 pub use parser::Error;

@@ -1,4 +1,5 @@
-#[macro_use]
+// TL;DR don't mem::swap the tables
+// it's unsafe
 extern crate toml_edit;
 
 use toml_edit::{Document, Key};
@@ -24,6 +25,10 @@ macro_rules! as_table {
     );
 }
 
+macro_rules! parse_key {
+    ($s:expr) => ($s.parse::<Key>().unwrap());
+}
+
 #[test]
 fn test_safety_issue() {
 
@@ -32,12 +37,14 @@ fn test_safety_issue() {
 b = 2
 [a.c]
 b = 3
+[d]
 "#;
     let toml2 = r#"
 [b]
 a = 2
 [b.c]
 a = 3
+[d]
 "#;
     let mut doc1 = parse_doc!(toml1);
     let mut doc2 = parse_doc!(toml2);
@@ -50,31 +57,31 @@ a = 3
             let mut a = as_table!(a);
             let mut ac = a.entry("c");
             let mut ac = as_table!(ac);
-            ac.append_table(parse_key!("ac"));
+            ac.insert_table(parse_key!("ac"));
 
             let mut b = r2.entry("b");
             let mut b = as_table!(b);
             let mut bc = b.entry("c");
             let mut bc = as_table!(bc);
-            bc.append_table(parse_key!("bc"));
+            bc.insert_table(parse_key!("bc"));
 
             mem::swap(ac, bc); // now both documents are invalid (duplicate keys) :(
         }
 
         // what's even worse,
-        // `ac` is now pointing to `[b.c]`
+        // `a.c` is now pointing to `[b.c]`
         let mut a = r1.entry("a");
         let mut a = as_table!(a);
         let mut ac = a.entry("c");
         let mut ac = as_table!(ac);
-        ac.append_table(parse_key!("'i am in [b.c]'"));
+        ac.insert_table(parse_key!("'i am in [b.c]'"));
 
-        // same for `bc`
+        // same for `b.c`
         let mut b = r2.entry("b");
         let mut b = as_table!(b);
         let mut bc = b.entry("c");
         let mut bc = as_table!(bc);
-        bc.append_table(parse_key!("'i am in [a.c]'"));
+        bc.insert_table(parse_key!("'i am in [a.c]'"));
     }
 
     assert_eq!(
@@ -88,6 +95,7 @@ a = 3
 [b.c.bc]
 
 [b.c.'i am in [b.c]']
+[d]
 "#
     );
     assert_eq!(
@@ -101,6 +109,7 @@ b = 3
 [a.c.ac]
 
 [a.c.'i am in [a.c]']
+[d]
 "#
     );
 }
