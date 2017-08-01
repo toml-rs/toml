@@ -18,6 +18,7 @@ cache:
   apt: true
   directories:
     - $HOME/.cargo/bin
+    - kcov
     - target/debug/deps
 
 branches:

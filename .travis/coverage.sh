@@ -3,15 +3,17 @@
 set -o errexit
 
 function install_kcov_from_master() {
-    wget https://github.com/SimonKagstrom/kcov/archive/master.zip &&
-        unzip master.zip &&
-        mkdir kcov-master/build &&
-        pushd kcov-master/build &&
-        cmake .. &&
-        make &&
-        make install DESTDIR=../../kcov &&
-        popd &&
-        rm -rf kcov-master master.zip
+    if [ ! -d "kcov" ]; then
+        wget https://github.com/SimonKagstrom/kcov/archive/master.zip &&
+            unzip master.zip &&
+            mkdir kcov-master/build &&
+            pushd kcov-master/build &&
+            cmake .. &&
+            make &&
+            make install DESTDIR=../../kcov &&
+            popd &&
+            rm -rf kcov-master master.zip
+    fi
 }
 
 function build_coverage() {
