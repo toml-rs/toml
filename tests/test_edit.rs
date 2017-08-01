@@ -229,7 +229,7 @@ key41 = 41 # comment 4.3
 "#,
         root,
         {
-            assert!(root.remove_table("a"));
+            assert!(root.remove("a"));
         },
         r#"
 title = "not relevant"
