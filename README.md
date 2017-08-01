@@ -21,7 +21,7 @@ use toml_edit::Document;
 
 fn main() {
     let toml = r#"hello = 'toml!' # comment"#;
-    let doc = Document::parse(toml);
+    let doc = toml.parse::<Document>();
     assert!(doc.is_ok());
     assert_eq!(doc.unwrap().to_string(), toml);
 }

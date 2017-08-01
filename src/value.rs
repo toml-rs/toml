@@ -333,7 +333,7 @@ pub(crate) fn sort_key_value_pairs(pairs: &mut KeyValuePairs) {
 impl FromStr for Value {
     type Err = parser::Error;
 
-    /// Parses the value from a &str
+    /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parsed = parser::value(parser::Span::new(s));
         match parsed {
