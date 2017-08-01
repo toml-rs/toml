@@ -1,9 +1,12 @@
+use std::str::FromStr;
 use chrono::{self, FixedOffset};
 use formatted;
 use linked_hash_map::LinkedHashMap;
 use std::slice::Iter;
 use decor::{Decor, Formatted, InternalString, Repr};
 use key::Key;
+use parser;
+use nom;
 
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
@@ -324,5 +327,23 @@ pub(crate) fn sort_key_value_pairs(pairs: &mut KeyValuePairs) {
     keys.sort();
     for key in keys {
         pairs.get_refresh(&key);
+    }
+}
+
+impl FromStr for Value {
+    type Err = parser::Error;
+
+    /// Parses the value from a &str
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parsed = parser::value(parser::Span::new(s));
+        match parsed {
+            nom::IResult::Done(i, value) => if i.fragment.is_empty() {
+                Ok(value)
+            } else {
+                Err(Self::Err::new(parser::ErrorKind::InvalidValue, i))
+            },
+            nom::IResult::Error(e) => Err(parser::to_error(&e)),
+            _ => unreachable!("value should be complete"),
+        }
     }
 }

@@ -7,6 +7,12 @@
 //! documents, while preserving comments, spaces and
 //! relative order or items.
 //!
+//! # Safety
+//!
+//! `mem::swap`ing `Table`s or `ArrayOfTables` is considered unsafe.
+//!
+//! Swapping `Value`s is fine.
+//!
 //! # Example
 //!
 //! ```rust
@@ -41,7 +47,6 @@ mod array_of_tables;
 mod table;
 mod document;
 
-pub use display::*;
 pub use value::{Array, InlineTable, Value};
 pub use key::Key;
 pub use parser::Error;
