@@ -12,7 +12,7 @@ This crate allows you to parse and modify toml
 documents, while preserving comments, spaces and
 relative order or items.
 
-# Example
+## Example
 
 ```rust
 extern crate toml_edit;
@@ -26,6 +26,13 @@ fn main() {
     assert_eq!(doc.unwrap().to_string(), toml);
 }
 ```
+
+## Safety
+
+Due to internal unsafe usage, `mem::swap`ping two `Table`s or `ArrayOfTables` is considered unsafe 
+(it won't do what you'd expect, see [test_safety](./tests/test_safety.rs)).
+
+Swapping `Value`s is fine though.
 
 ## License
 

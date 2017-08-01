@@ -7,6 +7,12 @@
 //! documents, while preserving comments, spaces and
 //! relative order or items.
 //!
+//! # Safety
+//!
+//! `mem::swap`ing `Table`s or `ArrayOfTables` is considered unsafe.
+//!
+//! Swapping `Value`s is fine.
+//!
 //! # Example
 //!
 //! ```rust
