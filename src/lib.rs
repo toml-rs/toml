@@ -42,7 +42,7 @@ mod table;
 mod document;
 
 pub use display::*;
-pub use value::{Value, Array, InlineTable};
+pub use value::{Array, InlineTable, Value};
 pub use key::Key;
 pub use parser::Error;
 pub use table::{Table, TableEntry, TableRef};
