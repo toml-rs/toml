@@ -202,12 +202,12 @@ impl Table {
             .last()
             .map(|p| *p as *const Table)
             .unwrap_or(self as *const Table);
-        let header = self.child_header(key.get(), HeaderKind::Standard);
+        let header = self.child_header(key.raw(), HeaderKind::Standard);
         self.insert_table_with_header(key.get(), header, after_ptr)
     }
 
     pub fn append_table(&mut self, key: Key) -> TableEntry {
-        let header = self.child_header(key.get(), HeaderKind::Standard);
+        let header = self.child_header(key.raw(), HeaderKind::Standard);
         self.append_table_with_header(key.get(), header)
     }
 
@@ -219,7 +219,7 @@ impl Table {
     }
 
     pub fn insert_array(&mut self, key: Key) -> TableEntry {
-        let child_key = self.child_key(key.get());
+        let child_key = self.child_key(key.raw());
         match self.entry(key.get()) {
             TableEntry::Vacant(me) => TableEntry::Array(me.insert_array_assume_vacant(&child_key)),
             otherwise => otherwise,
