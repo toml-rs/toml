@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
-use value::{sort_key_value_pairs, KeyValuePairs, Value};
+use value::{sort_key_value_pairs, InlineTable, KeyValuePairs, Value};
 use decor::{InternalString, Repr};
 use key::Key;
 use array_of_tables::ArrayOfTables;
@@ -134,6 +134,13 @@ impl Table {
                 ),
         )
     }
+
+    pub fn append(&mut self, other: &mut InlineTable) {
+        while let Some((k, kv)) = other.key_value_pairs.pop_front() {
+            self.key_value_pairs.insert(k, kv);
+        }
+    }
+
 
     pub fn remove(&mut self, key: &str) -> bool {
         self.remove_table(key) || self.remove_array(key) || self.remove_value(key).is_some()
