@@ -135,6 +135,10 @@ impl Table {
         )
     }
 
+    pub fn remove(&mut self, key: &str) -> bool {
+        self.remove_table(key) || self.remove_array(key) || self.remove_value(key).is_some()
+    }
+
     pub fn remove_value<'a>(&'a mut self, key: &str) -> Option<Value> {
         self.key_value_pairs.remove(key).map(|kv| kv.value)
     }
