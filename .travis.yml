@@ -18,7 +18,7 @@ cache:
   apt: true
   directories:
     - $HOME/.cargo/bin
-    - kcov
+    - kcov/usr/local/bin
     - target/debug/deps
 
 branches:
@@ -49,9 +49,10 @@ matrix:
     - cargo install rustfmt-nightly --vers 0.2.1 || true
 
     script:
-    - cargo test --verbose
     - cargo clippy -- -D warnings
     - cargo fmt -- --write-mode=diff
+    - rm -rf target/debug/{test_,toml_edit-}*
+    - cargo test
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
 
     after_success:
