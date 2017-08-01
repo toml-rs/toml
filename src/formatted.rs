@@ -1,5 +1,6 @@
 use value::{Array, DateTime, InlineTable, KeyValue, KeyValuePairs, Value};
 use decor::{Decor, Formatted, InternalString, Repr};
+use key::Key;
 use std::iter::FromIterator;
 
 
@@ -154,18 +155,18 @@ impl<V: Into<Value>> FromIterator<V> for Value {
 
 pub(crate) fn to_key_value_pairs<K, V, I>(iter: I) -> KeyValuePairs
 where
-    K: Into<String>,
+    K: Into<Key>,
     V: Into<Value>,
     I: IntoIterator<Item = (K, V)>,
 {
     let v = iter.into_iter().map(|(a, b)| {
-        let s = InternalString::from(a.into());
-        (s.clone(), to_key_value(&s, b.into()))
+        let s: Key = a.into();
+        (s.clone().into(), to_key_value(s.raw(), b.into()))
     });
     KeyValuePairs::from_iter(v)
 }
 
-impl<K: Into<String>, V: Into<Value>> FromIterator<(K, V)> for Value {
+impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = (K, V)>,

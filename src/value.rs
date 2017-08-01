@@ -158,6 +158,12 @@ impl InlineTable {
         self.key_value_pairs.insert(key.into(), kv).map(|p| p.value)
     }
 
+    pub fn append(&mut self, other: &mut InlineTable) {
+        while let Some((k, kv)) = other.key_value_pairs.pop_front() {
+            self.key_value_pairs.insert(k, kv);
+        }
+    }
+
     /// Auto formats the table
     pub fn fmt(&mut self) {
         formatted::decorate_inline_table(self);
