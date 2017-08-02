@@ -7,7 +7,7 @@ use std::error;
 /// Type representing a TOML parse error
 #[derive(Debug, Clone)]
 pub struct Error {
-    kind: ErrorKind,
+    pub(crate) kind: ErrorKind,
     unparsed_line: String,
     line_number: u32,
 }
@@ -23,6 +23,7 @@ pub(crate) enum ErrorKind {
     UnterminatedString,
     UnterminatedInlineTable,
     UnterminatedArray,
+    InvalidKey,
     InvalidValue,
     InvalidNumber,
     InvalidHeader,

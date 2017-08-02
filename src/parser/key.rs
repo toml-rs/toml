@@ -13,7 +13,7 @@ fn is_unquoted_char(c: char) -> bool {
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 named!(#[inline], unquoted_key(Span) -> Span,
-       take_while1!(is_unquoted_char)
+       complete!(take_while1!(is_unquoted_char))
 );
 
 // key = unquoted-key / basic-string / literal-string
