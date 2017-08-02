@@ -1,15 +1,57 @@
 extern crate toml_edit;
 
-use toml_edit::Value;
+use toml_edit::{Key, Value};
 
-macro_rules! parse_value {
-    ($s:expr) => (
+macro_rules! parse {
+    ($s:expr, $ty:ty) => (
         {
-            let v = $s.parse::<Value>();
+            let v = $s.parse::<$ty>();
             assert!(v.is_ok());
             v.unwrap()
         }
     );
+}
+
+macro_rules! parse_value {
+    ($s:expr) => (parse!($s, Value));
+}
+
+macro_rules! test_key {
+    ($s:expr, $expected:expr) => (
+        {
+            let key = parse!($s, Key);
+            assert_eq!(key.get(), $expected);
+        }
+    );
+}
+
+macro_rules! parse_error {
+    ($input:expr, $ty:ty, $err_msg:expr) => (
+        {
+            let res = $input.parse::<$ty>();
+            assert!(res.is_err());
+            let err = res.unwrap_err();
+            assert!(err.to_string().find($err_msg).is_some());
+        }
+    );
+}
+
+#[test]
+fn test_parse_error() {
+    parse_error!("'hello'bla", Value, "InvalidValue");
+    parse_error!(r#"["", 2]"#, Value, "MixedArrayType");
+    parse_error!(r#"{a = 2"#, Value, "UnterminatedInlineTable");
+
+    parse_error!("abc\n", Key, "InvalidKey");
+    parse_error!("", Key, "InvalidKey");
+    parse_error!("'hello'bla", Key, "InvalidKey");
+}
+
+#[test]
+fn test_key_from_str() {
+    test_key!("a", "a");
+    test_key!(r#"'hello key'"#, "hello key");
+    test_key!(r#""Jos\u00E9""#, "Jos\u{00E9}");
 }
 
 #[test]

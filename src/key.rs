@@ -45,9 +45,13 @@ impl FromStr for Key {
                     raw: raw.fragment.into(),
                 })
             } else {
-                Err(Self::Err::new(parser::ErrorKind::Unknown, i))
+                Err(Self::Err::new(parser::ErrorKind::InvalidKey, i))
             },
-            nom::IResult::Error(e) => Err(parser::to_error(&e)),
+            nom::IResult::Error(e) => {
+                let mut err = parser::to_error(&e);
+                err.kind = parser::ErrorKind::InvalidKey;
+                Err(err)
+            }
             _ => unreachable!("key should be complete"),
         }
     }
