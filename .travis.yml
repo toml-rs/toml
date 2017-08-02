@@ -22,8 +22,10 @@ cache:
     - target/debug/deps
 
 branches:
-  except:
-    - staging.tmp
+  only:
+    - staging
+    - trying
+    - master
 
 matrix:
   allow_failures:
