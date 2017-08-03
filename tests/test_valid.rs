@@ -4,9 +4,9 @@ extern crate toml_edit;
 use serde_json::Value as Json;
 use serde_json::Map as JsonMap;
 
-use toml_edit::{Document, TableRef, Value};
+use toml_edit::{Document, TableChild, Value};
 
-fn pair_to_json((key, value): (&str, TableRef)) -> (String, Json) {
+fn pair_to_json((key, value): (&str, TableChild)) -> (String, Json) {
     fn typed_json(s: &str, json: Json) -> Json {
         let mut map = JsonMap::new();
         map.insert("type".to_owned(), Json::String(s.into()));
@@ -25,21 +25,21 @@ fn pair_to_json((key, value): (&str, TableRef)) -> (String, Json) {
                 typed_json("array", json)
             }
             Value::InlineTable(ref t) => {
-                to_json(Box::new(t.iter().map(|(k, v)| (k, TableRef::Value(v)))))
+                to_json(Box::new(t.iter().map(|(k, v)| (k, TableChild::Value(v)))))
             }
         }
     }
     let json = match value {
-        TableRef::Value(v) => value_to_json(v),
-        TableRef::Array(arr) => {
+        TableChild::Value(v) => value_to_json(v),
+        TableChild::Array(arr) => {
             Json::Array(arr.iter().map(|t| to_json(t.iter())).collect::<Vec<_>>())
         }
-        TableRef::Table(table) => to_json(table.iter()),
+        TableChild::Table(table) => to_json(table.iter()),
     };
     (key.to_owned(), json)
 }
 
-fn to_json<'a>(iter: Box<Iterator<Item = (&'a str, TableRef<'a>)> + 'a>) -> Json {
+fn to_json<'a>(iter: Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a>) -> Json {
     Json::Object(iter.map(pair_to_json).collect())
 }
 

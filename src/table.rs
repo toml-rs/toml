@@ -9,7 +9,6 @@ use document::{DocumentInner, ROOT_HEADER};
 use formatted::{decorate, to_key_value};
 
 // TODO: add method to extract a child table into an inline table
-// TODO: add non mutable API
 // TODO: impl Index
 // TODO: impl Debug
 // TODO: documentation
@@ -70,25 +69,39 @@ pub(crate) enum HeaderKind {
     Array,
 }
 
-/// An immutable reference to the child
-pub enum TableRef<'a> {
-    /// A reference to the child value
+/// An immutable reference to a child
+pub enum TableChild<'a> {
+    /// A reference to a child value
     Value(&'a Value),
-    /// A reference to the child table
+    /// A reference to a child table
     Table(&'a Table),
-    /// A reference to the child array of tables
+    /// A reference to a child array of tables
     Array(&'a ArrayOfTables),
 }
 
+pub type Iter<'a> = Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a>;
+
+/// A mutable reference to a child
+pub enum TableChildMut<'a> {
+    /// A mutable reference to a child value
+    Value(&'a mut Value),
+    /// A mutable reference to a child table
+    Table(&'a mut Table),
+    /// A mutable reference to a child array of tables
+    Array(&'a mut ArrayOfTables),
+}
+
+pub type IterMut<'a> = Box<Iterator<Item = (&'a str, TableChildMut<'a>)> + 'a>;
+
 /// Return type of table.entry("key")
 pub enum TableEntry<'a> {
-    /// A reference to the child value
+    /// A mutable reference to a child value
     Value(&'a mut Value),
-    /// A reference to the child table
+    /// A mutable reference to a child table
     Table(&'a mut Table),
-    /// A reference to the child array of tables
+    /// A mutable reference to a child array of tables
     Array(&'a mut ArrayOfTables),
-    /// A reference to the table itself
+    /// A mutable reference to the table itself
     Vacant(&'a mut Table),
 }
 
@@ -116,25 +129,46 @@ impl Table {
         self.arrays.contains_key(key)
     }
 
-    // argh, impl trait please
-    pub fn iter<'a>(&'a self) -> Box<Iterator<Item = (&'a str, TableRef<'a>)> + 'a> {
+    /// Iterator over key/value pairs, arrays of tables and subtables.
+    pub fn iter(&self) -> Iter {
         Box::new(
             self.key_value_pairs
                 .iter()
-                .map(|(k, kv)| (&k[..], TableRef::Value(&kv.value)))
+                .map(|(k, kv)| (&k[..], TableChild::Value(&kv.value)))
                 .chain(
                     self.arrays
                         .iter()
-                        .map(|(k, a)| (&k[..], TableRef::Array(a))),
+                        .map(|(k, a)| (&k[..], TableChild::Array(a))),
                 )
                 .chain(
                     self.tables
                         .iter()
-                        .map(|(k, ptr)| (&k[..], TableRef::Table(unsafe { &**ptr }))),
+                        .map(|(k, ptr)| (&k[..], TableChild::Table(unsafe { &**ptr }))),
                 ),
         )
     }
 
+
+    /// Mutable iterator over key/value pairs, arrays of tables and subtables.
+    pub fn iter_mut(&mut self) -> IterMut {
+        Box::new(
+            self.key_value_pairs
+                .iter_mut()
+                .map(|(k, kv)| (&k[..], TableChildMut::Value(&mut kv.value)))
+                .chain(
+                    self.arrays
+                        .iter_mut()
+                        .map(|(k, a)| (&k[..], TableChildMut::Array(a))),
+                )
+                .chain(self.tables.iter_mut().map(|(k, ptr)| {
+                    (&k[..], TableChildMut::Table(unsafe { &mut **ptr }))
+                })),
+        )
+    }
+
+    /// Moves all elements from `other` into `Self`, leaving `other` empty.
+    ///
+    /// **Note**: this method will remove comments from overwritten key/value pairs.
     pub fn append(&mut self, other: &mut InlineTable) {
         while let Some((k, kv)) = other.key_value_pairs.pop_front() {
             self.key_value_pairs.insert(k, kv);

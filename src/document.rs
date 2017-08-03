@@ -16,7 +16,7 @@ use intrusive_collections::{LinkedList, LinkedListLink, UnsafeRef};
 use std::str::FromStr;
 use std::mem::size_of;
 use typed_arena::Arena;
-use table::{Header, HeaderKind, Table, TableRef};
+use table::{Header, HeaderKind, Table, TableChild};
 use decor::{InternalString, Repr};
 use std::borrow::BorrowMut;
 use parser;
@@ -92,7 +92,7 @@ impl Document {
         unsafe { ptr.as_mut().unwrap() }
     }
 
-    pub fn iter<'a>(&'a self) -> Box<Iterator<Item = (&'a str, TableRef<'a>)> + 'a> {
+    pub fn iter<'a>(&'a self) -> Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a> {
         self.root().iter()
     }
 }

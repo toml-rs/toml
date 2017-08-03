@@ -51,7 +51,7 @@ matrix:
     - cargo install rustfmt-nightly --vers 0.2.1 || true
 
     script:
-    - cargo clippy -- -D warnings
+    - cargo clippy -- -D warnings -Z no-trans
     - cargo fmt -- --write-mode=diff
     - rm -rf target/debug/{test_,toml_edit-}*
     - cargo test
