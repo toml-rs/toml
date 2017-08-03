@@ -214,12 +214,14 @@ impl Table {
         }
     }
 
-    pub fn append_value<V: Into<Value>>(&mut self, key: Key, value: V) -> TableEntry {
+    pub fn append_value<V: Into<Value>>(&mut self, key: Key, value: V) -> TableChildMut {
         match self.entry(key.get()) {
             TableEntry::Vacant(me) => {
-                TableEntry::Value(me.insert_value_assume_vacant(key, value.into()))
+                TableChildMut::Value(me.insert_value_assume_vacant(key, value.into()))
             }
-            otherwise => otherwise,
+            TableEntry::Array(v) => TableChildMut::Array(v),
+            TableEntry::Table(v) => TableChildMut::Table(v),
+            TableEntry::Value(v) => TableChildMut::Value(v),
         }
     }
 
@@ -241,7 +243,7 @@ impl Table {
     /// if the table has no children, after the table itself.
     /// If a child with the given key is present, returns a reference
     /// to this child.
-    pub fn insert_table(&mut self, key: Key) -> TableEntry {
+    pub fn insert_table(&mut self, key: Key) -> TableChildMut {
         let after_ptr = self.tables
             .values()
             .last()
@@ -251,7 +253,7 @@ impl Table {
         self.insert_table_with_header(key.get(), header, after_ptr)
     }
 
-    pub fn append_table(&mut self, key: Key) -> TableEntry {
+    pub fn append_table(&mut self, key: Key) -> TableChildMut {
         let header = self.child_header(key.raw(), HeaderKind::Standard);
         self.append_table_with_header(key.get(), header)
     }
@@ -263,11 +265,15 @@ impl Table {
             .is_some()
     }
 
-    pub fn insert_array(&mut self, key: Key) -> TableEntry {
+    pub fn insert_array(&mut self, key: Key) -> TableChildMut {
         let child_key = self.child_key(key.raw());
         match self.entry(key.get()) {
-            TableEntry::Vacant(me) => TableEntry::Array(me.insert_array_assume_vacant(&child_key)),
-            otherwise => otherwise,
+            TableEntry::Vacant(me) => {
+                TableChildMut::Array(me.insert_array_assume_vacant(&child_key))
+            }
+            TableEntry::Array(v) => TableChildMut::Array(v),
+            TableEntry::Table(v) => TableChildMut::Table(v),
+            TableEntry::Value(v) => TableChildMut::Value(v),
         }
     }
 
@@ -339,7 +345,7 @@ impl Table {
         &'a mut self,
         key: &str,
         header: Header,
-    ) -> TableEntry<'a> {
+    ) -> TableChildMut<'a> {
         let doc = unsafe { self.doc.as_ref().unwrap() };
         let back = doc.list.back().get().unwrap();
         self.insert_table_with_header(key, header, back)
@@ -350,7 +356,7 @@ impl Table {
         key: &str,
         header: Header,
         after_ptr: *const Table,
-    ) -> TableEntry<'a> {
+    ) -> TableChildMut<'a> {
         let doc = self.doc;
         match self.entry(key) {
             TableEntry::Vacant(me) => {
@@ -363,9 +369,11 @@ impl Table {
                 let result = me.tables.insert(key.into(), node_ptr);
                 debug_assert!(result.is_none());
                 // safe, because we're borrowing self mutably
-                TableEntry::Table(unsafe { node_ptr.as_mut().unwrap() })
+                TableChildMut::Table(unsafe { node_ptr.as_mut().unwrap() })
             }
-            otherwise => otherwise,
+            TableEntry::Array(v) => TableChildMut::Array(v),
+            TableEntry::Table(v) => TableChildMut::Table(v),
+            TableEntry::Value(v) => TableChildMut::Value(v),
         }
     }
 }
@@ -432,6 +440,86 @@ impl<'a> TableEntry<'a> {
     }
     pub fn is_vacant(&self) -> bool {
         self.as_vacant().is_some()
+    }
+}
+
+/// Downcasting
+impl<'a> TableChild<'a> {
+    pub fn as_table(&self) -> Option<&Table> {
+        match *self {
+            TableChild::Table(me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_array(&self) -> Option<&ArrayOfTables> {
+        match *self {
+            TableChild::Array(me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_value(&self) -> Option<&Value> {
+        match *self {
+            TableChild::Value(me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn is_table(&self) -> bool {
+        self.as_table().is_some()
+    }
+    pub fn is_array(&self) -> bool {
+        self.as_array().is_some()
+    }
+    pub fn is_value(&self) -> bool {
+        self.as_value().is_some()
+    }
+}
+
+/// Downcasting
+impl<'a> TableChildMut<'a> {
+    pub fn as_table_mut(&mut self) -> Option<&mut Table> {
+        match *self {
+            TableChildMut::Table(ref mut me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_array_mut(&mut self) -> Option<&mut ArrayOfTables> {
+        match *self {
+            TableChildMut::Array(ref mut me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_value_mut(&mut self) -> Option<&mut Value> {
+        match *self {
+            TableChildMut::Value(ref mut me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_table(&self) -> Option<&Table> {
+        match *self {
+            TableChildMut::Table(ref me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_array(&self) -> Option<&ArrayOfTables> {
+        match *self {
+            TableChildMut::Array(ref me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn as_value(&self) -> Option<&Value> {
+        match *self {
+            TableChildMut::Value(ref me) => Some(me),
+            _ => None,
+        }
+    }
+    pub fn is_table(&self) -> bool {
+        self.as_table().is_some()
+    }
+    pub fn is_array(&self) -> bool {
+        self.as_array().is_some()
+    }
+    pub fn is_value(&self) -> bool {
+        self.as_value().is_some()
     }
 }
 

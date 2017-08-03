@@ -7,7 +7,7 @@ use parser::key::key;
 use parser::LenWorkaround;
 use ::decor::{InternalString, Repr};
 use ::document::Document;
-use ::table::{Table, TableEntry, Header, HeaderKind};
+use ::table::{Table, TableChildMut, TableEntry, Header, HeaderKind};
 
 
 // table-key-sep   = ws %x2E ws  ; . Period
@@ -106,8 +106,8 @@ impl Parser {
         if let Some(key) = path.get(0) {
             let header = table.child_header(key, HeaderKind::Implicit);
             match table.append_table_with_header(key, header) {
-                TableEntry::Value(..) => None,
-                TableEntry::Array(array) => {
+                TableChildMut::Value(..) => None,
+                TableChildMut::Array(array) => {
                     debug_assert!(!array.is_empty());
 
                     let i = array.len() - 1;
@@ -115,10 +115,9 @@ impl Parser {
 
                     Self::descend_path(last_child, &path[1..])
                 }
-                TableEntry::Table(sweet_child_of_mine) => {
+                TableChildMut::Table(sweet_child_of_mine) => {
                     Parser::descend_path(sweet_child_of_mine, &path[1..])
                 }
-                _ => unreachable!("`insert_table` can't return a vacant entry"),
             }
         } else {
             Some(table)
