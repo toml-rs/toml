@@ -1,7 +1,7 @@
 // WARNING: we're using unsafe code here (raw pointers)
 // until a better approach is found
 // (not involving replacing every pointer with Rc<RefCell<T>>).
-// Note, however, that the public API is safe to use.
+// Note, however, that the public API is *almost* safe to use.
 
 // Current design:
 // There are four main types: Value, Table, ArrayOfTables and Document(Inner).
