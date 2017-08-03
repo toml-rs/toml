@@ -50,6 +50,6 @@ mod document;
 pub use value::{Array, InlineTable, Value};
 pub use key::Key;
 pub use parser::Error;
-pub use table::{Table, TableEntry, TableRef};
+pub use table::{Iter, IterMut, Table, TableEntry, TableChild, TableChildMut};
 pub use array_of_tables::ArrayOfTables;
 pub use document::Document;
