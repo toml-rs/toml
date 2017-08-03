@@ -130,7 +130,7 @@ impl Table {
     }
 
     /// Iterator over key/value pairs, arrays of tables and subtables.
-    pub fn iter<'a>(&'a self) -> Iter<'a> {
+    pub fn iter(&self) -> Iter {
         Box::new(
             self.key_value_pairs
                 .iter()
@@ -150,7 +150,7 @@ impl Table {
 
 
     /// Mutable iterator over key/value pairs, arrays of tables and subtables.
-    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a> {
+    pub fn iter_mut(&mut self) -> IterMut {
         Box::new(
             self.key_value_pairs
                 .iter_mut()
