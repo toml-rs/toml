@@ -27,12 +27,12 @@ fn main() {
 }
 ```
 
-## Safety
+## Caveats
 
-Due to internal unsafe usage, `mem::swap`ping two `Table`s or `ArrayOfTables` is considered unsafe 
+Due to internal design, `mem::swap`ping two `Table`s or `ArrayOfTables` is considered harmful 
 (it won't do what you'd expect, see [test_safety](./tests/test_safety.rs)).
 
-Swapping `Value`s is fine though.
+Swapping `Value`s is fine though (but you can lose formatting, e.g. comments).
 
 ## License
 
