@@ -153,6 +153,11 @@ impl InlineTable {
         self.key_value_pairs.contains_key(key)
     }
 
+    pub fn try_insert<V: Into<Value>>(&mut self, key: Key, value: V) -> &mut Value {
+        let kv = formatted::to_key_value(key.raw(), value.into());
+        &mut self.key_value_pairs.entry(key.into()).or_insert(kv).value
+    }
+
     pub fn insert<V: Into<Value>>(&mut self, key: Key, value: V) -> Option<Value> {
         let kv = formatted::to_key_value(key.raw(), value.into());
         self.key_value_pairs.insert(key.into(), kv).map(|p| p.value)
