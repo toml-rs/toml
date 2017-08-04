@@ -198,6 +198,22 @@ impl Table {
         self.len() == 0
     }
 
+    pub fn get<'a>(&'a self, key: &str) -> Option<TableChild<'a>> {
+        if !self.contains_key(key) {
+            None
+        } else if let Some(table) = self.tables.get(key) {
+            Some(TableChild::Table(
+                // safe, all child pointers are valid
+                unsafe { table.as_ref().unwrap() },
+            ))
+        } else if let Some(kv) = self.key_value_pairs.get(key) {
+            Some(TableChild::Value(&kv.value))
+        } else {
+            // argh, non-lexical lifetimes please
+            Some(TableChild::Array(self.arrays.get(key).unwrap()))
+        }
+    }
+
     pub fn entry<'a>(&'a mut self, key: &str) -> TableEntry<'a> {
         if !self.contains_key(key) {
             TableEntry::Vacant(self)
@@ -445,19 +461,19 @@ impl<'a> TableEntry<'a> {
 
 /// Downcasting
 impl<'a> TableChild<'a> {
-    pub fn as_table(&self) -> Option<&Table> {
+    pub fn as_table(&self) -> Option<&'a Table> {
         match *self {
             TableChild::Table(me) => Some(me),
             _ => None,
         }
     }
-    pub fn as_array(&self) -> Option<&ArrayOfTables> {
+    pub fn as_array(&self) -> Option<&'a ArrayOfTables> {
         match *self {
             TableChild::Array(me) => Some(me),
             _ => None,
         }
     }
-    pub fn as_value(&self) -> Option<&Value> {
+    pub fn as_value(&self) -> Option<&'a Value> {
         match *self {
             TableChild::Value(me) => Some(me),
             _ => None,
@@ -471,6 +487,17 @@ impl<'a> TableChild<'a> {
     }
     pub fn is_value(&self) -> bool {
         self.as_value().is_some()
+    }
+
+    pub fn get(&self, key: &str) -> Option<TableChild<'a>> {
+        match *self {
+            TableChild::Value(v) if v.is_inline_table() => {
+                let t = v.as_inline_table().unwrap();
+                t.get(key).map(|v| TableChild::Value(v))
+            }
+            TableChild::Table(t) => t.get(key),
+            _ => None,
+        }
     }
 }
 
