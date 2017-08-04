@@ -21,6 +21,10 @@ named!(pub value(Span) -> value::Value,
            | float           => { |val| value::Value::from(val) }
            | integer         => { |val| value::Value::from(val) }
          )),
-           |(val, raw)| formatted::value(val, raw.fragment)
+            |(val, raw)| {
+                let mut val = formatted::value(val, raw.fragment);
+                formatted::decorate(&mut val, "", "");
+                val
+            }
        )
 );

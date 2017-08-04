@@ -110,6 +110,8 @@ impl Array {
         let mut value = v.into();
         if !self.is_empty() && decorate {
             formatted::decorate(&mut value, " ", "");
+        } else if decorate {
+            formatted::decorate(&mut value, "", "");
         }
         if self.is_empty() || value.get_type() == self.value_type() {
             self.values.push(value);
@@ -151,6 +153,11 @@ impl InlineTable {
 
     pub fn contains_key(&self, key: &str) -> bool {
         self.key_value_pairs.contains_key(key)
+    }
+
+    pub fn try_insert<V: Into<Value>>(&mut self, key: Key, value: V) -> &mut Value {
+        let kv = formatted::to_key_value(key.raw(), value.into());
+        &mut self.key_value_pairs.entry(key.into()).or_insert(kv).value
     }
 
     pub fn insert<V: Into<Value>>(&mut self, key: Key, value: V) -> Option<Value> {

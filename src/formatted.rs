@@ -90,7 +90,7 @@ impl From<i64> for Value {
     fn from(i: i64) -> Self {
         Value::Integer(Formatted::new(
             i,
-            Repr::new("".to_string(), i.to_string(), "".to_string()),
+            Repr::new(" ".to_string(), i.to_string(), "\n".to_string()),
         ))
     }
 }
@@ -99,7 +99,7 @@ impl From<f64> for Value {
     fn from(f: f64) -> Self {
         Value::Float(Formatted::new(
             f,
-            Repr::new("".to_string(), f.to_string(), "".to_string()),
+            Repr::new(" ".to_string(), f.to_string(), "\n".to_string()),
         ))
     }
 }
@@ -108,7 +108,7 @@ impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
         Value::String(Formatted::new(
             s.to_owned(),
-            Repr::new("".to_string(), format!("\"{}\"", s), "".to_string()),
+            Repr::new(" ".to_string(), format!("\"{}\"", s), "\n".to_string()),
         ))
     }
 }
@@ -123,7 +123,7 @@ impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Boolean(Formatted::new(
             b,
-            Repr::new("", if b { "true" } else { "false" }, ""),
+            Repr::new(" ", if b { "true" } else { "false" }, "\n"),
         ))
     }
 }
@@ -133,7 +133,7 @@ impl From<DateTime> for Value {
         let s = d.to_string();
         Value::DateTime(Formatted::new(
             d,
-            Repr::new("".to_string(), s, "".to_string()),
+            Repr::new(" ".to_string(), s, "\n".to_string()),
         ))
     }
 }
@@ -149,6 +149,8 @@ impl<V: Into<Value>> FromIterator<V> for Value {
             ..Default::default()
         };
         decorate_array(&mut array);
+        array.decor.prefix = InternalString::from(" ");
+        array.decor.suffix = InternalString::from("\n");
         Value::Array(array)
     }
 }
@@ -175,6 +177,8 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
             key_value_pairs: to_key_value_pairs(iter),
             ..Default::default()
         };
+        table.decor.prefix = InternalString::from(" ");
+        table.decor.suffix = InternalString::from("\n");
         decorate_inline_table(&mut table);
         Value::InlineTable(table)
     }
