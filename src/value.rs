@@ -110,6 +110,8 @@ impl Array {
         let mut value = v.into();
         if !self.is_empty() && decorate {
             formatted::decorate(&mut value, " ", "");
+        } else if decorate {
+            formatted::decorate(&mut value, "", "");
         }
         if self.is_empty() || value.get_type() == self.value_type() {
             self.values.push(value);
