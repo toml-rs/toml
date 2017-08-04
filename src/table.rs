@@ -210,7 +210,7 @@ impl Table {
             Some(TableChild::Value(&kv.value))
         } else {
             // argh, non-lexical lifetimes please
-            Some(TableChild::Array(self.arrays.get(key).unwrap()))
+            Some(TableChild::Array(&self.arrays[key]))
         }
     }
 
