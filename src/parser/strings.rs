@@ -12,7 +12,7 @@ named!(pub string(Span) -> InternalString,
        alt_complete!(
            ml_basic_string
          | basic_string
-         | ml_literal_string => { |s: Span| InternalString::from(s.fragment) }
+         | ml_literal_string => { |s: Span| InternalString::from(s.fragment.replace("\r\n", "\n")) }
          | literal_string    => { |s: Span| InternalString::from(s.fragment) }
        )
 );
