@@ -7,10 +7,10 @@ use array_of_tables::ArrayOfTables;
 use intrusive_collections::LinkedListLink;
 use document::{DocumentInner, ROOT_HEADER};
 use formatted::{decorate, to_key_value};
+use std::fmt;
 
 // TODO: add method to extract a child table into an inline table
 // TODO: impl Index
-// TODO: impl Debug
 // TODO: documentation
 
 /// Type representing a TOML non-inline table
@@ -571,4 +571,16 @@ pub(crate) fn remove_table_recursive(ptr: *mut Table, doc: &mut DocumentInner) {
     }
     // remove from the list
     doc.remove(ptr);
+}
+
+impl fmt::Debug for Table {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Table")
+            .field("header", &self.header)
+            .field("key_values_pairs", &self.key_value_pairs)
+            .field("tables", &self.tables)
+            .field("arrays", &self.arrays)
+            .field("link", &self.link)
+            .finish()
+    }
 }
