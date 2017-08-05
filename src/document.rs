@@ -14,7 +14,7 @@
 // See comments in the Table struct for details about safety.
 use intrusive_collections::{LinkedList, LinkedListLink, UnsafeRef};
 use std::str::FromStr;
-use std::mem::size_of;
+use std::mem;
 use typed_arena::Arena;
 use table::{Header, HeaderKind, Table, TableChild};
 use decor::{InternalString, Repr};
@@ -61,7 +61,7 @@ impl Document {
     pub fn new() -> Self {
         let list = LinkedList::new(intrusive::TableAdapter::new());
         // reserve space for 10 tables
-        let arena = Arena::with_capacity(size_of::<Table>() * 10);
+        let arena = Arena::with_capacity(mem::size_of::<Table>() * 10);
         let inner = DocumentInner::new(arena, list);
         let mut doc = Box::new(inner);
         let header = Header {
@@ -128,6 +128,12 @@ impl DocumentInner {
         // remove from the list
         let res = cursor.remove();
         debug_assert!(res.is_some());
+    }
+}
+
+impl Drop for DocumentInner {
+    fn drop(&mut self) {
+        self.list.clear();
     }
 }
 
