@@ -136,7 +136,7 @@ hello = "world"
 fn test_insert_values() {
     test!(
         r#"
-[tbl]
+[tbl.son]
 "#,
         root,
         {
@@ -152,6 +152,8 @@ fn test_insert_values() {
 key1 = "value1"
 "key2" = 42
 'key3' = 8.1415926
+
+[tbl.son]
 "#
     );
 }
@@ -344,6 +346,27 @@ fn test_remove_value() {
     name = "hello"
     documentation = "https://docs.rs/hello"
 "#
+    );
+}
+
+#[test]
+fn test_remove_last_value() {
+    test!(
+        r#"
+    [a]
+    b = 1
+"#,
+        root,
+        {
+            let mut a = root.entry("a");
+            assert!(a.is_table());
+            let a = a.as_table_mut().unwrap();
+            let value = a.remove_value("b");
+            assert!(value.is_some());
+            let value = value.unwrap();
+            assert_eq!(value.as_integer(), Some(1));
+        },
+        r#""#
     );
 }
 

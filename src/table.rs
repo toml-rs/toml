@@ -181,7 +181,11 @@ impl Table {
     }
 
     pub fn remove_value<'a>(&'a mut self, key: &str) -> Option<Value> {
-        self.key_value_pairs.remove(key).map(|kv| kv.value)
+        let val = self.key_value_pairs.remove(key).map(|kv| kv.value);
+        if val.is_some() {
+            self.set_implicit();
+        }
+        val
     }
 
     /// Sorts Key/Value Pairs of the table,
@@ -325,6 +329,9 @@ impl Table {
         debug_assert!(!self.arrays.contains_key(key.get()));
         let mut kv = to_key_value(key.raw(), value);
         decorate(&mut kv.value, " ", "\n");
+        if self.header.kind == HeaderKind::Implicit {
+            self.header.kind = HeaderKind::Standard;
+        }
         &mut self.key_value_pairs.entry(key.into()).or_insert(kv).value
     }
 
