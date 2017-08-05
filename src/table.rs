@@ -203,18 +203,17 @@ impl Table {
     }
 
     pub fn get<'a>(&'a self, key: &str) -> Option<TableChild<'a>> {
-        if !self.contains_key(key) {
-            None
-        } else if let Some(table) = self.tables.get(key) {
+        if let Some(table) = self.tables.get(key) {
             Some(TableChild::Table(
                 // safe, all child pointers are valid
                 unsafe { table.as_ref().unwrap() },
             ))
         } else if let Some(kv) = self.key_value_pairs.get(key) {
             Some(TableChild::Value(&kv.value))
+        } else if let Some(a) = self.arrays.get(key) {
+            Some(TableChild::Array(a))
         } else {
-            // argh, non-lexical lifetimes please
-            Some(TableChild::Array(&self.arrays[key]))
+            None
         }
     }
 
