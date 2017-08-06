@@ -1,6 +1,7 @@
 use decor::*;
 use table::{remove_table_recursive, Header, HeaderKind, Table};
 use document::DocumentInner;
+use std::fmt;
 
 /// Type representing a TOML array of tables
 pub struct ArrayOfTables {
@@ -100,5 +101,14 @@ impl ArrayOfTables {
         self.values.push(ptr);
         let i = self.len() - 1;
         self.get_mut(i).unwrap()
+    }
+}
+
+impl fmt::Debug for ArrayOfTables {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("ArrayOfTables")
+            .field("key", &self.key)
+            .field("values", &self.values)
+            .finish()
     }
 }

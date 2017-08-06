@@ -20,6 +20,7 @@ use table::{Header, HeaderKind, Table, TableChild};
 use decor::{InternalString, Repr};
 use std::borrow::BorrowMut;
 use parser;
+use std::fmt;
 
 // clippy is confused here
 #[cfg_attr(feature = "cargo-clippy", allow(unneeded_field_pattern))]
@@ -38,6 +39,7 @@ pub(crate) struct DocumentInner {
 }
 
 /// Type representing a TOML document
+#[derive(Debug)]
 pub struct Document {
     // Note: box is needed in order to preserve
     // the same address of *mut DocumentInner
@@ -143,5 +145,13 @@ impl FromStr for Document {
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         parser::Parser::parse(s)
+    }
+}
+
+impl fmt::Debug for DocumentInner {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("DocumentInner")
+            .field("list", &self.list)
+            .finish()
     }
 }

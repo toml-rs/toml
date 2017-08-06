@@ -7,10 +7,10 @@ use array_of_tables::ArrayOfTables;
 use intrusive_collections::LinkedListLink;
 use document::{DocumentInner, ROOT_HEADER};
 use formatted::{decorate, to_key_value};
+use std::fmt;
 
 // TODO: add method to extract a child table into an inline table
 // TODO: impl Index
-// TODO: impl Debug
 // TODO: documentation
 
 /// Type representing a TOML non-inline table
@@ -181,7 +181,11 @@ impl Table {
     }
 
     pub fn remove_value<'a>(&'a mut self, key: &str) -> Option<Value> {
-        self.key_value_pairs.remove(key).map(|kv| kv.value)
+        let val = self.key_value_pairs.remove(key).map(|kv| kv.value);
+        if val.is_some() {
+            self.set_implicit();
+        }
+        val
     }
 
     /// Sorts Key/Value Pairs of the table,
@@ -199,18 +203,17 @@ impl Table {
     }
 
     pub fn get<'a>(&'a self, key: &str) -> Option<TableChild<'a>> {
-        if !self.contains_key(key) {
-            None
-        } else if let Some(table) = self.tables.get(key) {
+        if let Some(table) = self.tables.get(key) {
             Some(TableChild::Table(
                 // safe, all child pointers are valid
                 unsafe { table.as_ref().unwrap() },
             ))
         } else if let Some(kv) = self.key_value_pairs.get(key) {
             Some(TableChild::Value(&kv.value))
+        } else if let Some(a) = self.arrays.get(key) {
+            Some(TableChild::Array(a))
         } else {
-            // argh, non-lexical lifetimes please
-            Some(TableChild::Array(&self.arrays[key]))
+            None
         }
     }
 
@@ -325,6 +328,9 @@ impl Table {
         debug_assert!(!self.arrays.contains_key(key.get()));
         let mut kv = to_key_value(key.raw(), value);
         decorate(&mut kv.value, " ", "\n");
+        if self.header.kind == HeaderKind::Implicit {
+            self.header.kind = HeaderKind::Standard;
+        }
         &mut self.key_value_pairs.entry(key.into()).or_insert(kv).value
     }
 
@@ -565,4 +571,16 @@ pub(crate) fn remove_table_recursive(ptr: *mut Table, doc: &mut DocumentInner) {
     }
     // remove from the list
     doc.remove(ptr);
+}
+
+impl fmt::Debug for Table {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Table")
+            .field("header", &self.header)
+            .field("key_values_pairs", &self.key_value_pairs)
+            .field("tables", &self.tables)
+            .field("arrays", &self.arrays)
+            .field("link", &self.link)
+            .finish()
+    }
 }
