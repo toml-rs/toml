@@ -3,17 +3,17 @@ use combine::Parser;
 use combine::char::char;
 use combine::range::recognize;
 use combine::primitives::RangeStream;
-use parser::{TomlParser, TomlError};
+use parser::{TomlError, TomlParser};
 use parser::errors::CustomError;
-use parser::trivia::{ws, line_trailing, line_ending, comment, newline};
+use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use parser::key::key;
 use parser::value::value;
 use parser::table::table;
 use parser::inline_table::KEYVAL_SEP;
-use ::decor::{InternalString, Repr};
-use ::document::Document;
-use ::value::KeyValue;
-use ::formatted::decorated;
+use decor::{InternalString, Repr};
+use document::Document;
+use value::KeyValue;
+use formatted::decorated;
 use std::mem;
 use std::cell::RefCell;
 // https://github.com/rust-lang/rust/issues/41358
@@ -117,17 +117,13 @@ impl TomlParser {
         let input = State::new(s);
         skip_many(
             parse_ws(&parser)
-                .with(
-                    choice((
-                        parse_comment(&parser),
-                        keyval(&parser),
-                        table(&parser),
-                        parse_newline(&parser),
-                    ))
-                )
-                .skip(
-                    parse_ws(&parser)
-                )
+                .with(choice((
+                    parse_comment(&parser),
+                    keyval(&parser),
+                    table(&parser),
+                    parse_newline(&parser),
+                )))
+                .skip(parse_ws(&parser)),
         ).parse(input)
             .map(move |_| parser.into_inner().document)
             .map_err(|e| TomlError::new(e, s))
@@ -142,12 +138,7 @@ impl TomlParser {
         self.document.trailing.push_str(e);
     }
 
-    fn on_keyval(
-        &mut self,
-        key: InternalString,
-        mut kv: KeyValue,
-    ) -> Result<(), CustomError>
-    {
+    fn on_keyval(&mut self, key: InternalString, mut kv: KeyValue) -> Result<(), CustomError> {
         let table = unsafe { &mut *self.current_table };
 
         let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
@@ -163,5 +154,4 @@ impl TomlParser {
             Ok(())
         }
     }
-
 }

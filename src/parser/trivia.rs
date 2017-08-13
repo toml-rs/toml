@@ -1,6 +1,6 @@
 use combine::*;
 use combine::char::{char, crlf, newline as lf};
-use combine::range::{take_while, take_while1, recognize};
+use combine::range::{recognize, take_while, take_while1};
 use combine::primitives::RangeStream;
 
 // wschar = ( %x20 /              ; Space

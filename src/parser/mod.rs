@@ -1,6 +1,3 @@
-// rusfmt, U Can't Touch This
-#![cfg_attr(rustfmt, rustfmt_skip)]
-
 #[macro_use]
 mod macros;
 mod errors;
@@ -20,8 +17,8 @@ pub use self::errors::TomlError;
 pub(crate) use self::key::key;
 pub(crate) use self::value::value;
 
-use ::document::Document;
-use ::table::Table;
+use document::Document;
+use table::Table;
 
 pub struct TomlParser {
     document: Document,
@@ -42,7 +39,7 @@ impl Default for TomlParser {
 
 #[cfg(test)]
 mod tests {
-    use ::parser::*;
+    use parser::*;
     use std;
     use combine::*;
 
@@ -139,7 +136,8 @@ mod tests {
 
     #[test]
     fn basic_string() {
-        let input = r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
+        let input =
+            r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
         let parsed = strings::string().parse(State::new(input));
         parsed_eq!(
             parsed,
@@ -321,7 +319,7 @@ trimmed in raw strings.
 
 
    ]"#,
-//             r#"[# comment
+            //             r#"[# comment
 // # comment2
 //       1
 
@@ -346,13 +344,7 @@ trimmed in raw strings.
             parsed_value_eq!(input);
         }
 
-        let invalid_inputs = [
-            r#"["#,
-            r#"[,]"#,
-            r#"[,2]"#,
-            r#"[1e165,,]"#,
-            r#"[ 1, 2.0 ]"#
-        ];
+        let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#, r#"[ 1, 2.0 ]"#];
         for input in &invalid_inputs {
             let parsed = array::array().parse(State::new(*input));
             assert!(parsed.is_err());
@@ -420,7 +412,8 @@ trimmed in raw strings.
 
     #[test]
     fn documents() {
-        let documents = [r#"
+        let documents = [
+            r#"
 # This is a TOML document.
 
 title = "TOML Example"

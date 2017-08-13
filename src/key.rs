@@ -40,7 +40,12 @@ impl FromStr for Key {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         parser::key()
             .parse(combine::State::new(s))
-            .map(|((raw, key), _)| Key { raw: raw.into(), key: key })
+            .map(|((raw, key), _)| {
+                Key {
+                    raw: raw.into(),
+                    key: key,
+                }
+            })
             .map_err(|e| Self::Err::new(e, s))
     }
 }

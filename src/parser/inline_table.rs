@@ -5,9 +5,9 @@ use parser::errors::CustomError;
 use parser::trivia::ws;
 use parser::key::key;
 use parser::value::value;
-use ::value::{KeyValue, InlineTable};
-use ::decor::{InternalString, Repr};
-use ::formatted::decorated;
+use value::{InlineTable, KeyValue};
+use decor::{InternalString, Repr};
+use formatted::decorated;
 
 // ;; Inline Table
 
@@ -20,8 +20,7 @@ parse!(inline_table() -> InlineTable, {
 fn table_from_pairs(
     preamble: &str,
     v: Vec<(InternalString, KeyValue)>,
-) -> Result<InlineTable, CustomError>
-{
+) -> Result<InlineTable, CustomError> {
     let mut table = InlineTable::default();
     table.preamble = InternalString::from(preamble);
 

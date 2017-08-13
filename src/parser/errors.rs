@@ -12,10 +12,7 @@ pub struct TomlError {
 }
 
 impl TomlError {
-    pub(crate) fn new(
-        error: ParseError<SourcePosition, char, &str>,
-        input: &str,
-    ) -> Self {
+    pub(crate) fn new(error: ParseError<SourcePosition, char, &str>, input: &str) -> Self {
         Self {
             message: format!("{}", FancyError::new(error, input)),
         }
@@ -54,10 +51,7 @@ pub(crate) struct FancyError<'a> {
 }
 
 impl<'a> FancyError<'a> {
-    pub(crate) fn new(
-        error: ParseError<SourcePosition, char, &'a str>,
-        input: &'a str,
-    ) -> Self {
+    pub(crate) fn new(error: ParseError<SourcePosition, char, &'a str>, input: &'a str) -> Self {
         Self {
             error: error,
             input: input,
@@ -70,7 +64,10 @@ impl<'a> Display for FancyError<'a> {
         let SourcePosition { line, column } = self.error.position;
 
         let offset = line.to_string().len();
-        let content = self.input.split('\n').nth((line - 1) as usize).expect("line");
+        let content = self.input
+            .split('\n')
+            .nth((line - 1) as usize)
+            .expect("line");
 
         writeln!(f, "TOML parse error at line {}, column {}", line, column)?;
 
@@ -114,9 +111,10 @@ impl StdError for CustomError {
 impl Display for CustomError {
     fn fmt(&self, f: &mut Formatter) -> Result {
         match *self {
-            CustomError::MixedArrayType { ref got, ref expected } => {
-                writeln!(f, "Mixed types in array: {} and {}", expected, got)
-            }
+            CustomError::MixedArrayType {
+                ref got,
+                ref expected,
+            } => writeln!(f, "Mixed types in array: {} and {}", expected, got),
             CustomError::DuplicateKey { ref key, ref table } => {
                 writeln!(f, "Duplicate key `{}` in `{}` table", key, table)
             }

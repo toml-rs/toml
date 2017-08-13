@@ -3,11 +3,11 @@ use combine::primitives::RangeStream;
 use combine::range::recognize_with_value;
 use parser::strings::string;
 use parser::datetime::date_time;
-use parser::numbers::{boolean, integer, float};
+use parser::numbers::{boolean, float, integer};
 use parser::inline_table::inline_table;
 use parser::array::array;
-use ::value as v;
-use ::formatted;
+use value as v;
+use formatted;
 
 
 // val = string / boolean / array / inline-table / date-time / float / integer

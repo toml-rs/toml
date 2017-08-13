@@ -5,9 +5,9 @@ use combine::primitives::RangeStream;
 use parser::errors::CustomError;
 use parser::trivia::ws_comment_newline;
 use parser::value::value;
-use ::value::{Value, Array};
-use ::decor::InternalString;
-use ::formatted::decorated;
+use value::{Array, Value};
+use decor::InternalString;
+use formatted::decorated;
 
 // ;; Array
 
@@ -26,7 +26,11 @@ fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, C
             got: format!("{:?}", val.get_type()),
             expected: format!("{:?}", array.value_type()),
         });
-        if !array.push_value(val, /* decorate = */false) {
+        if !array.push_value(
+            val,
+            /* decorate = */
+            false,
+        ) {
             return err;
         }
     }

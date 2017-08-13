@@ -1,9 +1,9 @@
 use combine::*;
 use combine::char::char;
 use combine::range::{range, take, take_while};
-use combine::primitives::{RangeStream, Consumed};
-use ::decor::InternalString;
-use parser::trivia::{ws, ws_newlines, newline};
+use combine::primitives::{Consumed, RangeStream};
+use decor::InternalString;
+use parser::trivia::{newline, ws, ws_newlines};
 use parser::errors::CustomError;
 use std::char;
 
@@ -24,9 +24,7 @@ parse!(string() -> InternalString, {
 #[inline]
 fn is_basic_unescaped(c: char) -> bool {
     match c {
-        '\u{20}'...'\u{21}' |
-        '\u{23}'...'\u{5B}' |
-        '\u{5D}'...'\u{10FFFF}' => true,
+        '\u{20}'...'\u{21}' | '\u{23}'...'\u{5B}' | '\u{5D}'...'\u{10FFFF}' => true,
         _ => false,
     }
 }
@@ -107,8 +105,7 @@ parse!(basic_string() -> InternalString, {
 #[inline]
 fn is_ml_basic_unescaped(c: char) -> bool {
     match c {
-        '\u{20}'...'\u{5B}' |
-        '\u{5D}'...'\u{10FFFF}' => true,
+        '\u{20}'...'\u{5B}' | '\u{5D}'...'\u{10FFFF}' => true,
         _ => false,
     }
 }
@@ -176,9 +173,7 @@ const APOSTROPHE: char = '\'';
 #[inline]
 fn is_literal_char(c: char) -> bool {
     match c {
-        '\u{09}' |
-        '\u{20}'...'\u{26}' |
-        '\u{28}'...'\u{10FFFF}' => true,
+        '\u{09}' | '\u{20}'...'\u{26}' | '\u{28}'...'\u{10FFFF}' => true,
         _ => false,
     }
 }

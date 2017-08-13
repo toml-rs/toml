@@ -6,8 +6,8 @@ use parser::TomlParser;
 use parser::errors::CustomError;
 use parser::trivia::{line_trailing, ws};
 use parser::key::key;
-use ::decor::{InternalString, Repr};
-use ::table::{Table, TableChildMut, TableEntry, Header, HeaderKind};
+use decor::{InternalString, Repr};
+use table::{Header, HeaderKind, Table, TableChildMut, TableEntry};
 use std::mem;
 use std::cell::RefCell;
 // https://github.com/rust-lang/rust/issues/41358
@@ -97,19 +97,16 @@ parser!{
 impl TomlParser {
     fn descend_path<'a>(
         table: &'a mut Table,
-        path: &[InternalString]
-    ) -> Result<&'a mut Table, CustomError>
-    {
+        path: &[InternalString],
+    ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(0) {
             let header = table.child_header(key, HeaderKind::Implicit);
             let parent_header = format!("{}", table.header.repr.raw_value);
             match table.append_table_with_header(key, header) {
-                TableChildMut::Value(..) => Err(
-                    CustomError::DuplicateKey {
-                        key: key.clone(),
-                        table: parent_header,
-                    }
-                ),
+                TableChildMut::Value(..) => Err(CustomError::DuplicateKey {
+                    key: key.clone(),
+                    table: parent_header,
+                }),
                 TableChildMut::Array(array) => {
                     debug_assert!(!array.is_empty());
 
@@ -130,9 +127,8 @@ impl TomlParser {
     fn on_std_header(
         &mut self,
         header: (&str, Vec<InternalString>),
-        trailing: &str
-    ) -> Result<(), CustomError>
-    {
+        trailing: &str,
+    ) -> Result<(), CustomError> {
         let (span, header) = header;
         debug_assert!(!header.is_empty());
 
@@ -176,9 +172,8 @@ impl TomlParser {
     fn on_array_header(
         &mut self,
         header: (&str, Vec<InternalString>),
-        trailing: &str
-    ) -> Result<(), CustomError>
-    {
+        trailing: &str,
+    ) -> Result<(), CustomError> {
         let (span, header) = header;
         debug_assert!(!header.is_empty());
 
@@ -189,24 +184,22 @@ impl TomlParser {
         let table = Self::descend_path(table, &header[..header.len() - 1]);
 
         match table {
-            Ok(table) => {
-                if !table.contains_table(key) && !table.contains_value(key) {
-                    let header = Header {
-                        repr: Repr::new(leading, span.into(), trailing.into()),
-                        kind: HeaderKind::Array,
-                    };
+            Ok(table) => if !table.contains_table(key) && !table.contains_value(key) {
+                let header = Header {
+                    repr: Repr::new(leading, span.into(), trailing.into()),
+                    kind: HeaderKind::Array,
+                };
 
-                    let array = table.insert_array_assume_vacant(key);
-                    self.current_table = array.append_with_header(header, self.current_table);
+                let array = table.insert_array_assume_vacant(key);
+                self.current_table = array.append_with_header(header, self.current_table);
 
-                    Ok(())
-                } else {
-                    Err(CustomError::DuplicateKey {
-                        key: key.clone(),
-                        table: format!("{}", table.header),
-                    })
-                }
-            }
+                Ok(())
+            } else {
+                Err(CustomError::DuplicateKey {
+                    key: key.clone(),
+                    table: format!("{}", table.header),
+                })
+            },
             Err(e) => Err(e),
         }
     }
