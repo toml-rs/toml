@@ -42,7 +42,8 @@ parser!{
         where
         [I: RangeStream<Range = &'a str, Item = char>,]
     {
-        ws().map(|w|
+        ws()
+            .map(|w|
                  parser
                  .borrow_mut()
                  .deref_mut()
@@ -115,16 +116,20 @@ impl TomlParser {
     pub fn parse(s: &str) -> Result<Document, TomlError> {
         let parser = RefCell::new(Self::default());
         let input = State::new(s);
-        skip_many(
-            parse_ws(&parser)
-                .with(choice((
-                    parse_comment(&parser),
-                    keyval(&parser),
-                    table(&parser),
-                    parse_newline(&parser),
-                )))
-                .skip(parse_ws(&parser)),
-        ).parse(input)
+
+        parse_ws(&parser)
+            .with(choice((
+                eof(),
+                skip_many1(
+                    choice((
+                        parse_comment(&parser),
+                        keyval(&parser),
+                        table(&parser),
+                        parse_newline(&parser),
+                    )).skip(parse_ws(&parser)),
+                ),
+            )))
+            .parse(input)
             .map(move |_| parser.into_inner().document)
             .map_err(|e| TomlError::new(e, s))
     }

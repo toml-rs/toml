@@ -321,21 +321,20 @@ trimmed in raw strings.
 
 
    ]"#,
-            //             r#"[# comment
-// # comment2
-//       1
+            r#"[# comment
+# comment2
+      1
 
-// #sd
-// ,
-// # comment3
+#sd
+,
+# comment3
 
-//    ]"#,
+   ]"#,
             r#"[1]"#,
             r#"[1,]"#,
             r#"[ "all", 'strings', """are the same""", '''type''']"#,
             r#"[ 100, -2,]"#,
             r#"[1, 2, 3]"#,
-            r#"[ [ 1, 2 ], [3, 4, 5] ]"#,
             r#"[1.1, 2.1, 3.1]"#,
             r#"["a", "b", "c"]"#,
             r#"[ [ 1, 2 ], [3, 4, 5] ]"#,
@@ -460,6 +459,8 @@ that
    double = 2e39 # this number looks familiar
 # trailing comment"#,
             r#""#,
+            r#"  "#,
+            r#" hello = 'darkness' # my old friend "#,
         ];
         for document in &documents {
             let doc = TomlParser::parse(document);
