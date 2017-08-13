@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "cargo-clippy", allow(unneeded_field_pattern))]
+
 #[macro_use]
 mod macros;
 mod errors;

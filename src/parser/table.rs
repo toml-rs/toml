@@ -101,7 +101,7 @@ impl TomlParser {
     ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(0) {
             let header = table.child_header(key, HeaderKind::Implicit);
-            let parent_header = format!("{}", table.header.repr.raw_value);
+            let parent_header = table.header.repr.raw_value.to_string();
             match table.append_table_with_header(key, header) {
                 TableChildMut::Value(..) => Err(CustomError::DuplicateKey {
                     key: key.clone(),
@@ -160,10 +160,10 @@ impl TomlParser {
                     }
                     _ => {}
                 }
-                return Err(CustomError::DuplicateKey {
+                Err(CustomError::DuplicateKey {
                     key: key.clone(),
-                    table: format!("{}", table.header.repr.raw_value),
-                });
+                    table: table.header.repr.raw_value.to_string(),
+                })
             }
             Err(e) => Err(e),
         }
@@ -197,7 +197,7 @@ impl TomlParser {
             } else {
                 Err(CustomError::DuplicateKey {
                     key: key.clone(),
-                    table: format!("{}", table.header),
+                    table: table.header.repr.raw_value.to_string(),
                 })
             },
             Err(e) => Err(e),

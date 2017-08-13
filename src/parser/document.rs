@@ -147,7 +147,7 @@ impl TomlParser {
         if table.contains_key(&key) {
             Err(CustomError::DuplicateKey {
                 key: key.into(),
-                table: format!("{}", table.header.repr.raw_value),
+                table: table.header.repr.raw_value.to_string(),
             })
         } else {
             table.key_value_pairs.insert(key, kv);
