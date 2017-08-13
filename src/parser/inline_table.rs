@@ -46,8 +46,9 @@ const INLINE_TABLE_SEP: char = ',';
 pub(crate) const KEYVAL_SEP: char = '=';
 
 // inline-table-keyvals = [ inline-table-keyvals-non-empty ]
-// inline-table-keyvals-non-empty = ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
-//                                  ( key keyval-sep val )
+// inline-table-keyvals-non-empty =
+// ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
+// ( key keyval-sep val )
 parser!{
     fn inline_table_keyvals['a, I]()(I) -> (&'a str, Vec<(InternalString, KeyValue)>)
         where
