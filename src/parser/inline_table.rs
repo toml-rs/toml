@@ -49,40 +49,30 @@ pub(crate) const KEYVAL_SEP: char = '=';
 // inline-table-keyvals-non-empty =
 // ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
 // ( key keyval-sep val )
-parser!{
-    fn inline_table_keyvals['a, I]()(I) -> (&'a str, Vec<(InternalString, KeyValue)>)
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        (
-            sep_by(keyval(), char(INLINE_TABLE_SEP)),
-            ws(),
-        ).map(|(v, w)| {
-            (w, v)
-        })
-    }
-}
+parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, KeyValue)>), {
+    (
+        sep_by(keyval(), char(INLINE_TABLE_SEP)),
+        ws(),
+    ).map(|(v, w)| {
+        (w, v)
+    })
+});
 
-parser!{
-    fn keyval['a, I]()(I) -> (InternalString, KeyValue)
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
+parse!(keyval() -> (InternalString, KeyValue), {
+    (
+        try((ws(), key(), ws())),
+        char(KEYVAL_SEP),
+        (ws(), value(), ws()),
+    ).map(|(k, _, v)| {
+        let (pre, v, suf) = v;
+        let v = decorated(v, pre, suf);
+        let (pre, (raw, key), suf) = k;
         (
-            try((ws(), key(), ws())),
-            char(KEYVAL_SEP),
-            (ws(), value(), ws()),
-        ).map(|(k, _, v)| {
-            let (pre, v, suf) = v;
-            let v = decorated(v, pre, suf);
-            let (pre, (raw, key), suf) = k;
-            (
-                key,
-                KeyValue {
-                    key: Repr::new(pre, raw, suf),
-                    value: v,
-                }
-            )
-        })
-    }
-}
+            key,
+            KeyValue {
+                key: Repr::new(pre, raw, suf),
+                value: v,
+            }
+        )
+    })
+});
