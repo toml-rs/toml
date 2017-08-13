@@ -1,97 +1,87 @@
-use nom;
-use parser::errors::{ErrorKind, is_custom};
-use parser::Span;
+use combine::*;
+use combine::char::{char, digit};
+use combine::range::{range, recognize};
+use combine::primitives::RangeStream;
 
 // ;; Boolean
 
 // boolean = true / false
-named!(#[inline], pub boolean(Span) -> bool,
-       alt_complete!(
-           tag!("true")  => { |_| true  }
-         | tag!("false") => { |_| false }
-       )
-);
+parse!(boolean() -> bool, {
+    choice((
+        (char('t'), range("rue"),),
+        (char('f'), range("alse"),),
+    )).map(|p| p.0 == 't')
+});
 
 // ;; Integer
 
 // integer = [ "-" / "+" ] int
 // int = [1-9] 1*( DIGIT / _ DIGIT ) / DIGIT
-named!(parse_integer(Span) -> Span,
-    recognize!(
-        tuple!(
-            opt!(one_of!("+-")),
-            alt_complete!(
-                tuple!(
-                    one_of!("123456789"),
-                    fold_many1!(
-                        tuple!(
-                            opt!(complete!(tag!("_"))),
-                            call!(nom::digit)
-                        ), (), |_, _| ()
-                    )
-                )                 => { |_| () }
-              | one_of!("0123456789") => { |_| () }
-            )
-        )
-    )
-);
+// modified: int = 0 / [1-9] *( DIGIT / _ DIGIT )
+parse!(parse_integer() -> &'a str, {
+    recognize((
+        optional(choice([char('-'), char('+')])),
+        choice((
+            char('0'),
+            (
+                satisfy(|c| '1' <= c && c <= '9'),
+                skip_many((
+                    optional(char('_')),
+                    skip_many1(digit()),
+                )),
+            ).map(|t| t.0),
+        )),
+    ))
+});
 
-pub fn integer(input: Span) -> nom::IResult<Span, i64> {
-    let (rest, s) = try_parse!(input, parse_integer);
+parse!(integer() -> i64, {
+    parse_integer()
+        .and_then(|s| s.replace("_", "").parse())
+        .message("While parsing an Integer")
+});
 
-    match s.fragment.replace("_", "").parse::<i64>() {
-        Ok(i) => nom::IResult::Done(rest, i),
-        _ => e!(ErrorKind::InvalidNumber, rest),
-    }
-}
 
 // ;; Float
 
 // frac = decimal-point zero-prefixable-int
 // decimal-point = %x2E               ; .
 // zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
-named!(#[inline], frac(Span) -> Span,
-       recognize!(
-           complete!(
-               tuple!(
-                   tag!("."),
-                   err!(ErrorKind::InvalidNumber,
-                        call!(nom::digit)),
-                   fold_many0!(
-                       tuple!(opt!(complete!(tag!("_"))), call!(nom::digit)),
-                       (), |_,_| ()
-                   )
-               )
-           )
-       )
-);
+parse!(frac() -> &'a str, {
+    recognize((
+        char('.'),
+        skip_many1(digit()),
+        skip_many((
+            optional(char('_')),
+            skip_many1(digit()),
+        )),
+    ))
+});
 
 // exp = e integer
 // e = %x65 / %x45                    ; e E
-named!(#[inline], exp(Span) -> Span,
-       recognize!(complete!(tuple!(one_of!("eE"),
-                                   err!(ErrorKind::InvalidNumber,
-                                        call!(parse_integer)))))
-);
+parse!(exp() -> &'a str, {
+    recognize((
+        one_of("eE".chars()),
+        parse_integer(),
+    ))
+});
 
 // float = integer ( frac / ( frac exp ) / exp )
-named!(parse_float(Span) -> Span,
-       recognize!(
-           tuple!(
-               parse_integer,
-               alt_custom!(e_kind!(nom::ErrorKind::Alt),
-                   exp
-                 | recognize!(tuple!(frac, opt!(exp)))
-               )
-           )
-       )
-);
+parse!(parse_float() -> &'a str, {
+    recognize((
+        try((parse_integer(), look_ahead(one_of("eE.".chars())))),
+        choice((
+            exp(),
+            (
+                frac(),
+                optional(exp()),
+            ).map(|_| "")
+        )),
+    ))
+});
 
-pub fn float(input: Span) -> nom::IResult<Span, f64> {
-    let (rest, s) = try_parse!(input, parse_float);
-
-    match s.fragment.replace("_", "").parse::<f64>() {
-        Ok(f) => nom::IResult::Done(rest, f),
-        _ => e!(ErrorKind::InvalidNumber, rest),
-    }
-}
+parse!(float() -> f64, {
+    parse_float()
+        .and_then(|s| s.replace("_", "").parse())
+        .message("While parsing a Float")
+});

@@ -1,8 +1,10 @@
-use nom;
-use parser::errors::ErrorKind;
+use combine::*;
+use combine::range::recognize_with_value;
+use combine::char::char;
+use combine::primitives::RangeStream;
+use parser::errors::CustomError;
 use parser::trivia::ws_comment_newline;
 use parser::value::value;
-use parser::{LenWorkaround, Span};
 use ::value::{Value, Array};
 use ::decor::InternalString;
 use ::formatted::decorated;
@@ -10,79 +12,57 @@ use ::formatted::decorated;
 // ;; Array
 
 // array = array-open array-values array-close
-named!(parse_array(Span) -> (Vec<Value>, &str),
-       delimited!(
-           complete!(tag!(ARRAY_OPEN)),
-           array_values,
-           err!(ErrorKind::UnterminatedArray,
-                complete!(tag!(ARRAY_CLOSE)))
-       )
-);
+parse!(array() -> Array, {
+    between(char(ARRAY_OPEN), char(ARRAY_CLOSE),
+            array_values().and_then(|(v, c, t)| array_from_vec(v, c, t)))
+});
 
-fn array_from_vec(trailing: &str, v: Vec<Value>) -> Option<Array> {
+fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, CustomError> {
     let mut array = Array::default();
+    array.trailing_comma = comma;
     array.trailing = InternalString::from(trailing);
     for val in v {
-        if !array.push_value(val, false) {
-            return None;
+        let err = Err(CustomError::MixedArrayType {
+            got: format!("{:?}", val.get_type()),
+            expected: format!("{:?}", array.value_type()),
+        });
+        if !array.push_value(val, /* decorate = */false) {
+            return err;
         }
     }
-    Some(array)
-}
-
-pub fn array(input: Span) -> nom::IResult<Span, Array> {
-    let (rest, p) = try_parse!(input, parse_array);
-
-    match array_from_vec(p.1, p.0) {
-        Some(a) => nom::IResult::Done(rest, a),
-        _ => e!(ErrorKind::MixedArrayType, rest),
-    }
+    Ok(array)
 }
 
 // note: we're omitting ws and newlines here, because
 // they should be part of the formatted values
 // array-open  = %x5B ws-newline  ; [
-const ARRAY_OPEN: &str = "[";
+const ARRAY_OPEN: char = '[';
 // array-close = ws-newline %x5D  ; ]
-const ARRAY_CLOSE: &str = "]";
+const ARRAY_CLOSE: char = ']';
 // array-sep = ws %x2C ws  ; , Comma
-const ARRAY_SEP: &str = ",";
+const ARRAY_SEP: char = ',';
 
 // note: this rule is modified
 // array-values = [ ( array-value array-sep array-values ) /
 //                  array-value / ws-comment-newline ]
+parse!(array_values() -> (Vec<Value>, bool, &'a str), {
+    (
+        optional(
+            recognize_with_value(
+                sep_end_by1(array_value(), char(ARRAY_SEP))
+            ).map(|(r, v): (&'a str, _)| (v, r.ends_with(',')))
+        ),
+        ws_comment_newline(),
+    ).map(|(v, t)| {
+        let (v, c) = v.unwrap_or_default();
+        (v, c, t)
+    })
+});
 
-named!(array_values(Span) -> (Vec<Value>, &str),
-       do_parse!(
-           v: opt!(
-               do_parse!(
-                v: separated_nonempty_list_complete!(
-                       tag!(ARRAY_SEP),
-                       array_value
-                   ) >>
-                t: opt!(trailing) >>
-                   (v, t.map(|s| s.fragment).unwrap_or(""))
-               )
-           ) >>
-           w: ws_comment_newline >>
-           (v.unwrap_or_else(|| (Vec::new(), w.fragment)))
-       )
-);
-
-named!(array_value(Span) -> Value,
-       do_parse!(
-           ws1: ws_comment_newline >>
-             v: value >>
-           ws2: ws_comment_newline >>
-                (decorated(v, ws1.fragment, ws2.fragment))
-       )
-);
-
-named!(trailing(Span) -> Span,
-       recognize!(
-           tuple!(
-               complete!(tag!(ARRAY_SEP)),
-               ws_comment_newline
-           )
-       )
-);
+parse!(array_value() -> Value, {
+    try((
+        ws_comment_newline(),
+        value(),
+        ws_comment_newline(),
+    )).map(|(ws1, v, ws2)| decorated(v, ws1, ws2))
+});

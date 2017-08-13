@@ -69,6 +69,7 @@ pub(crate) fn value(mut val: Value, raw: &str) -> Value {
         }
         _ => {}
     };
+    decorate(&mut val, "", "");
     val
 }
 

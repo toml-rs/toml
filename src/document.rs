@@ -140,11 +140,11 @@ impl Drop for DocumentInner {
 }
 
 impl FromStr for Document {
-    type Err = parser::Error;
+    type Err = parser::TomlError;
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::Parser::parse(s)
+        parser::TomlParser::parse(s)
     }
 }
 

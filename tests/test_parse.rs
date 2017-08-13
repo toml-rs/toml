@@ -38,19 +38,18 @@ macro_rules! parse_error {
 
 #[test]
 fn test_parse_error() {
-    parse_error!("'hello'bla", Value, "InvalidValue");
-    parse_error!(r#"["", 2]"#, Value, "MixedArrayType");
-    parse_error!(r#"{a = 2"#, Value, "UnterminatedInlineTable");
+    parse_error!(r#"["", 2]"#, Value, "Mixed types in array");
+    parse_error!(r#"{a = 2"#, Value, "Expected `}`");
 
-    parse_error!("abc\n", Key, "InvalidKey");
-    parse_error!("", Key, "InvalidKey");
-    parse_error!("'hello'bla", Key, "InvalidKey");
+    parse_error!("\n", Key, "Unexpected `\n`");
+    parse_error!("", Key, "Unexpected `end of input`");
 }
 
 #[test]
 fn test_key_from_str() {
     test_key!("a", "a");
     test_key!(r#"'hello key'"#, "hello key");
+    test_key!(r#"'hello key'bla"#, "hello key");
     test_key!(r#""Jos\u00E9""#, "Jos\u{00E9}");
 }
 
@@ -58,7 +57,12 @@ fn test_key_from_str() {
 #[cfg_attr(feature = "cargo-clippy", allow(panic_params))]
 #[test]
 fn test_value_from_str() {
+    assert!(parse_value!("1979-05-27T00:32:00.999999-07:00").is_date_time());
+    assert!(parse_value!("1979-05-27T00:32:00.999999Z").is_date_time());
     assert!(parse_value!("1979-05-27T00:32:00.999999").is_date_time());
+    assert!(parse_value!("1979-05-27T00:32:00").is_date_time());
+    assert!(parse_value!("1979-05-27").is_date_time());
+    assert!(parse_value!("00:32:00").is_date_time());
     assert!(parse_value!("-239").is_integer());
     assert!(parse_value!("1e200").is_float());
     assert!(parse_value!("9_224_617.445_991_228_313").is_float());
