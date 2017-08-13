@@ -1,41 +1,109 @@
-use nom;
-use std::mem;
-use parser::{Span, Parser};
-use parser::errors::{Error, ErrorKind, is_custom, to_error};
-use parser::trivia::{ws, line_trailing, line_ending, comment};
+use combine::*;
+use combine::Parser;
+use combine::char::char;
+use combine::range::recognize;
+use combine::primitives::RangeStream;
+use parser::{TomlError, TomlParser};
+use parser::errors::CustomError;
+use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use parser::key::key;
 use parser::value::value;
+use parser::table::table;
 use parser::inline_table::KEYVAL_SEP;
-use ::decor::{InternalString, Repr};
-use ::document::Document;
-use ::value::KeyValue;
-use ::formatted::decorated;
+use decor::{InternalString, Repr};
+use document::Document;
+use value::KeyValue;
+use formatted::decorated;
+use std::mem;
+use std::cell::RefCell;
+// https://github.com/rust-lang/rust/issues/41358
+#[allow(unused_imports)]
+use std::ops::DerefMut;
 
-macro_rules! try_parser (
-    ($parser:ident, $span:ident, $method:ident) => (
-        {
-            let (p, res) = $parser.$method($span);
-            $parser = p;
-            match res {
-                nom::IResult::Done(rest, _) => {
-                    if rest.fragment.len() == 0 {
-                        return Ok($parser.document);
-                    }
-                    $span = rest;
-                    continue;
-                }
-                nom::IResult::Error(e) => {
-                    if is_custom(&e) {
-                        return Err(to_error(&e));
-                    }
-                }
-                _ => unreachable!("expressions are complete"),
-            }
-        }
-    );
-);
 
-impl Parser {
+parser!{
+    fn parse_comment['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        (
+            comment(),
+            line_ending(),
+        ).map(|(c, e)|
+              parser
+              .borrow_mut()
+              .deref_mut()
+              .on_comment(c, e))
+    }
+}
+
+parser!{
+    fn parse_ws['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        ws().map(|w|
+                 parser
+                 .borrow_mut()
+                 .deref_mut()
+                 .on_ws(w))
+    }
+}
+
+parser!{
+    fn parse_newline['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        recognize(newline())
+            .map(|w|
+                 parser
+                 .borrow_mut()
+                 .deref_mut()
+                 .on_ws(w))
+    }
+}
+
+parser!{
+    fn keyval['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        parse_keyval().and_then(|(k, kv)|
+                                parser
+                                .borrow_mut()
+                                .deref_mut()
+                                .on_keyval(k, kv))
+    }
+}
+
+// keyval = key keyval-sep val
+parser!{
+    fn parse_keyval['a, I]()(I) -> (InternalString, KeyValue)
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        (
+            (key(), ws()),
+            char(KEYVAL_SEP),
+            (ws(), value(), line_trailing())
+        ).map(|(k, _, v)| {
+            let (pre, v, suf) = v;
+            let v = decorated(v, pre, suf);
+            let ((raw, key), suf) = k;
+            (
+                key,
+                KeyValue {
+                    key: Repr::new("", raw, suf),
+                    value: v,
+                }
+            )
+        })
+    }
+}
+
+
+impl TomlParser {
     // ;; TOML
 
     // toml = expression *( newline expression )
@@ -44,86 +112,46 @@ impl Parser {
     //                ( ws keyval ws [ comment ] ) /
     //                ( ws table ws [ comment ] ) /
     //                  ws )
-    pub fn parse(s: &str) -> Result<Document, Error> {
-        let mut parser = Self::default();
-        let mut span = Span::new(s);
-        loop {
-            try_parser!(parser, span, ws_comment);
-            try_parser!(parser, span, keyval);
-            try_parser!(parser, span, table);
-            try_parser!(parser, span, ws);
-            return Err(Error::new(ErrorKind::Unknown, span));
-        }
+    pub fn parse(s: &str) -> Result<Document, TomlError> {
+        let parser = RefCell::new(Self::default());
+        let input = State::new(s);
+        skip_many(
+            parse_ws(&parser)
+                .with(choice((
+                    parse_comment(&parser),
+                    keyval(&parser),
+                    table(&parser),
+                    parse_newline(&parser),
+                )))
+                .skip(parse_ws(&parser)),
+        ).parse(input)
+            .map(move |_| parser.into_inner().document)
+            .map_err(|e| TomlError::new(e, s))
     }
 
-    method!(ws_comment<Parser>(Span) -> (), mut self,
-            do_parse!(
-                w: ws >>
-                c: comment >>
-                e: line_ending >>
-                   ({
-                       self.document.trailing.push_str(w.fragment);
-                       self.document.trailing.push_str(c.fragment);
-                       self.document.trailing.push_str(e.fragment);
-                   })
-            )
-    );
+    fn on_ws(&mut self, w: &str) {
+        self.document.trailing.push_str(w);
+    }
 
-    method!(ws<Parser>(Span) -> (), mut self,
-            do_parse!(
-              w: ws >>
-              e: line_ending >>
-                 ({
-                     self.document.trailing.push_str(w.fragment);
-                     self.document.trailing.push_str(e.fragment);
-                 })
-            )
-    );
+    fn on_comment(&mut self, c: &str, e: &str) {
+        self.document.trailing.push_str(c);
+        self.document.trailing.push_str(e);
+    }
 
-    method!(keyval<Parser>(Span) -> (), mut self,
-            do_parse!(
-                p: call_m!(self.parse_keyval) >>
-                   err_parser!(self, Self::on_keyval,
-                               call!(p)) >>
-                   ()
-            )
-    );
+    fn on_keyval(&mut self, key: InternalString, mut kv: KeyValue) -> Result<(), CustomError> {
+        let table = unsafe { &mut *self.current_table };
 
+        let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
+        kv.key.decor.prefix = prefix + &kv.key.decor.prefix;
 
-    fn on_keyval<'a>(
-        rest: Span<'a>,
-        me: &mut Parser,
-        keyval: (Span<'a>, InternalString, KeyValue),
-    ) -> nom::IResult<Span<'a>, ()>
-    {
-        let table = unsafe { &mut *me.current_table };
-        let (span, key, kv) = keyval;
         if table.contains_key(&key) {
-            e!(ErrorKind::DuplicateKey, span)
+            Err(CustomError::DuplicateKey {
+                key: key.into(),
+                table: table.header.repr.raw_value.to_string(),
+            })
         } else {
             table.key_value_pairs.insert(key, kv);
-            nom::IResult::Done(rest, ())
+            Ok(())
         }
     }
-
-    // keyval = key keyval-sep val
-    method!(parse_keyval<Parser>(Span) -> (Span, InternalString, KeyValue), mut self,
-       do_parse!(
-           k: complete!(tuple!(ws, key, ws))      >>
-              err_m!(self, ErrorKind::ExpectedEquals,
-                     complete!(tag!(KEYVAL_SEP))) >>
-           v: tuple!(ws, value, line_trailing)    >>
-               ({
-                   let (pre, v, suf) = v;
-                   let v = decorated(v, pre.fragment, suf.fragment);
-                   let (pre, (key, raw), suf) = k;
-                   let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
-                   let prefix = prefix + pre.fragment;
-                   (raw, key, KeyValue {
-                       key: Repr::new(prefix, raw.fragment.into(), suf.fragment.into()),
-                       value: v,
-                   })
-               })
-       )
-    );
 }

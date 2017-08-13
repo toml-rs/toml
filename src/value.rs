@@ -6,7 +6,8 @@ use std::slice::Iter;
 use decor::{Decor, Formatted, InternalString, Repr};
 use key::Key;
 use parser;
-use nom;
+use combine;
+use combine::Parser;
 
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
@@ -39,6 +40,7 @@ pub struct Array {
     // `trailing` represents whitespaces, newlines
     // and comments in an empty array or after the trailing comma
     pub(crate) trailing: InternalString,
+    pub(crate) trailing_comma: bool,
     // prefix before `[` and suffix after `]`
     pub(crate) decor: Decor,
 }
@@ -58,9 +60,9 @@ pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, KeyValue>;
 
 /// Type representing a TOML Key/Value Pair
 #[derive(Debug, Clone)]
-pub(crate) struct KeyValue {
-    pub key: Repr,
-    pub value: Value,
+pub struct KeyValue {
+    pub(crate) key: Repr,
+    pub(crate) value: Value,
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
@@ -98,7 +100,11 @@ impl Array {
     }
 
     pub fn remove(&mut self, index: usize) -> Value {
-        self.values.remove(index)
+        let removed = self.values.remove(index);
+        if self.is_empty() {
+            self.trailing_comma = false;
+        }
+        removed
     }
 
     /// Auto formats the array
@@ -322,7 +328,7 @@ impl Value {
         self.as_inline_table().is_some()
     }
 
-    fn get_type(&self) -> ValueType {
+    pub(crate) fn get_type(&self) -> ValueType {
         match *self {
             Value::Integer(..) => ValueType::Integer,
             Value::String(..) => ValueType::String,
@@ -344,19 +350,13 @@ pub(crate) fn sort_key_value_pairs(pairs: &mut KeyValuePairs) {
 }
 
 impl FromStr for Value {
-    type Err = parser::Error;
+    type Err = parser::TomlError;
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = parser::value(parser::Span::new(s));
-        match parsed {
-            nom::IResult::Done(i, value) => if i.fragment.is_empty() {
-                Ok(value)
-            } else {
-                Err(Self::Err::new(parser::ErrorKind::InvalidValue, i))
-            },
-            nom::IResult::Error(e) => Err(parser::to_error(&e)),
-            _ => unreachable!("value should be complete"),
-        }
+        parser::value()
+            .parse(combine::State::new(s))
+            .map(|p| p.0)
+            .map_err(|e| Self::Err::new(e, s))
     }
 }

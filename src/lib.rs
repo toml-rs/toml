@@ -1,5 +1,5 @@
 // #![deny(missing_docs)]
-#![deny(warnings)]
+// #![deny(warnings)]
 
 //! # `toml_edit`
 //!
@@ -30,8 +30,7 @@
 #[macro_use]
 extern crate intrusive_collections;
 #[macro_use]
-extern crate nom;
-extern crate nom_locate;
+extern crate combine;
 extern crate chrono;
 extern crate linked_hash_map;
 extern crate typed_arena;
@@ -49,7 +48,7 @@ mod document;
 
 pub use value::{Array, InlineTable, Value};
 pub use key::Key;
-pub use parser::Error;
+pub use parser::TomlError;
 pub use table::{Iter, IterMut, Table, TableChild, TableChildMut, TableEntry};
 pub use array_of_tables::ArrayOfTables;
 pub use document::Document;

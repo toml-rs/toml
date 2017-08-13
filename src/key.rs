@@ -1,7 +1,8 @@
 use std::str::FromStr;
 use decor::InternalString;
 use parser;
-use nom;
+use combine;
+use combine::Parser;
 
 
 /// Key as part of a Key/Value Pair or a table header.
@@ -33,27 +34,19 @@ pub struct Key {
 }
 
 impl FromStr for Key {
-    type Err = parser::Error;
+    type Err = parser::TomlError;
 
     /// Parses a key from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = parser::key(parser::Span::new(s));
-        match parsed {
-            nom::IResult::Done(i, (key, raw)) => if i.fragment.is_empty() {
-                Ok(Self {
+        parser::key()
+            .parse(combine::State::new(s))
+            .map(|((raw, key), _)| {
+                Key {
+                    raw: raw.into(),
                     key: key,
-                    raw: raw.fragment.into(),
-                })
-            } else {
-                Err(Self::Err::new(parser::ErrorKind::InvalidKey, i))
-            },
-            nom::IResult::Error(e) => {
-                let mut err = parser::to_error(&e);
-                err.kind = parser::ErrorKind::InvalidKey;
-                Err(err)
-            }
-            _ => unreachable!("key should be complete"),
-        }
+                }
+            })
+            .map_err(|e| Self::Err::new(e, s))
     }
 }
 

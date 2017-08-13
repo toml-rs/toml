@@ -24,27 +24,27 @@ macro_rules! t(
 
 t!(
     test_array_mixed_types_arrays_and_ints,
-    "MixedArrayType",
+    "Mixed types in array",
     "fixtures/invalid/array-mixed-types-arrays-and-ints.toml"
 );
 t!(
     test_array_mixed_types_ints_and_floats,
-    "MixedArrayType",
+    "Mixed types in array",
     "fixtures/invalid/array-mixed-types-ints-and-floats.toml"
 );
 t!(
     test_array_mixed_types_strings_and_ints,
-    "MixedArrayType",
+    "Mixed types in array",
     "fixtures/invalid/array-mixed-types-strings-and-ints.toml"
 );
 t!(
     test_datetime_malformed_no_leads,
-    "InvalidDateTime",
+    "While parsing a Date-Time",
     "fixtures/invalid/datetime-malformed-no-leads.toml"
 );
 t!(
     test_datetime_malformed_no_secs,
-    "InvalidDateTime",
+    "While parsing a Date-Time",
     "fixtures/invalid/datetime-malformed-no-secs.toml"
 );
 t!(
@@ -54,77 +54,77 @@ t!(
 );
 t!(
     test_datetime_malformed_with_milli,
-    "InvalidDateTime",
+    "While parsing a Date-Time",
     "fixtures/invalid/datetime-malformed-with-milli.toml"
 );
 t!(
     test_duplicate_keys,
-    "DuplicateKey",
+    "Duplicate key",
     "fixtures/invalid/duplicate-keys.toml"
 );
 t!(
     test_duplicate_key_table,
-    "DuplicateKey",
+    "Duplicate key",
     "fixtures/invalid/duplicate-key-table.toml"
 );
 t!(
     test_duplicate_tables,
-    "DuplicateKey",
+    "Duplicate key",
     "fixtures/invalid/duplicate-tables.toml"
 );
 t!(
     test_empty_implicit_table,
-    "InvalidHeader",
+    "While parsing a Table Header",
     "fixtures/invalid/empty-implicit-table.toml"
 );
 t!(
     test_empty_table,
-    "InvalidHeader",
+    "While parsing a Table Header",
     "fixtures/invalid/empty-table.toml"
 );
 t!(
     test_float_leading_zero_neg,
-    "",
+    "Unexpected `3`",
     "fixtures/invalid/float-leading-zero-neg.toml"
 );
 t!(
     test_float_leading_zero_pos,
-    "",
+    "Unexpected `3`",
     "fixtures/invalid/float-leading-zero-pos.toml"
 );
 t!(
     test_float_leading_zero,
-    "",
+    "Unexpected `3`",
     "fixtures/invalid/float-leading-zero.toml"
 );
 t!(
     test_float_no_leading_zero,
-    "",
+    "Unexpected `.`",
     "fixtures/invalid/float-no-leading-zero.toml"
 );
 t!(
     test_float_no_trailing_digits,
-    "InvalidNumber",
+    "While parsing a Float",
     "fixtures/invalid/float-no-trailing-digits.toml"
 );
 t!(
     test_float_underscore_after_point,
-    "InvalidNumber",
+    "While parsing a Float",
     "fixtures/invalid/float-underscore-after-point.toml"
 );
 t!(
     test_float_underscore_after,
-    "",
+    "column 11",
     "fixtures/invalid/float-underscore-after.toml"
 );
 t!(
     test_float_underscore_before_point,
-    "",
+    "column 9",
     "fixtures/invalid/float-underscore-before-point.toml"
 );
 t!(
     test_float_underscore_before,
-    "",
+    "column 7",
     "fixtures/invalid/float-underscore-before.toml"
 );
 t!(

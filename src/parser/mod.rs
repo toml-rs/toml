@@ -1,11 +1,8 @@
-// rusfmt, U Can't Touch This
-#![cfg_attr(rustfmt, rustfmt_skip)]
-
-mod errors;
-pub use self::errors::Error;
+#![cfg_attr(feature = "cargo-clippy", allow(unneeded_field_pattern))]
 
 #[macro_use]
 mod macros;
+mod errors;
 mod trivia;
 mod strings;
 mod numbers;
@@ -17,47 +14,45 @@ mod table;
 mod document;
 mod key;
 
+pub use self::errors::TomlError;
+
 pub(crate) use self::key::key;
 pub(crate) use self::value::value;
-pub(crate) use self::errors::ErrorKind;
-pub(crate) use self::errors::to_error;
 
-use nom_locate::LocatedSpan;
-use nom::InputLength;
-use ::document::Document;
-use ::table::Table;
+use document::Document;
+use table::Table;
 
-pub(crate) struct Parser {
+pub struct TomlParser {
     document: Document,
     current_table: *mut Table,
 }
 
-pub(crate) type Span<'a> = LocatedSpan<&'a str>;
-
-trait LenWorkaround {
-    fn len(&self) -> usize;
-}
-
-impl<T: InputLength> LenWorkaround for LocatedSpan<T> {
-    fn len(&self) -> usize {
-        self.input_len()
+impl Default for TomlParser {
+    fn default() -> Self {
+        let mut doc = Document::new();
+        let root = doc.root_mut() as *mut Table;
+        Self {
+            document: doc,
+            current_table: root,
+        }
     }
 }
 
+
 #[cfg(test)]
 mod tests {
-    use ::parser::*;
-    use nom::InputLength;
+    use parser::*;
     use std;
+    use combine::*;
 
 
     macro_rules! parsed_eq {
         ($parsed:ident, $expected:expr) => (
             {
-                assert!($parsed.is_done());
-                let (rest, v) = $parsed.unwrap();
+                assert!($parsed.is_ok());
+                let (v, rest) = $parsed.unwrap();
                 assert_eq!(v, $expected);
-                assert_eq!(rest.input_len(), 0);
+                assert!(rest.input.is_empty());
             }
         );
     }
@@ -65,33 +60,33 @@ mod tests {
     macro_rules! parsed_float_eq {
         ($input:ident, $expected:expr) => (
             {
-                let parsed = numbers::float(Span::new($input));
-                assert!(parsed.is_done());
-                let (rest, v) = parsed.unwrap();
+                let parsed = numbers::float().parse(State::new($input));
+                assert!(parsed.is_ok());
+                let (v, rest) = parsed.unwrap();
                 assert!(($expected - v).abs() < std::f64::EPSILON);
-                assert_eq!(rest.input_len(), 0);
+                assert!(rest.input.is_empty());
             }
         );
     }
 
     macro_rules! parsed_value_eq {
         ($input:expr) => (
-            let parsed = value::value(Span::new($input));
-            assert!(parsed.is_done());
-            let (rest, v) = parsed.unwrap();
+            let parsed = value::value().parse(State::new(*$input));
+            assert!(parsed.is_ok());
+            let (v, rest) = parsed.unwrap();
             assert_eq!(v.to_string(), *$input);
-            assert_eq!(rest.input_len(), 0);
+            assert!(rest.input.is_empty());
         );
     }
 
     macro_rules! parsed_date_time_eq {
         ($input:expr, $is:ident) => (
             {
-                let parsed = value::value(Span::new($input));
-                assert!(parsed.is_done());
-                let (rest, v) = parsed.unwrap();
+                let parsed = value::value().parse(State::new(*$input));
+                assert!(parsed.is_ok());
+                let (v, rest) = parsed.unwrap();
                 assert_eq!(v.to_string(), *$input);
-                assert_eq!(rest.input_len(), 0);
+                assert!(rest.input.is_empty());
                 assert!(v.is_date_time());
                 assert!(v.as_date_time().unwrap().$is());
             }
@@ -112,12 +107,12 @@ mod tests {
             (&std::i64::MAX.to_string()[..], std::i64::MAX),
         ];
         for &(input, expected) in &cases {
-            let parsed = numbers::integer(Span::new(input));
+            let parsed = numbers::integer().parse(State::new(input));
             parsed_eq!(parsed, expected);
         }
 
         let overflow = "1000000000000000000000000000000000";
-        let parsed = numbers::integer(Span::new(overflow));
+        let parsed = numbers::integer().parse(State::new(overflow));
         assert!(parsed.is_err());
     }
 
@@ -143,8 +138,9 @@ mod tests {
 
     #[test]
     fn basic_string() {
-        let input = r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
-        let parsed = strings::string(Span::new(input));
+        let input =
+            r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
+        let parsed = strings::string().parse(State::new(input));
         parsed_eq!(
             parsed,
             "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}"
@@ -166,14 +162,14 @@ Violets are blue"#,
         ];
 
         for &(input, expected) in &cases {
-            let parsed = strings::string(Span::new(input));
+            let parsed = strings::string().parse(State::new(input));
             parsed_eq!(parsed, expected);
         }
 
         let invalid_cases = [r#""""  """#, r#""""  \""""#];
 
         for input in &invalid_cases {
-            let parsed = strings::ml_basic_string(Span::new(input));
+            let parsed = strings::ml_basic_string().parse(State::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -181,7 +177,6 @@ Violets are blue"#,
     #[test]
     fn ml_basic_string_escape_ws() {
         let inputs = [
-            "\"The quick brown fox jumps over the lazy dog.\"",
             r#""""
 The quick brown \
 
@@ -195,7 +190,7 @@ The quick brown \
        """"#,
         ];
         for input in &inputs {
-            let parsed = strings::string(Span::new(input));
+            let parsed = strings::string().parse(State::new(*input));
             parsed_eq!(parsed, "The quick brown fox jumps over the lazy dog.");
         }
         let empties = [
@@ -207,7 +202,7 @@ The quick brown \
 """"#,
         ];
         for empty in &empties {
-            let parsed = strings::string(Span::new(empty));
+            let parsed = strings::string().parse(State::new(*empty));
             parsed_eq!(parsed, "");
         }
     }
@@ -222,7 +217,7 @@ The quick brown \
         ];
 
         for input in &inputs {
-            let parsed = strings::string(Span::new(input));
+            let parsed = strings::string().parse(State::new(*input));
             parsed_eq!(parsed, &input[1..input.len() - 1]);
         }
     }
@@ -230,7 +225,7 @@ The quick brown \
     #[test]
     fn ml_literal_string() {
         let input = r#"'''I [dw]on't need \d{2} apples'''"#;
-        let parsed = strings::string(Span::new(input));
+        let parsed = strings::string().parse(State::new(input));
         parsed_eq!(parsed, &input[3..input.len() - 3]);
         let input = r#"'''
 The first newline is
@@ -238,7 +233,7 @@ trimmed in raw strings.
    All other whitespace
    is preserved.
 '''"#;
-        let parsed = strings::string(Span::new(input));
+        let parsed = strings::string().parse(State::new(input));
         parsed_eq!(parsed, &input[4..input.len() - 3]);
     }
 
@@ -301,11 +296,11 @@ trimmed in raw strings.
    "#,
         ];
         for input in &inputs {
-            let parsed = trivia::ws_comment_newline(Span::new(input));
-            assert!(parsed.is_done());
-            let (rest, t) = parsed.unwrap();
-            assert_eq!(rest.fragment, "");
-            assert_eq!(&t.fragment, input);
+            let parsed = trivia::ws_comment_newline().parse(State::new(*input));
+            assert!(parsed.is_ok());
+            let (t, rest) = parsed.unwrap();
+            assert!(rest.input.is_empty());
+            assert_eq!(&t, input);
         }
     }
 
@@ -326,15 +321,15 @@ trimmed in raw strings.
 
 
    ]"#,
-            r#"[# comment
-# comment2
-      1
+            //             r#"[# comment
+// # comment2
+//       1
 
-#sd
-,
-# comment3
+// #sd
+// ,
+// # comment3
 
-   ]"#,
+//    ]"#,
             r#"[1]"#,
             r#"[1,]"#,
             r#"[ "all", 'strings', """are the same""", '''type''']"#,
@@ -353,7 +348,7 @@ trimmed in raw strings.
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#, r#"[ 1, 2.0 ]"#];
         for input in &invalid_inputs {
-            let parsed = array::array(Span::new(input));
+            let parsed = array::array().parse(State::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -371,7 +366,7 @@ trimmed in raw strings.
         }
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in &invalid_inputs {
-            let parsed = inline_table::inline_table(Span::new(input));
+            let parsed = inline_table::inline_table().parse(State::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -385,11 +380,11 @@ trimmed in raw strings.
         ];
 
         for &(input, expected) in &cases {
-            let parsed = key::key(Span::new(input));
-            assert!(parsed.is_done());
-            let (rest, (k, ..)) = parsed.unwrap();
+            let parsed = key::key().parse(State::new(input));
+            assert!(parsed.is_ok());
+            let ((.., k), rest) = parsed.unwrap();
             assert_eq!(k, expected);
-            assert_eq!(rest.input_len(), 0);
+            assert_eq!(rest.input.len(), 0);
         }
     }
 
@@ -408,6 +403,7 @@ trimmed in raw strings.
    is preserved.
 '''"#,
             r#""Jos\u00E9\n""#,
+            r#""\\\"\b\/\f\n\r\t\u00E9\U000A0000""#,
             r#"{ hello = "world", a = 1}"#,
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
@@ -418,7 +414,8 @@ trimmed in raw strings.
 
     #[test]
     fn documents() {
-        let documents = [r#"
+        let documents = [
+            r#"
 # This is a TOML document.
 
 title = "TOML Example"
@@ -452,10 +449,21 @@ hosts = [
     "alpha",
     "omega"
 ]
-"#,
+
+   'some.wierd .stuff'   =  """
+                         like
+                         that
+                      #   """ # this broke my sintax highlighting
+   " also. like " = '''
+that
+'''
+   double = 2e39 # this number looks familiar
+# trailing comment"#,
+            r#""#,
         ];
         for document in &documents {
-            let doc = Parser::parse(document);
+            let doc = TomlParser::parse(document);
+
             assert!(doc.is_ok());
             let doc = doc.unwrap();
 

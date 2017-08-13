@@ -1,83 +1,88 @@
-use nom;
-use parser::errors::ErrorKind;
+use combine::*;
+use combine::char::char;
+use combine::primitives::RangeStream;
+use parser::errors::CustomError;
 use parser::trivia::ws;
 use parser::key::key;
 use parser::value::value;
-use parser::{LenWorkaround, Span};
-use ::value::{KeyValue, InlineTable};
-use ::decor::{InternalString, Repr};
-use ::formatted::decorated;
+use value::{InlineTable, KeyValue};
+use decor::{InternalString, Repr};
+use formatted::decorated;
 
 // ;; Inline Table
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
-named!(parse_inline_table(Span) -> (&str, Vec<(InternalString, KeyValue)>),
-       delimited!(
-           complete!(tag!(INLINE_TABLE_OPEN)),
-           inline_table_keyvals,
-           err!(ErrorKind::UnterminatedInlineTable,
-                complete!(tag!(INLINE_TABLE_CLOSE)))
-       )
-);
+parse!(inline_table() -> InlineTable, {
+    between(char(INLINE_TABLE_OPEN), char(INLINE_TABLE_CLOSE),
+            inline_table_keyvals().and_then(|(p, v)| table_from_pairs(p, v)))
+});
 
-fn table_from_pairs(preamble: &str, v: Vec<(InternalString, KeyValue)>) -> Option<InlineTable> {
+fn table_from_pairs(
+    preamble: &str,
+    v: Vec<(InternalString, KeyValue)>,
+) -> Result<InlineTable, CustomError> {
     let mut table = InlineTable::default();
     table.preamble = InternalString::from(preamble);
+
     for (k, kv) in v {
         if table.contains_key(&k) {
-            return None;
+            return Err(CustomError::DuplicateKey {
+                key: k.into(),
+                table: "inline".into(),
+            });
         }
         table.key_value_pairs.insert(k, kv);
     }
-    Some(table)
-}
-
-pub fn inline_table(input: Span) -> nom::IResult<Span, InlineTable> {
-    let (rest, p) = try_parse!(input, parse_inline_table);
-
-    match table_from_pairs(p.0, p.1) {
-        Some(a) => nom::IResult::Done(rest, a),
-        _ => e!(ErrorKind::DuplicateKey, rest),
-    }
+    Ok(table)
 }
 
 // inline-table-open  = %x7B ws     ; {
-const INLINE_TABLE_OPEN: &str = "{";
+const INLINE_TABLE_OPEN: char = '{';
 // inline-table-close = ws %x7D     ; }
-const INLINE_TABLE_CLOSE: &str = "}";
+const INLINE_TABLE_CLOSE: char = '}';
 // inline-table-sep   = ws %x2C ws  ; , Comma
-const INLINE_TABLE_SEP: &str = ",";
+const INLINE_TABLE_SEP: char = ',';
 // keyval-sep = ws %x3D ws ; =
-pub(crate) const KEYVAL_SEP: &str = "=";
+pub(crate) const KEYVAL_SEP: char = '=';
 
 // inline-table-keyvals = [ inline-table-keyvals-non-empty ]
-// inline-table-keyvals-non-empty = ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
-//                                  ( key keyval-sep val )
-named!(inline_table_keyvals(Span) -> (&str, Vec<(InternalString, KeyValue)>),
-       do_parse!(
-        v: opt!(separated_nonempty_list_complete!(
-               tag!(INLINE_TABLE_SEP),
-               keyval
-           )) >>
-        w: ws >>
-           (w.fragment, v.unwrap_or_default())
-       )
-);
+// inline-table-keyvals-non-empty =
+// ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
+// ( key keyval-sep val )
+parser!{
+    fn inline_table_keyvals['a, I]()(I) -> (&'a str, Vec<(InternalString, KeyValue)>)
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        (
+            sep_by(keyval(), char(INLINE_TABLE_SEP)),
+            ws(),
+        ).map(|(v, w)| {
+            (w, v)
+        })
+    }
+}
 
-named!(keyval(Span) -> (InternalString, KeyValue),
-       do_parse!(
-        k: tuple!(ws, key, ws)   >>
-           err!(ErrorKind::ExpectedEquals,
-                complete!(tag!(KEYVAL_SEP))) >>
-        v: tuple!(ws, value, ws) >>
-           ({
-               let (pre, v, suf) = v;
-               let v = decorated(v, pre.fragment, suf.fragment);
-               let (pre, (key, raw), suf) = k;
-               (key, KeyValue {
-                   key: Repr::new(pre.fragment, raw.fragment, suf.fragment),
-                   value: v,
-               })
-           })
-       )
-);
+parser!{
+    fn keyval['a, I]()(I) -> (InternalString, KeyValue)
+        where
+        [I: RangeStream<Range = &'a str, Item = char>,]
+    {
+        (
+            try((ws(), key(), ws())),
+            char(KEYVAL_SEP),
+            (ws(), value(), ws()),
+        ).map(|(k, _, v)| {
+            let (pre, v, suf) = v;
+            let v = decorated(v, pre, suf);
+            let (pre, (raw, key), suf) = k;
+            (
+                key,
+                KeyValue {
+                    key: Repr::new(pre, raw, suf),
+                    value: v,
+                }
+            )
+        })
+    }
+}

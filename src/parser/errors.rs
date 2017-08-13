@@ -1,105 +1,126 @@
-use nom;
-use std::mem;
-use parser::Span;
 use std::fmt::{Display, Formatter, Result};
-use std::error;
+use std::error::Error as StdError;
+use combine::ParseError;
+use combine::state::SourcePosition;
+use combine::primitives::Error;
+
 
 /// Type representing a TOML parse error
-#[derive(Debug, Clone)]
-pub struct Error {
-    pub(crate) kind: ErrorKind,
-    unparsed_line: String,
-    line_number: u32,
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct TomlError {
+    message: String,
 }
 
-#[derive(Debug, Clone, Copy)]
-#[repr(u32)]
-pub(crate) enum ErrorKind {
-    Unknown = 1001,
-    ExpectedNewlineOrEof,
-    ExpectedEquals,
-    InvalidCharInString,
-    InvalidEscapeChar,
-    UnterminatedString,
-    UnterminatedInlineTable,
-    UnterminatedArray,
-    InvalidKey,
-    InvalidValue,
-    InvalidNumber,
-    InvalidHeader,
-    InvalidDateTime,
-    MixedArrayType,
-    DuplicateKey,
-    #[doc(hidden)]
-    __Nonexhaustive,
-}
-
-pub(crate) fn is_custom<E>(e: &nom::Err<E>) -> bool {
-    use nom::Err;
-    let kind = match *e {
-        Err::Code(ref e) | Err::Node(ref e, _) | Err::Position(ref e, _) | Err::NodePosition(ref e, _, _) => e
-    };
-    is_custom_kind(kind)
-}
-
-fn is_custom_kind(k: &nom::ErrorKind) -> bool {
-    match *k {
-        nom::ErrorKind::Custom(..) => true,
-        _ => false,
-    }
-}
-
-unsafe fn to_custom(k: &nom::ErrorKind) -> ErrorKind {
-    match *k {
-        nom::ErrorKind::Custom(code) => mem::transmute(code),
-        _ => unreachable!("call `to_custom` only on custom errors"),
-    }
-}
-
-pub(crate) fn to_error(e: &nom::Err<Span>) -> Error {
-    find_innermost_custom(e)
-        .unwrap_or_else(|| Error::new(ErrorKind::Unknown,
-                                      Span::new(&format!("{:?}", e))))
-}
-
-impl Error {
-    pub(crate) fn new(kind: ErrorKind, span: Span) -> Self {
-        let s = span.fragment;
+impl TomlError {
+    pub(crate) fn new(error: ParseError<SourcePosition, char, &str>, input: &str) -> Self {
         Self {
-            kind: kind,
-            unparsed_line: s[..s.find('\n').unwrap_or_else(|| s.len())].into(),
-            line_number: span.line,
+            message: format!("{}", FancyError::new(error, input)),
         }
     }
 }
 
-fn find_innermost_custom(e: &nom::Err<Span>) -> Option<Error> {
-    use nom::Err;
-    match *e {
-        Err::NodePosition(ref k, s, ref v) => {
-            if let Some(err) = v.iter().last() {
-                let last = find_innermost_custom(err);
-                if last.is_some() {
-                    return last;
-                }
-            }
-            debug_assert!(is_custom(e));
-            Some(Error::new(unsafe { to_custom(k) }, s))
-        }
-        Err::Position(ref k, s) if is_custom(e) => Some(Error::new(unsafe { to_custom(k) }, s)),
-        _ => None,
-    }
-}
-
-impl Display for Error {
+/// Displays a TOML parse error
+///
+/// # Example
+///
+/// TOML parse error at line 1, column 10
+///   |
+/// 1 | 00:32:00.a999999
+///   |          ^
+/// Unexpected `a`
+/// Expected `digit`
+/// While parsing a Time
+/// While parsing a Date-Time
+impl Display for TomlError {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f, "TOML parse error {:?} at line {}: {}",
-               self.kind, self.line_number, self.unparsed_line)
+        write!(f, "{}", self.message)
     }
 }
 
-impl error::Error for Error {
-    fn description(&self) -> &str {
+impl StdError for TomlError {
+    fn description(&self) -> &'static str {
         "TOML parse error"
+    }
+}
+
+
+#[derive(Debug)]
+pub(crate) struct FancyError<'a> {
+    error: ParseError<SourcePosition, char, &'a str>,
+    input: &'a str,
+}
+
+impl<'a> FancyError<'a> {
+    pub(crate) fn new(error: ParseError<SourcePosition, char, &'a str>, input: &'a str) -> Self {
+        Self {
+            error: error,
+            input: input,
+        }
+    }
+}
+
+impl<'a> Display for FancyError<'a> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let SourcePosition { line, column } = self.error.position;
+
+        let offset = line.to_string().len();
+        let content = self.input
+            .split('\n')
+            .nth((line - 1) as usize)
+            .expect("line");
+
+        writeln!(f, "TOML parse error at line {}, column {}", line, column)?;
+
+        //   |
+        for _ in 0..(offset + 1) {
+            write!(f, " ")?;
+        }
+        writeln!(f, "|")?;
+
+        // 1 | 00:32:00.a999999
+        write!(f, "{} | ", line)?;
+        writeln!(f, "{}", content)?;
+
+        //   |          ^
+        for _ in 0..(offset + 1) {
+            write!(f, " ")?;
+        }
+        write!(f, "|")?;
+        for _ in 0..column {
+            write!(f, " ")?;
+        }
+        writeln!(f, "^")?;
+
+        Error::fmt_errors(self.error.errors.as_ref(), f)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) enum CustomError {
+    MixedArrayType { got: String, expected: String },
+    DuplicateKey { key: String, table: String },
+    InvalidHexEscape(u32),
+}
+
+impl StdError for CustomError {
+    fn description(&self) -> &'static str {
+        "TOML parse error"
+    }
+}
+
+impl Display for CustomError {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        match *self {
+            CustomError::MixedArrayType {
+                ref got,
+                ref expected,
+            } => writeln!(f, "Mixed types in array: {} and {}", expected, got),
+            CustomError::DuplicateKey { ref key, ref table } => {
+                writeln!(f, "Duplicate key `{}` in `{}` table", key, table)
+            }
+            CustomError::InvalidHexEscape(ref h) => {
+                writeln!(f, "Invalid hex escape code: {:x} ", h)
+            }
+        }
     }
 }

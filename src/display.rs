@@ -51,6 +51,9 @@ impl Display for Array {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(f, "{}[", self.decor.prefix)?;
         join(f, self.values.iter(), ",")?;
+        if self.trailing_comma {
+            write!(f, ",")?;
+        }
         write!(f, "{}", self.trailing)?;
         write!(f, "]{}", self.decor.suffix)
     }
