@@ -117,8 +117,8 @@ impl TomlParser {
         let parser = RefCell::new(Self::default());
         let input = State::new(s);
 
-        parse_ws(&parser).with(
-            choice((
+        parse_ws(&parser)
+            .with(choice((
                 eof(),
                 skip_many1(
                     choice((
@@ -128,8 +128,8 @@ impl TomlParser {
                         parse_newline(&parser),
                     )).skip(parse_ws(&parser)),
                 ),
-            ))
-        ).parse(input)
+            )))
+            .parse(input)
             .map(move |_| parser.into_inner().document)
             .map_err(|e| TomlError::new(e, s))
     }
