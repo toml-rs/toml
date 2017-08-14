@@ -39,9 +39,11 @@ macro_rules! parse_error {
 #[test]
 fn test_parse_error() {
     parse_error!(r#"["", 2]"#, Value, "Mixed types in array");
+    parse_error!("'hello'bla", Value, "Could not parse the line");
     parse_error!(r#"{a = 2"#, Value, "Expected `}`");
 
     parse_error!("\n", Key, "Unexpected `\n`");
+    parse_error!("'hello key'bla", Key, "Could not parse the line");
     parse_error!("", Key, "Unexpected `end of input`");
 }
 
@@ -49,8 +51,10 @@ fn test_parse_error() {
 fn test_key_from_str() {
     test_key!("a", "a");
     test_key!(r#"'hello key'"#, "hello key");
-    test_key!(r#"'hello key'bla"#, "hello key");
-    test_key!(r#""Jos\u00E9""#, "Jos\u{00E9}");
+    test_key!(
+        r#""Jos\u00E9\U000A0000\n\t\r\f\b\\\/\"""#,
+        "Jos\u{00E9}\u{A0000}\n\t\r\u{c}\u{8}\\/\""
+    );
 }
 
 // wat?

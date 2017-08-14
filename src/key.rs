@@ -38,15 +38,17 @@ impl FromStr for Key {
 
     /// Parses a key from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::key()
-            .parse(combine::State::new(s))
-            .map(|((raw, key), _)| {
-                Key {
-                    raw: raw.into(),
-                    key: key,
-                }
-            })
-            .map_err(|e| Self::Err::new(e, s))
+        let parsed = parser::key().parse(combine::State::new(s));
+        match parsed {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(Self::Err::from_unparsed(rest.positioner, s))
+            }
+            Ok(((raw, key), _)) => Ok(Key {
+                raw: raw.into(),
+                key: key,
+            }),
+            Err(e) => Err(Self::Err::new(e, s)),
+        }
     }
 }
 
