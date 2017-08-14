@@ -470,5 +470,15 @@ that
 
             assert_eq!(&doc.to_string(), document);
         }
+
+        let invalid_inputs = [
+            r#" hello = 'darkness' # my old friend
+$"#,
+        ];
+        for document in &invalid_inputs {
+            let doc = TomlParser::parse(document);
+
+            assert!(doc.is_err());
+        }
     }
 }

@@ -354,9 +354,13 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::value()
-            .parse(combine::State::new(s))
-            .map(|p| p.0)
-            .map_err(|e| Self::Err::new(e, s))
+        let parsed = parser::value().parse(combine::State::new(s));
+        match parsed {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(Self::Err::from_unparsed(rest.positioner, s))
+            }
+            Ok((value, _)) => Ok(value),
+            Err(e) => Err(Self::Err::new(e, s)),
+        }
     }
 }

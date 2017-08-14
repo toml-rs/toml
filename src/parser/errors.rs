@@ -17,6 +17,13 @@ impl TomlError {
             message: format!("{}", FancyError::new(error, input)),
         }
     }
+
+    pub(crate) fn from_unparsed(pos: SourcePosition, input: &str) -> Self {
+        Self::new(
+            ParseError::new(pos, CustomError::UnparsedLine.into()),
+            input,
+        )
+    }
 }
 
 /// Displays a TOML parse error
@@ -100,6 +107,7 @@ pub(crate) enum CustomError {
     MixedArrayType { got: String, expected: String },
     DuplicateKey { key: String, table: String },
     InvalidHexEscape(u32),
+    UnparsedLine,
 }
 
 impl StdError for CustomError {
@@ -121,6 +129,7 @@ impl Display for CustomError {
             CustomError::InvalidHexEscape(ref h) => {
                 writeln!(f, "Invalid hex escape code: {:x} ", h)
             }
+            CustomError::UnparsedLine => writeln!(f, "Could not parse the line"),
         }
     }
 }

@@ -117,7 +117,7 @@ impl TomlParser {
         let parser = RefCell::new(Self::default());
         let input = State::new(s);
 
-        parse_ws(&parser)
+        let parsed = parse_ws(&parser)
             .with(choice((
                 eof(),
                 skip_many1(
@@ -129,9 +129,14 @@ impl TomlParser {
                     )).skip(parse_ws(&parser)),
                 ),
             )))
-            .parse(input)
-            .map(move |_| parser.into_inner().document)
-            .map_err(|e| TomlError::new(e, s))
+            .parse(input);
+        match parsed {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(TomlError::from_unparsed(rest.positioner, s))
+            }
+            Ok(..) => Ok(parser.into_inner().document),
+            Err(e) => Err(TomlError::new(e, s)),
+        }
     }
 
     fn on_ws(&mut self, w: &str) {
