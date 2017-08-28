@@ -43,16 +43,20 @@ impl FromStr for Key {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(Self::Err::from_unparsed(rest.positioner, s))
             }
-            Ok(((raw, key), _)) => Ok(Key {
-                raw: raw.into(),
-                key: key,
-            }),
+            Ok(((raw, key), _)) => Ok(Key::new(raw, key)),
             Err(e) => Err(Self::Err::new(e, s)),
         }
     }
 }
 
 impl Key {
+    pub(crate) fn new(raw: &str, key: InternalString) -> Self {
+        Self {
+            raw: raw.into(),
+            key: key,
+        }
+    }
+
     pub fn get(&self) -> &str {
         &self.key
     }

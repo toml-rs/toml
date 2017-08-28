@@ -54,6 +54,10 @@ fn run(json: &str, toml: &str) {
     assert_eq!(json, toml_json);
 
     // check round-trip equality
+    let toml = doc.to_string();
+    let doc = toml.parse::<Document>();
+    assert!(doc.is_ok());
+    let doc = doc.unwrap();
     assert_eq!(doc.to_string(), toml);
 }
 

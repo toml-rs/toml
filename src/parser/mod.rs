@@ -23,17 +23,17 @@ use document::Document;
 use table::Table;
 
 pub struct TomlParser {
-    document: Document,
+    document: Box<Document>,
     current_table: *mut Table,
 }
 
 impl Default for TomlParser {
     fn default() -> Self {
-        let mut doc = Document::new();
-        let root = doc.root_mut() as *mut Table;
+        let mut doc = Box::new(Document::new());
+        let table = &mut doc.root as *mut Table;
         Self {
             document: doc,
-            current_table: root,
+            current_table: table,
         }
     }
 }
@@ -460,7 +460,8 @@ that
 # trailing comment"#,
             r#""#,
             r#"  "#,
-            r#" hello = 'darkness' # my old friend "#,
+            r#" hello = 'darkness' # my old friend
+"#,
         ];
         for document in &documents {
             let doc = TomlParser::parse(document);

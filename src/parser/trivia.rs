@@ -95,11 +95,10 @@ parse!(line_ending() -> &'a str, {
 });
 
 // note: this rule is not present in the original grammar
-// line-trailing = ws [comment] line-ending
+// line-trailing = ws [comment] skip-line-ending
 parse!(line_trailing() -> &'a str, {
     recognize((
         ws(),
         optional(comment()),
-        line_ending(),
-    ))
+    )).skip(line_ending())
 });

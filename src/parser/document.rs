@@ -134,7 +134,7 @@ impl TomlParser {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(TomlError::from_unparsed(rest.positioner, s))
             }
-            Ok(..) => Ok(parser.into_inner().document),
+            Ok(..) => Ok(*parser.into_inner().document),
             Err(e) => Err(TomlError::new(e, s)),
         }
     }
@@ -157,7 +157,7 @@ impl TomlParser {
         if table.contains_key(&key) {
             Err(CustomError::DuplicateKey {
                 key: key.into(),
-                table: table.header.repr.raw_value.to_string(),
+                table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
             table.key_value_pairs.insert(key, kv);

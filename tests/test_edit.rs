@@ -5,7 +5,7 @@ macro_rules! parse_key {
         {
             let key = $s.parse::<Key>();
             assert!(key.is_ok());
-            key.unwrap()
+            &key.unwrap()
         }
     );
 }
@@ -23,7 +23,7 @@ macro_rules! as_table {
 #[cfg(test)]
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
-    use toml_edit::{Document, Key, Value, Table};
+    use toml_edit::{Document, Key, Value, Table, ArrayOfTables};
     use std::iter::FromIterator;
 
     struct Test {
@@ -43,7 +43,7 @@ mod tests {
             where F: Fn(&mut Table)
         {
             {
-                let mut root = self.doc.root_mut();
+                let root = &mut self.doc.root;
                 func(root);
             }
             self
@@ -69,7 +69,7 @@ fn test_insert_leaf_table() {
     ).running(|root| {
         let mut servers = root.entry("servers");
         let servers = as_table!(servers);
-        let mut beta = servers.insert_table(parse_key!("beta"));
+        let mut beta = servers.append_table(parse_key!("beta"), Table::new());
         let beta = as_table!(beta);
         beta.append_value(parse_key!("ip"), "10.0.0.2");
         beta.append_value(parse_key!("dc"), "eqdc10");
@@ -84,7 +84,8 @@ fn test_insert_leaf_table() {
 ip = "10.0.0.2"
 dc = "eqdc10"
 
-        [other.table]"#
+        [other.table]
+"#
     );
 }
 
@@ -93,14 +94,15 @@ fn test_insert_nonleaf_table() {
     given(r#"
         [other.table]"#
     ).running(|root| {
-        let mut servers = root.append_table(parse_key!("servers"));
+        let mut servers = root.append_table(parse_key!("servers"), Table::new());
         let servers = as_table!(servers);
-        let mut alpha = servers.insert_table(parse_key!("alpha"));
+        let mut alpha = servers.append_table(parse_key!("alpha"), Table::new());
         let alpha = as_table!(alpha);
         alpha.append_value(parse_key!("ip"), "10.0.0.1");
         alpha.append_value(parse_key!("dc"), "eqdc10");
     }).produces(r#"
         [other.table]
+
 [servers]
 
 [servers.alpha]
@@ -116,17 +118,18 @@ fn test_insert_array() {
         [package]
         title = "withoutarray""#
     ).running(|root| {
-        let mut array = root.insert_array(parse_key!("bin"));
+        let mut array = root.append_array(parse_key!("bin"), ArrayOfTables::new());
         assert!(array.is_array());
         let array = array.as_array_mut().unwrap();
         {
-            let mut first = array.append();
+            let mut first = array.append(Table::new());
             first.append_value(parse_key!("hello"), "world");
         }
-        array.append();
+        array.append(Table::new());
     }).produces(r#"
         [package]
         title = "withoutarray"
+
 [[bin]]
 hello = "world"
 
@@ -152,7 +155,8 @@ key1 = "value1"
 "key2" = 42
 'key3' = 8.1415926
 
-        [tbl.son]"#
+        [tbl.son]
+"#
     );
 }
 
@@ -174,13 +178,14 @@ fn test_remove_leaf_table() {
     ).running(|root| {
         let mut servers = root.entry("servers");
         let servers = as_table!(servers);
-        assert!(servers.remove_table("alpha"));
+        assert!(servers.remove("alpha"));
     }).produces(r#"
         [servers]
 
         [servers.beta]
         ip = "10.0.0.2"
-        dc = "eqdc10""#
+        dc = "eqdc10"
+"#
     );
 }
 
@@ -290,7 +295,7 @@ fn test_remove_array() {
         name = "delete me please"
         path = "src/bin/dmp/main.rs""#
     ).running(|root| {
-        assert!(root.remove_array("bin"));
+        assert!(root.remove("bin"));
     }).produces(r#"
         [package]
         name = "hello"
@@ -319,7 +324,8 @@ fn test_remove_value() {
         assert_eq!(value, "1.0.0");
     }).produces(r#"
         name = "hello"
-        documentation = "https://docs.rs/hello""#
+        documentation = "https://docs.rs/hello"
+"#
     );
 }
 
@@ -358,15 +364,16 @@ fn test_sort_values() {
         let a = as_table!(a);
         a.sort_values();
     }).produces(r#"
-        [a.z]
-
         [a]
         a = 1
         # this comment is attached to b
         b = 2 # as well as this
         c = 3
 
-        [a.y]"#
+        [a.z]
+
+        [a.y]
+"#
     );
 }
 
@@ -403,7 +410,8 @@ fn test_insert_into_array() {
         assert_eq!(b.len(), 1);
     }).produces(r#"
         a = [1, 2, 3, 4]
-        b = ["hello"]"#
+        b = ["hello"]
+"#
     );
 }
 
@@ -427,7 +435,8 @@ fn test_remove_from_array() {
         assert!(b.is_empty());
     }).produces(r#"
         a = [1, 2, 3]
-        b = []"#
+        b = []
+"#
     );
 }
 
@@ -465,7 +474,8 @@ fn test_insert_into_inline_table() {
         b.fmt()
     }).produces(r#"
         a = { a = 2, c = 3, b = 42 }
-        b = { 'hello' = "world" }"#
+        b = { 'hello' = "world" }
+"#
     );
 }
 
@@ -489,7 +499,8 @@ fn test_remove_from_inline_table() {
         assert!(b.is_empty());
     }).produces(r#"
         a = {a=2, b = 42}
-        b = {}"#
+        b = {}
+"#
     );
 }
 

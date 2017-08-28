@@ -1,75 +1,31 @@
-use std::collections::HashMap;
-use std::collections::hash_map::Entry;
+use linked_hash_map::LinkedHashMap;
 use value::{sort_key_value_pairs, InlineTable, KeyValuePairs, Value};
-use decor::{InternalString, Repr};
+use decor::{Decor, InternalString};
 use key::Key;
 use array_of_tables::ArrayOfTables;
-use intrusive_collections::LinkedListLink;
-use document::{DocumentInner, ROOT_HEADER};
-use formatted::{decorate, to_key_value};
-use std::fmt;
+use formatted::to_key_value;
 
-// TODO: add method to extract a child table into an inline table
+// TODO: add method to convert a table into inline table
 // TODO: impl Index
 // TODO: documentation
 
 /// Type representing a TOML non-inline table
+#[derive(Clone, Debug, Default)]
 pub struct Table {
-    pub(crate) header: Header,
     pub(crate) key_value_pairs: KeyValuePairs,
-
-    // Value in the map is a  pointer to a linked list node.
-    // All nodes are allocated in the typed arena and,
-    // therefore, won't relocate.
-    // Linked list itself (head of the list) is stored in the Document.
-    //
-    // Using pointer here is safe, since none of the pointers
-    // will outlive the document. Also, we can't use a reference to
-    // a table while having a mut ref to its child (granted by brwchk).
-    //
-    // Note: pointers should be wrapped in NonZero,
-    // but this API is nightly-only atm.
-    tables: HashMap<InternalString, *mut Table>,
-    arrays: HashMap<InternalString, ArrayOfTables>,
-
-    // Intrusive pointers to next and previous table in the document
-    pub(crate) link: LinkedListLink,
-    // We need this pointer to support (sub)table insertion and deletion
-    doc: *mut DocumentInner,
+    pub(crate) containers: LinkedHashMap<InternalString, (InternalString, Container)>,
+    pub(crate) decor: Decor,
+    pub(crate) implicit: bool,
 }
 
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
-pub(crate) struct Header {
-    // ```notrust
-    // # comment
-    // [ a.  'escaped \n'.  c ]
-    // ```
-    //
-    // Corresponds to `Repr("#comment\n", " a.  'escaped \\n'.  c ", "\n")`
-    pub repr: Repr,
-    pub kind: HeaderKind,
-}
-
-// # Example
-//
-// ```notrust
-// [dependencies.serde]
-// version = "1.0"
-// [[bin]]
-// name = "add"
-// ```
-//
-// Header kind of `dependencies` is `Implicit`,
-// header kind of `dependencies.serde` is `Standard`,
-// header kind of `bin` is `Array`.
-#[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
-pub(crate) enum HeaderKind {
-    Implicit,
-    Standard,
-    Array,
+#[derive(Clone, Debug)]
+pub(crate) enum Container {
+    Table(Table),
+    Array(ArrayOfTables),
 }
 
 /// An immutable reference to a child
+#[derive(Clone, Debug)]
 pub enum TableChild<'a> {
     /// A reference to a child value
     Value(&'a Value),
@@ -82,6 +38,7 @@ pub enum TableChild<'a> {
 pub type Iter<'a> = Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a>;
 
 /// A mutable reference to a child
+#[derive(Debug)]
 pub enum TableChildMut<'a> {
     /// A mutable reference to a child value
     Value(&'a mut Value),
@@ -94,6 +51,7 @@ pub enum TableChildMut<'a> {
 pub type IterMut<'a> = Box<Iterator<Item = (&'a str, TableChildMut<'a>)> + 'a>;
 
 /// Return type of table.entry("key")
+#[derive(Debug)]
 pub enum TableEntry<'a> {
     /// A mutable reference to a child value
     Value(&'a mut Value),
@@ -105,46 +63,62 @@ pub enum TableEntry<'a> {
     Vacant(&'a mut Table),
 }
 
+impl Container {
+    fn as_table_please(&mut self) -> &mut Table {
+        match *self {
+            Container::Table(ref mut t) => t,
+            _ => unreachable!("table please"),
+        }
+    }
+    fn as_array_please(&mut self) -> &mut ArrayOfTables {
+        match *self {
+            Container::Array(ref mut a) => a,
+            _ => unreachable!("array please"),
+        }
+    }
+}
+
 impl Table {
-    pub(crate) fn new(header: Header, doc: *mut DocumentInner) -> Self {
+    pub fn new() -> Self {
+        Self::with_decor(Decor::new("\n", ""))
+    }
+
+    pub(crate) fn with_decor(decor: Decor) -> Self {
         Self {
-            header: header,
-            doc: doc,
-            key_value_pairs: Default::default(),
-            tables: Default::default(),
-            arrays: Default::default(),
-            link: Default::default(),
+            decor: decor,
+            ..Default::default()
         }
     }
     pub fn contains_key(&self, key: &str) -> bool {
-        self.contains_value(key) || self.contains_array(key) || self.contains_table(key)
+        self.contains_value(key) || self.contains_container(key)
     }
-    pub fn contains_value(&self, key: &str) -> bool {
+    pub(crate) fn contains_value(&self, key: &str) -> bool {
         self.key_value_pairs.contains_key(key)
     }
-    pub fn contains_table(&self, key: &str) -> bool {
-        self.tables.contains_key(key)
+    fn contains_container(&self, key: &str) -> bool {
+        self.containers.contains_key(key)
     }
-    pub fn contains_array(&self, key: &str) -> bool {
-        self.arrays.contains_key(key)
+    pub(crate) fn contains_table(&self, key: &str) -> bool {
+        match self.containers.get(key) {
+            Some(&(_, Container::Table(..))) => true,
+            _ => false,
+        }
     }
-
     /// Iterator over key/value pairs, arrays of tables and subtables.
     pub fn iter(&self) -> Iter {
         Box::new(
             self.key_value_pairs
                 .iter()
                 .map(|(k, kv)| (&k[..], TableChild::Value(&kv.value)))
-                .chain(
-                    self.arrays
-                        .iter()
-                        .map(|(k, a)| (&k[..], TableChild::Array(a))),
-                )
-                .chain(
-                    self.tables
-                        .iter()
-                        .map(|(k, ptr)| (&k[..], TableChild::Table(unsafe { &**ptr }))),
-                ),
+                .chain(self.containers.iter().map(|(k, c)| {
+                    (
+                        &k[..],
+                        match c.1 {
+                            Container::Table(ref t) => TableChild::Table(t),
+                            Container::Array(ref a) => TableChild::Array(a),
+                        },
+                    )
+                })),
         )
     }
 
@@ -155,13 +129,14 @@ impl Table {
             self.key_value_pairs
                 .iter_mut()
                 .map(|(k, kv)| (&k[..], TableChildMut::Value(&mut kv.value)))
-                .chain(
-                    self.arrays
-                        .iter_mut()
-                        .map(|(k, a)| (&k[..], TableChildMut::Array(a))),
-                )
-                .chain(self.tables.iter_mut().map(|(k, ptr)| {
-                    (&k[..], TableChildMut::Table(unsafe { &mut **ptr }))
+                .chain(self.containers.iter_mut().map(|(k, p)| {
+                    (
+                        &k[..],
+                        match p.1 {
+                            Container::Table(ref mut t) => TableChildMut::Table(t),
+                            Container::Array(ref mut a) => TableChildMut::Array(a),
+                        },
+                    )
                 })),
         )
     }
@@ -175,17 +150,20 @@ impl Table {
         }
     }
 
-
     pub fn remove(&mut self, key: &str) -> bool {
-        self.remove_table(key) || self.remove_array(key) || self.remove_value(key).is_some()
+        self.remove_container(key) || self.remove_value(key).is_some()
     }
 
-    pub fn remove_value<'a>(&'a mut self, key: &str) -> Option<Value> {
+    pub fn remove_value(&mut self, key: &str) -> Option<Value> {
         let val = self.key_value_pairs.remove(key).map(|kv| kv.value);
         if val.is_some() {
             self.set_implicit();
         }
         val
+    }
+
+    fn remove_container(&mut self, key: &str) -> bool {
+        self.containers.remove(key).is_some()
     }
 
     /// Sorts Key/Value Pairs of the table,
@@ -195,7 +173,7 @@ impl Table {
     }
 
     pub fn len(&self) -> usize {
-        self.key_value_pairs.len() + self.tables.len() + self.arrays.len()
+        self.key_value_pairs.len() + self.containers.len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -203,15 +181,13 @@ impl Table {
     }
 
     pub fn get<'a>(&'a self, key: &str) -> Option<TableChild<'a>> {
-        if let Some(table) = self.tables.get(key) {
-            Some(TableChild::Table(
-                // safe, all child pointers are valid
-                unsafe { table.as_ref().unwrap() },
-            ))
+        if let Some(c) = self.containers.get(key) {
+            match c.1 {
+                Container::Table(ref t) => Some(TableChild::Table(t)),
+                Container::Array(ref a) => Some(TableChild::Array(a)),
+            }
         } else if let Some(kv) = self.key_value_pairs.get(key) {
             Some(TableChild::Value(&kv.value))
-        } else if let Some(a) = self.arrays.get(key) {
-            Some(TableChild::Array(a))
         } else {
             None
         }
@@ -220,23 +196,23 @@ impl Table {
     pub fn entry<'a>(&'a mut self, key: &str) -> TableEntry<'a> {
         if !self.contains_key(key) {
             TableEntry::Vacant(self)
-        } else if let Some(table) = self.tables.get_mut(key) {
-            TableEntry::Table(
-                // safe, all child pointers are valid
-                unsafe { table.as_mut().unwrap() },
-            )
-        } else if let Some(kv) = self.key_value_pairs.get_mut(key) {
-            TableEntry::Value(&mut kv.value)
+        } else if let Some(c) = self.containers.get_mut(key) {
+            match c.1 {
+                Container::Table(ref mut t) => TableEntry::Table(t),
+                Container::Array(ref mut a) => TableEntry::Array(a),
+            }
         } else {
-            // argh, non-lexical lifetimes please
-            TableEntry::Array(self.arrays.get_mut(key).unwrap())
+            let kv = self.key_value_pairs
+                .get_mut(key)
+                .expect("non-lexical lifetimes");
+            TableEntry::Value(&mut kv.value)
         }
     }
 
-    pub fn append_value<V: Into<Value>>(&mut self, key: Key, value: V) -> TableChildMut {
+    pub fn append_value<V: Into<Value>>(&mut self, key: &Key, value: V) -> TableChildMut {
         match self.entry(key.get()) {
             TableEntry::Vacant(me) => {
-                TableChildMut::Value(me.insert_value_assume_vacant(key, value.into()))
+                TableChildMut::Value(me.append_value_assume_vacant(key, value.into()))
             }
             TableEntry::Array(v) => TableChildMut::Array(v),
             TableEntry::Table(v) => TableChildMut::Table(v),
@@ -244,51 +220,21 @@ impl Table {
         }
     }
 
-    /// Tries to remove the table with the given key,
-    /// returns true if this operation succeeds, false otherwise.
-    pub fn remove_table<'a>(&'a mut self, key: &str) -> bool {
-        match self.tables.entry(key.into()) {
-            Entry::Vacant(..) => false,
-            Entry::Occupied(e) => {
-                // safe, doc pointer is always valid
-                remove_table_recursive(*e.get(), unsafe { self.doc.as_mut().unwrap() });
-                e.remove();
-                true
+    pub fn append_table(&mut self, key: &Key, table: Table) -> TableChildMut {
+        match self.entry(key.get()) {
+            TableEntry::Vacant(me) => {
+                TableChildMut::Table(me.append_table_assume_vacant(key, table))
             }
+            TableEntry::Array(v) => TableChildMut::Array(v),
+            TableEntry::Table(v) => TableChildMut::Table(v),
+            TableEntry::Value(v) => TableChildMut::Value(v),
         }
     }
 
-    /// Tries to insert a new table after the last table's child or,
-    /// if the table has no children, after the table itself.
-    /// If a child with the given key is present, returns a reference
-    /// to this child.
-    pub fn insert_table(&mut self, key: Key) -> TableChildMut {
-        let after_ptr = self.tables
-            .values()
-            .last()
-            .map(|p| *p as *const Table)
-            .unwrap_or(self as *const Table);
-        let header = self.child_header(key.raw(), HeaderKind::Standard);
-        self.insert_table_with_header(key.get(), header, after_ptr)
-    }
-
-    pub fn append_table(&mut self, key: Key) -> TableChildMut {
-        let header = self.child_header(key.raw(), HeaderKind::Standard);
-        self.append_table_with_header(key.get(), header)
-    }
-
-    pub fn remove_array<'a>(&'a mut self, key: &str) -> bool {
-        self.arrays
-            .remove(key)
-            .map(|mut a| a.remove_all())
-            .is_some()
-    }
-
-    pub fn insert_array(&mut self, key: Key) -> TableChildMut {
-        let child_key = self.child_key(key.raw());
+    pub fn append_array(&mut self, key: &Key, array: ArrayOfTables) -> TableChildMut {
         match self.entry(key.get()) {
             TableEntry::Vacant(me) => {
-                TableChildMut::Array(me.insert_array_assume_vacant(&child_key))
+                TableChildMut::Array(me.append_array_assume_vacant(key, array))
             }
             TableEntry::Array(v) => TableChildMut::Array(v),
             TableEntry::Table(v) => TableChildMut::Table(v),
@@ -309,94 +255,53 @@ impl Table {
     /// # use toml_edit::Document;
     /// #
     /// # fn main() {
-    /// let mut doc = "[a]\n[a.b]".parse::<Document>().unwrap();
-    /// assert!(doc.root_mut().entry("a").as_table_mut().unwrap().set_implicit());
-    /// assert_eq!(doc.to_string(), "[a.b]");
+    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("valid toml");
+    ///
+    /// assert!(doc.root.entry("a").as_table_mut().unwrap().set_implicit());
+    /// assert_eq!(doc.to_string(), "[a.b]\n");
     /// # }
     /// ```
     pub fn set_implicit(&mut self) -> bool {
-        if self.key_value_pairs.is_empty() && self.header.kind == HeaderKind::Standard {
-            self.header.kind = HeaderKind::Implicit;
+        if self.key_value_pairs.is_empty() && !self.implicit {
+            self.implicit = true;
             true
         } else {
             false
         }
     }
 
-    fn insert_value_assume_vacant(&mut self, key: Key, value: Value) -> &mut Value {
-        debug_assert!(!self.tables.contains_key(key.get()));
-        debug_assert!(!self.arrays.contains_key(key.get()));
-        let mut kv = to_key_value(key.raw(), value);
-        decorate(&mut kv.value, " ", "\n");
-        if self.header.kind == HeaderKind::Implicit {
-            self.header.kind = HeaderKind::Standard;
+    fn append_value_assume_vacant(&mut self, key: &Key, value: Value) -> &mut Value {
+        debug_assert!(!self.contains_key(key.get()));
+        let kv = to_key_value(key.raw(), value);
+        if self.implicit {
+            self.implicit = false;
         }
-        &mut self.key_value_pairs.entry(key.into()).or_insert(kv).value
+        &mut self.key_value_pairs
+            .entry(key.get().into())
+            .or_insert(kv)
+            .value
     }
 
-    pub(crate) fn insert_array_assume_vacant<'a>(&'a mut self, key: &str) -> &'a mut ArrayOfTables {
-        let doc = self.doc;
-        self.arrays
-            .entry(InternalString::from(key))
-            .or_insert_with(|| ArrayOfTables::new(key, doc))
+    pub(crate) fn append_array_assume_vacant(
+        &mut self,
+        key: &Key,
+        array: ArrayOfTables,
+    ) -> &mut ArrayOfTables {
+        debug_assert!(!self.contains_key(key.get()));
+        let pair = (key.raw().into(), Container::Array(array));
+        let result = self.containers
+            .entry(key.get().into())
+            .or_insert_with(|| pair);
+        result.1.as_array_please()
     }
 
-    pub(crate) fn move_to_end(&mut self) {
-        let doc: &mut DocumentInner = unsafe { self.doc.as_mut().unwrap() };
-        doc.move_to_end(self);
-    }
-
-    pub(crate) fn child_header(&self, key: &str, kind: HeaderKind) -> Header {
-        let child_key = self.child_key(key);
-        Header {
-            repr: Repr::new("\n", &child_key, "\n"),
-            kind: kind,
-        }
-    }
-
-    pub(crate) fn child_key(&self, key: &str) -> InternalString {
-        let prefix = &self.header.repr.raw_value;
-        if prefix == ROOT_HEADER {
-            key.into()
-        } else {
-            format!("{}.{}", prefix, key)
-        }
-    }
-
-    pub(crate) fn append_table_with_header<'a>(
-        &'a mut self,
-        key: &str,
-        header: Header,
-    ) -> TableChildMut<'a> {
-        let doc = unsafe { self.doc.as_ref().unwrap() };
-        let back = doc.list.back().get().unwrap();
-        self.insert_table_with_header(key, header, back)
-    }
-
-    pub(crate) fn insert_table_with_header<'a>(
-        &'a mut self,
-        key: &str,
-        header: Header,
-        after_ptr: *const Table,
-    ) -> TableChildMut<'a> {
-        let doc = self.doc;
-        match self.entry(key) {
-            TableEntry::Vacant(me) => {
-                let table = Table::new(header, me.doc);
-                // safe, doc pointer is always valid
-                let doc: &mut DocumentInner = unsafe { doc.as_mut().unwrap() };
-                // insert into the document
-                let node_ptr = doc.insert(table, after_ptr);
-                // insert into the table
-                let result = me.tables.insert(key.into(), node_ptr);
-                debug_assert!(result.is_none());
-                // safe, because we're borrowing self mutably
-                TableChildMut::Table(unsafe { node_ptr.as_mut().unwrap() })
-            }
-            TableEntry::Array(v) => TableChildMut::Array(v),
-            TableEntry::Table(v) => TableChildMut::Table(v),
-            TableEntry::Value(v) => TableChildMut::Value(v),
-        }
+    pub(crate) fn append_table_assume_vacant(&mut self, key: &Key, table: Table) -> &mut Table {
+        debug_assert!(!self.contains_key(key.get()));
+        let pair = (key.raw().to_owned(), Container::Table(table));
+        let result = self.containers
+            .entry(key.get().into())
+            .or_insert_with(|| pair);
+        result.1.as_table_please()
     }
 }
 
@@ -556,31 +461,37 @@ impl<'a> TableChildMut<'a> {
     }
 }
 
-pub(crate) fn remove_table_recursive(ptr: *mut Table, doc: &mut DocumentInner) {
-    // safe, all child pointers are valid
-    let child: &mut Table = unsafe { ptr.as_mut().unwrap() };
-    let keys: Vec<InternalString> = child.tables.keys().cloned().collect();
-    // recursive subtables removal
-    for key in keys {
-        child.remove_table(&key);
+impl<'a> TableChildMut<'a> {
+    pub fn into_entry(self) -> TableEntry<'a> {
+        match self {
+            TableChildMut::Table(t) => TableEntry::Table(t),
+            TableChildMut::Array(t) => TableEntry::Array(t),
+            TableChildMut::Value(t) => TableEntry::Value(t),
+        }
     }
-    let keys: Vec<InternalString> = child.arrays.keys().cloned().collect();
-    // recursive subarrays removal
-    for key in keys {
-        child.remove_array(&key);
-    }
-    // remove from the list
-    doc.remove(ptr);
 }
 
-impl fmt::Debug for Table {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Table")
-            .field("header", &self.header)
-            .field("key_values_pairs", &self.key_value_pairs)
-            .field("tables", &self.tables)
-            .field("arrays", &self.arrays)
-            .field("link", &self.link)
-            .finish()
+impl<'e> TableEntry<'e> {
+    pub fn get(self, s: &str) -> TableEntry<'e> {
+        match self {
+            TableEntry::Table(table) => table.entry(s),
+            TableEntry::Value(&mut Value::InlineTable(ref mut t)) if t.contains_key(s) => {
+                t.get_mut(s).map(TableEntry::Value).unwrap()
+            }
+            a => a,
+        }
+    }
+
+    pub fn get_or_insert(self, s: &str) -> TableEntry<'e> {
+        let key: Key = s.parse().expect("valid key");
+        match self {
+            TableEntry::Value(&mut Value::InlineTable(ref mut t)) => TableEntry::Value(
+                t.try_insert(&key, Value::InlineTable(InlineTable::default())),
+            ),
+            TableEntry::Vacant(table) | TableEntry::Table(table) => {
+                table.append_table(&key, Table::new()).into_entry()
+            }
+            _ => panic!("can't access key {} in {:?}", s, self),
+        }
     }
 }

@@ -1,8 +1,9 @@
 use std::fmt::{Display, Formatter, Result};
-use value::{Array, DateTime, InlineTable, KeyValue, KeyValuePairs, Value};
+use value::{Array, DateTime, InlineTable, KeyValue, Value};
 use decor::{Formatted, Repr};
 use document::Document;
-use table::{Header, HeaderKind, Table};
+use table::{Container, Table};
+use std::cell::{Cell, RefCell};
 
 impl Display for Repr {
     fn fmt(&self, f: &mut Formatter) -> Result {
@@ -74,28 +75,47 @@ impl Display for InlineTable {
     }
 }
 
-impl Display for Header {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        if self.kind == HeaderKind::Implicit {
-            return Ok(());
-        }
-        let brackets = if self.kind == HeaderKind::Standard {
-            ["[", "]"]
-        } else {
-            ["[[", "]]"]
-        };
-        write!(f, "{}{}", self.repr.decor.prefix, brackets[0])?;
-        write!(f, "{}", self.repr.raw_value)?;
-        write!(f, "{}{}", brackets[1], self.repr.decor.suffix)
-    }
+struct TableFormatState<'t> {
+    path: RefCell<Vec<&'t str>>,
+    table: Cell<&'t Table>,
 }
 
-/// **Note**: It only displays Key/Value Pairs
-impl Display for Table {
+impl<'a> Display for TableFormatState<'a> {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        if self.header.kind != HeaderKind::Implicit {
-            write!(f, "{}", self.header)?;
-            display_table_values(f, &self.key_value_pairs)?;
+        let table = self.table.get();
+
+        join(f, table.key_value_pairs.values(), "\n")?;
+        if !table.key_value_pairs.is_empty() {
+            write!(f, "\n")?;
+        }
+
+        for &(ref name, ref c) in table.containers.values() {
+            match *c {
+                Container::Table(ref t) => {
+                    self.path.borrow_mut().push(name);
+                    self.table.set(t);
+                    if !t.implicit {
+                        write!(f, "{}[", t.decor.prefix)?;
+                        write!(f, "{}", self.path.borrow().join("."))?;
+                        write!(f, "]{}\n", t.decor.suffix)?;
+                    }
+                    write!(f, "{}", self)?;
+                    self.table.set(table);
+                    self.path.borrow_mut().pop();
+                }
+                Container::Array(ref a) => {
+                    self.path.borrow_mut().push(name);
+                    for t in &a.values {
+                        self.table.set(t);
+                        write!(f, "{}[[", t.decor.prefix)?;
+                        write!(f, "{}", self.path.borrow().join("."))?;
+                        write!(f, "]]{}\n", t.decor.suffix)?;
+                        write!(f, "{}", self)?;
+                    }
+                    self.table.set(table);
+                    self.path.borrow_mut().pop();
+                }
+            }
         }
         Ok(())
     }
@@ -103,14 +123,11 @@ impl Display for Table {
 
 impl Display for Document {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        for (i, c) in self.inner.list.iter().enumerate() {
-            if i > 0 {
-                write!(f, "{}", c)?;
-            } else {
-                // root table
-                display_table_values(f, &c.key_value_pairs)?;
-            }
-        }
+        let state = TableFormatState {
+            path: RefCell::new(Vec::new()),
+            table: Cell::new(&self.root),
+        };
+        write!(f, "{}", state)?;
         write!(f, "{}", self.trailing)
     }
 }
@@ -127,8 +144,4 @@ where
         write!(f, "{}", v)?;
     }
     Ok(())
-}
-
-fn display_table_values(f: &mut Formatter, key_value_pairs: &KeyValuePairs) -> Result {
-    join(f, key_value_pairs.values(), "")
 }
