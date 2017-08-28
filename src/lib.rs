@@ -4,14 +4,10 @@
 //! # `toml_edit`
 //!
 //! This crate allows you to parse and modify toml
-//! documents, while preserving comments, spaces and
+//! documents, while *mostly* preserving comments, spaces and
 //! relative order or items.
 //!
-//! # Safety
-//!
-//! `mem::swap`ing `Table`s or `ArrayOfTables` is considered unsafe.
-//!
-//! Swapping `Value`s is fine.
+//! It is primarily tailored to the needs of [cargo-edit](https://github.com/killercup/cargo-edit/).
 //!
 //! # Example
 //!
@@ -21,19 +17,19 @@
 //! use toml_edit::Document;
 //!
 //! fn main() {
-//!     let toml = r#"hello = 'toml!' # comment"#;
+//!     let toml = r#"
+//!       "hello" = 'toml!' # comment
+//!       ['a'.b]
+//!     "#;
 //!     let doc = toml.parse::<Document>();
 //!     assert!(doc.is_ok());
 //!     assert_eq!(doc.unwrap().to_string(), toml);
 //! }
 //! ```
 #[macro_use]
-extern crate intrusive_collections;
-#[macro_use]
 extern crate combine;
 extern crate chrono;
 extern crate linked_hash_map;
-extern crate typed_arena;
 
 
 pub(crate) mod formatted;

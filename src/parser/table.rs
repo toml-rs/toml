@@ -1,13 +1,15 @@
 use combine::*;
 use combine::char::char;
-use combine::range::{range, recognize_with_value};
+use combine::range::range;
 use combine::primitives::RangeStream;
 use parser::TomlParser;
 use parser::errors::CustomError;
 use parser::trivia::{line_trailing, ws};
 use parser::key::key;
-use decor::{InternalString, Repr};
-use table::{Header, HeaderKind, Table, TableChildMut, TableEntry};
+use key::Key;
+use array_of_tables::ArrayOfTables;
+use decor::{Decor, InternalString};
+use table::{Table, TableChildMut, TableEntry};
 use std::mem;
 use std::cell::RefCell;
 // https://github.com/rust-lang/rust/issues/41358
@@ -29,11 +31,9 @@ const ARRAY_TABLE_CLOSE: &'static str = "]]";
 
 // note: this rule is not present in the original grammar
 // key-path = key *( table-key-sep key)
-parse!(key_path() -> (&'a str, Vec<InternalString>), {
-    recognize_with_value(
-        sep_by1(between(ws(), ws(), key().map(|(_, key)| key)),
-                char(TABLE_KEY_SEP))
-    )
+parse!(key_path() -> Vec<Key>, {
+    sep_by1(between(ws(), ws(), key().map(|(raw, key)| Key::new(raw, key))),
+            char(TABLE_KEY_SEP))
 });
 
 
@@ -94,29 +94,37 @@ parser!{
     }
 }
 
+pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
+    assert!(i < path.len());
+    let header: Vec<&str> = path[..i].iter().map(|key| key.raw()).collect();
+    CustomError::DuplicateKey {
+        key: path[i].raw().into(),
+        table: format!("[{}]", header.join(".")),
+    }
+}
+
 impl TomlParser {
     fn descend_path<'a>(
         table: &'a mut Table,
-        path: &[InternalString],
+        path: &[Key],
+        i: usize,
     ) -> Result<&'a mut Table, CustomError> {
-        if let Some(key) = path.get(0) {
-            let header = table.child_header(key, HeaderKind::Implicit);
-            let parent_header = table.header.repr.raw_value.to_string();
-            match table.append_table_with_header(key, header) {
-                TableChildMut::Value(..) => Err(CustomError::DuplicateKey {
-                    key: key.clone(),
-                    table: parent_header,
-                }),
+        if let Some(key) = path.get(i) {
+            let mut new_table = Table::new();
+            new_table.set_implicit();
+
+            match table.append_table(key, new_table) {
+                TableChildMut::Value(..) => Err(duplicate_key(path, i)),
                 TableChildMut::Array(array) => {
                     debug_assert!(!array.is_empty());
 
-                    let i = array.len() - 1;
-                    let last_child = array.get_mut(i).unwrap();
+                    let index = array.len() - 1;
+                    let last_child = array.get_mut(index).unwrap();
 
-                    Self::descend_path(last_child, &path[1..])
+                    Self::descend_path(last_child, path, i + 1)
                 }
                 TableChildMut::Table(sweet_child_of_mine) => {
-                    TomlParser::descend_path(sweet_child_of_mine, &path[1..])
+                    TomlParser::descend_path(sweet_child_of_mine, path, i + 1)
                 }
             }
         } else {
@@ -124,81 +132,61 @@ impl TomlParser {
         }
     }
 
-    fn on_std_header(
-        &mut self,
-        header: (&str, Vec<InternalString>),
-        trailing: &str,
-    ) -> Result<(), CustomError> {
-        let (span, header) = header;
-        debug_assert!(!header.is_empty());
+    fn on_std_header(&mut self, path: Vec<Key>, trailing: &str) -> Result<(), CustomError> {
+        debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
-        let mut table = self.document.root_mut();
+        let table = &mut self.document.root;
 
-        let table = Self::descend_path(table, &header[..header.len() - 1]);
-        let key = &header[header.len() - 1];
+        let table = Self::descend_path(table, &path[..path.len() - 1], 0);
+        let key = &path[path.len() - 1];
 
         match table {
             Ok(table) => {
-                let header = Header {
-                    repr: Repr::new(leading, span.into(), trailing.into()),
-                    kind: HeaderKind::Standard,
-                };
+                let decor = Decor::new(leading, trailing.into());
 
-                match table.entry(key) {
+                match table.entry(key.get()) {
                     // if [a.b.c] header preceded [a.b]
-                    TableEntry::Table(ref mut t) if t.header.kind == HeaderKind::Implicit => {
-                        t.move_to_end();
-                        t.header = header;
+                    TableEntry::Table(ref mut t) if t.implicit => {
+                        debug_assert!(t.key_value_pairs.is_empty());
+                        t.decor = decor;
+                        t.implicit = false;
                         self.current_table = *t;
                         return Ok(());
                     }
                     TableEntry::Vacant(ref mut parent) => {
-                        let mut table = parent.append_table_with_header(key, header);
-                        self.current_table = table.as_table_mut().unwrap();
+                        let mut table = parent.append_table(key, Table::with_decor(decor));
+                        self.current_table = table.as_table_mut().expect("table");
                         return Ok(());
                     }
                     _ => {}
                 }
-                Err(CustomError::DuplicateKey {
-                    key: key.clone(),
-                    table: table.header.repr.raw_value.to_string(),
-                })
+                Err(duplicate_key(&path[..], path.len() - 1))
             }
             Err(e) => Err(e),
         }
     }
 
-    fn on_array_header(
-        &mut self,
-        header: (&str, Vec<InternalString>),
-        trailing: &str,
-    ) -> Result<(), CustomError> {
-        let (span, header) = header;
-        debug_assert!(!header.is_empty());
+    fn on_array_header(&mut self, path: Vec<Key>, trailing: &str) -> Result<(), CustomError> {
+        debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
-        let mut table = self.document.root_mut();
+        let table = &mut self.document.root;
 
-        let key = &header[header.len() - 1];
-        let table = Self::descend_path(table, &header[..header.len() - 1]);
+        let key = &path[path.len() - 1];
+        let table = Self::descend_path(table, &path[..path.len() - 1], 0);
 
         match table {
-            Ok(table) => if !table.contains_table(key) && !table.contains_value(key) {
-                let header = Header {
-                    repr: Repr::new(leading, span.into(), trailing.into()),
-                    kind: HeaderKind::Array,
-                };
+            Ok(table) => if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
+                let decor = Decor::new(leading, trailing.into());
 
-                let array = table.insert_array_assume_vacant(key);
-                self.current_table = array.append_with_header(header, self.current_table);
+                let mut array = table.append_array(key, ArrayOfTables::new());
+                let array = array.as_array_mut().expect("array");
+                self.current_table = array.append(Table::with_decor(decor));
 
                 Ok(())
             } else {
-                Err(CustomError::DuplicateKey {
-                    key: key.clone(),
-                    table: table.header.repr.raw_value.to_string(),
-                })
+                Err(duplicate_key(&path[..], path.len() - 1))
             },
             Err(e) => Err(e),
         }

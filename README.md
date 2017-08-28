@@ -9,8 +9,15 @@
 
 
 This crate allows you to parse and modify toml
-documents, while preserving comments, spaces and
+documents, while *mostly* preserving comments, spaces and
 relative order or items.
+
+Things it does not preserve include:
+1. Spaces in headers, e.g. `[ ' a ' .  b ]` will be represented as [' a '.b]
+2. Children tables before parent table (tables are reordered).
+3. Scattered array of tables (tables are reordered).
+
+`toml_edit` is primarily tailored for [cargo-edit](https://github.com/killercup/cargo-edit/) needs.
 
 ## Example
 
@@ -20,19 +27,15 @@ extern crate toml_edit;
 use toml_edit::Document;
 
 fn main() {
-    let toml = r#"hello = 'toml!' # comment"#;
+    let toml = r#"
+      "hello" = 'toml!' # comment
+      ['a'.b]
+    "#;
     let doc = toml.parse::<Document>();
     assert!(doc.is_ok());
     assert_eq!(doc.unwrap().to_string(), toml);
 }
 ```
-
-## Caveats
-
-Due to internal design, `mem::swap`ping two `Table`s or `ArrayOfTables` is considered harmful 
-(it won't do what you'd expect, see [test_safety](./tests/test_safety.rs)).
-
-Swapping `Value`s is fine though (but you can lose formatting, e.g. comments).
 
 ## License
 

@@ -91,7 +91,7 @@ impl From<i64> for Value {
     fn from(i: i64) -> Self {
         Value::Integer(Formatted::new(
             i,
-            Repr::new(" ".to_string(), i.to_string(), "\n".to_string()),
+            Repr::new("".to_string(), i.to_string(), "".to_string()),
         ))
     }
 }
@@ -100,7 +100,7 @@ impl From<f64> for Value {
     fn from(f: f64) -> Self {
         Value::Float(Formatted::new(
             f,
-            Repr::new(" ".to_string(), f.to_string(), "\n".to_string()),
+            Repr::new("".to_string(), f.to_string(), "".to_string()),
         ))
     }
 }
@@ -109,7 +109,8 @@ impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
         Value::String(Formatted::new(
             s.to_owned(),
-            Repr::new(" ".to_string(), format!("\"{}\"", s), "\n".to_string()),
+            // TODO: s.escape_debug() requires #![feature(str_escape)]
+            Repr::new("".to_string(), format!("\"{}\"", s), "".to_string()),
         ))
     }
 }
@@ -124,7 +125,7 @@ impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Boolean(Formatted::new(
             b,
-            Repr::new(" ", if b { "true" } else { "false" }, "\n"),
+            Repr::new("", if b { "true" } else { "false" }, ""),
         ))
     }
 }
@@ -134,7 +135,7 @@ impl From<DateTime> for Value {
         let s = d.to_string();
         Value::DateTime(Formatted::new(
             d,
-            Repr::new(" ".to_string(), s, "\n".to_string()),
+            Repr::new("".to_string(), s, "".to_string()),
         ))
     }
 }
@@ -150,26 +151,24 @@ impl<V: Into<Value>> FromIterator<V> for Value {
             ..Default::default()
         };
         decorate_array(&mut array);
-        array.decor.prefix = InternalString::from(" ");
-        array.decor.suffix = InternalString::from("\n");
         Value::Array(array)
     }
 }
 
-pub(crate) fn to_key_value_pairs<K, V, I>(iter: I) -> KeyValuePairs
+pub(crate) fn to_key_value_pairs<'k, K, V, I>(iter: I) -> KeyValuePairs
 where
-    K: Into<Key>,
+    K: Into<&'k Key>,
     V: Into<Value>,
     I: IntoIterator<Item = (K, V)>,
 {
     let v = iter.into_iter().map(|(a, b)| {
-        let s: Key = a.into();
-        (s.clone().into(), to_key_value(s.raw(), b.into()))
+        let s: &Key = a.into();
+        (s.get().into(), to_key_value(s.raw(), b.into()))
     });
     KeyValuePairs::from_iter(v)
 }
 
-impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
+impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = (K, V)>,
@@ -178,8 +177,6 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
             key_value_pairs: to_key_value_pairs(iter),
             ..Default::default()
         };
-        table.decor.prefix = InternalString::from(" ");
-        table.decor.suffix = InternalString::from("\n");
         decorate_inline_table(&mut table);
         Value::InlineTable(table)
     }
