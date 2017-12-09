@@ -67,13 +67,9 @@ fn test_insert_leaf_table() {
 
         [other.table]"#
     ).running(|root| {
-        let servers = root.entry("servers");
-        let servers = as_table!(servers);
-        let entry = servers.entry("beta");
-        *entry = table();
-        let beta = as_table!(entry);
-        *beta.entry("ip") = value("10.0.0.2");
-        *beta.entry("dc") = value("eqdc10");
+        root["servers"]["beta"] = table();
+        root["servers"]["beta"]["ip"] = value("10.0.0.2");
+        root["servers"]["beta"]["dc"] = value("eqdc10");
     }).produces(r#"
         [servers]
 
@@ -95,14 +91,10 @@ fn test_insert_nonleaf_table() {
     given(r#"
         [other.table]"#
     ).running(|root| {
-        let servers = root.entry("servers");
-        *servers = table();
-        let servers = as_table!(servers);
-        let alpha = servers.entry("alpha");
-        *alpha = table();
-        let alpha = as_table!(alpha);
-        *alpha.entry("ip") = value("10.0.0.1");
-        *alpha.entry("dc") = value("eqdc10");
+        root["servers"] = table();
+        root["servers"]["alpha"] = table();
+        root["servers"]["alpha"]["ip"] = value("10.0.0.1");
+        root["servers"]["alpha"]["dc"] = value("eqdc10");
     }).produces(r#"
         [other.table]
 
@@ -121,13 +113,12 @@ fn test_insert_array() {
         [package]
         title = "withoutarray""#
     ).running(|root| {
-        let array = root.entry("bin");
-        *array = self::array();
-        assert!(array.is_array_of_tables());
-        let array = array.as_array_of_tables_mut().unwrap();
+        root["bin"] = array();
+        assert!(root["bin"].is_array_of_tables());
+        let array = root["bin"].as_array_of_tables_mut().unwrap();
         {
             let first = array.append(Table::new());
-            *first.entry("hello") = value("world");
+            first["hello"] = value("world");
         }
         array.append(Table::new());
     }).produces(r#"
@@ -148,11 +139,9 @@ fn test_insert_values() {
     given(r#"
         [tbl.son]"#
     ).running(|root| {
-        let table = root.entry("tbl");
-        let table = as_table!(table);
-        *table.entry("key1") = value("value1");
-        *table.entry("\"key2\"") = value(42);
-        *table.entry("'key3'") = value(8.1415926);
+        root["tbl"]["key1"] = value("value1");
+        root["tbl"]["\"key2\""] = value(42);
+        root["tbl"]["'key3'"] = value(8.1415926);
     }).produces(r#"
 [tbl]
 key1 = "value1"
@@ -264,7 +253,6 @@ fn test_remove_array_entry() {
         let dmp = root.entry("bin");
         assert!(dmp.is_array_of_tables());
         let dmp = dmp.as_array_of_tables_mut().unwrap();
-        println!("{:?}", dmp);
         assert_eq!(dmp.len(), 2);
         dmp.remove(1);
         assert_eq!(dmp.len(), 1);
