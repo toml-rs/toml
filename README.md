@@ -9,10 +9,10 @@
 
 
 This crate allows you to parse and modify toml
-documents, while *mostly* preserving comments, spaces and
-relative order or items.
+documents, while preserving comments, spaces* and
+relative order* or items.
 
-Things it does not preserve include:
+*Things it does not preserve:
 1. Spaces in headers, e.g. `[ ' a ' .  b ]` will be represented as [' a '.b]
 2. Children tables before parent table (tables are reordered).
 3. Scattered array of tables (tables are reordered).
