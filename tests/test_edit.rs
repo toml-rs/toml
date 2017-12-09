@@ -43,7 +43,7 @@ mod tests {
             where F: Fn(&mut Table)
         {
             {
-                let root = &mut self.doc.root;
+                let root = self.doc.as_table_mut();
                 func(root);
             }
             self

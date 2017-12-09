@@ -1,14 +1,24 @@
 use std::str::FromStr;
-use table::{Iter, Table};
+use table::{Item, Iter, Table};
 use decor::InternalString;
 use parser;
 
 /// Type representing a TOML document
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Document {
-    pub root: Table,
+    /// Root should always be `Item::Table`.
+    pub root: Item,
     // Trailing comments and whitespaces
     pub(crate) trailing: InternalString,
+}
+
+impl Default for Document {
+    fn default() -> Self {
+        Self {
+            root: Item::Table(Table::default()),
+            trailing: Default::default(),
+        }
+    }
 }
 
 
@@ -18,8 +28,21 @@ impl Document {
         Default::default()
     }
 
+    pub fn as_table(&self) -> &Table {
+        self.root.as_table().expect("root should always be a table")
+    }
+
+    pub fn as_table_mut(&mut self) -> &mut Table {
+        self.root
+            .as_table_mut()
+            .expect("root should always be a table")
+    }
+
     pub fn iter(&self) -> Iter {
-        self.root.iter()
+        self.root
+            .as_table()
+            .expect("root should always be a table")
+            .iter()
     }
 }
 

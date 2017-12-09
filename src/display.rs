@@ -139,7 +139,7 @@ impl Display for Table {
 
 impl Display for Document {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f, "{}", self.root)?;
+        write!(f, "{}", self.as_table())?;
         write!(f, "{}", self.trailing)
     }
 }

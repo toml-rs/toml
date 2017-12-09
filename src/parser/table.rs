@@ -141,7 +141,7 @@ impl TomlParser {
         debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
-        let table = &mut self.document.root;
+        let table = self.document.as_table_mut();
 
         let table = Self::descend_path(table, &path[..path.len() - 1], 0);
         let key = &path[path.len() - 1];
@@ -177,7 +177,7 @@ impl TomlParser {
         debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
-        let table = &mut self.document.root;
+        let table = self.document.as_table_mut();
 
         let key = &path[path.len() - 1];
         let table = Self::descend_path(table, &path[..path.len() - 1], 0);
