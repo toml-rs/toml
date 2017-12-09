@@ -9,7 +9,7 @@ use parser::key::key;
 use key::Key;
 use array_of_tables::ArrayOfTables;
 use decor::{Decor, InternalString};
-use table::{Table, TableChildMut, TableEntry};
+use table::{Item, Table};
 use std::mem;
 use std::cell::RefCell;
 // https://github.com/rust-lang/rust/issues/41358
@@ -24,9 +24,9 @@ const STD_TABLE_OPEN: char = '[';
 // std-table-close = ws %x5D     ; ] Right square bracket
 const STD_TABLE_CLOSE: char = ']';
 // array-table-open  = %x5B.5B ws  ; [[ Double left square bracket
-const ARRAY_TABLE_OPEN: &'static str = "[[";
+const ARRAY_TABLE_OPEN: &str = "[[";
 // array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
-const ARRAY_TABLE_CLOSE: &'static str = "]]";
+const ARRAY_TABLE_CLOSE: &str = "]]";
 
 
 // note: this rule is not present in the original grammar
@@ -54,7 +54,7 @@ parser!{
                       parser
                       .borrow_mut()
                       .deref_mut()
-                      .on_std_header(h, t))
+                      .on_std_header(&h, t))
     }
 }
 
@@ -75,7 +75,7 @@ parser!{
                       parser
                       .borrow_mut()
                       .deref_mut()
-                      .on_array_header(h, t))
+                      .on_array_header(&h, t))
     }
 }
 
@@ -111,11 +111,15 @@ impl TomlParser {
     ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(i) {
             let mut new_table = Table::new();
-            new_table.set_implicit();
+            new_table.set_implicit(true);
 
-            match table.append_table(key, new_table) {
-                TableChildMut::Value(..) => Err(duplicate_key(path, i)),
-                TableChildMut::Array(array) => {
+            let entry = table.entry(key.raw());
+            if entry.is_none() {
+                *entry = Item::Table(new_table);
+            }
+            match *entry {
+                Item::Value(..) => Err(duplicate_key(path, i)),
+                Item::ArrayOfTables(ref mut array) => {
                     debug_assert!(!array.is_empty());
 
                     let index = array.len() - 1;
@@ -123,16 +127,17 @@ impl TomlParser {
 
                     Self::descend_path(last_child, path, i + 1)
                 }
-                TableChildMut::Table(sweet_child_of_mine) => {
+                Item::Table(ref mut sweet_child_of_mine) => {
                     TomlParser::descend_path(sweet_child_of_mine, path, i + 1)
                 }
+                _ => unreachable!(),
             }
         } else {
             Ok(table)
         }
     }
 
-    fn on_std_header(&mut self, path: Vec<Key>, trailing: &str) -> Result<(), CustomError> {
+    fn on_std_header(&mut self, path: &[Key], trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
@@ -145,18 +150,19 @@ impl TomlParser {
             Ok(table) => {
                 let decor = Decor::new(leading, trailing.into());
 
-                match table.entry(key.get()) {
+                let entry = table.entry(key.raw());
+                if entry.is_none() {
+                    *entry = Item::Table(Table::with_decor(decor));
+                    self.current_table = entry.as_table_mut().unwrap();
+                    return Ok(());
+                }
+                match *entry {
                     // if [a.b.c] header preceded [a.b]
-                    TableEntry::Table(ref mut t) if t.implicit => {
-                        debug_assert!(t.key_value_pairs.is_empty());
+                    Item::Table(ref mut t) if t.implicit => {
+                        debug_assert!(t.values_len() == 0);
                         t.decor = decor;
-                        t.implicit = false;
-                        self.current_table = *t;
-                        return Ok(());
-                    }
-                    TableEntry::Vacant(ref mut parent) => {
-                        let mut table = parent.append_table(key, Table::with_decor(decor));
-                        self.current_table = table.as_table_mut().expect("table");
+                        t.set_implicit(false);
+                        self.current_table = t;
                         return Ok(());
                     }
                     _ => {}
@@ -167,7 +173,7 @@ impl TomlParser {
         }
     }
 
-    fn on_array_header(&mut self, path: Vec<Key>, trailing: &str) -> Result<(), CustomError> {
+    fn on_array_header(&mut self, path: &[Key], trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
@@ -180,8 +186,10 @@ impl TomlParser {
             Ok(table) => if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
                 let decor = Decor::new(leading, trailing.into());
 
-                let mut array = table.append_array(key, ArrayOfTables::new());
-                let array = array.as_array_mut().expect("array");
+                let entry = table
+                    .entry(key.raw())
+                    .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
+                let array = entry.as_array_of_tables_mut().unwrap();
                 self.current_table = array.append(Table::with_decor(decor));
 
                 Ok(())

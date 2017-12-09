@@ -23,7 +23,7 @@ macro_rules! as_table {
 #[cfg(test)]
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
-    use toml_edit::{Document, Key, Value, Table, ArrayOfTables};
+    use toml_edit::{Document, Key, Value, Table, value, table, array};
     use std::iter::FromIterator;
 
     struct Test {
@@ -67,12 +67,13 @@ fn test_insert_leaf_table() {
 
         [other.table]"#
     ).running(|root| {
-        let mut servers = root.entry("servers");
+        let servers = root.entry("servers");
         let servers = as_table!(servers);
-        let mut beta = servers.append_table(parse_key!("beta"), Table::new());
-        let beta = as_table!(beta);
-        beta.append_value(parse_key!("ip"), "10.0.0.2");
-        beta.append_value(parse_key!("dc"), "eqdc10");
+        let entry = servers.entry("beta");
+        *entry = table();
+        let beta = as_table!(entry);
+        *beta.entry("ip") = value("10.0.0.2");
+        *beta.entry("dc") = value("eqdc10");
     }).produces(r#"
         [servers]
 
@@ -94,12 +95,14 @@ fn test_insert_nonleaf_table() {
     given(r#"
         [other.table]"#
     ).running(|root| {
-        let mut servers = root.append_table(parse_key!("servers"), Table::new());
+        let servers = root.entry("servers");
+        *servers = table();
         let servers = as_table!(servers);
-        let mut alpha = servers.append_table(parse_key!("alpha"), Table::new());
+        let alpha = servers.entry("alpha");
+        *alpha = table();
         let alpha = as_table!(alpha);
-        alpha.append_value(parse_key!("ip"), "10.0.0.1");
-        alpha.append_value(parse_key!("dc"), "eqdc10");
+        *alpha.entry("ip") = value("10.0.0.1");
+        *alpha.entry("dc") = value("eqdc10");
     }).produces(r#"
         [other.table]
 
@@ -118,12 +121,13 @@ fn test_insert_array() {
         [package]
         title = "withoutarray""#
     ).running(|root| {
-        let mut array = root.append_array(parse_key!("bin"), ArrayOfTables::new());
-        assert!(array.is_array());
-        let array = array.as_array_mut().unwrap();
+        let array = root.entry("bin");
+        *array = self::array();
+        assert!(array.is_array_of_tables());
+        let array = array.as_array_of_tables_mut().unwrap();
         {
-            let mut first = array.append(Table::new());
-            first.append_value(parse_key!("hello"), "world");
+            let first = array.append(Table::new());
+            *first.entry("hello") = value("world");
         }
         array.append(Table::new());
     }).produces(r#"
@@ -144,11 +148,11 @@ fn test_insert_values() {
     given(r#"
         [tbl.son]"#
     ).running(|root| {
-        let mut table = root.entry("tbl");
+        let table = root.entry("tbl");
         let table = as_table!(table);
-        table.append_value(parse_key!("key1"), "value1");
-        table.append_value(parse_key!("\"key2\""), 42);
-        table.append_value(parse_key!("'key3'"), 8.1415926);
+        *table.entry("key1") = value("value1");
+        *table.entry("\"key2\"") = value(42);
+        *table.entry("'key3'") = value(8.1415926);
     }).produces(r#"
 [tbl]
 key1 = "value1"
@@ -176,9 +180,9 @@ fn test_remove_leaf_table() {
         ip = "10.0.0.2"
         dc = "eqdc10""#
     ).running(|root| {
-        let mut servers = root.entry("servers");
+        let servers = root.entry("servers");
         let servers = as_table!(servers);
-        assert!(servers.remove("alpha"));
+        assert!(servers.remove("alpha").is_some());
     }).produces(r#"
         [servers]
 
@@ -225,7 +229,7 @@ fn test_remove_nonleaf_table() {
 
 
     "#).running(|root| {
-        assert!(root.remove("a"));
+        assert!(root.remove("a").is_some());
     }).produces(r#"
         title = "not relevant"
         # comment 2
@@ -257,11 +261,13 @@ fn test_remove_array_entry() {
         name = "delete me please"
         path = "src/bin/dmp/main.rs""#
     ).running(|root| {
-        let mut dmp = root.entry("bin");
-        assert!(dmp.is_array());
-        let dmp = dmp.as_array_mut().unwrap();
+        let dmp = root.entry("bin");
+        assert!(dmp.is_array_of_tables());
+        let dmp = dmp.as_array_of_tables_mut().unwrap();
+        println!("{:?}", dmp);
         assert_eq!(dmp.len(), 2);
         dmp.remove(1);
+        assert_eq!(dmp.len(), 1);
     }).produces(r#"
         [package]
         name = "hello"
@@ -295,7 +301,7 @@ fn test_remove_array() {
         name = "delete me please"
         path = "src/bin/dmp/main.rs""#
     ).running(|root| {
-        assert!(root.remove("bin"));
+        assert!(root.remove("bin").is_some());
     }).produces(r#"
         [package]
         name = "hello"
@@ -316,9 +322,11 @@ fn test_remove_value() {
         version = "1.0.0" # please
         documentation = "https://docs.rs/hello""#
     ).running(|root| {
-        let value = root.remove_value("version");
+        let value = root.remove("version");
         assert!(value.is_some());
         let value = value.unwrap();
+        assert!(value.is_value());
+        let value = value.as_value().unwrap();
         assert!(value.is_str());
         let value = value.as_str().unwrap();
         assert_eq!(value, "1.0.0");
@@ -330,17 +338,20 @@ fn test_remove_value() {
 }
 
 #[test]
-fn test_remove_last_value() {
+fn test_remove_last_value_from_implicit() {
     given(r#"
         [a]
         b = 1"#
     ).running(|root| {
-        let mut a = root.entry("a");
+        let a = root.entry("a");
         assert!(a.is_table());
         let a = as_table!(a);
-        let value = a.remove_value("b");
+        a.set_implicit(true);
+        let value = a.remove("b");
         assert!(value.is_some());
         let value = value.unwrap();
+        assert!(value.is_value());
+        let value = value.as_value().unwrap();
         assert_eq!(value.as_integer(), Some(1));
     }).produces(r#""#);
 }
@@ -360,7 +371,7 @@ fn test_sort_values() {
 
         [a.y]"#
     ).running(|root| {
-        let mut a = root.entry("a");
+        let a = root.entry("a");
         let a = as_table!(a);
         a.sort_values();
     }).produces(r#"
@@ -381,7 +392,7 @@ macro_rules! as_array {
     ($entry:ident) => (
         {
             assert!($entry.is_value());
-            let mut a = $entry.as_value_mut().unwrap();
+            let a = $entry.as_value_mut().unwrap();
             assert!(a.is_array());
             a.as_array_mut().unwrap()
         }
@@ -395,16 +406,16 @@ fn test_insert_into_array() {
         b = []"#
     ).running(|root| {
         {
-            let mut a = root.entry("a");
-            let mut a = as_array!(a);
+            let a = root.entry("a");
+            let a = as_array!(a);
             assert_eq!(a.len(), 3);
             assert!(a.get(2).is_some());
             assert!(a.push(4));
             assert_eq!(a.len(), 4);
             a.fmt();
         }
-        let mut b = root.entry("b");
-        let mut b = as_array!(b);
+        let b = root.entry("b");
+        let b = as_array!(b);
         assert!(b.is_empty());
         assert!(b.push("hello"));
         assert_eq!(b.len(), 1);
@@ -422,14 +433,14 @@ fn test_remove_from_array() {
         b = ["hello"]"#
     ).running(|root| {
         {
-            let mut a = root.entry("a");
-            let mut a = as_array!(a);
+            let a = root.entry("a");
+            let a = as_array!(a);
             assert_eq!(a.len(), 4);
             assert!(a.remove(3).is_integer());
             assert_eq!(a.len(), 3);
         }
-        let mut b = root.entry("b");
-        let mut b = as_array!(b);
+        let b = root.entry("b");
+        let b = as_array!(b);
         assert_eq!(b.len(), 1);
         assert!(b.remove(0).is_str());
         assert!(b.is_empty());
@@ -444,7 +455,7 @@ macro_rules! as_inline_table {
     ($entry:ident) => (
         {
             assert!($entry.is_value());
-            let mut a = $entry.as_value_mut().unwrap();
+            let a = $entry.as_value_mut().unwrap();
             assert!(a.is_inline_table());
             a.as_inline_table_mut().unwrap()
         }
@@ -458,18 +469,18 @@ fn test_insert_into_inline_table() {
         b = {}"#
     ).running(|root| {
         {
-            let mut a = root.entry("a");
-            let mut a = as_inline_table!(a);
+            let a = root.entry("a");
+            let a = as_inline_table!(a);
             assert_eq!(a.len(), 2);
             assert!(a.contains_key("a") && a.get("c").is_some());
-            assert!(a.insert(parse_key!("b"), 42).is_none());
+            a.get_or_insert("b", 42);
             assert_eq!(a.len(), 3);
             a.fmt();
         }
-        let mut b = root.entry("b");
-        let mut b = as_inline_table!(b);
+        let b = root.entry("b");
+        let b = as_inline_table!(b);
         assert!(b.is_empty());
-        assert!(b.insert(parse_key!("'hello'"), "world").is_none());
+        b.get_or_insert("'hello'", "world");
         assert_eq!(b.len(), 1);
         b.fmt()
     }).produces(r#"
@@ -486,14 +497,14 @@ fn test_remove_from_inline_table() {
         b = {'hello' = "world"}"#
     ).running(|root| {
         {
-            let mut a = root.entry("a");
-            let mut a = as_inline_table!(a);
+            let a = root.entry("a");
+            let a = as_inline_table!(a);
             assert_eq!(a.len(), 3);
             assert!(a.remove("c").is_some());
             assert_eq!(a.len(), 2);
         }
-        let mut b = root.entry("b");
-        let mut b = as_inline_table!(b);
+        let b = root.entry("b");
+        let b = as_inline_table!(b);
         assert_eq!(b.len(), 1);
         assert!(b.remove("hello").is_some());
         assert!(b.is_empty());
@@ -520,7 +531,7 @@ fn test_inline_table_append() {
     ]);
     let b = b.as_inline_table_mut().unwrap();
 
-    a.append(b);
+    b.merge_into(a);
     assert_eq!(a.len(), 5);
     assert!(a.contains_key("e"));
     assert!(b.is_empty());

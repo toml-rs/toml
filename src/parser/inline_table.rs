@@ -5,8 +5,9 @@ use parser::errors::CustomError;
 use parser::trivia::ws;
 use parser::key::key;
 use parser::value::value;
-use value::{InlineTable, KeyValue};
+use value::InlineTable;
 use decor::{InternalString, Repr};
+use table::{Item, TableKeyValue};
 use formatted::decorated;
 
 // ;; Inline Table
@@ -19,7 +20,7 @@ parse!(inline_table() -> InlineTable, {
 
 fn table_from_pairs(
     preamble: &str,
-    v: Vec<(InternalString, KeyValue)>,
+    v: Vec<(InternalString, TableKeyValue)>,
 ) -> Result<InlineTable, CustomError> {
     let mut table = InlineTable::default();
     table.preamble = InternalString::from(preamble);
@@ -27,11 +28,11 @@ fn table_from_pairs(
     for (k, kv) in v {
         if table.contains_key(&k) {
             return Err(CustomError::DuplicateKey {
-                key: k.into(),
+                key: k,
                 table: "inline".into(),
             });
         }
-        table.key_value_pairs.insert(k, kv);
+        table.items.insert(k, kv);
     }
     Ok(table)
 }
@@ -49,7 +50,8 @@ pub(crate) const KEYVAL_SEP: char = '=';
 // inline-table-keyvals-non-empty =
 // ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
 // ( key keyval-sep val )
-parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, KeyValue)>), {
+
+parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, TableKeyValue)>), {
     (
         sep_by(keyval(), char(INLINE_TABLE_SEP)),
         ws(),
@@ -58,7 +60,7 @@ parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, KeyValue)>), {
     })
 });
 
-parse!(keyval() -> (InternalString, KeyValue), {
+parse!(keyval() -> (InternalString, TableKeyValue), {
     (
         try((ws(), key(), ws())),
         char(KEYVAL_SEP),
@@ -69,9 +71,9 @@ parse!(keyval() -> (InternalString, KeyValue), {
         let (pre, (raw, key), suf) = k;
         (
             key,
-            KeyValue {
+            TableKeyValue {
                 key: Repr::new(pre, raw, suf),
-                value: v,
+                value: Item::Value(v),
             }
         )
     })

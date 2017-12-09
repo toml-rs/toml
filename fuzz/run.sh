@@ -2,7 +2,9 @@
 
 set -e
 
-wget https://github.com/rust-fuzz/targets/raw/master/run-fuzzer.sh -O run-fuzzer.sh
+if [ ! -f run-fuzzer.sh ]; then
+    wget https://github.com/rust-fuzz/targets/raw/master/run-fuzzer.sh -O run-fuzzer.sh
+fi
 
 crate="$(dirname $0)"
 target="parse_document"

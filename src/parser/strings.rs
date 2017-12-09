@@ -96,7 +96,6 @@ parse!(basic_string() -> InternalString, {
     between(char(QUOTATION_MARK), char(QUOTATION_MARK),
             many(basic_char()))
         .message("While parsing a Basic String")
-        .map(|s: String| s.into())
 });
 
 // ;; Multiline Basic String
@@ -153,7 +152,7 @@ parse!(ml_basic_body() -> InternalString, {
                         ))
                     )
                     .skip(try_eat_escaped_newline())
-            ).map(|s: String| s.into())
+            )
         )
 });
 
@@ -214,7 +213,7 @@ parse!(ml_literal_body() -> InternalString, {
                             satisfy(is_ml_literal_char),
                         ))
                     )
-            ).map(|s: String| s.into())
+            )
         )
 });
 

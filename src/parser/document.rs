@@ -12,7 +12,7 @@ use parser::table::table;
 use parser::inline_table::KEYVAL_SEP;
 use decor::{InternalString, Repr};
 use document::Document;
-use value::KeyValue;
+use table::{Item, TableKeyValue};
 use formatted::decorated;
 use std::mem;
 use std::cell::RefCell;
@@ -80,7 +80,7 @@ parser!{
 
 // keyval = key keyval-sep val
 parser!{
-    fn parse_keyval['a, I]()(I) -> (InternalString, KeyValue)
+    fn parse_keyval['a, I]()(I) -> (InternalString, TableKeyValue)
         where
         [I: RangeStream<Range = &'a str, Item = char>,]
     {
@@ -94,9 +94,9 @@ parser!{
             let ((raw, key), suf) = k;
             (
                 key,
-                KeyValue {
+                TableKeyValue {
                     key: Repr::new("", raw, suf),
-                    value: v,
+                    value: Item::Value(v),
                 }
             )
         })
@@ -148,7 +148,7 @@ impl TomlParser {
         self.document.trailing.push_str(e);
     }
 
-    fn on_keyval(&mut self, key: InternalString, mut kv: KeyValue) -> Result<(), CustomError> {
+    fn on_keyval(&mut self, key: InternalString, mut kv: TableKeyValue) -> Result<(), CustomError> {
         let table = unsafe { &mut *self.current_table };
 
         let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
@@ -156,11 +156,15 @@ impl TomlParser {
 
         if table.contains_key(&key) {
             Err(CustomError::DuplicateKey {
-                key: key.into(),
+                key: key,
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
-            table.key_value_pairs.insert(key, kv);
+            let tkv = TableKeyValue {
+                key: kv.key,
+                value: kv.value,
+            };
+            table.items.insert(key, tkv);
             Ok(())
         }
     }
