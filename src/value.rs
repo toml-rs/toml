@@ -1,10 +1,11 @@
 use std::str::FromStr;
+use std::mem;
 use chrono::{self, FixedOffset};
 use formatted;
 use linked_hash_map::LinkedHashMap;
-use std::slice::Iter;
-use decor::{Decor, Formatted, InternalString, Repr};
+use decor::{Decor, Formatted, InternalString};
 use key::Key;
+use table::{Item, KeyValuePairs, TableKeyValue};
 use parser;
 use combine;
 use combine::Parser;
@@ -36,7 +37,8 @@ pub enum DateTime {
 /// payload of the `Value::Array` variant's value
 #[derive(Debug, Default, Clone)]
 pub struct Array {
-    pub(crate) values: Vec<Value>,
+    // always Vec<Item::Value>
+    pub(crate) values: Vec<Item>,
     // `trailing` represents whitespaces, newlines
     // and comments in an empty array or after the trailing comma
     pub(crate) trailing: InternalString,
@@ -49,20 +51,11 @@ pub struct Array {
 /// payload of the `Value::InlineTable` variant
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
-    pub(crate) key_value_pairs: KeyValuePairs,
+    pub(crate) items: KeyValuePairs,
     // `preamble` represents whitespaces in an empty table
     pub(crate) preamble: InternalString,
     // prefix before `{` and suffix after `}`
     pub(crate) decor: Decor,
-}
-
-pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, KeyValue>;
-
-/// Type representing a TOML Key/Value Pair
-#[derive(Debug, Clone)]
-pub struct KeyValue {
-    pub(crate) key: Repr,
-    pub(crate) value: Value,
 }
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
@@ -77,6 +70,7 @@ pub(crate) enum ValueType {
     InlineTable,
 }
 
+pub type ArrayIter<'a> = Box<Iterator<Item = &'a Value> + 'a>;
 
 impl Array {
     pub fn len(&self) -> usize {
@@ -87,8 +81,8 @@ impl Array {
         self.len() == 0
     }
 
-    pub fn iter(&self) -> Iter<Value> {
-        self.values.iter()
+    pub fn iter(&self) -> ArrayIter {
+        Box::new(self.values.iter().filter_map(|i| i.as_value()))
     }
 
     pub fn push<V: Into<Value>>(&mut self, v: V) -> bool {
@@ -96,7 +90,7 @@ impl Array {
     }
 
     pub fn get(&mut self, index: usize) -> Option<&Value> {
-        self.values.get(index)
+        self.values.get(index).and_then(Item::as_value)
     }
 
     pub fn remove(&mut self, index: usize) -> Value {
@@ -104,7 +98,10 @@ impl Array {
         if self.is_empty() {
             self.trailing_comma = false;
         }
-        removed
+        match removed {
+            Item::Value(v) => v,
+            x => panic!("non-value item {:?} in an array", x),
+        }
     }
 
     /// Auto formats the array
@@ -113,14 +110,14 @@ impl Array {
     }
 
     pub(crate) fn push_value(&mut self, v: Value, decorate: bool) -> bool {
-        let mut value = v.into();
+        let mut value = v;
         if !self.is_empty() && decorate {
             formatted::decorate(&mut value, " ", "");
         } else if decorate {
             formatted::decorate(&mut value, "", "");
         }
         if self.is_empty() || value.get_type() == self.value_type() {
-            self.values.push(value);
+            self.values.push(Item::Value(value));
             true
         } else {
             false
@@ -128,7 +125,7 @@ impl Array {
     }
 
     pub(crate) fn value_type(&self) -> ValueType {
-        if let Some(value) = self.values.get(0) {
+        if let Some(value) = self.values.get(0).and_then(Item::as_value) {
             value.get_type()
         } else {
             ValueType::None
@@ -136,50 +133,53 @@ impl Array {
     }
 }
 
+pub type InlineTableIter<'a> = Box<Iterator<Item = (&'a str, &'a Value)> + 'a>;
+
 impl InlineTable {
     pub fn len(&self) -> usize {
-        self.key_value_pairs.len()
+        self.items.len()
     }
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    pub fn iter<'a>(&'a self) -> Box<Iterator<Item = (&'a str, &'a Value)> + 'a> {
+    pub fn iter(&self) -> InlineTableIter {
         Box::new(
-            self.key_value_pairs
+            self.items
                 .iter()
-                .map(|(k, kv)| (&k[..], &kv.value)),
+                .filter(|&(_, kv)| kv.value.is_value())
+                .map(|(k, kv)| (&k[..], kv.value.as_value().unwrap())),
         )
     }
 
     pub fn sort(&mut self) {
-        sort_key_value_pairs(&mut self.key_value_pairs);
+        sort_key_value_pairs(&mut self.items);
     }
 
     pub fn contains_key(&self, key: &str) -> bool {
-        self.key_value_pairs.contains_key(key)
-    }
-
-    pub fn try_insert<V: Into<Value>>(&mut self, key: &Key, value: V) -> &mut Value {
-        let kv = formatted::to_key_value(key.raw(), value.into());
-        &mut self.key_value_pairs
-            .entry(key.get().into())
-            .or_insert(kv)
-            .value
-    }
-
-    pub fn insert<V: Into<Value>>(&mut self, key: &Key, value: V) -> Option<Value> {
-        let kv = formatted::to_key_value(key.raw(), value.into());
-        self.key_value_pairs
-            .insert(key.get().into(), kv)
-            .map(|p| p.value)
-    }
-
-    pub fn append(&mut self, other: &mut InlineTable) {
-        while let Some((k, kv)) = other.key_value_pairs.pop_front() {
-            self.key_value_pairs.insert(k, kv);
+        if let Some(kv) = self.items.get(key) {
+            !kv.value.is_none()
+        } else {
+            false
         }
+    }
+
+    pub fn merge_into(&mut self, other: &mut InlineTable) {
+        let items = mem::replace(&mut self.items, KeyValuePairs::new());
+        for (k, kv) in items {
+            other.items.insert(k, kv);
+        }
+    }
+
+    pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
+        let parsed = key.parse::<Key>().expect("invalid key");
+        self.items
+            .entry(parsed.get().to_owned())
+            .or_insert(formatted::to_key_value(key, value.into()))
+            .value
+            .as_value_mut()
+            .expect("non-value type in inline table")
     }
 
     /// Auto formats the table
@@ -188,15 +188,19 @@ impl InlineTable {
     }
 
     pub fn remove(&mut self, key: &str) -> Option<Value> {
-        self.key_value_pairs.remove(key).map(|kv| kv.value)
+        self.items
+            .remove(key)
+            .and_then(|kv| kv.value.as_value().cloned())
     }
 
     pub fn get(&self, key: &str) -> Option<&Value> {
-        self.key_value_pairs.get(key).map(|kv| &kv.value)
+        self.items.get(key).and_then(|kv| kv.value.as_value())
     }
 
     pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
-        self.key_value_pairs.get_mut(key).map(|kv| &mut kv.value)
+        self.items
+            .get_mut(key)
+            .and_then(|kv| kv.value.as_value_mut())
     }
 }
 
@@ -346,11 +350,15 @@ impl Value {
     }
 }
 
-pub(crate) fn sort_key_value_pairs(pairs: &mut KeyValuePairs) {
-    let mut keys: Vec<InternalString> = pairs.keys().cloned().collect();
+pub(crate) fn sort_key_value_pairs(items: &mut LinkedHashMap<InternalString, TableKeyValue>) {
+    let mut keys: Vec<InternalString> = items
+        .iter()
+        .filter_map(|i| (i.1).value.as_value().map(|_| i.0))
+        .cloned()
+        .collect();
     keys.sort();
     for key in keys {
-        pairs.get_refresh(&key);
+        items.get_refresh(&key);
     }
 }
 

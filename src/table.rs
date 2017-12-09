@@ -1,82 +1,57 @@
 use linked_hash_map::LinkedHashMap;
-use value::{sort_key_value_pairs, InlineTable, KeyValuePairs, Value};
-use decor::{Decor, InternalString};
+use value::{sort_key_value_pairs, Value};
+use decor::{Decor, InternalString, Repr};
 use key::Key;
 use array_of_tables::ArrayOfTables;
-use formatted::to_key_value;
+use formatted::{decorated, key_repr};
 
 // TODO: add method to convert a table into inline table
-// TODO: impl Index
 // TODO: documentation
 
 /// Type representing a TOML non-inline table
 #[derive(Clone, Debug, Default)]
 pub struct Table {
-    pub(crate) key_value_pairs: KeyValuePairs,
-    pub(crate) containers: LinkedHashMap<InternalString, (InternalString, Container)>,
+    pub(crate) items: KeyValuePairs,
+    // comments/spaces before and after the header
     pub(crate) decor: Decor,
+    // whether to hide an empty table
     pub(crate) implicit: bool,
 }
 
-#[derive(Clone, Debug)]
-pub(crate) enum Container {
+pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
+
+#[derive(Debug, Clone)]
+pub enum Item {
+    None,
+    Value(Value),
     Table(Table),
-    Array(ArrayOfTables),
+    ArrayOfTables(ArrayOfTables),
 }
 
-/// An immutable reference to a child
-#[derive(Clone, Debug)]
-pub enum TableChild<'a> {
-    /// A reference to a child value
-    Value(&'a Value),
-    /// A reference to a child table
-    Table(&'a Table),
-    /// A reference to a child array of tables
-    Array(&'a ArrayOfTables),
-}
-
-pub type Iter<'a> = Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a>;
-
-/// A mutable reference to a child
-#[derive(Debug)]
-pub enum TableChildMut<'a> {
-    /// A mutable reference to a child value
-    Value(&'a mut Value),
-    /// A mutable reference to a child table
-    Table(&'a mut Table),
-    /// A mutable reference to a child array of tables
-    Array(&'a mut ArrayOfTables),
-}
-
-pub type IterMut<'a> = Box<Iterator<Item = (&'a str, TableChildMut<'a>)> + 'a>;
-
-/// Return type of table.entry("key")
-#[derive(Debug)]
-pub enum TableEntry<'a> {
-    /// A mutable reference to a child value
-    Value(&'a mut Value),
-    /// A mutable reference to a child table
-    Table(&'a mut Table),
-    /// A mutable reference to a child array of tables
-    Array(&'a mut ArrayOfTables),
-    /// A mutable reference to the table itself
-    Vacant(&'a mut Table),
-}
-
-impl Container {
-    fn as_table_please(&mut self) -> &mut Table {
-        match *self {
-            Container::Table(ref mut t) => t,
-            _ => unreachable!("table please"),
-        }
+impl Default for Item {
+    fn default() -> Self {
+        Item::None
     }
-    fn as_array_please(&mut self) -> &mut ArrayOfTables {
-        match *self {
-            Container::Array(ref mut a) => a,
-            _ => unreachable!("array please"),
+}
+
+// TODO: make pub(crate)
+#[doc(hidden)]
+#[derive(Debug, Clone)]
+pub struct TableKeyValue {
+    pub(crate) key: Repr,
+    pub(crate) value: Item,
+}
+
+impl TableKeyValue {
+    pub(crate) fn new(key: Repr, value: Item) -> Self {
+        TableKeyValue {
+            key: key,
+            value: value,
         }
     }
 }
+
+pub type Iter<'a> = Box<Iterator<Item = (&'a str, &'a Item)> + 'a>;
 
 impl Table {
     pub fn new() -> Self {
@@ -89,159 +64,87 @@ impl Table {
             ..Default::default()
         }
     }
+
     pub fn contains_key(&self, key: &str) -> bool {
-        self.contains_value(key) || self.contains_container(key)
-    }
-    pub(crate) fn contains_value(&self, key: &str) -> bool {
-        self.key_value_pairs.contains_key(key)
-    }
-    fn contains_container(&self, key: &str) -> bool {
-        self.containers.contains_key(key)
-    }
-    pub(crate) fn contains_table(&self, key: &str) -> bool {
-        match self.containers.get(key) {
-            Some(&(_, Container::Table(..))) => true,
-            _ => false,
+        if let Some(kv) = self.items.get(key) {
+            !kv.value.is_none()
+        } else {
+            false
         }
     }
-    /// Iterator over key/value pairs, arrays of tables and subtables.
+
+    pub fn contains_table(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            kv.value.is_table()
+        } else {
+            false
+        }
+    }
+
+    pub fn contains_value(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            kv.value.is_value()
+        } else {
+            false
+        }
+    }
+
+    pub fn contains_array_of_tables(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            kv.value.is_array_of_tables()
+        } else {
+            false
+        }
+    }
+
     pub fn iter(&self) -> Iter {
-        Box::new(
-            self.key_value_pairs
-                .iter()
-                .map(|(k, kv)| (&k[..], TableChild::Value(&kv.value)))
-                .chain(self.containers.iter().map(|(k, c)| {
-                    (
-                        &k[..],
-                        match c.1 {
-                            Container::Table(ref t) => TableChild::Table(t),
-                            Container::Array(ref a) => TableChild::Array(a),
-                        },
-                    )
-                })),
-        )
+        Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
 
-
-    /// Mutable iterator over key/value pairs, arrays of tables and subtables.
-    pub fn iter_mut(&mut self) -> IterMut {
-        Box::new(
-            self.key_value_pairs
-                .iter_mut()
-                .map(|(k, kv)| (&k[..], TableChildMut::Value(&mut kv.value)))
-                .chain(self.containers.iter_mut().map(|(k, p)| {
-                    (
-                        &k[..],
-                        match p.1 {
-                            Container::Table(ref mut t) => TableChildMut::Table(t),
-                            Container::Array(ref mut a) => TableChildMut::Array(a),
-                        },
-                    )
-                })),
-        )
-    }
-
-    /// Moves all elements from `other` into `Self`, leaving `other` empty.
-    ///
-    /// **Note**: this method will remove comments from overwritten key/value pairs.
-    pub fn append(&mut self, other: &mut InlineTable) {
-        while let Some((k, kv)) = other.key_value_pairs.pop_front() {
-            self.key_value_pairs.insert(k, kv);
-        }
-    }
-
-    pub fn remove(&mut self, key: &str) -> bool {
-        self.remove_container(key) || self.remove_value(key).is_some()
-    }
-
-    pub fn remove_value(&mut self, key: &str) -> Option<Value> {
-        let val = self.key_value_pairs.remove(key).map(|kv| kv.value);
-        if val.is_some() {
-            self.set_implicit();
-        }
-        val
-    }
-
-    fn remove_container(&mut self, key: &str) -> bool {
-        self.containers.remove(key).is_some()
+    pub fn remove(&mut self, key: &str) -> Option<Item> {
+        self.items.remove(key).map(|kv| kv.value)
     }
 
     /// Sorts Key/Value Pairs of the table,
     /// doesn't affect subtables or subarrays.
     pub fn sort_values(&mut self) {
-        sort_key_value_pairs(&mut self.key_value_pairs);
+        sort_key_value_pairs(&mut self.items);
     }
 
+    /// Returns the number of non-empty items in the table.
     pub fn len(&self) -> usize {
-        self.key_value_pairs.len() + self.containers.len()
+        self.items.iter().filter(|i| !(i.1).value.is_none()).count()
+    }
+
+    /// Returns the number of key/value pairs in the table.
+    pub fn values_len(&self) -> usize {
+        self.items.iter().filter(|i| (i.1).value.is_value()).count()
     }
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    pub fn get<'a>(&'a self, key: &str) -> Option<TableChild<'a>> {
-        if let Some(c) = self.containers.get(key) {
-            match c.1 {
-                Container::Table(ref t) => Some(TableChild::Table(t)),
-                Container::Array(ref a) => Some(TableChild::Array(a)),
-            }
-        } else if let Some(kv) = self.key_value_pairs.get(key) {
-            Some(TableChild::Value(&kv.value))
-        } else {
-            None
-        }
+    /// Given the `key`, return a mutable reference to the value.
+    /// If there is no entry associated with the given key in the table,
+    /// a `Item::None` value will be inserted.
+    ///
+    /// To insert to item, use `entry` to return a mutable reference
+    /// and set it to the appropriate value.
+    pub fn entry<'a>(&'a mut self, key: &str) -> &'a mut Item {
+        let parsed_key = key.parse::<Key>().expect("invalid key");
+        &mut self.items
+            .entry(parsed_key.get().to_owned())
+            .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
+            .value
     }
 
-    pub fn entry<'a>(&'a mut self, key: &str) -> TableEntry<'a> {
-        if !self.contains_key(key) {
-            TableEntry::Vacant(self)
-        } else if let Some(c) = self.containers.get_mut(key) {
-            match c.1 {
-                Container::Table(ref mut t) => TableEntry::Table(t),
-                Container::Array(ref mut a) => TableEntry::Array(a),
-            }
-        } else {
-            let kv = self.key_value_pairs
-                .get_mut(key)
-                .expect("non-lexical lifetimes");
-            TableEntry::Value(&mut kv.value)
-        }
+    pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
+        self.items.get(key).map(|kv| &kv.value)
     }
 
-    pub fn append_value<V: Into<Value>>(&mut self, key: &Key, value: V) -> TableChildMut {
-        match self.entry(key.get()) {
-            TableEntry::Vacant(me) => {
-                TableChildMut::Value(me.append_value_assume_vacant(key, value.into()))
-            }
-            TableEntry::Array(v) => TableChildMut::Array(v),
-            TableEntry::Table(v) => TableChildMut::Table(v),
-            TableEntry::Value(v) => TableChildMut::Value(v),
-        }
-    }
-
-    pub fn append_table(&mut self, key: &Key, table: Table) -> TableChildMut {
-        match self.entry(key.get()) {
-            TableEntry::Vacant(me) => {
-                TableChildMut::Table(me.append_table_assume_vacant(key, table))
-            }
-            TableEntry::Array(v) => TableChildMut::Array(v),
-            TableEntry::Table(v) => TableChildMut::Table(v),
-            TableEntry::Value(v) => TableChildMut::Value(v),
-        }
-    }
-
-    pub fn append_array(&mut self, key: &Key, array: ArrayOfTables) -> TableChildMut {
-        match self.entry(key.get()) {
-            TableEntry::Vacant(me) => {
-                TableChildMut::Array(me.append_array_assume_vacant(key, array))
-            }
-            TableEntry::Array(v) => TableChildMut::Array(v),
-            TableEntry::Table(v) => TableChildMut::Table(v),
-            TableEntry::Value(v) => TableChildMut::Value(v),
-        }
-    }
-
+    /// If a table has no key value pairs and implicit, it will not be displayed.
+    ///
     /// # Examples
     ///
     /// ```notrust
@@ -257,241 +160,87 @@ impl Table {
     /// # fn main() {
     /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("valid toml");
     ///
-    /// assert!(doc.root.entry("a").as_table_mut().unwrap().set_implicit());
+    /// doc.root.entry("a").as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");
     /// # }
     /// ```
-    pub fn set_implicit(&mut self) -> bool {
-        if self.key_value_pairs.is_empty() && !self.implicit {
-            self.implicit = true;
-            true
-        } else {
-            false
-        }
-    }
-
-    fn append_value_assume_vacant(&mut self, key: &Key, value: Value) -> &mut Value {
-        debug_assert!(!self.contains_key(key.get()));
-        let kv = to_key_value(key.raw(), value);
-        if self.implicit {
-            self.implicit = false;
-        }
-        &mut self.key_value_pairs
-            .entry(key.get().into())
-            .or_insert(kv)
-            .value
-    }
-
-    pub(crate) fn append_array_assume_vacant(
-        &mut self,
-        key: &Key,
-        array: ArrayOfTables,
-    ) -> &mut ArrayOfTables {
-        debug_assert!(!self.contains_key(key.get()));
-        let pair = (key.raw().into(), Container::Array(array));
-        let result = self.containers
-            .entry(key.get().into())
-            .or_insert_with(|| pair);
-        result.1.as_array_please()
-    }
-
-    pub(crate) fn append_table_assume_vacant(&mut self, key: &Key, table: Table) -> &mut Table {
-        debug_assert!(!self.contains_key(key.get()));
-        let pair = (key.raw().to_owned(), Container::Table(table));
-        let result = self.containers
-            .entry(key.get().into())
-            .or_insert_with(|| pair);
-        result.1.as_table_please()
+    pub fn set_implicit(&mut self, implicit: bool) {
+        self.implicit = implicit;
     }
 }
 
+impl Item {
+    pub fn or_insert(&mut self, item: Item) -> &mut Item {
+        if self.is_none() {
+            *self = item
+        }
+        self
+    }
+}
 // TODO: This should be generated by macro or derive
 /// Downcasting
-impl<'a> TableEntry<'a> {
-    pub fn as_table_mut(&mut self) -> Option<&mut Table> {
+impl Item {
+    pub fn as_value(&self) -> Option<&Value> {
         match *self {
-            TableEntry::Table(ref mut me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_array_mut(&mut self) -> Option<&mut ArrayOfTables> {
-        match *self {
-            TableEntry::Array(ref mut me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_value_mut(&mut self) -> Option<&mut Value> {
-        match *self {
-            TableEntry::Value(ref mut me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_vacant_mut(&mut self) -> Option<&mut Table> {
-        match *self {
-            TableEntry::Vacant(ref mut me) => Some(me),
+            Item::Value(ref v) => Some(v),
             _ => None,
         }
     }
     pub fn as_table(&self) -> Option<&Table> {
         match *self {
-            TableEntry::Table(ref me) => Some(me),
+            Item::Table(ref t) => Some(t),
             _ => None,
         }
     }
-    pub fn as_array(&self) -> Option<&ArrayOfTables> {
+    pub fn as_array_of_tables(&self) -> Option<&ArrayOfTables> {
         match *self {
-            TableEntry::Array(ref me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_value(&self) -> Option<&Value> {
-        match *self {
-            TableEntry::Value(ref me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_vacant(&self) -> Option<&Table> {
-        match *self {
-            TableEntry::Vacant(ref me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn is_table(&self) -> bool {
-        self.as_table().is_some()
-    }
-    pub fn is_array(&self) -> bool {
-        self.as_array().is_some()
-    }
-    pub fn is_value(&self) -> bool {
-        self.as_value().is_some()
-    }
-    pub fn is_vacant(&self) -> bool {
-        self.as_vacant().is_some()
-    }
-}
-
-/// Downcasting
-impl<'a> TableChild<'a> {
-    pub fn as_table(&self) -> Option<&'a Table> {
-        match *self {
-            TableChild::Table(me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_array(&self) -> Option<&'a ArrayOfTables> {
-        match *self {
-            TableChild::Array(me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_value(&self) -> Option<&'a Value> {
-        match *self {
-            TableChild::Value(me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn is_table(&self) -> bool {
-        self.as_table().is_some()
-    }
-    pub fn is_array(&self) -> bool {
-        self.as_array().is_some()
-    }
-    pub fn is_value(&self) -> bool {
-        self.as_value().is_some()
-    }
-
-    pub fn get(&self, key: &str) -> Option<TableChild<'a>> {
-        match *self {
-            TableChild::Value(v) if v.is_inline_table() => {
-                let t = v.as_inline_table().unwrap();
-                t.get(key).map(|v| TableChild::Value(v))
-            }
-            TableChild::Table(t) => t.get(key),
-            _ => None,
-        }
-    }
-}
-
-/// Downcasting
-impl<'a> TableChildMut<'a> {
-    pub fn as_table_mut(&mut self) -> Option<&mut Table> {
-        match *self {
-            TableChildMut::Table(ref mut me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn as_array_mut(&mut self) -> Option<&mut ArrayOfTables> {
-        match *self {
-            TableChildMut::Array(ref mut me) => Some(me),
+            Item::ArrayOfTables(ref a) => Some(a),
             _ => None,
         }
     }
     pub fn as_value_mut(&mut self) -> Option<&mut Value> {
         match *self {
-            TableChildMut::Value(ref mut me) => Some(me),
+            Item::Value(ref mut v) => Some(v),
             _ => None,
         }
     }
-    pub fn as_table(&self) -> Option<&Table> {
+    pub fn as_table_mut(&mut self) -> Option<&mut Table> {
         match *self {
-            TableChildMut::Table(ref me) => Some(me),
+            Item::Table(ref mut t) => Some(t),
             _ => None,
         }
     }
-    pub fn as_array(&self) -> Option<&ArrayOfTables> {
+    pub fn as_array_of_tables_mut(&mut self) -> Option<&mut ArrayOfTables> {
         match *self {
-            TableChildMut::Array(ref me) => Some(me),
+            Item::ArrayOfTables(ref mut a) => Some(a),
             _ => None,
         }
-    }
-    pub fn as_value(&self) -> Option<&Value> {
-        match *self {
-            TableChildMut::Value(ref me) => Some(me),
-            _ => None,
-        }
-    }
-    pub fn is_table(&self) -> bool {
-        self.as_table().is_some()
-    }
-    pub fn is_array(&self) -> bool {
-        self.as_array().is_some()
     }
     pub fn is_value(&self) -> bool {
         self.as_value().is_some()
     }
-}
-
-impl<'a> TableChildMut<'a> {
-    pub fn into_entry(self) -> TableEntry<'a> {
-        match self {
-            TableChildMut::Table(t) => TableEntry::Table(t),
-            TableChildMut::Array(t) => TableEntry::Array(t),
-            TableChildMut::Value(t) => TableEntry::Value(t),
+    pub fn is_table(&self) -> bool {
+        self.as_table().is_some()
+    }
+    pub fn is_array_of_tables(&self) -> bool {
+        self.as_array_of_tables().is_some()
+    }
+    pub fn is_none(&self) -> bool {
+        match *self {
+            Item::None => true,
+            _ => false,
         }
     }
 }
 
-impl<'e> TableEntry<'e> {
-    pub fn get(self, s: &str) -> TableEntry<'e> {
-        match self {
-            TableEntry::Table(table) => table.entry(s),
-            TableEntry::Value(&mut Value::InlineTable(ref mut t)) if t.contains_key(s) => {
-                t.get_mut(s).map(TableEntry::Value).unwrap()
-            }
-            a => a,
-        }
-    }
+pub fn value<V: Into<Value>>(v: V) -> Item {
+    Item::Value(decorated(v.into(), " ", ""))
+}
 
-    pub fn get_or_insert(self, s: &str) -> TableEntry<'e> {
-        let key: Key = s.parse().expect("valid key");
-        match self {
-            TableEntry::Value(&mut Value::InlineTable(ref mut t)) => TableEntry::Value(
-                t.try_insert(&key, Value::InlineTable(InlineTable::default())),
-            ),
-            TableEntry::Vacant(table) | TableEntry::Table(table) => {
-                table.append_table(&key, Table::new()).into_entry()
-            }
-            _ => panic!("can't access key {} in {:?}", s, self),
-        }
-    }
+pub fn table() -> Item {
+    Item::Table(Table::new())
+}
+
+pub fn array() -> Item {
+    Item::ArrayOfTables(ArrayOfTables::new())
 }

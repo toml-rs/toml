@@ -4,9 +4,9 @@ extern crate toml_edit;
 use serde_json::Value as Json;
 use serde_json::Map as JsonMap;
 
-use toml_edit::{Document, TableChild, Value};
+use toml_edit::{Document, Item, Value, Iter};
 
-fn pair_to_json((key, value): (&str, TableChild)) -> (String, Json) {
+fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
     fn typed_json(s: &str, json: Json) -> Json {
         let mut map = JsonMap::new();
         map.insert("type".to_owned(), Json::String(s.into()));
@@ -25,21 +25,30 @@ fn pair_to_json((key, value): (&str, TableChild)) -> (String, Json) {
                 typed_json("array", json)
             }
             Value::InlineTable(ref t) => {
-                to_json(Box::new(t.iter().map(|(k, v)| (k, TableChild::Value(v)))))
+                to_json(Box::new(t.iter().map(|(k, v)| (k, Item::Value(v.clone())))))
             }
         }
     }
     let json = match value {
-        TableChild::Value(v) => value_to_json(v),
-        TableChild::Array(arr) => {
-            Json::Array(arr.iter().map(|t| to_json(t.iter())).collect::<Vec<_>>())
+        Item::Value(ref v) => value_to_json(v),
+        Item::ArrayOfTables(ref arr) => {
+            Json::Array(arr.iter().map(|t| to_json(iter_to_owned(t.iter()))).collect::<Vec<_>>())
         }
-        TableChild::Table(table) => to_json(table.iter()),
+        Item::Table(ref table) => to_json(iter_to_owned(table.iter())),
+        Item::None => Json::Null,
     };
     (key.to_owned(), json)
 }
 
-fn to_json<'a>(iter: Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a>) -> Json {
+fn iter_to_owned(iter: Iter) -> OwnedIter {
+    Box::new(
+        iter.map(|(k, v)| (k, v.clone()))
+    )
+}
+
+type OwnedIter<'s> = Box<Iterator<Item = (&'s str, Item)> + 's>;
+
+fn to_json(iter: OwnedIter) -> Json {
     Json::Object(iter.map(pair_to_json).collect())
 }
 
@@ -49,7 +58,7 @@ fn run(json: &str, toml: &str) {
     let doc = doc.unwrap();
 
     let json: Json = serde_json::from_str(json).unwrap();
-    let toml_json = to_json(doc.iter());
+    let toml_json = to_json(iter_to_owned(doc.iter()));
     // compare structure with jsons
     assert_eq!(json, toml_json);
 
@@ -70,6 +79,34 @@ macro_rules! t(
         }
     )
 );
+
+#[test]
+fn table_reordering() {
+    let toml = r#"
+[[bin]] # bin 1
+[a.b.c.e]
+[a]
+[other.table]
+[[bin]] # bin 2
+[a.b.c.d]
+[a.b.c]
+[[bin]] # bin 3
+"#;
+    let expected = r#"
+[[bin]] # bin 1
+[[bin]] # bin 2
+[[bin]] # bin 3
+[a]
+[a.b.c]
+[a.b.c.e]
+[a.b.c.d]
+[other.table]
+"#;
+    let doc = toml.parse::<Document>();
+    assert!(doc.is_ok());
+    let doc = doc.unwrap();
+    assert_eq!(doc.to_string(), expected);
+}
 
 t!(
     test_array_empty,

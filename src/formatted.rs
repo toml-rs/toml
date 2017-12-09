@@ -1,11 +1,17 @@
-use value::{Array, DateTime, InlineTable, KeyValue, KeyValuePairs, Value};
+use value::{Array, DateTime, InlineTable, Value};
+use table::{Item, KeyValuePairs, TableKeyValue};
 use decor::{Decor, Formatted, InternalString, Repr};
 use key::Key;
 use std::iter::FromIterator;
 
 
 pub(crate) fn decorate_array(array: &mut Array) {
-    for (i, val) in array.values.iter_mut().enumerate() {
+    for (i, val) in array
+        .values
+        .iter_mut()
+        .filter_map(|i| i.as_value_mut())
+        .enumerate()
+    {
         // [value1, value2, value3]
         if i > 0 {
             decorate(val, " ", "");
@@ -16,15 +22,21 @@ pub(crate) fn decorate_array(array: &mut Array) {
 }
 
 pub(crate) fn decorate_inline_table(table: &mut InlineTable) {
-    let n = table.key_value_pairs.len();
-    for (i, (_, kv)) in table.key_value_pairs.iter_mut().enumerate() {
+    let n = table.len();
+    for (i, (mut key, mut value)) in table
+        .items
+        .iter_mut()
+        .filter(|&(_, ref kv)| kv.value.is_value())
+        .map(|(_, kv)| (&mut kv.key, kv.value.as_value_mut().unwrap()))
+        .enumerate()
+    {
         // { key1 = value1, key2 = value2 }
-        kv.key.decor.prefix = InternalString::from(" ");
-        kv.key.decor.suffix = InternalString::from(" ");
+        key.decor.prefix = InternalString::from(" ");
+        key.decor.suffix = InternalString::from(" ");
         if i == n - 1 {
-            decorate(&mut kv.value, " ", " ");
+            decorate(value, " ", " ");
         } else {
-            decorate(&mut kv.value, " ", "");
+            decorate(value, " ", "");
         }
     }
 }
@@ -43,7 +55,7 @@ pub(crate) fn decorate(value: &mut Value, prefix: &str, suffix: &str) {
     decor.suffix = InternalString::from(suffix);
 }
 
-pub(crate) fn decorated(mut value: Value, prefix: &str, suffix: &str) -> Value {
+pub fn decorated(mut value: Value, prefix: &str, suffix: &str) -> Value {
     {
         decorate(&mut value, prefix, suffix);
     }
@@ -73,17 +85,25 @@ pub(crate) fn value(mut val: Value, raw: &str) -> Value {
     val
 }
 
-pub(crate) fn to_key_value(key: &str, mut value: Value) -> KeyValue {
+pub(crate) fn to_key_value(key: &str, mut value: Value) -> TableKeyValue {
     decorate(&mut value, " ", "");
-    KeyValue {
-        key: Repr {
-            decor: Decor {
-                prefix: InternalString::from(""),
-                suffix: InternalString::from(" "),
-            },
-            raw_value: key.into(),
-        },
+    to_table_key_value(key, Item::Value(value))
+}
+
+pub(crate) fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
+    TableKeyValue {
+        key: key_repr(key),
         value: value,
+    }
+}
+
+pub(crate) fn key_repr(raw: &str) -> Repr {
+    Repr {
+        decor: Decor {
+            prefix: InternalString::from(""),
+            suffix: InternalString::from(" "),
+        },
+        raw_value: raw.into(),
     }
 }
 
@@ -145,7 +165,7 @@ impl<V: Into<Value>> FromIterator<V> for Value {
     where
         I: IntoIterator<Item = V>,
     {
-        let v = iter.into_iter().map(|a| a.into());
+        let v = iter.into_iter().map(|a| Item::Value(a.into()));
         let mut array = Array {
             values: v.collect(),
             ..Default::default()
@@ -174,7 +194,7 @@ impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
         I: IntoIterator<Item = (K, V)>,
     {
         let mut table = InlineTable {
-            key_value_pairs: to_key_value_pairs(iter),
+            items: to_key_value_pairs(iter),
             ..Default::default()
         };
         decorate_inline_table(&mut table);

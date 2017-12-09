@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use table::{Table, TableChild};
+use table::{Iter, Table};
 use decor::InternalString;
 use parser;
 
@@ -18,7 +18,7 @@ impl Document {
         Default::default()
     }
 
-    pub fn iter<'a>(&'a self) -> Box<Iterator<Item = (&'a str, TableChild<'a>)> + 'a> {
+    pub fn iter(&self) -> Iter {
         self.root.iter()
     }
 }
