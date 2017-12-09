@@ -1,5 +1,5 @@
 use linked_hash_map::LinkedHashMap;
-use value::{sort_key_value_pairs, Value};
+use value::{sort_key_value_pairs, Array, DateTime, InlineTable, Value};
 use decor::{Decor, InternalString, Repr};
 use key::Key;
 use array_of_tables::ArrayOfTables;
@@ -230,6 +230,72 @@ impl Item {
             Item::None => true,
             _ => false,
         }
+    }
+
+    // Duplicate Value downcasting API
+
+    pub fn as_integer(&self) -> Option<i64> {
+        self.as_value().and_then(|v| v.as_integer())
+    }
+
+    pub fn is_integer(&self) -> bool {
+        self.as_integer().is_some()
+    }
+
+    pub fn as_float(&self) -> Option<f64> {
+        self.as_value().and_then(|v| v.as_float())
+    }
+
+    pub fn is_float(&self) -> bool {
+        self.as_float().is_some()
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        self.as_value().and_then(|v| v.as_bool())
+    }
+
+    pub fn is_bool(&self) -> bool {
+        self.as_bool().is_some()
+    }
+
+    pub fn as_str(&self) -> Option<&str> {
+        self.as_value().and_then(|v| v.as_str())
+    }
+
+    pub fn is_str(&self) -> bool {
+        self.as_str().is_some()
+    }
+
+    pub fn as_date_time(&self) -> Option<&DateTime> {
+        self.as_value().and_then(|v| v.as_date_time())
+    }
+
+    pub fn is_date_time(&self) -> bool {
+        self.as_date_time().is_some()
+    }
+
+    pub fn as_array(&self) -> Option<&Array> {
+        self.as_value().and_then(|v| v.as_array())
+    }
+
+    pub fn as_array_mut(&mut self) -> Option<&mut Array> {
+        self.as_value_mut().and_then(|v| v.as_array_mut())
+    }
+
+    pub fn is_array(&self) -> bool {
+        self.as_array().is_some()
+    }
+
+    pub fn as_inline_table(&self) -> Option<&InlineTable> {
+        self.as_value().and_then(|v| v.as_inline_table())
+    }
+
+    pub fn as_inline_table_mut(&mut self) -> Option<&mut InlineTable> {
+        self.as_value_mut().and_then(|v| v.as_inline_table_mut())
+    }
+
+    pub fn is_inline_table(&self) -> bool {
+        self.as_inline_table().is_some()
     }
 }
 
