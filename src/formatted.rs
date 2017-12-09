@@ -23,7 +23,7 @@ pub(crate) fn decorate_array(array: &mut Array) {
 
 pub(crate) fn decorate_inline_table(table: &mut InlineTable) {
     let n = table.len();
-    for (i, (mut key, mut value)) in table
+    for (i, (key, value)) in table
         .items
         .iter_mut()
         .filter(|&(_, ref kv)| kv.value.is_value())

@@ -41,10 +41,6 @@ fn test_parse_error() {
     parse_error!(r#"["", 2]"#, Value, "Mixed types in array");
     parse_error!("'hello'bla", Value, "Could not parse the line");
     parse_error!(r#"{a = 2"#, Value, "Expected `}`");
-
-    parse_error!("\n", Key, "Unexpected `\n`");
-    parse_error!("'hello key'bla", Key, "Could not parse the line");
-    parse_error!("", Key, "Unexpected `end of input`");
 }
 
 #[test]

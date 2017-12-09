@@ -36,9 +36,13 @@ pub struct Key {
 impl FromStr for Key {
     type Err = parser::TomlError;
 
-    /// Parses a key from a &str
+    /// Tries to parse a key from a &str,
+    /// if fails, tries as basic quoted key (surrounds with "")
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = parser::key().parse(combine::State::new(s));
+        let quoted = format!("\"{}\"", s);
+        let parsed = parser::key()
+            .parse(combine::State::new(s))
+            .or_else(|_| parser::key().parse(combine::State::new(&quoted)));
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(Self::Err::from_unparsed(rest.positioner, s))
