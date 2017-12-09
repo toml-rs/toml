@@ -13,9 +13,9 @@ documents, while preserving comments, spaces* and
 relative order* or items.
 
 *Things it does not preserve:
-1. Spaces in headers, e.g. `[ ' a ' .  b ]` will be represented as [' a '.b]
-2. Children tables before parent table (tables are reordered).
-3. Scattered array of tables (tables are reordered).
+1. Spaces in headers, e.g. `[ ' a ' .  b ]` will be represented as `[' a '.b]`.
+2. Children tables before parent table (tables are reordered, see [test]).
+3. Scattered array of tables (tables are reordered, see [test]).
 
 `toml_edit` is primarily tailored for [cargo-edit](https://github.com/killercup/cargo-edit/) needs.
 
@@ -55,3 +55,5 @@ Licensed under either of
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+
+[test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
