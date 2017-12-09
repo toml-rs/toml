@@ -32,7 +32,7 @@ matrix:
     - rust: nightly
 
   include:
-  - rust: nightly-2017-07-25
+  - rust: nightly-2017-12-08
     env:
       global:
         - RUSTFLAGS="-C link-dead-code"
@@ -47,8 +47,8 @@ matrix:
           - libiberty-dev
 
     before_script:
-    - cargo install clippy --vers 0.0.145 || true
-    - cargo install rustfmt-nightly --vers 0.2.1 || true
+    - bash -c '[ "$(cargo clippy --version 2>/dev/null)" == "0.0.175" ] || cargo install clippy --vers 0.0.175 --force'
+    - bash -c '[ "$(rustfmt --version 2>/dev/null)" == "0.2.17-nightly ( )" ] || cargo install rustfmt-nightly --vers 0.2.17 --force'
 
     script:
     - cargo clippy -- -D warnings -Z no-trans

@@ -1,5 +1,5 @@
 use std::ops;
-use table::{Item, Table, value};
+use table::{value, Item, Table};
 use value::{InlineTable, Value};
 use formatted::to_table_key_value;
 use document::Document;
