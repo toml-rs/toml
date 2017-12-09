@@ -5,7 +5,7 @@ use formatted;
 use linked_hash_map::LinkedHashMap;
 use decor::{Decor, Formatted, InternalString};
 use key::Key;
-use table::{KeyValuePairs, TableKeyValue, Item};
+use table::{Item, KeyValuePairs, TableKeyValue};
 use parser;
 use combine;
 use combine::Parser;

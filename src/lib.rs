@@ -14,16 +14,25 @@
 //! ```rust
 //! extern crate toml_edit;
 //!
-//! use toml_edit::Document;
+//! use toml_edit::{Document, value};
 //!
 //! fn main() {
 //!     let toml = r#"
-//!       "hello" = 'toml!' # comment
-//!       ['a'.b]
+//! "hello" = 'toml!' # comment
+//! ['a'.b]
 //!     "#;
-//!     let doc = toml.parse::<Document>();
-//!     assert!(doc.is_ok());
-//!     assert_eq!(doc.unwrap().to_string(), toml);
+//!     let mut doc = toml.parse::<Document>().expect("invalid doc");
+//!     assert_eq!(doc.to_string(), toml);
+//!     // let's add a new key/value pair
+//!     doc["a"]["b"]["c"]["d"] = value("hello");
+//!     // autoformat inline table a.b.c
+//!     doc["a"]["b"]["c"].as_value_mut().and_then(|v| v.as_inline_table_mut().map(|t| t.fmt()));
+//!     let expected = r#"
+//! "hello" = 'toml!' # comment
+//! ['a'.b]
+//! c = { d = "hello" }
+//!     "#;
+//!     assert_eq!(doc.to_string(), expected);
 //! }
 //! ```
 extern crate chrono;

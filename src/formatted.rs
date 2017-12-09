@@ -6,10 +6,12 @@ use std::iter::FromIterator;
 
 
 pub(crate) fn decorate_array(array: &mut Array) {
-    for (i, val) in array.values
+    for (i, val) in array
+        .values
         .iter_mut()
         .filter_map(|i| i.as_value_mut())
-        .enumerate() {
+        .enumerate()
+    {
         // [value1, value2, value3]
         if i > 0 {
             decorate(val, " ", "");
@@ -85,9 +87,13 @@ pub(crate) fn value(mut val: Value, raw: &str) -> Value {
 
 pub(crate) fn to_key_value(key: &str, mut value: Value) -> TableKeyValue {
     decorate(&mut value, " ", "");
+    to_table_key_value(key, Item::Value(value))
+}
+
+pub(crate) fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
     TableKeyValue {
         key: key_repr(key),
-        value: Item::Value(value),
+        value: value,
     }
 }
 

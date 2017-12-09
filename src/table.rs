@@ -6,7 +6,6 @@ use array_of_tables::ArrayOfTables;
 use formatted::{decorated, key_repr};
 
 // TODO: add method to convert a table into inline table
-// TODO: impl Index
 // TODO: documentation
 
 /// Type representing a TOML non-inline table
@@ -138,6 +137,10 @@ impl Table {
             .entry(parsed_key.get().to_owned())
             .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
             .value
+    }
+
+    pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
+        self.items.get(key).map(|kv| &kv.value)
     }
 
     /// If a table has no key value pairs and implicit, it will not be displayed.
