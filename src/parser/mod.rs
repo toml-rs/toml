@@ -30,7 +30,7 @@ pub struct TomlParser {
 impl Default for TomlParser {
     fn default() -> Self {
         let mut doc = Box::new(Document::new());
-        let table = &mut doc.root as *mut Table;
+        let table = doc.as_table_mut() as *mut Table;
         Self {
             document: doc,
             current_table: table,

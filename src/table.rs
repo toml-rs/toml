@@ -143,7 +143,7 @@ impl Table {
         self.items.get(key).map(|kv| &kv.value)
     }
 
-    /// If a table has no key value pairs and implicit, it will not be displayed.
+    /// If a table has no key/value pairs and implicit, it will not be displayed.
     ///
     /// # Examples
     ///
@@ -158,9 +158,9 @@ impl Table {
     /// # use toml_edit::Document;
     /// #
     /// # fn main() {
-    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("valid toml");
+    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
     ///
-    /// doc.root.entry("a").as_table_mut().unwrap().set_implicit(true);
+    /// doc["a"].as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");
     /// # }
     /// ```
