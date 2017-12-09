@@ -35,7 +35,7 @@ fn main() {
     assert_eq!(doc.to_string(), toml);
     doc["a"]["b"]["c"]["d"] = value("hello");
     // autoformat inline table a.b.c
-    doc["a"]["b"]["c"].as_value_mut().and_then(|v| v.as_inline_table_mut().map(|t| t.fmt()));
+    doc["a"]["b"]["c"].as_inline_table_mut().map(|t| t.fmt());
     let expected = r#"
 "hello" = 'toml!' # comment
 ['a'.b]
