@@ -7,6 +7,7 @@ use parser::numbers::{boolean, float, integer};
 use parser::inline_table::inline_table;
 use parser::array::array;
 use value as v;
+use decor::{Formatted, Repr};
 use formatted;
 
 
@@ -14,7 +15,12 @@ use formatted;
 parse!(value() -> v::Value, {
     recognize_with_value(choice((
         string()
-            .map(v::Value::from),
+            .map(|s|
+                 v::Value::String(Formatted::new(
+                     s,
+                     Repr::new("".to_string(), "who cares?".into(), "".to_string()),
+                 ))
+            ),
         boolean()
             .map(v::Value::from),
         array()

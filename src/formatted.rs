@@ -3,6 +3,9 @@ use table::{Item, KeyValuePairs, TableKeyValue};
 use decor::{Decor, Formatted, InternalString, Repr};
 use key::Key;
 use std::iter::FromIterator;
+use parser::strings;
+use parser::TomlError;
+use combine::{self, Parser};
 
 
 pub(crate) fn decorate_array(array: &mut Array) {
@@ -125,12 +128,48 @@ impl From<f64> for Value {
     }
 }
 
+macro_rules! try_parse {
+    ($s:expr, $p:expr) => (
+        {
+            let result = $p.parse(combine::State::new($s));
+            match result {
+                Ok((_, ref rest)) if !rest.input.is_empty() => {
+                    Err(TomlError::from_unparsed(rest.positioner, $s))
+                }
+                Ok((s, _)) => Ok(s),
+                Err(e) => Err(TomlError::new(e, $s)),
+            }
+        }
+    );
+}
+
+// TODO: clean this mess
+fn parse_string_guess_delimiters(s: &str) -> (InternalString, InternalString) {
+    let basic = format!("\"{}\"", s);
+    let literal = format!("'{}'", s);
+    let ml_basic = format!("\"\"\"{}\"\"\"", s);
+    let ml_literal = format!("'''{}'''", s);
+    if let Ok(r) = try_parse!(s, strings::string()) {
+        return (r, s.into());
+    } else if let Ok(r) = try_parse!(&basic[..], strings::basic_string()) {
+        return (r, basic);
+    } else if let Ok(r) = try_parse!(&literal[..], strings::literal_string()) {
+        return (r.into(), literal.clone());
+    } else if let Ok(r) = try_parse!(&ml_basic[..], strings::ml_basic_string()) {
+        return (r, ml_literal);
+    } else {
+        try_parse!(&ml_literal[..], strings::ml_literal_string())
+            .map(|r| (r, ml_literal))
+            .unwrap_or_else(|e| panic!("toml string parse error: {}, {}", e, s))
+    }
+}
+
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
+        let (value, raw) = parse_string_guess_delimiters(s);
         Value::String(Formatted::new(
-            s.to_owned(),
-            // TODO: s.escape_debug() requires #![feature(str_escape)]
-            Repr::new("".to_string(), format!("\"{}\"", s), "".to_string()),
+            value,
+            Repr::new("".to_string(), raw, "".to_string()),
         ))
     }
 }
