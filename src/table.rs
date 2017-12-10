@@ -129,7 +129,7 @@ impl Table {
     /// If there is no entry associated with the given key in the table,
     /// a `Item::None` value will be inserted.
     ///
-    /// To insert to item, use `entry` to return a mutable reference
+    /// To insert to table, use `entry` to return a mutable reference
     /// and set it to the appropriate value.
     pub fn entry<'a>(&'a mut self, key: &str) -> &'a mut Item {
         let parsed_key = key.parse::<Key>().expect("invalid key");
