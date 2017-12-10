@@ -55,6 +55,6 @@ mod index;
 pub use value::{Array, InlineTable, Value};
 pub use key::Key;
 pub use parser::TomlError;
-pub use table::{array, table, value, Item, Iter, Table};
+pub use table::{array, table, value, Item, Iter, Table, TableLike};
 pub use array_of_tables::ArrayOfTables;
 pub use document::Document;
