@@ -40,20 +40,22 @@ impl FromStr for Key {
     /// if fails, tries as basic quoted key (surrounds with "")
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let quoted = format!("\"{}\"", s);
-        let parsed = parser::key()
-            .parse(combine::State::new(s))
-            .or_else(|_| parser::key().parse(combine::State::new(&quoted)));
-        match parsed {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(Self::Err::from_unparsed(rest.positioner, s))
-            }
-            Ok(((raw, key), _)) => Ok(Key::new(raw, key)),
-            Err(e) => Err(Self::Err::new(e, s)),
-        }
+        Key::try_parse(s).or_else(|_| Key::try_parse(&quoted))
     }
 }
 
 impl Key {
+    fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
+        let result = parser::key().parse(combine::State::new(s));
+        match result {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(parser::TomlError::from_unparsed(rest.positioner, s))
+            }
+            Ok(((raw, key), _)) => Ok(Key::new(raw, key)),
+            Err(e) => Err(parser::TomlError::new(e, s)),
+        }
+    }
+
     pub(crate) fn new(raw: &str, key: InternalString) -> Self {
         Self {
             raw: raw.into(),
