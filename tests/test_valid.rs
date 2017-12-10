@@ -348,3 +348,8 @@ t!(
     "fixtures/valid/unicode-literal.json",
     "fixtures/valid/unicode-literal.toml"
 );
+t!(
+    test_windows_path,
+    "fixtures/valid/windows-path.json",
+    "fixtures/valid/windows-path.toml"
+);
