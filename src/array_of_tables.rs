@@ -43,10 +43,13 @@ impl ArrayOfTables {
         self.values.clear()
     }
 
+    /// Returns the length of the underlying Vec.
+    /// To get the actual number of items use `a.iter().count()`.
     pub fn len(&self) -> usize {
-        self.values.iter().filter(|i| i.is_table()).count()
+        self.values.len()
     }
 
+    /// Return true iff `self.len() == 0`
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }

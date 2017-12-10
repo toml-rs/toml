@@ -73,10 +73,13 @@ pub(crate) enum ValueType {
 pub type ArrayIter<'a> = Box<Iterator<Item = &'a Value> + 'a>;
 
 impl Array {
+    /// Returns the length of the underlying Vec.
+    /// To get the actual number of items use `a.iter().count()`.
     pub fn len(&self) -> usize {
         self.values.len()
     }
 
+    /// Return true iff `self.len() == 0`
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -137,7 +140,7 @@ pub type InlineTableIter<'a> = Box<Iterator<Item = (&'a str, &'a Value)> + 'a>;
 
 impl InlineTable {
     pub fn len(&self) -> usize {
-        self.items.len()
+        self.iter().count()
     }
 
     pub fn is_empty(&self) -> bool {
