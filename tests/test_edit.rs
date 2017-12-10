@@ -23,7 +23,7 @@ macro_rules! as_table {
 #[cfg(test)]
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
-    use toml_edit::{Document, Key, Value, Table, value, table, array};
+    use toml_edit::{Document, Key, Value, Table, Item, value, table, array};
     use std::iter::FromIterator;
 
     struct Test {
@@ -501,6 +501,37 @@ fn test_remove_from_inline_table() {
         b = {}
 "#
     );
+}
+
+#[test]
+fn test_as_table_like() {
+    given(r#"
+        a = {a=2,  c = 3, b = 42}
+        x = {}
+        [[bin]]
+        [b]
+        x = "y"
+        [empty]"#
+    ).running(|root| {
+        let a = root["a"].as_table_like();
+        assert!(a.is_some());
+        let a = a.unwrap();
+        assert_eq!(a.iter().count(), 3);
+        assert_eq!(a.len(), 3);
+        assert_eq!(a.get("a").and_then(Item::as_integer), Some(2));
+
+        let b = root["b"].as_table_like();
+        assert!(b.is_some());
+        let b = b.unwrap();
+        assert_eq!(b.iter().count(), 1);
+        assert_eq!(b.len(), 1);
+        assert_eq!(b.get("x").and_then(Item::as_str), Some("y"));
+
+        assert_eq!(root["x"].as_table_like().map(|t| t.iter().count()), Some(0));
+        assert_eq!(root["empty"].as_table_like().map(|t| t.is_empty()), Some(true));
+
+        assert!(root["bin"].as_table_like().is_none());
+    });
 }
 
 #[test]

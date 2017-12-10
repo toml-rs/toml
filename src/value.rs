@@ -5,7 +5,7 @@ use formatted;
 use linked_hash_map::LinkedHashMap;
 use decor::{Decor, Formatted, InternalString};
 use key::Key;
-use table::{Item, KeyValuePairs, TableKeyValue};
+use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 use parser;
 use combine;
 use combine::Parser;
@@ -204,6 +204,15 @@ impl InlineTable {
         self.items
             .get_mut(key)
             .and_then(|kv| kv.value.as_value_mut())
+    }
+}
+
+impl TableLike for InlineTable {
+    fn iter(&self) -> Iter {
+        Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
+    }
+    fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
+        self.items.get(key).map(|kv| &kv.value)
     }
 }
 

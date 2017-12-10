@@ -297,6 +297,39 @@ impl Item {
     pub fn is_inline_table(&self) -> bool {
         self.as_inline_table().is_some()
     }
+
+    /// Returns None iff the item is neither `Table`, nor `InlineTable`.
+    pub fn as_table_like(&self) -> Option<&TableLike> {
+        self.as_table()
+            .map(|t| t as &TableLike)
+            .or_else(|| self.as_inline_table().map(|t| t as &TableLike))
+    }
+
+    pub fn is_table_like(&self) -> bool {
+        self.as_table_like().is_some()
+    }
+}
+
+pub trait TableLike {
+    fn iter(&self) -> Iter;
+    /// Return the number of nonempty items
+    fn len(&self) -> usize {
+        self.iter().filter(|&(_, v)| !v.is_none()).count()
+    }
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
+}
+
+impl TableLike for Table {
+    /// Returns an iterator over all subitems, including `Item::None`.
+    fn iter(&self) -> Iter {
+        self.iter()
+    }
+    fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
+        self.get(key)
+    }
 }
 
 pub fn value<V: Into<Value>>(v: V) -> Item {
