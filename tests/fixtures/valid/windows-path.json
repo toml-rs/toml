@@ -1,0 +1,10 @@
+{
+    "foo-crate":
+    {
+        "path":
+        {
+            "type": "string",
+            "value": "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9"
+        }
+    }
+}

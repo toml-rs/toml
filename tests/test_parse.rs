@@ -42,7 +42,7 @@ fn test_parse_error() {
     parse_error!("'hello'bla", Value, "Could not parse the line");
     parse_error!(r#"{a = 2"#, Value, "Expected `}`");
 
-    parse_error!("\"", Key, "Could not parse the line");
+    parse_error!("'\"", Key, "Could not parse the line");
 }
 
 #[test]
@@ -55,6 +55,8 @@ fn test_key_from_str() {
     );
     test_key!("", "");
     test_key!("'hello key'bla", "'hello key'bla");
+    let wp = "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9";
+    test_key!(wp, wp);
 }
 
 // wat?
