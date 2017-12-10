@@ -4,7 +4,7 @@
 mod macros;
 mod errors;
 mod trivia;
-mod strings;
+pub(crate) mod strings;
 mod numbers;
 mod datetime;
 mod array;
