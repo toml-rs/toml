@@ -84,12 +84,12 @@ macro_rules! t(
 fn table_reordering() {
     let toml = r#"
 [[bin]] # bin 1
-[a.b.c.e]
+[a.'b'.c.e]
 [a]
 [other.table]
 [[bin]] # bin 2
 [a.b.c.d]
-[a.b.c]
+[a."b".c]
 [[bin]] # bin 3
 "#;
     let expected = r#"
@@ -97,9 +97,9 @@ fn table_reordering() {
 [[bin]] # bin 2
 [[bin]] # bin 3
 [a]
-[a.b.c]
-[a.b.c.e]
-[a.b.c.d]
+[a.'b'.c]
+[a.'b'.c.e]
+[a.'b'.c.d]
 [other.table]
 "#;
     let doc = toml.parse::<Document>();
