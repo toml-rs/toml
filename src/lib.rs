@@ -40,17 +40,17 @@
 //!
 //! *Things it does not preserve:
 //! 1. Different quotes and spaces around the same table key, e.g.
-//!     ```toml
-//!     [ 'a'. b]
-//!     [ "a"  .c]
-//!     [a.d]
-//!     ```
-//!     will be represented as (spaces are removed, the first encountered quote type is used)
-//!     ```toml
-//!     ['a'.b]
-//!     ['a'.c]
-//!     ['a'.d]
-//!     ```
+//! ```toml
+//! [ 'a'. b]
+//! [ "a"  .c]
+//! [a.d]
+//! ```
+//! will be represented as (spaces are removed, the first encountered quote type is used)
+//! ```toml
+//! ['a'.b]
+//! ['a'.c]
+//! ['a'.d]
+//! ```
 //! 2. Children tables before parent table (tables are reordered, see [test]).
 //! 3. Scattered array of tables (tables are reordered, see [test]).
 //!
