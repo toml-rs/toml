@@ -6,6 +6,7 @@
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 [![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit/badge.svg)
 [![Join the chat at https://gitter.im/toml_edit/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_edit/Lobby)
+[docs](https://reusable.software/rust/toml_edit/doc/toml_edit/index.html)
 
 
 This crate allows you to parse and modify toml
@@ -13,9 +14,27 @@ documents, while preserving comments, spaces* and
 relative order* or items.
 
 *Things it does not preserve:
-1. Spaces in headers, e.g. `[ ' a ' .  b ]` will be represented as `[' a '.b]`.
+1. Different quotes and spaces around the same table key, e.g. 
+```toml
+[ 'a'. b]
+[ "a"  .c]
+[a.d]
+``` 
+will be represented as (spaces are removed, the first encountered quote type is used)
+```toml
+['a'.b]
+['a'.c]
+['a'.d]
+``` 
 2. Children tables before parent table (tables are reordered, see [test]).
 3. Scattered array of tables (tables are reordered, see [test]).
+
+The reason behind the first limitation is that `Table` does not store its header, 
+allowing us to safely swap two tables (we store a mapping in each table: child key -> child table).
+
+This last two limitations allow us to represent a toml document as a tree-like data structure, 
+which enables easier implementation of editing operations 
+and an easy to use and type-safe API.
 
 `toml_edit` is primarily tailored for [cargo-edit](https://github.com/killercup/cargo-edit/) needs.
 
