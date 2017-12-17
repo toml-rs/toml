@@ -28,16 +28,19 @@ impl Document {
         Default::default()
     }
 
+    /// Returns a reference to the root table.
     pub fn as_table(&self) -> &Table {
         self.root.as_table().expect("root should always be a table")
     }
 
+    /// Returns a mutable reference to the root table.
     pub fn as_table_mut(&mut self) -> &mut Table {
         self.root
             .as_table_mut()
             .expect("root should always be a table")
     }
 
+    /// Returns an iterator over the root table.
     pub fn iter(&self) -> Iter {
         self.root
             .as_table()
