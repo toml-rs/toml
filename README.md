@@ -13,29 +13,6 @@ This crate allows you to parse and modify toml
 documents, while preserving comments, spaces* and
 relative order* or items.
 
-*Things it does not preserve:
-1. Different quotes and spaces around the same table key, e.g. 
-```toml
-[ 'a'. b]
-[ "a"  .c]
-[a.d]
-``` 
-will be represented as (spaces are removed, the first encountered quote type is used)
-```toml
-['a'.b]
-['a'.c]
-['a'.d]
-``` 
-2. Children tables before parent table (tables are reordered, see [test]).
-3. Scattered array of tables (tables are reordered, see [test]).
-
-The reason behind the first limitation is that `Table` does not store its header, 
-allowing us to safely swap two tables (we store a mapping in each table: child key -> child table).
-
-This last two limitations allow us to represent a toml document as a tree-like data structure, 
-which enables easier implementation of editing operations 
-and an easy to use and type-safe API.
-
 `toml_edit` is primarily tailored for [cargo-edit](https://github.com/killercup/cargo-edit/) needs.
 
 ## Example
@@ -64,6 +41,31 @@ c = { d = "hello" }
     assert_eq!(doc.to_string(), expected);
 }
 ```
+
+## Limitations
+
+*Things it does not preserve:
+1. Different quotes and spaces around the same table key, e.g. 
+```toml
+[ 'a'. b]
+[ "a"  .c]
+[a.d]
+``` 
+will be represented as (spaces are removed, the first encountered quote type is used)
+```toml
+['a'.b]
+['a'.c]
+['a'.d]
+``` 
+2. Children tables before parent table (tables are reordered, see [test]).
+3. Scattered array of tables (tables are reordered, see [test]).
+
+The reason behind the first limitation is that `Table` does not store its header, 
+allowing us to safely swap two tables (we store a mapping in each table: child key -> child table).
+
+This last two limitations allow us to represent a toml document as a tree-like data structure, 
+which enables easier implementation of editing operations 
+and an easy to use and type-safe API.
 
 ## License
 
