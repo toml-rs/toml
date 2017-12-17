@@ -6,7 +6,6 @@
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 [![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit/badge.svg)
 [![Join the chat at https://gitter.im/toml_edit/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_edit/Lobby)
-[docs](https://reusable.software/rust/toml_edit/doc/toml_edit/index.html)
 
 
 This crate allows you to parse and modify toml

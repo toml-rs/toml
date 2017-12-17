@@ -14,12 +14,19 @@ use combine::Parser;
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
 pub enum Value {
+    /// A 64-bit integer value.
     Integer(Formatted<i64>),
+    /// A string value.
     String(Formatted<String>),
+    /// A 64-bit float value.
     Float(Formatted<f64>),
+    /// A Date-Time value.
     DateTime(Formatted<DateTime>),
+    /// A boolean value.
     Boolean(Formatted<bool>),
+    /// An inline array of values.
     Array(Array),
+    /// An inline table of key/value pairs.
     InlineTable(InlineTable),
 }
 
@@ -27,9 +34,13 @@ pub enum Value {
 /// payload of the `Value::DateTime` variant's value
 #[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub enum DateTime {
+    /// An RFC 3339 formatted date-time with offset.
     OffsetDateTime(chrono::DateTime<FixedOffset>),
+    /// An RFC 3339 formatted date-time without offset.
     LocalDateTime(chrono::NaiveDateTime),
+    /// Date portion of an RFC 3339 formatted date-time.
     LocalDate(chrono::NaiveDate),
+    /// Time portion of an RFC 3339 formatted date-time.
     LocalTime(chrono::NaiveTime),
 }
 
@@ -70,6 +81,7 @@ pub(crate) enum ValueType {
     InlineTable,
 }
 
+/// An iterator type over `Array`'s values.
 pub type ArrayIter<'a> = Box<Iterator<Item = &'a Value> + 'a>;
 
 impl Array {
@@ -79,23 +91,27 @@ impl Array {
         self.values.len()
     }
 
-    /// Return true iff `self.len() == 0`
+    /// Return true iff `self.len() == 0`.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Returns an iterator over all values.
     pub fn iter(&self) -> ArrayIter {
         Box::new(self.values.iter().filter_map(|i| i.as_value()))
     }
 
+    /// Appends a new value.
     pub fn push<V: Into<Value>>(&mut self, v: V) -> bool {
         self.push_value(v.into(), true)
     }
 
+    /// Return an optional reference to the value at the given index.
     pub fn get(&mut self, index: usize) -> Option<&Value> {
         self.values.get(index).and_then(Item::as_value)
     }
 
+    /// Removes the value at the given index.
     pub fn remove(&mut self, index: usize) -> Value {
         let removed = self.values.remove(index);
         if self.is_empty() {
@@ -107,7 +123,7 @@ impl Array {
         }
     }
 
-    /// Auto formats the array
+    /// Auto formats the array.
     pub fn fmt(&mut self) {
         formatted::decorate_array(self);
     }
@@ -136,17 +152,21 @@ impl Array {
     }
 }
 
+/// An iterator type over key/value pairs of an inline table.
 pub type InlineTableIter<'a> = Box<Iterator<Item = (&'a str, &'a Value)> + 'a>;
 
 impl InlineTable {
+    /// Returns the number of key/value pairs.
     pub fn len(&self) -> usize {
         self.iter().count()
     }
 
+    /// Returns true iff the table is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Returns an iterator over key/value pairs.
     pub fn iter(&self) -> InlineTableIter {
         Box::new(
             self.items
@@ -156,10 +176,12 @@ impl InlineTable {
         )
     }
 
+    /// Sorts the key/value pairs by key.
     pub fn sort(&mut self) {
         sort_key_value_pairs(&mut self.items);
     }
 
+    /// Returns true iff the table contains given key.
     pub fn contains_key(&self, key: &str) -> bool {
         if let Some(kv) = self.items.get(key) {
             !kv.value.is_none()
@@ -168,6 +190,8 @@ impl InlineTable {
         }
     }
 
+    /// Merges the key/value pairs into the `other` table leaving
+    /// `self` empty.
     pub fn merge_into(&mut self, other: &mut InlineTable) {
         let items = mem::replace(&mut self.items, KeyValuePairs::new());
         for (k, kv) in items {
@@ -175,6 +199,8 @@ impl InlineTable {
         }
     }
 
+    /// Inserts a key/value pair if the table does not contain the key.
+    /// Returns a mutable reference to the corresponding value.
     pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
         let parsed = key.parse::<Key>().expect("invalid key");
         self.items
@@ -185,21 +211,24 @@ impl InlineTable {
             .expect("non-value type in inline table")
     }
 
-    /// Auto formats the table
+    /// Auto formats the table.
     pub fn fmt(&mut self) {
         formatted::decorate_inline_table(self);
     }
 
+    /// Removes a key/value pair given the key.
     pub fn remove(&mut self, key: &str) -> Option<Value> {
         self.items
             .remove(key)
             .and_then(|kv| kv.value.as_value().cloned())
     }
 
+    /// Return an optional reference to the value at the given the key.
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.items.get(key).and_then(|kv| kv.value.as_value())
     }
 
+    /// Return an optional mutable reference to the value at the given the key.
     pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
         self.items
             .get_mut(key)
@@ -218,39 +247,47 @@ impl TableLike for InlineTable {
 
 /// Downcasting
 impl DateTime {
+    /// Casts `self` to offset date-time.
     pub fn as_offset_date_time(&self) -> Option<&chrono::DateTime<FixedOffset>> {
         match *self {
             DateTime::OffsetDateTime(ref dt) => Some(dt),
             _ => None,
         }
     }
+    /// Casts `self` to local date-time.
     pub fn as_local_date_time(&self) -> Option<&chrono::NaiveDateTime> {
         match *self {
             DateTime::LocalDateTime(ref dt) => Some(dt),
             _ => None,
         }
     }
+    /// Casts `self` to local date.
     pub fn as_local_date(&self) -> Option<&chrono::NaiveDate> {
         match *self {
             DateTime::LocalDate(ref d) => Some(d),
             _ => None,
         }
     }
+    /// Casts `self` to local time.
     pub fn as_local_time(&self) -> Option<&chrono::NaiveTime> {
         match *self {
             DateTime::LocalTime(ref t) => Some(t),
             _ => None,
         }
     }
+    /// Returns true iff `self` is an offset date-time.
     pub fn is_offset_date_time(&self) -> bool {
         self.as_offset_date_time().is_some()
     }
+    /// Returns true iff `self` is a local date-time.
     pub fn is_local_date_time(&self) -> bool {
         self.as_local_date_time().is_some()
     }
+    /// Returns true iff `self` is a local date.
     pub fn is_local_date(&self) -> bool {
         self.as_local_date().is_some()
     }
+    /// Returns true iff `self` is a local time.
     pub fn is_local_time(&self) -> bool {
         self.as_local_time().is_some()
     }
@@ -258,6 +295,7 @@ impl DateTime {
 
 /// Downcasting
 impl Value {
+    /// Casts `self` to integer.
     pub fn as_integer(&self) -> Option<i64> {
         match *self {
             Value::Integer(ref value) => Some(*value.value()),
@@ -265,10 +303,12 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is an integer.
     pub fn is_integer(&self) -> bool {
         self.as_integer().is_some()
     }
 
+    /// Casts `self` to float.
     pub fn as_float(&self) -> Option<f64> {
         match *self {
             Value::Float(ref value) => Some(*value.value()),
@@ -276,10 +316,12 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is a float.
     pub fn is_float(&self) -> bool {
         self.as_float().is_some()
     }
 
+    /// Casts `self` to boolean.
     pub fn as_bool(&self) -> Option<bool> {
         match *self {
             Value::Boolean(ref value) => Some(*value.value()),
@@ -287,10 +329,12 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is a boolean.
     pub fn is_bool(&self) -> bool {
         self.as_bool().is_some()
     }
 
+    /// Casts `self` to str.
     pub fn as_str(&self) -> Option<&str> {
         match *self {
             Value::String(ref value) => Some(value.value()),
@@ -298,10 +342,12 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is a string.
     pub fn is_str(&self) -> bool {
         self.as_str().is_some()
     }
 
+    /// Casts `self` to date-time.
     pub fn as_date_time(&self) -> Option<&DateTime> {
         match *self {
             Value::DateTime(ref value) => Some(value.value()),
@@ -309,10 +355,12 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is a date-time.
     pub fn is_date_time(&self) -> bool {
         self.as_date_time().is_some()
     }
 
+    /// Casts `self` to array.
     pub fn as_array(&self) -> Option<&Array> {
         match *self {
             Value::Array(ref value) => Some(value),
@@ -320,6 +368,7 @@ impl Value {
         }
     }
 
+    /// Casts `self` to mutable array.
     pub fn as_array_mut(&mut self) -> Option<&mut Array> {
         match *self {
             Value::Array(ref mut value) => Some(value),
@@ -327,10 +376,12 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is an array.
     pub fn is_array(&self) -> bool {
         self.as_array().is_some()
     }
 
+    /// Casts `self` to inline table.
     pub fn as_inline_table(&self) -> Option<&InlineTable> {
         match *self {
             Value::InlineTable(ref value) => Some(value),
@@ -338,6 +389,7 @@ impl Value {
         }
     }
 
+    /// Casts `self` to mutable inline table.
     pub fn as_inline_table_mut(&mut self) -> Option<&mut InlineTable> {
         match *self {
             Value::InlineTable(ref mut value) => Some(value),
@@ -345,6 +397,7 @@ impl Value {
         }
     }
 
+    /// Returns true iff `self` is an inline table.
     pub fn is_inline_table(&self) -> bool {
         self.as_inline_table().is_some()
     }

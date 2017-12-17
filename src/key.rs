@@ -67,10 +67,12 @@ impl Key {
         }
     }
 
+    /// Returns the parsed key value.
     pub fn get(&self) -> &str {
         &self.key
     }
 
+    /// Returns the key raw representation.
     pub fn raw(&self) -> &str {
         &self.raw
     }
