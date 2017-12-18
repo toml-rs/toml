@@ -39,7 +39,8 @@
 //! ## Limitations
 //!
 //! *Things it does not preserve:
-//! 1. Different quotes and spaces around the same table key, e.g.
+//!
+//! * Different quotes and spaces around the same table key, e.g.
 //!
 //! ```text
 //! [ 'a'. b]
@@ -55,8 +56,8 @@
 //! ['a'.d]
 //! ```
 //!
-//! 2. Children tables before parent table (tables are reordered, see [test]).
-//! 3. Scattered array of tables (tables are reordered, see [test]).
+//! * Children tables before parent table (tables are reordered, see [test]).
+//! * Scattered array of tables (tables are reordered, see [test]).
 //!
 //! The reason behind the first limitation is that `Table` does not store its header,
 //! allowing us to safely swap two tables
@@ -65,6 +66,8 @@
 //! This last two limitations allow us to represent a toml document as a tree-like data structure,
 //! which enables easier implementation of editing operations
 //! and an easy to use and type-safe API.
+//!
+//! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
 extern crate chrono;
 #[macro_use]
 extern crate combine;

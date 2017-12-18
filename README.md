@@ -44,7 +44,7 @@ c = { d = "hello" }
 ## Limitations
 
 *Things it does not preserve:
-1. Different quotes and spaces around the same table key, e.g. 
+* Different quotes and spaces around the same table key, e.g.
 ```toml
 [ 'a'. b]
 [ "a"  .c]
@@ -56,8 +56,8 @@ will be represented as (spaces are removed, the first encountered quote type is 
 ['a'.c]
 ['a'.d]
 ``` 
-2. Children tables before parent table (tables are reordered, see [test]).
-3. Scattered array of tables (tables are reordered, see [test]).
+* Children tables before parent table (tables are reordered, see [test]).
+* Scattered array of tables (tables are reordered, see [test]).
 
 The reason behind the first limitation is that `Table` does not store its header, 
 allowing us to safely swap two tables (we store a mapping in each table: child key -> child table).
