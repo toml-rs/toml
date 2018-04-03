@@ -199,6 +199,18 @@ impl From<DateTime> for Value {
     }
 }
 
+impl From<Array> for Value {
+    fn from(array: Array) -> Self {
+        Value::Array(array)
+    }
+}
+
+impl From<InlineTable> for Value {
+    fn from(table: InlineTable) -> Self {
+        Value::InlineTable(table)
+    }
+}
+
 impl<V: Into<Value>> FromIterator<V> for Value {
     fn from_iter<I>(iter: I) -> Self
     where
