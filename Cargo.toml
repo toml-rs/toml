@@ -17,7 +17,7 @@ appveyor = { repository = "ordian/toml_edit" }
 [dependencies]
 chrono = "0.4"
 linked-hash-map = "0.4"
-combine = "=3.0.0-alpha.2"
+combine = "=3.3.1"
 
 [dev-dependencies]
 serde_json = "1.0"
