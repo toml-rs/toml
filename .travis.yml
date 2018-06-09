@@ -30,14 +30,22 @@ branches:
 matrix:
   allow_failures:
     - rust: nightly
+    - rust: nightly-2017-12-08
 
   include:
   - rust: "1.26.2"
+
     before_script:
     - rustup component add rustfmt-preview --toolchain 1.26.2
+
     script:
     - rustfmt -V
     - cargo fmt -- --write-mode diff
+    - cargo test --all
+
+    after_success:
+    - ./.travis/coverage.sh
+
   - rust: nightly-2017-12-08
     env:
       global:
@@ -58,7 +66,6 @@ matrix:
     script:
     - cargo clippy -- -D warnings -Z no-trans
     - rm -rf target/debug/{test_,toml_edit-}*
-    - cargo test
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
 
     after_success:
