@@ -380,6 +380,30 @@ impl TableLike for Table {
 }
 
 /// Returns a formatted value.
+///
+/// Since formatting is part of a `Value`, the right hand side of the
+/// assignment needs to be decorated with a space before the value.
+/// The `value` function does just that.
+///
+/// # Examples
+/// ```rust
+/// # extern crate toml_edit;
+/// # use toml_edit::*;
+/// # fn main() {
+/// let mut table = Table::default();
+/// let mut array = Array::default();
+/// array.push("hello");
+/// array.push("\\, world"); // \ is only allowed in a literal string
+/// table["key1"] = value("value1");
+/// table["key2"] = value(42);
+/// table["key3"] = value(array);
+/// assert_eq!(table.to_string(),
+/// r#"key1 = "value1"
+/// key2 = 42
+/// key3 = ["hello", '\, world']
+/// "#);
+/// # }
+/// ```
 pub fn value<V: Into<Value>>(v: V) -> Item {
     Item::Value(decorated(v.into(), " ", ""))
 }
