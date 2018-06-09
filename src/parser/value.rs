@@ -1,15 +1,14 @@
-use combine::*;
-use combine::stream::RangeStream;
 use combine::range::recognize_with_value;
-use parser::strings::string;
-use parser::datetime::date_time;
-use parser::numbers::{boolean, float, integer};
-use parser::inline_table::inline_table;
-use parser::array::array;
-use value as v;
+use combine::stream::RangeStream;
+use combine::*;
 use decor::{Formatted, Repr};
 use formatted;
-
+use parser::array::array;
+use parser::datetime::date_time;
+use parser::inline_table::inline_table;
+use parser::numbers::{boolean, float, integer};
+use parser::strings::string;
+use value as v;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
 parse!(value() -> v::Value, {

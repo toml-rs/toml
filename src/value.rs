@@ -1,14 +1,13 @@
-use std::str::FromStr;
-use std::mem;
 use chrono::{self, FixedOffset};
-use formatted;
-use linked_hash_map::LinkedHashMap;
-use decor::{Decor, Formatted, InternalString};
-use key::Key;
-use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
-use parser;
 use combine::stream::state::State;
-
+use decor::{Decor, Formatted, InternalString};
+use formatted;
+use key::Key;
+use linked_hash_map::LinkedHashMap;
+use parser;
+use std::mem;
+use std::str::FromStr;
+use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]

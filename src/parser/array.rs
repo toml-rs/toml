@@ -1,13 +1,13 @@
-use combine::*;
-use combine::range::recognize_with_value;
 use combine::char::char;
+use combine::range::recognize_with_value;
 use combine::stream::RangeStream;
+use combine::*;
+use decor::InternalString;
+use formatted::decorated;
 use parser::errors::CustomError;
 use parser::trivia::ws_comment_newline;
 use parser::value::value;
 use value::{Array, Value};
-use decor::InternalString;
-use formatted::decorated;
 
 // ;; Array
 

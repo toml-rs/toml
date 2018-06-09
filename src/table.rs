@@ -1,9 +1,9 @@
+use array_of_tables::ArrayOfTables;
+use decor::{Decor, InternalString, Repr};
+use formatted::{decorated, key_repr};
+use key::Key;
 use linked_hash_map::LinkedHashMap;
 use value::{sort_key_value_pairs, Array, DateTime, InlineTable, Value};
-use decor::{Decor, InternalString, Repr};
-use key::Key;
-use array_of_tables::ArrayOfTables;
-use formatted::{decorated, key_repr};
 
 // TODO: add method to convert a table into inline table
 

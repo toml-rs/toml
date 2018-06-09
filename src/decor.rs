@@ -24,7 +24,6 @@ pub(crate) struct Decor {
 
 pub(crate) type InternalString = String;
 
-
 impl Decor {
     pub fn new<S: Into<InternalString>>(prefix: S, suffix: S) -> Self {
         Self {

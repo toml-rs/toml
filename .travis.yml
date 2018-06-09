@@ -32,6 +32,12 @@ matrix:
     - rust: nightly
 
   include:
+  - rust: "1.26.2"
+    before_script:
+    - rustup component add rustfmt-preview --toolchain 1.26.2
+    script:
+    - rustfmt -V
+    - cargo fmt -- --write-mode diff
   - rust: nightly-2017-12-08
     env:
       global:
@@ -48,11 +54,9 @@ matrix:
 
     before_script:
     - bash -c '[ "$(cargo clippy --version 2>/dev/null)" == "0.0.175" ] || cargo install clippy --vers 0.0.175 --force'
-    - bash -c '[ "$(rustfmt --version 2>/dev/null)" == "0.2.17-nightly ( )" ] || cargo install rustfmt-nightly --vers 0.2.17 --force'
 
     script:
     - cargo clippy -- -D warnings -Z no-trans
-    - cargo fmt -- --write-mode=diff
     - rm -rf target/debug/{test_,toml_edit-}*
     - cargo test
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu

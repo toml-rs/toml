@@ -1,10 +1,10 @@
 extern crate serde_json;
 extern crate toml_edit;
 
-use serde_json::Value as Json;
 use serde_json::Map as JsonMap;
+use serde_json::Value as Json;
 
-use toml_edit::{Document, Item, Value, Iter};
+use toml_edit::{Document, Item, Iter, Value};
 
 fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
     fn typed_json(s: &str, json: Json) -> Json {
@@ -31,9 +31,11 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
     }
     let json = match value {
         Item::Value(ref v) => value_to_json(v),
-        Item::ArrayOfTables(ref arr) => {
-            Json::Array(arr.iter().map(|t| to_json(iter_to_owned(t.iter()))).collect::<Vec<_>>())
-        }
+        Item::ArrayOfTables(ref arr) => Json::Array(
+            arr.iter()
+                .map(|t| to_json(iter_to_owned(t.iter())))
+                .collect::<Vec<_>>(),
+        ),
         Item::Table(ref table) => to_json(iter_to_owned(table.iter())),
         Item::None => Json::Null,
     };
@@ -41,9 +43,7 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
 }
 
 fn iter_to_owned(iter: Iter) -> OwnedIter {
-    Box::new(
-        iter.map(|(k, v)| (k, v.clone()))
-    )
+    Box::new(iter.map(|(k, v)| (k, v.clone())))
 }
 
 type OwnedIter<'s> = Box<Iterator<Item = (&'s str, Item)> + 's>;

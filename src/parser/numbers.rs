@@ -1,7 +1,7 @@
-use combine::*;
 use combine::char::{char, digit};
 use combine::range::{range, recognize};
 use combine::stream::RangeStream;
+use combine::*;
 
 // ;; Boolean
 
@@ -39,7 +39,6 @@ parse!(integer() -> i64, {
         .and_then(|s| s.replace("_", "").parse())
         .message("While parsing an Integer")
 });
-
 
 // ;; Float
 

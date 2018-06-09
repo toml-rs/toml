@@ -1,22 +1,18 @@
 extern crate toml_edit;
 
 macro_rules! parse_key {
-    ($s:expr) => (
-        {
-            let key = $s.parse::<Key>();
-            assert!(key.is_ok());
-            &key.unwrap()
-        }
-    );
+    ($s:expr) => {{
+        let key = $s.parse::<Key>();
+        assert!(key.is_ok());
+        &key.unwrap()
+    }};
 }
 
 macro_rules! as_table {
-    ($e:ident) => (
-        {
-            assert!($e.is_table());
-            $e.as_table_mut().unwrap()
-        }
-    );
+    ($e:ident) => {{
+        assert!($e.is_table());
+        $e.as_table_mut().unwrap()
+    }};
 }
 
 // rusfmt, U Can't Touch This

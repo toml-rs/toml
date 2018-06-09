@@ -21,7 +21,6 @@ macro_rules! parse (
     );
 );
 
-
 #[doc(hidden)]
 #[macro_export]
 macro_rules! toml_parser (

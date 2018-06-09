@@ -1,8 +1,7 @@
-use std::str::FromStr;
+use combine::stream::state::State;
 use decor::InternalString;
 use parser;
-use combine::stream::state::State;
-
+use std::str::FromStr;
 
 /// Key as part of a Key/Value Pair or a table header.
 ///

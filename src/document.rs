@@ -1,7 +1,7 @@
-use std::str::FromStr;
-use table::{Item, Iter, Table};
 use decor::InternalString;
 use parser;
+use std::str::FromStr;
+use table::{Item, Iter, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
@@ -20,7 +20,6 @@ impl Default for Document {
         }
     }
 }
-
 
 impl Document {
     /// Creates an empty document

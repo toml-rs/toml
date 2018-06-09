@@ -1,7 +1,7 @@
-use combine::*;
 use combine::char::{char, crlf, newline as lf};
 use combine::range::{recognize, take_while, take_while1};
 use combine::stream::RangeStream;
+use combine::*;
 
 // wschar = ( %x20 /              ; Space
 //            %x09 )              ; Horizontal tab
@@ -30,7 +30,6 @@ fn is_non_eol(c: char) -> bool {
 // comment-start-symbol = %x23 ; #
 const COMMENT_START_SYMBOL: char = '#';
 
-
 // comment = comment-start-symbol *non-eol
 parse!(comment() -> &'a str, {
     recognize((
@@ -57,7 +56,6 @@ parse!(ws_newline() -> &'a str, {
     )
 });
 
-
 // ws-newlines      = newline *( wschar / newline )
 parse!(ws_newlines() -> &'a str, {
     recognize((
@@ -65,7 +63,6 @@ parse!(ws_newlines() -> &'a str, {
         ws_newline(),
     ))
 });
-
 
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )

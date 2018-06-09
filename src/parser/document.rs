@@ -1,65 +1,39 @@
-use combine::*;
-use combine::Parser;
 use combine::char::char;
 use combine::range::recognize;
-use combine::stream::RangeStream;
 use combine::stream::state::State;
-use parser::{TomlError, TomlParser};
-use parser::errors::CustomError;
-use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
-use parser::key::key;
-use parser::value::value;
-use parser::table::table;
-use parser::inline_table::KEYVAL_SEP;
+use combine::stream::RangeStream;
+use combine::Parser;
+use combine::*;
 use decor::{InternalString, Repr};
 use document::Document;
-use table::{Item, TableKeyValue};
 use formatted::decorated;
-use std::mem;
+use parser::errors::CustomError;
+use parser::inline_table::KEYVAL_SEP;
+use parser::key::key;
+use parser::table::table;
+use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
+use parser::value::value;
+use parser::{TomlError, TomlParser};
 use std::cell::RefCell;
+use std::mem;
 use std::ops::DerefMut;
-
+use table::{Item, TableKeyValue};
 
 toml_parser!(parse_comment, parser, {
-        (
-            comment(),
-            line_ending(),
-        ).map(|(c, e)|
-              parser
-              .borrow_mut()
-              .deref_mut()
-              .on_comment(c, e))
-    }
-);
+    (comment(), line_ending()).map(|(c, e)| parser.borrow_mut().deref_mut().on_comment(c, e))
+});
 
 toml_parser!(parse_ws, parser, {
-        ws()
-            .map(|w|
-                 parser
-                 .borrow_mut()
-                 .deref_mut()
-                 .on_ws(w))
-    }
-);
+    ws().map(|w| parser.borrow_mut().deref_mut().on_ws(w))
+});
 
 toml_parser!(parse_newline, parser, {
-        recognize(newline())
-            .map(|w|
-                 parser
-                 .borrow_mut()
-                 .deref_mut()
-                 .on_ws(w))
-    }
-);
+    recognize(newline()).map(|w| parser.borrow_mut().deref_mut().on_ws(w))
+});
 
 toml_parser!(keyval, parser, {
-        parse_keyval().and_then(|(k, kv)|
-                                parser
-                                .borrow_mut()
-                                .deref_mut()
-                                .on_keyval(k, kv))
-    }
-);
+    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(k, kv))
+});
 
 // keyval = key keyval-sep val
 parser!{
@@ -93,7 +67,6 @@ parser!{
         })
     }
 }
-
 
 impl TomlParser {
     // ;; TOML

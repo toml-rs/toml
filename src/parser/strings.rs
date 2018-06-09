@@ -1,13 +1,12 @@
-use combine::*;
 use combine::char::char;
+use combine::error::{Consumed, Info};
 use combine::range::{range, take, take_while};
 use combine::stream::RangeStream;
-use combine::error::{Consumed, Info};
+use combine::*;
 use decor::InternalString;
-use parser::trivia::{newline, ws, ws_newlines};
 use parser::errors::CustomError;
+use parser::trivia::{newline, ws, ws_newlines};
 use std::char;
-
 
 // ;; String
 
@@ -73,7 +72,6 @@ parse!(hexescape(n: usize) -> char, {
         .and_then(|s| u32::from_str_radix(s, 16))
         .and_then(|h| char::from_u32(h).ok_or_else(|| CustomError::InvalidHexEscape(h)))
 });
-
 
 // escape = %x5C                    ; \
 const ESCAPE: char = '\\';
@@ -218,7 +216,6 @@ parse!(ml_literal_body() -> InternalString, {
             )
         )
 });
-
 
 // ml-literal-string = ml-literal-string-delim ml-literal-body ml-literal-string-delim
 parse!(ml_literal_string() -> InternalString, {

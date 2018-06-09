@@ -1,9 +1,8 @@
-use std::fmt::{Display, Formatter, Result};
-use std::error::Error as StdError;
 use combine::easy::Errors as ParseError;
-use combine::stream::state::SourcePosition;
 use combine::stream::easy::Error;
-
+use combine::stream::state::SourcePosition;
+use std::error::Error as StdError;
+use std::fmt::{Display, Formatter, Result};
 
 /// Type representing a TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -49,7 +48,6 @@ impl StdError for TomlError {
         "TOML parse error"
     }
 }
-
 
 #[derive(Debug)]
 pub(crate) struct FancyError<'a> {

@@ -73,21 +73,20 @@ extern crate chrono;
 extern crate combine;
 extern crate linked_hash_map;
 
-
-pub(crate) mod formatted;
-mod value;
-mod display;
-mod parser;
-mod decor;
-mod key;
 mod array_of_tables;
-mod table;
+mod decor;
+mod display;
 mod document;
+pub(crate) mod formatted;
 mod index;
+mod key;
+mod parser;
+mod table;
+mod value;
 
-pub use value::{Array, InlineTable, Value};
+pub use array_of_tables::ArrayOfTables;
+pub use document::Document;
 pub use key::Key;
 pub use parser::TomlError;
 pub use table::{array, table, value, Item, Iter, Table, TableLike};
-pub use array_of_tables::ArrayOfTables;
-pub use document::Document;
+pub use value::{Array, InlineTable, Value};

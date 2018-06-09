@@ -1,18 +1,16 @@
-use std::fmt::{Display, Formatter, Result};
-use value::{Array, DateTime, InlineTable, Value};
 use decor::{Formatted, Repr};
 use document::Document;
-use table::{Item, Table};
 use std::cell::{Cell, RefCell};
+use std::fmt::{Display, Formatter, Result};
+use table::{Item, Table};
+use value::{Array, DateTime, InlineTable, Value};
 
 impl Display for Repr {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(
             f,
             "{}{}{}",
-            self.decor.prefix,
-            self.raw_value,
-            self.decor.suffix
+            self.decor.prefix, self.raw_value, self.decor.suffix
         )
     }
 }

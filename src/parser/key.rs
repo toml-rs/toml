@@ -1,8 +1,8 @@
-use combine::*;
-use combine::stream::RangeStream;
 use combine::range::{recognize_with_value, take_while1};
-use parser::strings::{basic_string, literal_string};
+use combine::stream::RangeStream;
+use combine::*;
 use decor::InternalString;
+use parser::strings::{basic_string, literal_string};
 
 #[inline]
 fn is_unquoted_char(c: char) -> bool {
