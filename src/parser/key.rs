@@ -1,5 +1,5 @@
 use combine::*;
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 use combine::range::{recognize_with_value, take_while1};
 use parser::strings::{basic_string, literal_string};
 use decor::InternalString;

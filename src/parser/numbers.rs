@@ -1,7 +1,7 @@
 use combine::*;
 use combine::char::{char, digit};
 use combine::range::{range, recognize};
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 
 // ;; Boolean
 

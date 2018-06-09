@@ -7,8 +7,7 @@ use decor::{Decor, Formatted, InternalString};
 use key::Key;
 use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 use parser;
-use combine;
-use combine::Parser;
+use combine::stream::state::State;
 
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
@@ -432,7 +431,8 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = parser::value().parse(combine::State::new(s));
+        use combine::Parser;
+        let parsed = parser::value_parser().easy_parse(State::new(s));
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(Self::Err::from_unparsed(rest.positioner, s))

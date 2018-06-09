@@ -1,7 +1,7 @@
 use combine::*;
 use combine::range::recognize_with_value;
 use combine::char::char;
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 use parser::errors::CustomError;
 use parser::trivia::ws_comment_newline;
 use parser::value::value;

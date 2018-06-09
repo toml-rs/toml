@@ -1,7 +1,7 @@
 use combine::*;
 use combine::char::char;
 use combine::range::range;
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 use parser::TomlParser;
 use parser::errors::CustomError;
 use parser::trivia::{line_trailing, ws};
@@ -40,11 +40,7 @@ parse!(key_path() -> Vec<Key>, {
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
-parser!{
-    fn std_table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
+toml_parser!(std_table, parser, {
         (
             between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE),
                     key_path()),
@@ -56,16 +52,12 @@ parser!{
                       .deref_mut()
                       .on_std_header(&h, t))
     }
-}
+);
 
 // ;; Array Table
 
 // array-table = array-table-open key *( table-key-sep key) array-table-close
-parser!{
-    fn array_table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
+toml_parser!(array_table, parser, {
         (
             between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE),
                     key_path()),
@@ -77,7 +69,7 @@ parser!{
                       .deref_mut()
                       .on_array_header(&h, t))
     }
-}
+);
 
 
 // ;; Table
@@ -85,9 +77,17 @@ parser!{
 // table = std-table / array-table
 parser!{
     pub fn table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
+    where
+        [I: RangeStream<
+         Range = &'a str,
+         Item = char>,
+         I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
+         <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+         From<::std::num::ParseIntError> +
+         From<::std::num::ParseFloatError> +
+         From<::chrono::ParseError> +
+         From<::parser::errors::CustomError>
+    ]    {
         array_table(parser)
             .or(std_table(parser))
             .message("While parsing a Table Header")

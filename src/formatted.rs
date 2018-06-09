@@ -5,7 +5,7 @@ use key::Key;
 use std::iter::FromIterator;
 use parser::strings;
 use parser::TomlError;
-use combine::{self, Parser};
+use combine::stream::state::State;
 
 
 pub(crate) fn decorate_array(array: &mut Array) {
@@ -131,13 +131,14 @@ impl From<f64> for Value {
 macro_rules! try_parse {
     ($s:expr, $p:expr) => (
         {
-            let result = $p.parse(combine::State::new($s));
+            use combine::Parser;
+            let result = $p.easy_parse(State::new($s));
             match result {
                 Ok((_, ref rest)) if !rest.input.is_empty() => {
                     Err(TomlError::from_unparsed(rest.positioner, $s))
                 }
                 Ok((s, _)) => Ok(s),
-                Err(e) => Err(TomlError::new(e, $s)),
+                Err(e) => Err(TomlError::new(e.into(), $s)),
             }
         }
     );

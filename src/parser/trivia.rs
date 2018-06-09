@@ -1,7 +1,7 @@
 use combine::*;
 use combine::char::{char, crlf, newline as lf};
 use combine::range::{recognize, take_while, take_while1};
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 
 // wschar = ( %x20 /              ; Space
 //            %x09 )              ; Horizontal tab

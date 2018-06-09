@@ -2,7 +2,7 @@ use combine::*;
 use combine::char::{char, digit};
 use combine::combinator::{skip_count_min_max, SkipCountMinMax};
 use chrono;
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 use combine::range::{recognize, recognize_with_value};
 use value;
 

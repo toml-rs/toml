@@ -1,8 +1,7 @@
 use std::str::FromStr;
 use decor::InternalString;
 use parser;
-use combine;
-use combine::Parser;
+use combine::stream::state::State;
 
 
 /// Key as part of a Key/Value Pair or a table header.
@@ -50,7 +49,8 @@ impl FromStr for Key {
 
 impl Key {
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
-        let result = parser::key().parse(combine::State::new(s));
+        use combine::Parser;
+        let result = parser::key_parser().easy_parse(State::new(s));
         match result {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(parser::TomlError::from_unparsed(rest.positioner, s))

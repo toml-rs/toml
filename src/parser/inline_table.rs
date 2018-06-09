@@ -1,6 +1,6 @@
 use combine::*;
 use combine::char::char;
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 use parser::errors::CustomError;
 use parser::trivia::ws;
 use parser::key::key;

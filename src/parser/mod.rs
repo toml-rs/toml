@@ -15,9 +15,8 @@ mod document;
 mod key;
 
 pub use self::errors::TomlError;
-
-pub(crate) use self::key::key;
-pub(crate) use self::value::value;
+pub(crate) use self::key::key as key_parser;
+pub(crate) use self::value::value as value_parser;
 
 use document::Document;
 use table::Table;

@@ -1,5 +1,5 @@
 use combine::*;
-use combine::primitives::RangeStream;
+use combine::stream::RangeStream;
 use combine::range::recognize_with_value;
 use parser::strings::string;
 use parser::datetime::date_time;

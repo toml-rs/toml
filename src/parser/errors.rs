@@ -1,8 +1,8 @@
 use std::fmt::{Display, Formatter, Result};
 use std::error::Error as StdError;
-use combine::ParseError;
-use combine::state::SourcePosition;
-use combine::primitives::Error;
+use combine::easy::Errors as ParseError;
+use combine::stream::state::SourcePosition;
+use combine::stream::easy::Error;
 
 
 /// Type representing a TOML parse error
@@ -12,7 +12,7 @@ pub struct TomlError {
 }
 
 impl TomlError {
-    pub(crate) fn new(error: ParseError<SourcePosition, char, &str>, input: &str) -> Self {
+    pub(crate) fn new(error: ParseError<char, &str, SourcePosition>, input: &str) -> Self {
         Self {
             message: format!("{}", FancyError::new(error, input)),
         }
@@ -53,12 +53,12 @@ impl StdError for TomlError {
 
 #[derive(Debug)]
 pub(crate) struct FancyError<'a> {
-    error: ParseError<SourcePosition, char, &'a str>,
+    error: ParseError<char, &'a str, SourcePosition>,
     input: &'a str,
 }
 
 impl<'a> FancyError<'a> {
-    pub(crate) fn new(error: ParseError<SourcePosition, char, &'a str>, input: &'a str) -> Self {
+    pub(crate) fn new(error: ParseError<char, &'a str, SourcePosition>, input: &'a str) -> Self {
         Self {
             error: error,
             input: input,
@@ -103,7 +103,7 @@ impl<'a> Display for FancyError<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum CustomError {
+pub enum CustomError {
     MixedArrayType { got: String, expected: String },
     DuplicateKey { key: String, table: String },
     InvalidHexEscape(u32),
