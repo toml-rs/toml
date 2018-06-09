@@ -1,15 +1,13 @@
-use std::str::FromStr;
-use std::mem;
 use chrono::{self, FixedOffset};
-use formatted;
-use linked_hash_map::LinkedHashMap;
+use combine::stream::state::State;
 use decor::{Decor, Formatted, InternalString};
+use formatted;
 use key::Key;
-use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
+use linked_hash_map::LinkedHashMap;
 use parser;
-use combine;
-use combine::Parser;
-
+use std::mem;
+use std::str::FromStr;
+use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
@@ -432,7 +430,8 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = parser::value().parse(combine::State::new(s));
+        use combine::Parser;
+        let parsed = parser::value_parser().easy_parse(State::new(s));
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(Self::Err::from_unparsed(rest.positioner, s))

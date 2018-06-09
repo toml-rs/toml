@@ -1,12 +1,11 @@
-use value::{Array, DateTime, InlineTable, Value};
-use table::{Item, KeyValuePairs, TableKeyValue};
+use combine::stream::state::State;
 use decor::{Decor, Formatted, InternalString, Repr};
 use key::Key;
-use std::iter::FromIterator;
 use parser::strings;
 use parser::TomlError;
-use combine::{self, Parser};
-
+use std::iter::FromIterator;
+use table::{Item, KeyValuePairs, TableKeyValue};
+use value::{Array, DateTime, InlineTable, Value};
 
 pub(crate) fn decorate_array(array: &mut Array) {
     for (i, val) in array
@@ -129,18 +128,17 @@ impl From<f64> for Value {
 }
 
 macro_rules! try_parse {
-    ($s:expr, $p:expr) => (
-        {
-            let result = $p.parse(combine::State::new($s));
-            match result {
-                Ok((_, ref rest)) if !rest.input.is_empty() => {
-                    Err(TomlError::from_unparsed(rest.positioner, $s))
-                }
-                Ok((s, _)) => Ok(s),
-                Err(e) => Err(TomlError::new(e, $s)),
+    ($s:expr, $p:expr) => {{
+        use combine::Parser;
+        let result = $p.easy_parse(State::new($s));
+        match result {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(TomlError::from_unparsed(rest.positioner, $s))
             }
+            Ok((s, _)) => Ok(s),
+            Err(e) => Err(TomlError::new(e.into(), $s)),
         }
-    );
+    }};
 }
 
 // TODO: clean this mess

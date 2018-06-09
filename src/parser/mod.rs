@@ -2,22 +2,21 @@
 
 #[macro_use]
 mod macros;
-mod errors;
-mod trivia;
-pub(crate) mod strings;
-mod numbers;
-mod datetime;
 mod array;
-mod inline_table;
-mod value;
-mod table;
+mod datetime;
 mod document;
+mod errors;
+mod inline_table;
 mod key;
+mod numbers;
+pub(crate) mod strings;
+mod table;
+mod trivia;
+mod value;
 
 pub use self::errors::TomlError;
-
-pub(crate) use self::key::key;
-pub(crate) use self::value::value;
+pub(crate) use self::key::key as key_parser;
+pub(crate) use self::value::value as value_parser;
 
 use document::Document;
 use table::Table;
@@ -38,59 +37,52 @@ impl Default for TomlParser {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
+    use combine::stream::state::State;
+    use combine::*;
     use parser::*;
     use std;
-    use combine::*;
-
 
     macro_rules! parsed_eq {
-        ($parsed:ident, $expected:expr) => (
-            {
-                assert!($parsed.is_ok());
-                let (v, rest) = $parsed.unwrap();
-                assert_eq!(v, $expected);
-                assert!(rest.input.is_empty());
-            }
-        );
+        ($parsed:ident, $expected:expr) => {{
+            assert!($parsed.is_ok());
+            let (v, rest) = $parsed.unwrap();
+            assert_eq!(v, $expected);
+            assert!(rest.input.is_empty());
+        }};
     }
 
     macro_rules! parsed_float_eq {
-        ($input:ident, $expected:expr) => (
-            {
-                let parsed = numbers::float().parse(State::new($input));
-                assert!(parsed.is_ok());
-                let (v, rest) = parsed.unwrap();
-                assert!(($expected - v).abs() < std::f64::EPSILON);
-                assert!(rest.input.is_empty());
-            }
-        );
+        ($input:ident, $expected:expr) => {{
+            let parsed = numbers::float().easy_parse(State::new($input));
+            assert!(parsed.is_ok());
+            let (v, rest) = parsed.unwrap();
+            assert!(($expected - v).abs() < std::f64::EPSILON);
+            assert!(rest.input.is_empty());
+        }};
     }
 
     macro_rules! parsed_value_eq {
-        ($input:expr) => (
-            let parsed = value::value().parse(State::new(*$input));
+        ($input:expr) => {
+            let parsed = value::value().easy_parse(State::new(*$input));
             assert!(parsed.is_ok());
             let (v, rest) = parsed.unwrap();
             assert_eq!(v.to_string(), *$input);
             assert!(rest.input.is_empty());
-        );
+        };
     }
 
     macro_rules! parsed_date_time_eq {
-        ($input:expr, $is:ident) => (
-            {
-                let parsed = value::value().parse(State::new(*$input));
-                assert!(parsed.is_ok());
-                let (v, rest) = parsed.unwrap();
-                assert_eq!(v.to_string(), *$input);
-                assert!(rest.input.is_empty());
-                assert!(v.is_date_time());
-                assert!(v.as_date_time().unwrap().$is());
-            }
-        );
+        ($input:expr, $is:ident) => {{
+            let parsed = value::value().easy_parse(State::new(*$input));
+            assert!(parsed.is_ok());
+            let (v, rest) = parsed.unwrap();
+            assert_eq!(v.to_string(), *$input);
+            assert!(rest.input.is_empty());
+            assert!(v.is_date_time());
+            assert!(v.as_date_time().unwrap().$is());
+        }};
     }
 
     #[test]
@@ -107,12 +99,12 @@ mod tests {
             (&std::i64::MAX.to_string()[..], std::i64::MAX),
         ];
         for &(input, expected) in &cases {
-            let parsed = numbers::integer().parse(State::new(input));
+            let parsed = numbers::integer().easy_parse(State::new(input));
             parsed_eq!(parsed, expected);
         }
 
         let overflow = "1000000000000000000000000000000000";
-        let parsed = numbers::integer().parse(State::new(overflow));
+        let parsed = numbers::integer().easy_parse(State::new(overflow));
         assert!(parsed.is_err());
     }
 
@@ -140,7 +132,7 @@ mod tests {
     fn basic_string() {
         let input =
             r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
-        let parsed = strings::string().parse(State::new(input));
+        let parsed = strings::string().easy_parse(State::new(input));
         parsed_eq!(
             parsed,
             "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}"
@@ -162,14 +154,14 @@ Violets are blue"#,
         ];
 
         for &(input, expected) in &cases {
-            let parsed = strings::string().parse(State::new(input));
+            let parsed = strings::string().easy_parse(State::new(input));
             parsed_eq!(parsed, expected);
         }
 
         let invalid_cases = [r#""""  """#, r#""""  \""""#];
 
         for input in &invalid_cases {
-            let parsed = strings::ml_basic_string().parse(State::new(*input));
+            let parsed = strings::ml_basic_string().easy_parse(State::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -190,7 +182,7 @@ The quick brown \
        """"#,
         ];
         for input in &inputs {
-            let parsed = strings::string().parse(State::new(*input));
+            let parsed = strings::string().easy_parse(State::new(*input));
             parsed_eq!(parsed, "The quick brown fox jumps over the lazy dog.");
         }
         let empties = [
@@ -202,7 +194,7 @@ The quick brown \
 """"#,
         ];
         for empty in &empties {
-            let parsed = strings::string().parse(State::new(*empty));
+            let parsed = strings::string().easy_parse(State::new(*empty));
             parsed_eq!(parsed, "");
         }
     }
@@ -217,7 +209,7 @@ The quick brown \
         ];
 
         for input in &inputs {
-            let parsed = strings::string().parse(State::new(*input));
+            let parsed = strings::string().easy_parse(State::new(*input));
             parsed_eq!(parsed, &input[1..input.len() - 1]);
         }
     }
@@ -225,7 +217,7 @@ The quick brown \
     #[test]
     fn ml_literal_string() {
         let input = r#"'''I [dw]on't need \d{2} apples'''"#;
-        let parsed = strings::string().parse(State::new(input));
+        let parsed = strings::string().easy_parse(State::new(input));
         parsed_eq!(parsed, &input[3..input.len() - 3]);
         let input = r#"'''
 The first newline is
@@ -233,7 +225,7 @@ trimmed in raw strings.
    All other whitespace
    is preserved.
 '''"#;
-        let parsed = strings::string().parse(State::new(input));
+        let parsed = strings::string().easy_parse(State::new(input));
         parsed_eq!(parsed, &input[4..input.len() - 3]);
     }
 
@@ -296,7 +288,7 @@ trimmed in raw strings.
    "#,
         ];
         for input in &inputs {
-            let parsed = trivia::ws_comment_newline().parse(State::new(*input));
+            let parsed = trivia::ws_comment_newline().easy_parse(State::new(*input));
             assert!(parsed.is_ok());
             let (t, rest) = parsed.unwrap();
             assert!(rest.input.is_empty());
@@ -347,7 +339,7 @@ trimmed in raw strings.
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#, r#"[ 1, 2.0 ]"#];
         for input in &invalid_inputs {
-            let parsed = array::array().parse(State::new(*input));
+            let parsed = array::array().easy_parse(State::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -365,7 +357,7 @@ trimmed in raw strings.
         }
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in &invalid_inputs {
-            let parsed = inline_table::inline_table().parse(State::new(*input));
+            let parsed = inline_table::inline_table().easy_parse(State::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -379,7 +371,7 @@ trimmed in raw strings.
         ];
 
         for &(input, expected) in &cases {
-            let parsed = key::key().parse(State::new(input));
+            let parsed = key::key().easy_parse(State::new(input));
             assert!(parsed.is_ok());
             let ((.., k), rest) = parsed.unwrap();
             assert_eq!(k, expected);
@@ -472,10 +464,8 @@ that
             assert_eq!(&doc.to_string(), document);
         }
 
-        let invalid_inputs = [
-            r#" hello = 'darkness' # my old friend
-$"#,
-        ];
+        let invalid_inputs = [r#" hello = 'darkness' # my old friend
+$"#];
         for document in &invalid_inputs {
             let doc = TomlParser::parse(document);
 

@@ -1,14 +1,14 @@
-use combine::*;
 use combine::char::char;
-use combine::primitives::RangeStream;
-use parser::errors::CustomError;
-use parser::trivia::ws;
-use parser::key::key;
-use parser::value::value;
-use value::InlineTable;
+use combine::stream::RangeStream;
+use combine::*;
 use decor::{InternalString, Repr};
-use table::{Item, TableKeyValue};
 use formatted::decorated;
+use parser::errors::CustomError;
+use parser::key::key;
+use parser::trivia::ws;
+use parser::value::value;
+use table::{Item, TableKeyValue};
+use value::InlineTable;
 
 // ;; Inline Table
 

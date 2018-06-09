@@ -1,11 +1,10 @@
-use combine::*;
+use chrono;
 use combine::char::{char, digit};
 use combine::combinator::{skip_count_min_max, SkipCountMinMax};
-use chrono;
-use combine::primitives::RangeStream;
 use combine::range::{recognize, recognize_with_value};
+use combine::stream::RangeStream;
+use combine::*;
 use value;
-
 
 #[inline]
 pub fn repeat<P: Parser>(count: usize, parser: P) -> SkipCountMinMax<P> {

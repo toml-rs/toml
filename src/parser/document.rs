@@ -1,89 +1,54 @@
-use combine::*;
-use combine::Parser;
 use combine::char::char;
 use combine::range::recognize;
-use combine::primitives::RangeStream;
-use parser::{TomlError, TomlParser};
-use parser::errors::CustomError;
-use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
-use parser::key::key;
-use parser::value::value;
-use parser::table::table;
-use parser::inline_table::KEYVAL_SEP;
+use combine::stream::state::State;
+use combine::stream::RangeStream;
+use combine::Parser;
+use combine::*;
 use decor::{InternalString, Repr};
 use document::Document;
-use table::{Item, TableKeyValue};
 use formatted::decorated;
-use std::mem;
+use parser::errors::CustomError;
+use parser::inline_table::KEYVAL_SEP;
+use parser::key::key;
+use parser::table::table;
+use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
+use parser::value::value;
+use parser::{TomlError, TomlParser};
 use std::cell::RefCell;
-// https://github.com/rust-lang/rust/issues/41358
-#[allow(unused_imports)]
+use std::mem;
 use std::ops::DerefMut;
+use table::{Item, TableKeyValue};
 
+toml_parser!(parse_comment, parser, {
+    (comment(), line_ending()).map(|(c, e)| parser.borrow_mut().deref_mut().on_comment(c, e))
+});
 
-parser!{
-    fn parse_comment['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        (
-            comment(),
-            line_ending(),
-        ).map(|(c, e)|
-              parser
-              .borrow_mut()
-              .deref_mut()
-              .on_comment(c, e))
-    }
-}
+toml_parser!(parse_ws, parser, {
+    ws().map(|w| parser.borrow_mut().deref_mut().on_ws(w))
+});
 
-parser!{
-    fn parse_ws['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        ws()
-            .map(|w|
-                 parser
-                 .borrow_mut()
-                 .deref_mut()
-                 .on_ws(w))
-    }
-}
+toml_parser!(parse_newline, parser, {
+    recognize(newline()).map(|w| parser.borrow_mut().deref_mut().on_ws(w))
+});
 
-parser!{
-    fn parse_newline['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        recognize(newline())
-            .map(|w|
-                 parser
-                 .borrow_mut()
-                 .deref_mut()
-                 .on_ws(w))
-    }
-}
-
-parser!{
-    fn keyval['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        parse_keyval().and_then(|(k, kv)|
-                                parser
-                                .borrow_mut()
-                                .deref_mut()
-                                .on_keyval(k, kv))
-    }
-}
+toml_parser!(keyval, parser, {
+    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(k, kv))
+});
 
 // keyval = key keyval-sep val
 parser!{
     fn parse_keyval['a, I]()(I) -> (InternalString, TableKeyValue)
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
+    where
+        [I: RangeStream<
+         Range = &'a str,
+         Item = char>,
+         I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
+         <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+         From<::std::num::ParseIntError> +
+         From<::std::num::ParseFloatError> +
+         From<::chrono::ParseError> +
+         From<::parser::errors::CustomError>
+    ] {
         (
             (key(), ws()),
             char(KEYVAL_SEP),
@@ -102,7 +67,6 @@ parser!{
         })
     }
 }
-
 
 impl TomlParser {
     // ;; TOML
@@ -129,7 +93,7 @@ impl TomlParser {
                     )).skip(parse_ws(&parser)),
                 ),
             )))
-            .parse(input);
+            .easy_parse(input);
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(TomlError::from_unparsed(rest.positioner, s))

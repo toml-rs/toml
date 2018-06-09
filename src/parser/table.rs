@@ -1,21 +1,20 @@
-use combine::*;
+use array_of_tables::ArrayOfTables;
 use combine::char::char;
 use combine::range::range;
-use combine::primitives::RangeStream;
-use parser::TomlParser;
-use parser::errors::CustomError;
-use parser::trivia::{line_trailing, ws};
-use parser::key::key;
-use key::Key;
-use array_of_tables::ArrayOfTables;
+use combine::stream::RangeStream;
+use combine::*;
 use decor::{Decor, InternalString};
-use table::{Item, Table};
-use std::mem;
+use key::Key;
+use parser::errors::CustomError;
+use parser::key::key;
+use parser::trivia::{line_trailing, ws};
+use parser::TomlParser;
 use std::cell::RefCell;
+use std::mem;
+use table::{Item, Table};
 // https://github.com/rust-lang/rust/issues/41358
 #[allow(unused_imports)]
 use std::ops::DerefMut;
-
 
 // table-key-sep   = ws %x2E ws  ; . Period
 const TABLE_KEY_SEP: char = '.';
@@ -28,7 +27,6 @@ const ARRAY_TABLE_OPEN: &str = "[[";
 // array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
 const ARRAY_TABLE_CLOSE: &str = "]]";
 
-
 // note: this rule is not present in the original grammar
 // key-path = key *( table-key-sep key)
 parse!(key_path() -> Vec<Key>, {
@@ -36,58 +34,46 @@ parse!(key_path() -> Vec<Key>, {
             char(TABLE_KEY_SEP))
 });
 
-
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
-parser!{
-    fn std_table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        (
-            between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE),
-                    key_path()),
-            line_trailing(),
-        )
-            .and_then(|(h, t)|
-                      parser
-                      .borrow_mut()
-                      .deref_mut()
-                      .on_std_header(&h, t))
-    }
-}
+toml_parser!(std_table, parser, {
+    (
+        between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key_path()),
+        line_trailing(),
+    ).and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h, t))
+});
 
 // ;; Array Table
 
 // array-table = array-table-open key *( table-key-sep key) array-table-close
-parser!{
-    fn array_table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
-        (
-            between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE),
-                    key_path()),
-            line_trailing(),
-        )
-            .and_then(|(h, t)|
-                      parser
-                      .borrow_mut()
-                      .deref_mut()
-                      .on_array_header(&h, t))
-    }
-}
-
+toml_parser!(array_table, parser, {
+    (
+        between(
+            range(ARRAY_TABLE_OPEN),
+            range(ARRAY_TABLE_CLOSE),
+            key_path(),
+        ),
+        line_trailing(),
+    ).and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h, t))
+});
 
 // ;; Table
 
 // table = std-table / array-table
 parser!{
     pub fn table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
-        where
-        [I: RangeStream<Range = &'a str, Item = char>,]
-    {
+    where
+        [I: RangeStream<
+         Range = &'a str,
+         Item = char>,
+         I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
+         <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+         From<::std::num::ParseIntError> +
+         From<::std::num::ParseFloatError> +
+         From<::chrono::ParseError> +
+         From<::parser::errors::CustomError>
+    ]    {
         array_table(parser)
             .or(std_table(parser))
             .message("While parsing a Table Header")

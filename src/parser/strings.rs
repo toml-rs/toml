@@ -1,12 +1,12 @@
-use combine::*;
 use combine::char::char;
+use combine::error::{Consumed, Info};
 use combine::range::{range, take, take_while};
-use combine::primitives::{Consumed, RangeStream};
+use combine::stream::RangeStream;
+use combine::*;
 use decor::InternalString;
-use parser::trivia::{newline, ws, ws_newlines};
 use parser::errors::CustomError;
+use parser::trivia::{newline, ws, ws_newlines};
 use std::char;
-
 
 // ;; String
 
@@ -53,15 +53,15 @@ parse!(escape() -> char, {
         .then(|c| {
             parser(move |input| {
                 match c {
-                    'b'  => Ok(('\u{8}', Consumed::Empty(input))),
-                    'f'  => Ok(('\u{c}', Consumed::Empty(input))),
-                    'n'  => Ok(('\n',    Consumed::Empty(input))),
-                    'r'  => Ok(('\r',    Consumed::Empty(input))),
-                    't'  => Ok(('\t',    Consumed::Empty(input))),
+                    'b'  => Ok(('\u{8}', Consumed::Empty(()))),
+                    'f'  => Ok(('\u{c}', Consumed::Empty(()))),
+                    'n'  => Ok(('\n',    Consumed::Empty(()))),
+                    'r'  => Ok(('\r',    Consumed::Empty(()))),
+                    't'  => Ok(('\t',    Consumed::Empty(()))),
                     'u'  => hexescape(4).parse_stream(input),
                     'U'  => hexescape(8).parse_stream(input),
                     // ['\\', '"', '/']
-                    _    => Ok((c,       Consumed::Empty(input))),
+                    _    => Ok((c,       Consumed::Empty(()))),
                 }
             })
         })
@@ -73,7 +73,6 @@ parse!(hexescape(n: usize) -> char, {
         .and_then(|h| char::from_u32(h).ok_or_else(|| CustomError::InvalidHexEscape(h)))
 });
 
-
 // escape = %x5C                    ; \
 const ESCAPE: char = '\\';
 
@@ -83,7 +82,7 @@ parse!(basic_char() -> char, {
         .then(|c| parser(move |input| {
             match c {
                 ESCAPE => escape().parse_stream(input),
-                _      => Ok((c, Consumed::Empty(input))),
+                _      => Ok((c, Consumed::Empty(()))),
             }
         }))
 });
@@ -118,7 +117,7 @@ parse!(ml_basic_char() -> char, {
         .then(|c| parser(move |input| {
             match c {
                 ESCAPE => escape().parse_stream(input),
-                _      => Ok((c, Consumed::Empty(input))),
+                _      => Ok((c, Consumed::Empty(()))),
             }
         }))
 });
@@ -142,7 +141,7 @@ parse!(ml_basic_body() -> InternalString, {
         .skip(try_eat_escaped_newline())
         .with(
             many(
-                not_followed_by(range(ML_BASIC_STRING_DELIM))
+                not_followed_by(range(ML_BASIC_STRING_DELIM).map(Info::Range))
                     .with(
                         choice((
                             // `TOML parsers should feel free to normalize newline
@@ -158,7 +157,8 @@ parse!(ml_basic_body() -> InternalString, {
 
 // ml-basic-string = ml-basic-string-delim ml-basic-body ml-basic-string-delim
 parse!(ml_basic_string() -> InternalString, {
-    between(range(ML_BASIC_STRING_DELIM), range(ML_BASIC_STRING_DELIM),
+    between(range(ML_BASIC_STRING_DELIM),
+            range(ML_BASIC_STRING_DELIM),
             ml_basic_body())
         .message("While parsing a Multiline Basic String")
 });
@@ -204,7 +204,7 @@ parse!(ml_literal_body() -> InternalString, {
     optional(newline())
         .with(
             many(
-                not_followed_by(range(ML_LITERAL_STRING_DELIM))
+                not_followed_by(range(ML_LITERAL_STRING_DELIM).map(Info::Range))
                     .with(
                         choice((
                             // `TOML parsers should feel free to normalize newline
@@ -217,10 +217,10 @@ parse!(ml_literal_body() -> InternalString, {
         )
 });
 
-
 // ml-literal-string = ml-literal-string-delim ml-literal-body ml-literal-string-delim
 parse!(ml_literal_string() -> InternalString, {
-    between(range(ML_LITERAL_STRING_DELIM), range(ML_LITERAL_STRING_DELIM),
+    between(range(ML_LITERAL_STRING_DELIM),
+            range(ML_LITERAL_STRING_DELIM),
             ml_literal_body())
         .message("While parsing a Multiline Literal String")
 });
