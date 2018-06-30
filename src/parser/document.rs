@@ -120,7 +120,7 @@ impl TomlParser {
 
         if table.contains_key(&key) {
             Err(CustomError::DuplicateKey {
-                key: key,
+                key,
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {

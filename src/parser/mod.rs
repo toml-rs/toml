@@ -1,4 +1,5 @@
 #![cfg_attr(feature = "cargo-clippy", allow(unneeded_field_pattern))]
+#![cfg_attr(feature = "cargo-clippy", allow(toplevel_ref_arg))]
 
 #[macro_use]
 mod macros;

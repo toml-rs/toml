@@ -49,8 +49,8 @@ pub struct TableKeyValue {
 impl TableKeyValue {
     pub(crate) fn new(key: Repr, value: Item) -> Self {
         TableKeyValue {
-            key: key,
-            value: value,
+            key,
+            value,
         }
     }
 }
@@ -66,7 +66,7 @@ impl Table {
 
     pub(crate) fn with_decor(decor: Decor) -> Self {
         Self {
-            decor: decor,
+            decor,
             ..Default::default()
         }
     }
