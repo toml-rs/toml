@@ -30,23 +30,9 @@ branches:
 matrix:
   allow_failures:
     - rust: nightly
-    - rust: nightly-2017-12-08
 
   include:
-  - rust: "1.26.2"
-
-    before_script:
-    - rustup component add rustfmt-preview --toolchain 1.26.2
-
-    script:
-    - rustfmt -V
-    - cargo fmt -- --write-mode diff
-    - cargo test --all
-
-    after_success:
-    - ./.travis/coverage.sh
-
-  - rust: nightly-2017-12-08
+  - rust: nightly-2018-06-19
     env:
       global:
         - RUSTFLAGS="-C link-dead-code"
@@ -61,9 +47,11 @@ matrix:
           - libiberty-dev
 
     before_script:
-    - bash -c '[ "$(cargo clippy --version 2>/dev/null)" == "0.0.175" ] || cargo install clippy --vers 0.0.175 --force'
+    - bash -c '[ "$(cargo clippy --version 2>/dev/null)" == "0.0.209" ] || cargo install clippy --vers 0.0.209 --force'
+    - cargo install rustfmt-nightly --force
 
     script:
+    - cargo fmt -- --write-mode diff
     - cargo clippy -- -D warnings -Z no-trans
     - rm -rf target/debug/{test_,toml_edit-}*
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
