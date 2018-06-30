@@ -57,10 +57,7 @@ pub(crate) struct FancyError<'a> {
 
 impl<'a> FancyError<'a> {
     pub(crate) fn new(error: ParseError<char, &'a str, SourcePosition>, input: &'a str) -> Self {
-        Self {
-            error,
-            input,
-        }
+        Self { error, input }
     }
 }
 

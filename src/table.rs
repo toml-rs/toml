@@ -48,10 +48,7 @@ pub struct TableKeyValue {
 
 impl TableKeyValue {
     pub(crate) fn new(key: Repr, value: Item) -> Self {
-        TableKeyValue {
-            key,
-            value,
-        }
+        TableKeyValue { key, value }
     }
 }
 

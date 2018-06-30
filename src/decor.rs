@@ -60,9 +60,6 @@ impl<T> Formatted<T> {
     }
 
     pub(crate) fn new(v: T, repr: Repr) -> Self {
-        Self {
-            value: v,
-            repr,
-        }
+        Self { value: v, repr }
     }
 }
