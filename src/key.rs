@@ -62,7 +62,7 @@ impl Key {
     pub(crate) fn new(raw: &str, key: InternalString) -> Self {
         Self {
             raw: raw.into(),
-            key: key,
+            key,
         }
     }
 

@@ -48,10 +48,7 @@ pub struct TableKeyValue {
 
 impl TableKeyValue {
     pub(crate) fn new(key: Repr, value: Item) -> Self {
-        TableKeyValue {
-            key: key,
-            value: value,
-        }
+        TableKeyValue { key, value }
     }
 }
 
@@ -66,7 +63,7 @@ impl Table {
 
     pub(crate) fn with_decor(decor: Decor) -> Self {
         Self {
-            decor: decor,
+            decor,
             ..Default::default()
         }
     }
@@ -146,7 +143,8 @@ impl Table {
     /// and set it to the appropriate value.
     pub fn entry<'a>(&'a mut self, key: &str) -> &'a mut Item {
         let parsed_key = key.parse::<Key>().expect("invalid key");
-        &mut self.items
+        &mut self
+            .items
             .entry(parsed_key.get().to_owned())
             .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
             .value

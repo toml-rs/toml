@@ -62,7 +62,8 @@ impl Display for InlineTable {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(f, "{}{{", self.decor.prefix)?;
         write!(f, "{}", self.preamble)?;
-        for (i, (key, value)) in self.items
+        for (i, (key, value)) in self
+            .items
             .iter()
             .filter(|&(_, kv)| kv.value.is_value())
             .map(|(_, kv)| (&kv.key, kv.value.as_value().unwrap()))
@@ -88,7 +89,7 @@ impl<'a> Display for TableFormatState<'a> {
 
         for kv in table.items.values() {
             if let Item::Value(ref value) = kv.value {
-                write!(f, "{}={}\n", kv.key, value)?;
+                writeln!(f, "{}={}", kv.key, value)?;
             }
         }
 
@@ -100,7 +101,7 @@ impl<'a> Display for TableFormatState<'a> {
                     if !(t.implicit && t.values_len() == 0) {
                         write!(f, "{}[", t.decor.prefix)?;
                         write!(f, "{}", self.path.borrow().join("."))?;
-                        write!(f, "]{}\n", t.decor.suffix)?;
+                        writeln!(f, "]{}", t.decor.suffix)?;
                     }
                     write!(f, "{}", self)?;
                     self.table.set(table);
@@ -112,7 +113,7 @@ impl<'a> Display for TableFormatState<'a> {
                         self.table.set(t);
                         write!(f, "{}[[", t.decor.prefix)?;
                         write!(f, "{}", self.path.borrow().join("."))?;
-                        write!(f, "]]{}\n", t.decor.suffix)?;
+                        writeln!(f, "]]{}", t.decor.suffix)?;
                         write!(f, "{}", self)?;
                     }
                     self.table.set(table);

@@ -95,7 +95,7 @@ pub(crate) fn to_key_value(key: &str, mut value: Value) -> TableKeyValue {
 pub(crate) fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
     TableKeyValue {
         key: key_repr(key),
-        value: value,
+        value,
     }
 }
 
