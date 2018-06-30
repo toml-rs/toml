@@ -51,7 +51,7 @@ matrix:
     - cargo install rustfmt-nightly --force
 
     script:
-    - cargo fmt -- --write-mode diff
+    - cargo fmt -- --check
     - cargo clippy -- -D warnings -Z no-trans
     - rm -rf target/debug/{test_,toml_edit-}*
     # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
