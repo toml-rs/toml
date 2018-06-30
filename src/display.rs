@@ -62,7 +62,8 @@ impl Display for InlineTable {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(f, "{}{{", self.decor.prefix)?;
         write!(f, "{}", self.preamble)?;
-        for (i, (key, value)) in self.items
+        for (i, (key, value)) in self
+            .items
             .iter()
             .filter(|&(_, kv)| kv.value.is_value())
             .map(|(_, kv)| (&kv.key, kv.value.as_value().unwrap()))

@@ -46,7 +46,8 @@ impl Index for usize {
             Item::ArrayOfTables(ref mut vec) => {
                 vec.values.get_mut(*self).expect("index out of bounds")
             }
-            Item::Value(ref mut a) if a.is_array() => a.as_array_mut()
+            Item::Value(ref mut a) if a.is_array() => a
+                .as_array_mut()
                 .unwrap()
                 .values
                 .get_mut(*self)
@@ -60,7 +61,8 @@ impl Index for str {
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item> {
         match *v {
             Item::Table(ref t) => t.get(self),
-            Item::Value(ref v) if v.is_inline_table() => v.as_inline_table()
+            Item::Value(ref v) if v.is_inline_table() => v
+                .as_inline_table()
                 .and_then(|t| t.items.get(self).map(|kv| &kv.value)),
             _ => None,
         }
@@ -75,7 +77,8 @@ impl Index for str {
         match *v {
             Item::Table(ref mut t) => t.entry(self).or_insert(Item::None),
             Item::Value(ref mut v) if v.is_inline_table() => {
-                &mut v.as_inline_table_mut()
+                &mut v
+                    .as_inline_table_mut()
                     .unwrap()
                     .items
                     .entry(self.to_owned())

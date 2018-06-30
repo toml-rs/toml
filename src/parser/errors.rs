@@ -69,7 +69,8 @@ impl<'a> Display for FancyError<'a> {
         let SourcePosition { line, column } = self.error.position;
 
         let offset = line.to_string().len();
-        let content = self.input
+        let content = self
+            .input
             .split('\n')
             .nth((line - 1) as usize)
             .expect("line");
