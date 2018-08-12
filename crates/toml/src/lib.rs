@@ -152,7 +152,7 @@ pub use crate::value::Value;
 
 pub mod ser;
 #[doc(no_inline)]
-pub use crate::ser::{to_string, to_string_pretty, to_vec, Serializer};
+pub use crate::ser::{to_string, to_string_pretty, to_vec, to_writer, Serializer};
 pub mod de;
 #[doc(no_inline)]
 pub use crate::de::{from_reader, from_slice, from_str, Deserializer};

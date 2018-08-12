@@ -28,6 +28,7 @@
 use std::cell::Cell;
 use std::error;
 use std::fmt::{self, Write};
+use std::io;
 use std::marker;
 use std::rc::Rc;
 
@@ -89,6 +90,52 @@ where
     let mut dst = String::with_capacity(128);
     value.serialize(&mut Serializer::new(&mut dst))?;
     Ok(dst)
+}
+
+/// Serialize the given data structure as TOML into the IO stream.
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, if `T` contains a map with non-string keys, or if `T` attempts to
+/// serialize an unsupported datatype such as an enum, tuple, or tuple struct.
+///
+/// # Examples
+///
+/// ```
+/// use std::fs::File;
+///
+/// #[derive(Serialize)]
+/// struct Config {
+///     database: Database,
+/// }
+///
+/// #[derive(Serialize)]
+/// struct Database {
+///     ip: String,
+///     port: Vec<u16>,
+///     connection_max: u32,
+///     enabled: bool,
+/// }
+///
+/// let config = Config {
+///     database: Database {
+///         ip: "192.168.1.1".to_string(),
+///         port: vec![8001, 8002, 8003],
+///         connection_max: 5000,
+///         enabled: false,
+///     },
+/// };
+///
+/// let mut file = File::create("config.toml").unwrap();
+/// toml::to_writer(&mut file, &config).unwrap();
+/// ```
+pub fn to_writer<W, T: ?Sized>(writer: &mut W, value: &T) -> Result<(), Error>
+where
+    W: io::Write,
+    T: ser::Serialize,
+{
+    let b = to_vec(value)?;
+    writer.write_all(&b).map_err(ser::Error::custom)?;
+    Ok(())
 }
 
 /// Serialize the given data structure as a "pretty" String of TOML.
