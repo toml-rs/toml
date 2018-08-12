@@ -6,9 +6,11 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::convert::From;
 use std::error;
 use std::f64;
 use std::fmt;
+use std::io;
 use std::iter;
 use std::marker::PhantomData;
 use std::str;
@@ -80,6 +82,46 @@ where
     Ok(ret)
 }
 
+/// Deserializes an IO stream into a type.
+///
+/// This function will attempt to read a TOML document from `r` and
+/// deserialize to `T` .
+///
+/// # Examples
+///
+/// ```rust
+/// #[macro_use]
+/// extern crate serde_derive;
+/// extern crate toml;
+///
+/// use std::fs::File;
+///
+/// #[derive(Debug, Deserialize)]
+/// struct Config {
+///     title: String,
+///     owner: Owner,
+/// }
+///
+/// #[derive(Debug, Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let mut file = File::open("config.toml").unwrap();
+/// let config: Config = toml::from_reader(&mut file).unwrap();
+///
+/// println!("{:?}", config);
+/// ```
+pub fn from_reader<R, T>(r: &mut R) -> Result<T, ReaderError>
+where
+    R: io::Read,
+    T: de::DeserializeOwned,
+{
+    let mut buf = Vec::new();
+    r.read_to_end(&mut buf)?;
+    from_slice::<T>(&buf).map_err(ReaderError::ParserError)
+}
+
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Error {
@@ -94,6 +136,21 @@ struct ErrorInner {
     at: Option<usize>,
     message: String,
     key: Vec<String>,
+}
+
+/// Error that can occur when deserializing via IO.
+#[derive(Debug)]
+pub enum ReaderError{
+    /// An input/output error.
+    IoError(io::Error),
+    /// An internal serialisation error.
+    ParserError(Error),
+}
+
+impl From<io::Error> for ReaderError {
+    fn from(error: io::Error) -> Self {
+        ReaderError::IoError(error)
+    }
 }
 
 /// Errors that can occur when deserializing a type.
