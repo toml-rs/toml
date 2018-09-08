@@ -92,8 +92,7 @@ impl TomlParser {
                         parse_newline(&parser),
                     )).skip(parse_ws(&parser)),
                 ),
-            )))
-            .easy_parse(input);
+            ))).easy_parse(input);
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(TomlError::from_unparsed(rest.positioner, s))
