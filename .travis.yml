@@ -21,6 +21,9 @@ cache:
     - kcov/usr/local/bin
     - target/debug/deps
 
+before_cache:
+  - rm -rf /home/travis/.cargo/registry
+
 branches:
   only:
     - staging
@@ -32,7 +35,7 @@ matrix:
     - rust: nightly
 
   include:
-  - rust: nightly-2018-06-29
+  - rust: nightly-2018-09-07
     env:
       global:
         - RUSTFLAGS="-C link-dead-code"
@@ -47,14 +50,13 @@ matrix:
           - libiberty-dev
 
     before_script:
-    - bash -c '[ "$(cargo clippy --version 2>/dev/null)" == "0.0.211" ] || cargo install clippy --vers 0.0.211 --force'
-    - cargo install rustfmt-nightly --force
+    - rustup component add clippy-preview
+    - rustup component add rustfmt-preview
 
     script:
     - cargo fmt -- --check
     - cargo clippy -- -D warnings
-    - rm -rf target/debug/{test_,toml_edit-}*
-    # - RUSTFLAGS="-Z sanitizer=leak" cargo test --verbose --target x86_64-unknown-linux-gnu
 
     after_success:
+    - rm -rf target/debug/{test_,toml_edit-}*
     - ./.travis/coverage.sh
