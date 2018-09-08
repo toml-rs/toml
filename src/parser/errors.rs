@@ -75,7 +75,7 @@ impl<'a> Display for FancyError<'a> {
         writeln!(f, "TOML parse error at line {}, column {}", line, column)?;
 
         //   |
-        for _ in 0..(offset + 1) {
+        for _ in 0..=offset {
             write!(f, " ")?;
         }
         writeln!(f, "|")?;
@@ -85,7 +85,7 @@ impl<'a> Display for FancyError<'a> {
         writeln!(f, "{}", content)?;
 
         //   |          ^
-        for _ in 0..(offset + 1) {
+        for _ in 0..=offset {
             write!(f, " ")?;
         }
         write!(f, "|")?;

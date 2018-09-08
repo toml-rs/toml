@@ -41,7 +41,8 @@ toml_parser!(std_table, parser, {
     (
         between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key_path()),
         line_trailing(),
-    ).and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h, t))
+    )
+        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h, t))
 });
 
 // ;; Array Table
@@ -55,7 +56,8 @@ toml_parser!(array_table, parser, {
             key_path(),
         ),
         line_trailing(),
-    ).and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h, t))
+    )
+        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h, t))
 });
 
 // ;; Table

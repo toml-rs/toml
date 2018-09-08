@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "clippy", feature(tool_lints))]
 #![deny(missing_docs)]
 #![deny(warnings)]
 // https://github.com/Marwes/combine/issues/172
