@@ -3,6 +3,9 @@ name = "toml_edit-targets"
 version = "0.0.0"
 publish = false
 
+[package.metadata]
+cargo-fuzz = true
+
 [dependencies]
 libfuzzer-sys = { git = "https://github.com/rust-fuzz/libfuzzer-sys.git" }
 toml_edit = { path = ".." }
