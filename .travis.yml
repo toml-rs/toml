@@ -55,7 +55,7 @@ matrix:
 
     script:
     - cargo fmt -- --check
-    - cargo clippy -- -D warnings
+    - cargo clippy --features clippy -- -D warnings
 
     after_success:
     - rm -rf target/debug/{test_,toml_edit-}*
