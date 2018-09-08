@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -o errexit
+set -e
+set -x
 
 KCOV=./kcov/usr/local/bin/kcov
 
@@ -34,6 +35,6 @@ function report_coverage_to_codecov() {
     bash <(curl -s https://codecov.io/bash) -s target/kcov
 }
 
-install_kcov_from_master
-build_coverage
+install_kcov_from_master &&
+build_coverage &&
 report_coverage_to_codecov

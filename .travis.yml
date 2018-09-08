@@ -36,9 +36,6 @@ matrix:
 
   include:
   - rust: nightly-2018-09-07
-    env:
-      global:
-        - RUSTFLAGS="-C link-dead-code"
 
     addons:
       apt:
