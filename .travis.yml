@@ -58,5 +58,4 @@ matrix:
     - cargo clippy --features clippy -- -D warnings
 
     after_success:
-    - rm -rf target/debug/{test_,toml_edit-}*
     - ./.travis/coverage.sh
