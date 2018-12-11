@@ -15,11 +15,13 @@ notifications:
 sudo: required
 
 cache:
+  cargo: true
   apt: true
   directories:
     - $HOME/.cargo/bin
     - kcov/usr/local/bin
     - target/debug/deps
+  timeout: 2000
 
 before_cache:
   - rm -rf /home/travis/.cargo/registry
