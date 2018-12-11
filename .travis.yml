@@ -35,6 +35,8 @@ matrix:
     - rust: nightly
 
   include:
+  - os: windows
+    cache: false
   - rust: nightly-2018-09-07
 
     addons:
