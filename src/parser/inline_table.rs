@@ -62,7 +62,7 @@ parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, TableKeyValue)>)
 
 parse!(keyval() -> (InternalString, TableKeyValue), {
     (
-        try((ws(), key(), ws())),
+        attempt((ws(), key(), ws())),
         char(KEYVAL_SEP),
         (ws(), value(), ws()),
     ).map(|(k, _, v)| {

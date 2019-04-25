@@ -33,7 +33,7 @@ const COMMENT_START_SYMBOL: char = '#';
 // comment = comment-start-symbol *non-eol
 parse!(comment() -> &'a str, {
     recognize((
-        try(char(COMMENT_START_SYMBOL)),
+        attempt(char(COMMENT_START_SYMBOL)),
         take_while(is_non_eol),
     ))
 });

@@ -60,7 +60,7 @@ parse!(array_values() -> (Vec<Value>, bool, &'a str), {
 });
 
 parse!(array_value() -> Value, {
-    try((
+    attempt((
         ws_comment_newline(),
         value(),
         ws_comment_newline(),

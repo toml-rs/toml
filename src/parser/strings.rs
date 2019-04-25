@@ -127,7 +127,7 @@ parse!(ml_basic_char() -> char, {
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
 parse!(try_eat_escaped_newline() -> (), {
-    skip_many(try((
+    skip_many(attempt((
         char(ESCAPE),
         ws(),
         ws_newlines(),
