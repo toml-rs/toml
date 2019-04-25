@@ -63,7 +63,7 @@ toml_parser!(array_table, parser, {
 // ;; Table
 
 // table = std-table / array-table
-parser!{
+parser! {
     pub fn table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
     where
         [I: RangeStream<
@@ -171,19 +171,21 @@ impl TomlParser {
         let table = Self::descend_path(table, &path[..path.len() - 1], 0);
 
         match table {
-            Ok(table) => if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
-                let decor = Decor::new(leading, trailing.into());
+            Ok(table) => {
+                if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
+                    let decor = Decor::new(leading, trailing.into());
 
-                let entry = table
-                    .entry(key.raw())
-                    .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
-                let array = entry.as_array_of_tables_mut().unwrap();
-                self.current_table = array.append(Table::with_decor(decor));
+                    let entry = table
+                        .entry(key.raw())
+                        .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
+                    let array = entry.as_array_of_tables_mut().unwrap();
+                    self.current_table = array.append(Table::with_decor(decor));
 
-                Ok(())
-            } else {
-                Err(duplicate_key(&path[..], path.len() - 1))
-            },
+                    Ok(())
+                } else {
+                    Err(duplicate_key(&path[..], path.len() - 1))
+                }
+            }
             Err(e) => Err(e),
         }
     }

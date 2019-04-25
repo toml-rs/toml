@@ -36,7 +36,7 @@ toml_parser!(keyval, parser, {
 });
 
 // keyval = key keyval-sep val
-parser!{
+parser! {
     fn parse_keyval['a, I]()(I) -> (InternalString, TableKeyValue)
     where
         [I: RangeStream<
@@ -90,9 +90,11 @@ impl TomlParser {
                         keyval(&parser),
                         table(&parser),
                         parse_newline(&parser),
-                    )).skip(parse_ws(&parser)),
+                    ))
+                    .skip(parse_ws(&parser)),
                 ),
-            ))).easy_parse(input);
+            )))
+            .easy_parse(input);
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(TomlError::from_unparsed(rest.positioner, s))
