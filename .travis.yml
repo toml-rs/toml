@@ -34,9 +34,6 @@ matrix:
   allow_failures:
     - rust: nightly
 
-  include:
-  - rust: nightly-2018-09-07
-
     addons:
       apt:
         packages:
@@ -47,8 +44,8 @@ matrix:
           - libiberty-dev
 
     before_script:
-    - rustup component add clippy-preview
-    - rustup component add rustfmt-preview
+    - rustup component add clippy
+    - rustup component add rustfmt
 
     script:
     - cargo fmt -- --check
