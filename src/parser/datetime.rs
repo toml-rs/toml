@@ -51,7 +51,7 @@ parse!(date_time() -> value::DateTime, {
             }),
         // Local Time
         recognize(partial_time())
-            .and_then(|s: &str| s.parse::<chrono::NaiveTime>())
+            .and_then(str::parse)
             .message("While parsing a Time")
             .map(value::DateTime::LocalTime)
     )

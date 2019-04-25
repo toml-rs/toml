@@ -11,7 +11,7 @@ pub(crate) fn decorate_array(array: &mut Array) {
     for (i, val) in array
         .values
         .iter_mut()
-        .filter_map(|i| i.as_value_mut())
+        .filter_map(Item::as_value_mut)
         .enumerate()
     {
         // [value1, value2, value3]

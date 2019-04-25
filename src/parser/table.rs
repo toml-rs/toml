@@ -84,7 +84,7 @@ parser! {
 
 pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
     assert!(i < path.len());
-    let header: Vec<&str> = path[..i].iter().map(|key| key.raw()).collect();
+    let header: Vec<&str> = path[..i].iter().map(Key::raw).collect();
     CustomError::DuplicateKey {
         key: path[i].raw().into(),
         table: format!("[{}]", header.join(".")),
