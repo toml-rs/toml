@@ -51,7 +51,7 @@ parse!(date_time() -> value::DateTime, {
             }),
         // Local Time
         recognize(partial_time())
-            .and_then(|s: &str| s.parse::<chrono::NaiveTime>())
+            .and_then(str::parse)
             .message("While parsing a Time")
             .map(value::DateTime::LocalTime)
     )
@@ -64,7 +64,7 @@ parse!(date_time() -> value::DateTime, {
 // date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
 parse!(full_date() -> &'a str, {
     recognize((
-        try((repeat(4, digit()), char('-'))),
+        attempt((repeat(4, digit()), char('-'))),
         repeat(2, digit()),
         char('-'),
         repeat(2, digit()),
@@ -78,24 +78,24 @@ parse!(full_date() -> &'a str, {
 // time-secfrac   = "." 1*DIGIT
 parse!(partial_time() -> (), {
     (
-        try((
+        attempt((
             repeat(2, digit()),
             char(':'),
         )),
         repeat(2, digit()),
         char(':'),
         repeat(2, digit()),
-        optional(try(char('.')).and(skip_many1(digit()))),
+        optional(attempt(char('.')).and(skip_many1(digit()))),
     ).map(|_| ())
 });
 
 // time-offset    = "Z" / time-numoffset
 // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
 parse!(time_offset() -> (), {
-    try(char('Z')).map(|_| ())
+    attempt(char('Z')).map(|_| ())
         .or(
             (
-                try(choice([char('+'), char('-')])),
+                attempt(choice([char('+'), char('-')])),
                 repeat(2, digit()),
                 char(':'),
                 repeat(2, digit()),

@@ -260,7 +260,7 @@ impl Item {
 
     /// Casts `self` to integer.
     pub fn as_integer(&self) -> Option<i64> {
-        self.as_value().and_then(|v| v.as_integer())
+        self.as_value().and_then(Value::as_integer)
     }
 
     /// Returns true iff `self` is an integer.
@@ -270,7 +270,7 @@ impl Item {
 
     /// Casts `self` to float.
     pub fn as_float(&self) -> Option<f64> {
-        self.as_value().and_then(|v| v.as_float())
+        self.as_value().and_then(Value::as_float)
     }
 
     /// Returns true iff `self` is a float.
@@ -280,7 +280,7 @@ impl Item {
 
     /// Casts `self` to boolean.
     pub fn as_bool(&self) -> Option<bool> {
-        self.as_value().and_then(|v| v.as_bool())
+        self.as_value().and_then(Value::as_bool)
     }
 
     /// Returns true iff `self` is a boolean.
@@ -290,7 +290,7 @@ impl Item {
 
     /// Casts `self` to str.
     pub fn as_str(&self) -> Option<&str> {
-        self.as_value().and_then(|v| v.as_str())
+        self.as_value().and_then(Value::as_str)
     }
 
     /// Returns true iff `self` is a string.
@@ -300,7 +300,7 @@ impl Item {
 
     /// Casts `self` to date-time.
     pub fn as_date_time(&self) -> Option<&DateTime> {
-        self.as_value().and_then(|v| v.as_date_time())
+        self.as_value().and_then(Value::as_date_time)
     }
 
     /// Returns true iff `self` is a date-time.
@@ -310,12 +310,12 @@ impl Item {
 
     /// Casts `self` to array.
     pub fn as_array(&self) -> Option<&Array> {
-        self.as_value().and_then(|v| v.as_array())
+        self.as_value().and_then(Value::as_array)
     }
 
     /// Casts `self` to mutable array.
     pub fn as_array_mut(&mut self) -> Option<&mut Array> {
-        self.as_value_mut().and_then(|v| v.as_array_mut())
+        self.as_value_mut().and_then(Value::as_array_mut)
     }
 
     /// Returns true iff `self` is an array.
@@ -325,12 +325,12 @@ impl Item {
 
     /// Casts `self` to inline table.
     pub fn as_inline_table(&self) -> Option<&InlineTable> {
-        self.as_value().and_then(|v| v.as_inline_table())
+        self.as_value().and_then(Value::as_inline_table)
     }
 
     /// Casts `self` to mutable inline table.
     pub fn as_inline_table_mut(&mut self) -> Option<&mut InlineTable> {
-        self.as_value_mut().and_then(|v| v.as_inline_table_mut())
+        self.as_value_mut().and_then(Value::as_inline_table_mut)
     }
 
     /// Returns true iff `self` is an inline table.

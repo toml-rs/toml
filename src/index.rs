@@ -48,7 +48,7 @@ impl Index for usize {
                 .values
                 .get_mut(*self)
                 .expect("index out of bounds"),
-            _ => panic!("cannot access index {} in {:?}", self, v),
+            _ => panic!("cannot access index {}", self),
         }
     }
 }
@@ -81,7 +81,7 @@ impl Index for str {
                     .or_insert(to_table_key_value(self, Item::None))
                     .value
             }
-            _ => panic!("cannot access key {} in {:?}", self, v),
+            _ => panic!("cannot access key {}", self),
         }
     }
 }

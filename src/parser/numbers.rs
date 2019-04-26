@@ -68,7 +68,7 @@ parse!(exp() -> &'a str, {
 // float = integer ( frac / ( frac exp ) / exp )
 parse!(parse_float() -> &'a str, {
     recognize((
-        try((parse_integer(), look_ahead(one_of("eE.".chars())))),
+        attempt((parse_integer(), look_ahead(one_of("eE.".chars())))),
         choice((
             exp(),
             (

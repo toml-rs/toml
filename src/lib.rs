@@ -72,7 +72,6 @@
 //!
 //! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
 extern crate chrono;
-#[macro_use]
 extern crate combine;
 extern crate linked_hash_map;
 

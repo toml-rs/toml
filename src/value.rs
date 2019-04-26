@@ -96,7 +96,7 @@ impl Array {
 
     /// Returns an iterator over all values.
     pub fn iter(&self) -> ArrayIter {
-        Box::new(self.values.iter().filter_map(|i| i.as_value()))
+        Box::new(self.values.iter().filter_map(Item::as_value))
     }
 
     /// Appends a new value.
