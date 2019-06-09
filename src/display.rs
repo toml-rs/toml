@@ -78,43 +78,44 @@ impl Display for InlineTable {
     }
 }
 
-fn visit_nested_tables<'t, F>(
-    table: &'t Table,
-    path: &mut Vec<&'t str>,
-    is_array_of_tables: bool,
-    callback: &mut F,
-) -> Result
-where
-    F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
-{
-    callback(table, path, is_array_of_tables)?;
+impl Table {
+    fn visit_nested_tables<'t, F>(
+        &'t self,
+        path: &mut Vec<&'t str>,
+        is_array_of_tables: bool,
+        callback: &mut F,
+    ) -> Result
+    where
+        F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
+    {
+        callback(self, path, is_array_of_tables)?;
 
-    for kv in table.items.values() {
-        match kv.value {
-            Item::Table(ref t) => {
-                path.push(&kv.key.raw_value);
-                visit_nested_tables(t, path, false, callback)?;
-                path.pop();
-            }
-            Item::ArrayOfTables(ref a) => {
-                for t in a.iter() {
+        for kv in self.items.values() {
+            match kv.value {
+                Item::Table(ref t) => {
                     path.push(&kv.key.raw_value);
-                    visit_nested_tables(t, path, true, callback)?;
+                    t.visit_nested_tables(path, false, callback)?;
                     path.pop();
                 }
+                Item::ArrayOfTables(ref a) => {
+                    for t in a.iter() {
+                        path.push(&kv.key.raw_value);
+                        t.visit_nested_tables(path, true, callback)?;
+                        path.pop();
+                    }
+                }
+                _ => {}
             }
-            _ => {}
         }
+        Ok(())
     }
-    Ok(())
 }
 
 impl Display for Table {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let mut path = Vec::new();
 
-        visit_nested_tables(
-            self,
+        self.visit_nested_tables(
             &mut path,
             false,
             &mut |t: &Table, path, is_array_of_tables: bool| {
