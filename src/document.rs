@@ -1,7 +1,7 @@
-use decor::InternalString;
-use parser;
+use crate::decor::InternalString;
+use crate::parser;
+use crate::table::{Item, Iter, Table};
 use std::str::FromStr;
-use table::{Item, Iter, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]

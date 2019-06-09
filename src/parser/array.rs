@@ -1,13 +1,13 @@
+use crate::decor::InternalString;
+use crate::formatted::decorated;
+use crate::parser::errors::CustomError;
+use crate::parser::trivia::ws_comment_newline;
+use crate::parser::value::value;
+use crate::value::{Array, Value};
 use combine::char::char;
 use combine::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
-use decor::InternalString;
-use formatted::decorated;
-use parser::errors::CustomError;
-use parser::trivia::ws_comment_newline;
-use parser::value::value;
-use value::{Array, Value};
 
 // ;; Array
 

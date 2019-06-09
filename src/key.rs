@@ -1,6 +1,6 @@
+use crate::decor::InternalString;
+use crate::parser;
 use combine::stream::state::State;
-use decor::InternalString;
-use parser;
 use std::str::FromStr;
 
 /// Key as part of a Key/Value Pair or a table header.

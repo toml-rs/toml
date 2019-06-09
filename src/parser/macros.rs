@@ -10,10 +10,10 @@ macro_rules! parse (
                  Item = char>,
                  I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
                  <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
-                 From<::std::num::ParseIntError> +
-                 From<::std::num::ParseFloatError> +
-                 From<::chrono::ParseError> +
-                 From<::parser::errors::CustomError>
+                 From<std::num::ParseIntError> +
+                 From<std::num::ParseFloatError> +
+                 From<chrono::ParseError> +
+                 From<crate::parser::errors::CustomError>
             ]            {
                 $code
             }
@@ -33,10 +33,10 @@ macro_rules! toml_parser (
                  Item = char>,
                  I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
                  <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
-                 From<::std::num::ParseIntError> +
-                 From<::std::num::ParseFloatError> +
-                 From<::chrono::ParseError> +
-                 From<::parser::errors::CustomError>
+                 From<std::num::ParseIntError> +
+                 From<std::num::ParseFloatError> +
+                 From<chrono::ParseError> +
+                 From<crate::parser::errors::CustomError>
             ]    {
                 $closure
             }

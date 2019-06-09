@@ -1,9 +1,9 @@
-use array_of_tables::ArrayOfTables;
-use decor::{Decor, InternalString, Repr};
-use formatted::{decorated, key_repr};
-use key::Key;
+use crate::array_of_tables::ArrayOfTables;
+use crate::decor::{Decor, InternalString, Repr};
+use crate::formatted::{decorated, key_repr};
+use crate::key::Key;
+use crate::value::{sort_key_value_pairs, Array, DateTime, InlineTable, Value};
 use linked_hash_map::LinkedHashMap;
-use value::{sort_key_value_pairs, Array, DateTime, InlineTable, Value};
 
 // TODO: add method to convert a table into inline table
 
@@ -53,7 +53,7 @@ impl TableKeyValue {
 }
 
 /// An iterator type over `Table`'s key/value pairs.
-pub type Iter<'a> = Box<Iterator<Item = (&'a str, &'a Item)> + 'a>;
+pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 
 impl Table {
     /// Creates an empty table.
@@ -339,10 +339,10 @@ impl Item {
     }
 
     /// Casts `self` to either a table or an inline table.
-    pub fn as_table_like(&self) -> Option<&TableLike> {
+    pub fn as_table_like(&self) -> Option<&dyn TableLike> {
         self.as_table()
-            .map(|t| t as &TableLike)
-            .or_else(|| self.as_inline_table().map(|t| t as &TableLike))
+            .map(|t| t as &dyn TableLike)
+            .or_else(|| self.as_inline_table().map(|t| t as &dyn TableLike))
     }
 
     /// Returns true iff `self` is either a table, or an inline table.

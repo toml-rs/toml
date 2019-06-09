@@ -9,6 +9,7 @@ description = "Yet another format-preserving TOML parser."
 authors = ["Andronik Ordian <write@reusable.software>"]
 repository = "https://github.com/ordian/toml_edit"
 documentation = "https://docs.rs/toml_edit"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "ordian/toml_edit" }
@@ -24,7 +25,3 @@ serde_json = "1.0.27"
 
 [profile.dev]
 opt-level = 1
-
-[features]
-default = []
-clippy = []

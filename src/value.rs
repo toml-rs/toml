@@ -1,13 +1,13 @@
+use crate::decor::{Decor, Formatted, InternalString};
+use crate::formatted;
+use crate::key::Key;
+use crate::parser;
+use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 use chrono::{self, FixedOffset};
 use combine::stream::state::State;
-use decor::{Decor, Formatted, InternalString};
-use formatted;
-use key::Key;
 use linked_hash_map::LinkedHashMap;
-use parser;
 use std::mem;
 use std::str::FromStr;
-use table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
@@ -80,7 +80,7 @@ pub(crate) enum ValueType {
 }
 
 /// An iterator type over `Array`'s values.
-pub type ArrayIter<'a> = Box<Iterator<Item = &'a Value> + 'a>;
+pub type ArrayIter<'a> = Box<dyn Iterator<Item = &'a Value> + 'a>;
 
 impl Array {
     /// Returns the length of the underlying Vec.
@@ -151,7 +151,7 @@ impl Array {
 }
 
 /// An iterator type over key/value pairs of an inline table.
-pub type InlineTableIter<'a> = Box<Iterator<Item = (&'a str, &'a Value)> + 'a>;
+pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
 
 impl InlineTable {
     /// Returns the number of key/value pairs.

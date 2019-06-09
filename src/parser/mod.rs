@@ -1,5 +1,5 @@
-#![cfg_attr(feature = "clippy", allow(clippy::unneeded_field_pattern))]
-#![cfg_attr(feature = "clippy", allow(clippy::toplevel_ref_arg))]
+#![allow(clippy::unneeded_field_pattern)]
+#![allow(clippy::toplevel_ref_arg)]
 
 #[macro_use]
 mod macros;
@@ -19,8 +19,8 @@ pub use self::errors::TomlError;
 pub(crate) use self::key::key as key_parser;
 pub(crate) use self::value::value as value_parser;
 
-use document::Document;
-use table::Table;
+use crate::document::Document;
+use crate::table::Table;
 
 pub struct TomlParser {
     document: Box<Document>,
@@ -40,10 +40,9 @@ impl Default for TomlParser {
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::*;
     use combine::stream::state::State;
     use combine::*;
-    use parser::*;
-    use std;
 
     macro_rules! parsed_eq {
         ($parsed:ident, $expected:expr) => {{

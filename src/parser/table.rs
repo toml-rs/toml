@@ -1,17 +1,17 @@
-use array_of_tables::ArrayOfTables;
+use crate::array_of_tables::ArrayOfTables;
+use crate::decor::{Decor, InternalString};
+use crate::key::Key;
+use crate::parser::errors::CustomError;
+use crate::parser::key::key;
+use crate::parser::trivia::{line_trailing, ws};
+use crate::parser::TomlParser;
+use crate::table::{Item, Table};
 use combine::char::char;
 use combine::range::range;
 use combine::stream::RangeStream;
 use combine::*;
-use decor::{Decor, InternalString};
-use key::Key;
-use parser::errors::CustomError;
-use parser::key::key;
-use parser::trivia::{line_trailing, ws};
-use parser::TomlParser;
 use std::cell::RefCell;
 use std::mem;
-use table::{Item, Table};
 // https://github.com/rust-lang/rust/issues/41358
 #[allow(unused_imports)]
 use std::ops::DerefMut;
@@ -71,10 +71,10 @@ parser! {
          Item = char>,
          I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
          <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
-         From<::std::num::ParseIntError> +
-         From<::std::num::ParseFloatError> +
-         From<::chrono::ParseError> +
-         From<::parser::errors::CustomError>
+         From<std::num::ParseIntError> +
+         From<std::num::ParseFloatError> +
+         From<chrono::ParseError> +
+         From<crate::parser::errors::CustomError>
     ]    {
         array_table(parser)
             .or(std_table(parser))

@@ -1,8 +1,8 @@
-use document::Document;
-use formatted::to_table_key_value;
+use crate::document::Document;
+use crate::formatted::to_table_key_value;
+use crate::table::{value, Item, Table};
+use crate::value::{InlineTable, Value};
 use std::ops;
-use table::{value, Item, Table};
-use value::{InlineTable, Value};
 
 // copied from
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs

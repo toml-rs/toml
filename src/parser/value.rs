@@ -1,14 +1,14 @@
+use crate::decor::{Formatted, Repr};
+use crate::formatted;
+use crate::parser::array::array;
+use crate::parser::datetime::date_time;
+use crate::parser::inline_table::inline_table;
+use crate::parser::numbers::{boolean, float, integer};
+use crate::parser::strings::string;
+use crate::value as v;
 use combine::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
-use decor::{Formatted, Repr};
-use formatted;
-use parser::array::array;
-use parser::datetime::date_time;
-use parser::inline_table::inline_table;
-use parser::numbers::{boolean, float, integer};
-use parser::strings::string;
-use value as v;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
 parse!(value() -> v::Value, {

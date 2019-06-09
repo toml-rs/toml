@@ -1,13 +1,13 @@
+use crate::decor::InternalString;
+use crate::parser::strings::{basic_string, literal_string};
 use combine::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
-use decor::InternalString;
-use parser::strings::{basic_string, literal_string};
 
 #[inline]
 fn is_unquoted_char(c: char) -> bool {
     match c {
-        'A'...'Z' | 'a'...'z' | '0'...'9' | '-' | '_' => true,
+        'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_' => true,
         _ => false,
     }
 }

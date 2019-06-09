@@ -1,11 +1,11 @@
+use crate::decor::InternalString;
+use crate::parser::errors::CustomError;
+use crate::parser::trivia::{newline, ws, ws_newlines};
 use combine::char::char;
 use combine::error::{Consumed, Info};
 use combine::range::{range, take, take_while};
 use combine::stream::RangeStream;
 use combine::*;
-use decor::InternalString;
-use parser::errors::CustomError;
-use parser::trivia::{newline, ws, ws_newlines};
 use std::char;
 
 // ;; String
@@ -24,7 +24,7 @@ parse!(string() -> InternalString, {
 #[inline]
 fn is_basic_unescaped(c: char) -> bool {
     match c {
-        '\u{20}'...'\u{21}' | '\u{23}'...'\u{5B}' | '\u{5D}'...'\u{10FFFF}' => true,
+        '\u{20}'..='\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{10FFFF}' => true,
         _ => false,
     }
 }
@@ -103,7 +103,7 @@ parse!(basic_string() -> InternalString, {
 #[inline]
 fn is_ml_basic_unescaped(c: char) -> bool {
     match c {
-        '\u{20}'...'\u{5B}' | '\u{5D}'...'\u{10FFFF}' => true,
+        '\u{20}'..='\u{5B}' | '\u{5D}'..='\u{10FFFF}' => true,
         _ => false,
     }
 }
@@ -172,7 +172,7 @@ const APOSTROPHE: char = '\'';
 #[inline]
 fn is_literal_char(c: char) -> bool {
     match c {
-        '\u{09}' | '\u{20}'...'\u{26}' | '\u{28}'...'\u{10FFFF}' => true,
+        '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{10FFFF}' => true,
         _ => false,
     }
 }
@@ -193,7 +193,7 @@ const ML_LITERAL_STRING_DELIM: &str = "'''";
 #[inline]
 fn is_ml_literal_char(c: char) -> bool {
     match c {
-        '\u{09}' | '\u{20}'...'\u{10FFFF}' => true,
+        '\u{09}' | '\u{20}'..='\u{10FFFF}' => true,
         _ => false,
     }
 }

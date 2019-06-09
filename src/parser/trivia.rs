@@ -22,7 +22,7 @@ parse!(ws() -> &'a str, {
 #[inline]
 fn is_non_eol(c: char) -> bool {
     match c {
-        '\u{09}' | '\u{20}'...'\u{10FFFF}' => true,
+        '\u{09}' | '\u{20}'..='\u{10FFFF}' => true,
         _ => false,
     }
 }

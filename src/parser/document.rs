@@ -1,23 +1,23 @@
+use crate::decor::{InternalString, Repr};
+use crate::document::Document;
+use crate::formatted::decorated;
+use crate::parser::errors::CustomError;
+use crate::parser::inline_table::KEYVAL_SEP;
+use crate::parser::key::key;
+use crate::parser::table::table;
+use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
+use crate::parser::value::value;
+use crate::parser::{TomlError, TomlParser};
+use crate::table::{Item, TableKeyValue};
 use combine::char::char;
 use combine::range::recognize;
 use combine::stream::state::State;
 use combine::stream::RangeStream;
 use combine::Parser;
 use combine::*;
-use decor::{InternalString, Repr};
-use document::Document;
-use formatted::decorated;
-use parser::errors::CustomError;
-use parser::inline_table::KEYVAL_SEP;
-use parser::key::key;
-use parser::table::table;
-use parser::trivia::{comment, line_ending, line_trailing, newline, ws};
-use parser::value::value;
-use parser::{TomlError, TomlParser};
 use std::cell::RefCell;
 use std::mem;
 use std::ops::DerefMut;
-use table::{Item, TableKeyValue};
 
 toml_parser!(parse_comment, parser, {
     (comment(), line_ending()).map(|(c, e)| parser.borrow_mut().deref_mut().on_comment(c, e))
@@ -44,10 +44,10 @@ parser! {
          Item = char>,
          I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
          <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
-         From<::std::num::ParseIntError> +
-         From<::std::num::ParseFloatError> +
-         From<::chrono::ParseError> +
-         From<::parser::errors::CustomError>
+         From<std::num::ParseIntError> +
+         From<std::num::ParseFloatError> +
+         From<chrono::ParseError> +
+         From<crate::parser::errors::CustomError>
     ] {
         (
             (key(), ws()),

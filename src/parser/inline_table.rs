@@ -1,14 +1,14 @@
+use crate::decor::{InternalString, Repr};
+use crate::formatted::decorated;
+use crate::parser::errors::CustomError;
+use crate::parser::key::key;
+use crate::parser::trivia::ws;
+use crate::parser::value::value;
+use crate::table::{Item, TableKeyValue};
+use crate::value::InlineTable;
 use combine::char::char;
 use combine::stream::RangeStream;
 use combine::*;
-use decor::{InternalString, Repr};
-use formatted::decorated;
-use parser::errors::CustomError;
-use parser::key::key;
-use parser::trivia::ws;
-use parser::value::value;
-use table::{Item, TableKeyValue};
-use value::InlineTable;
 
 // ;; Inline Table
 
