@@ -51,7 +51,7 @@ matrix:
 
     script:
     - cargo fmt -- --check
-    - cargo clippy --features clippy -- -D warnings
+    - cargo clippy -- -D warnings
     - cargo test
 
     after_success:
