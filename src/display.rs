@@ -2,7 +2,6 @@ use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
-use std::cell::{Cell, RefCell};
 use std::fmt::{Display, Formatter, Result};
 
 impl Display for Repr {
@@ -114,10 +113,10 @@ impl Table {
 fn visit_table(
     f: &mut Formatter,
     table: &Table,
-    path: &Vec<&str>,
+    path: &[&str],
     is_array_of_tables: bool,
 ) -> Result {
-    if path.len() == 0 {
+    if path.is_empty() {
         // don't print header for the root node
     } else if is_array_of_tables {
         write!(f, "{}[[", table.decor.prefix)?;
