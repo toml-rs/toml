@@ -2,7 +2,6 @@ language: rust
 
 rust:
   - stable
-  - nightly
 
 os:
   - linux
@@ -32,6 +31,9 @@ branches:
 
 matrix:
   allow_failures:
+    - rust: nightly
+
+  include:
     - rust: nightly
 
     addons:
