@@ -34,7 +34,7 @@ matrix:
     - rust: nightly
 
   include:
-    - rust: nightly
+  - rust: nightly
 
     addons:
       apt:
