@@ -111,34 +111,39 @@ impl Table {
     }
 }
 
+fn visit_table(
+    f: &mut Formatter,
+    table: &Table,
+    path: &Vec<&str>,
+    is_array_of_tables: bool,
+) -> Result {
+    if path.len() == 0 {
+        // don't print header for the root node
+    } else if is_array_of_tables {
+        write!(f, "{}[[", table.decor.prefix)?;
+        write!(f, "{}", path.join("."))?;
+        writeln!(f, "]]{}", table.decor.suffix)?;
+    } else if !(table.implicit && table.values_len() == 0) {
+        write!(f, "{}[", table.decor.prefix)?;
+        write!(f, "{}", path.join("."))?;
+        writeln!(f, "]{}", table.decor.suffix)?;
+    }
+    // print table body
+    for kv in table.items.values() {
+        if let Item::Value(ref value) = kv.value {
+            writeln!(f, "{}={}", kv.key, value)?;
+        }
+    }
+    Ok(())
+}
+
 impl Display for Table {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let mut path = Vec::new();
 
-        self.visit_nested_tables(
-            &mut path,
-            false,
-            &mut |t: &Table, path, is_array_of_tables: bool| {
-                if path.len() == 0 {
-                    // don't print header for the root node
-                } else if is_array_of_tables {
-                    write!(f, "{}[[", t.decor.prefix)?;
-                    write!(f, "{}", path.join("."))?;
-                    writeln!(f, "]]{}", t.decor.suffix)?;
-                } else if !(t.implicit && t.values_len() == 0) {
-                    write!(f, "{}[", t.decor.prefix)?;
-                    write!(f, "{}", path.join("."))?;
-                    writeln!(f, "]{}", t.decor.suffix)?;
-                }
-                // print table body
-                for kv in t.items.values() {
-                    if let Item::Value(ref value) = kv.value {
-                        writeln!(f, "{}={}", kv.key, value)?;
-                    }
-                }
-                Ok(())
-            },
-        )?;
+        self.visit_nested_tables(&mut path, false, &mut |t, path, is_array| {
+            visit_table(f, t, path, is_array)
+        })?;
         Ok(())
     }
 }
