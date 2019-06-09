@@ -1,4 +1,3 @@
-#![cfg_attr(feature = "clippy", feature(tool_lints))]
 #![deny(missing_docs)]
 #![deny(warnings)]
 // https://github.com/Marwes/combine/issues/172
@@ -71,9 +70,6 @@
 //! and an easy to use and type-safe API.
 //!
 //! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
-extern crate chrono;
-extern crate combine;
-extern crate linked_hash_map;
 
 mod array_of_tables;
 mod decor;
@@ -86,9 +82,9 @@ mod parser;
 mod table;
 mod value;
 
-pub use array_of_tables::ArrayOfTables;
-pub use document::Document;
-pub use key::Key;
-pub use parser::TomlError;
-pub use table::{array, table, value, Item, Iter, Table, TableLike};
-pub use value::{Array, InlineTable, Value};
+pub use crate::array_of_tables::ArrayOfTables;
+pub use crate::document::Document;
+pub use crate::key::Key;
+pub use crate::parser::TomlError;
+pub use crate::table::{array, table, value, Item, Iter, Table, TableLike};
+pub use crate::value::{Array, InlineTable, Value};

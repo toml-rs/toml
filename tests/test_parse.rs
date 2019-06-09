@@ -56,7 +56,7 @@ fn test_key_from_str() {
 }
 
 // wat?
-#[cfg_attr(feature = "cargo-clippy", allow(panic_params))]
+#[allow(clippy::panic_params)]
 #[test]
 fn test_value_from_str() {
     assert!(parse_value!("1979-05-27T00:32:00.999999-07:00").is_date_time());

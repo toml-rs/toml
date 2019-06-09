@@ -4,7 +4,7 @@ use combine::combinator::{skip_count_min_max, SkipCountMinMax};
 use combine::range::{recognize, recognize_with_value};
 use combine::stream::RangeStream;
 use combine::*;
-use value;
+use crate::value;
 
 #[inline]
 pub fn repeat<P: Parser>(count: usize, parser: P) -> SkipCountMinMax<P> {
