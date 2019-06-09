@@ -1,7 +1,3 @@
-use combine::char::char;
-use combine::range::range;
-use combine::stream::RangeStream;
-use combine::*;
 use crate::array_of_tables::ArrayOfTables;
 use crate::decor::{Decor, InternalString};
 use crate::key::Key;
@@ -10,6 +6,10 @@ use crate::parser::key::key;
 use crate::parser::trivia::{line_trailing, ws};
 use crate::parser::TomlParser;
 use crate::table::{Item, Table};
+use combine::char::char;
+use combine::range::range;
+use combine::stream::RangeStream;
+use combine::*;
 use std::cell::RefCell;
 use std::mem;
 // https://github.com/rust-lang/rust/issues/41358

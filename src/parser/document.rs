@@ -1,12 +1,3 @@
-use std::cell::RefCell;
-use std::mem;
-use std::ops::DerefMut;
-use combine::char::char;
-use combine::range::recognize;
-use combine::stream::state::State;
-use combine::stream::RangeStream;
-use combine::Parser;
-use combine::*;
 use crate::decor::{InternalString, Repr};
 use crate::document::Document;
 use crate::formatted::decorated;
@@ -18,6 +9,15 @@ use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
 use crate::table::{Item, TableKeyValue};
+use combine::char::char;
+use combine::range::recognize;
+use combine::stream::state::State;
+use combine::stream::RangeStream;
+use combine::Parser;
+use combine::*;
+use std::cell::RefCell;
+use std::mem;
+use std::ops::DerefMut;
 
 toml_parser!(parse_comment, parser, {
     (comment(), line_ending()).map(|(c, e)| parser.borrow_mut().deref_mut().on_comment(c, e))

@@ -1,10 +1,10 @@
-use combine::stream::state::State;
 use crate::decor::{Decor, Formatted, InternalString, Repr};
 use crate::key::Key;
 use crate::parser::strings;
 use crate::parser::TomlError;
 use crate::table::{Item, KeyValuePairs, TableKeyValue};
 use crate::value::{Array, DateTime, InlineTable, Value};
+use combine::stream::state::State;
 use std::iter::FromIterator;
 
 pub(crate) fn decorate_array(array: &mut Array) {

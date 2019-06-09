@@ -1,6 +1,3 @@
-use combine::char::char;
-use combine::stream::RangeStream;
-use combine::*;
 use crate::decor::{InternalString, Repr};
 use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
@@ -9,6 +6,9 @@ use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::{Item, TableKeyValue};
 use crate::value::InlineTable;
+use combine::char::char;
+use combine::stream::RangeStream;
+use combine::*;
 
 // ;; Inline Table
 

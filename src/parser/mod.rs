@@ -40,9 +40,9 @@ impl Default for TomlParser {
 
 #[cfg(test)]
 mod tests {
+    use crate::parser::*;
     use combine::stream::state::State;
     use combine::*;
-    use crate::parser::*;
 
     macro_rules! parsed_eq {
         ($parsed:ident, $expected:expr) => {{

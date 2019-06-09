@@ -1,8 +1,8 @@
+use crate::decor::InternalString;
+use crate::parser::strings::{basic_string, literal_string};
 use combine::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
-use crate::decor::InternalString;
-use crate::parser::strings::{basic_string, literal_string};
 
 #[inline]
 fn is_unquoted_char(c: char) -> bool {

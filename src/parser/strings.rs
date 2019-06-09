@@ -1,11 +1,11 @@
+use crate::decor::InternalString;
+use crate::parser::errors::CustomError;
+use crate::parser::trivia::{newline, ws, ws_newlines};
 use combine::char::char;
 use combine::error::{Consumed, Info};
 use combine::range::{range, take, take_while};
 use combine::stream::RangeStream;
 use combine::*;
-use crate::decor::InternalString;
-use crate::parser::errors::CustomError;
-use crate::parser::trivia::{newline, ws, ws_newlines};
 use std::char;
 
 // ;; String
