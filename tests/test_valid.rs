@@ -46,7 +46,7 @@ fn iter_to_owned(iter: Iter) -> OwnedIter {
     Box::new(iter.map(|(k, v)| (k, v.clone())))
 }
 
-type OwnedIter<'s> = Box<Iterator<Item = (&'s str, Item)> + 's>;
+type OwnedIter<'s> = Box<dyn Iterator<Item = (&'s str, Item)> + 's>;
 
 fn to_json(iter: OwnedIter) -> Json {
     Json::Object(iter.map(pair_to_json).collect())
