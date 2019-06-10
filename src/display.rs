@@ -2,7 +2,6 @@ use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
-use std::cell::{Cell, RefCell};
 use std::fmt::{Display, Formatter, Result};
 
 impl Display for Repr {
@@ -78,46 +77,31 @@ impl Display for InlineTable {
     }
 }
 
-struct TableFormatState<'t> {
-    path: RefCell<Vec<&'t str>>,
-    table: Cell<&'t Table>,
-}
+impl Table {
+    fn visit_nested_tables<'t, F>(
+        &'t self,
+        path: &mut Vec<&'t str>,
+        is_array_of_tables: bool,
+        callback: &mut F,
+    ) -> Result
+    where
+        F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
+    {
+        callback(self, path, is_array_of_tables)?;
 
-impl<'a> Display for TableFormatState<'a> {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        let table = self.table.get();
-
-        for kv in table.items.values() {
-            if let Item::Value(ref value) = kv.value {
-                writeln!(f, "{}={}", kv.key, value)?;
-            }
-        }
-
-        for kv in table.items.values() {
+        for kv in self.items.values() {
             match kv.value {
                 Item::Table(ref t) => {
-                    self.path.borrow_mut().push(&kv.key.raw_value);
-                    self.table.set(t);
-                    if !(t.implicit && t.values_len() == 0) {
-                        write!(f, "{}[", t.decor.prefix)?;
-                        write!(f, "{}", self.path.borrow().join("."))?;
-                        writeln!(f, "]{}", t.decor.suffix)?;
-                    }
-                    write!(f, "{}", self)?;
-                    self.table.set(table);
-                    self.path.borrow_mut().pop();
+                    path.push(&kv.key.raw_value);
+                    t.visit_nested_tables(path, false, callback)?;
+                    path.pop();
                 }
                 Item::ArrayOfTables(ref a) => {
-                    self.path.borrow_mut().push(&kv.key.raw_value);
                     for t in a.iter() {
-                        self.table.set(t);
-                        write!(f, "{}[[", t.decor.prefix)?;
-                        write!(f, "{}", self.path.borrow().join("."))?;
-                        writeln!(f, "]]{}", t.decor.suffix)?;
-                        write!(f, "{}", self)?;
+                        path.push(&kv.key.raw_value);
+                        t.visit_nested_tables(path, true, callback)?;
+                        path.pop();
                     }
-                    self.table.set(table);
-                    self.path.borrow_mut().pop();
                 }
                 _ => {}
             }
@@ -126,13 +110,40 @@ impl<'a> Display for TableFormatState<'a> {
     }
 }
 
+fn visit_table(
+    f: &mut Formatter,
+    table: &Table,
+    path: &[&str],
+    is_array_of_tables: bool,
+) -> Result {
+    if path.is_empty() {
+        // don't print header for the root node
+    } else if is_array_of_tables {
+        write!(f, "{}[[", table.decor.prefix)?;
+        write!(f, "{}", path.join("."))?;
+        writeln!(f, "]]{}", table.decor.suffix)?;
+    } else if !(table.implicit && table.values_len() == 0) {
+        write!(f, "{}[", table.decor.prefix)?;
+        write!(f, "{}", path.join("."))?;
+        writeln!(f, "]{}", table.decor.suffix)?;
+    }
+    // print table body
+    for kv in table.items.values() {
+        if let Item::Value(ref value) = kv.value {
+            writeln!(f, "{}={}", kv.key, value)?;
+        }
+    }
+    Ok(())
+}
+
 impl Display for Table {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        let state = TableFormatState {
-            path: RefCell::new(Vec::new()),
-            table: Cell::new(self),
-        };
-        write!(f, "{}", state)
+        let mut path = Vec::new();
+
+        self.visit_nested_tables(&mut path, false, &mut |t, path, is_array| {
+            visit_table(f, t, path, is_array)
+        })?;
+        Ok(())
     }
 }
 
