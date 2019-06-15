@@ -222,6 +222,7 @@ impl Document {
             &mut |t, path, is_array| visit_table(&mut string, t, path, is_array),
         )?;
 
+        write!(string, "{}", self.trailing)?;
         Ok(string)
     }
 }
