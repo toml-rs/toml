@@ -15,6 +15,9 @@ pub struct Table {
     pub(crate) decor: Decor,
     // whether to hide an empty table
     pub(crate) implicit: bool,
+    // used for putting tables back in their original order when serialising.
+    // Will be None when the Table wasn't parsed from a file.
+    pub(crate) position: Option<usize>,
 }
 
 pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
@@ -58,12 +61,20 @@ pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 impl Table {
     /// Creates an empty table.
     pub fn new() -> Self {
-        Self::with_decor(Decor::new("\n", ""))
+        Self::with_decor_and_pos(Decor::new("\n", ""), None)
     }
 
-    pub(crate) fn with_decor(decor: Decor) -> Self {
+    pub(crate) fn with_pos(position: Option<usize>) -> Self {
+        Self {
+            position,
+            ..Default::default()
+        }
+    }
+
+    pub(crate) fn with_decor_and_pos(decor: Decor, position: Option<usize>) -> Self {
         Self {
             decor,
+            position,
             ..Default::default()
         }
     }

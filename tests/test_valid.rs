@@ -94,6 +94,16 @@ fn table_reordering() {
 [a."b".c]
 [[bin]] # bin 3
 "#;
+    let expected_original_order = r#"
+[[bin]] # bin 1
+[a.'b'.c.e]
+[a]
+[other.table]
+[[bin]] # bin 2
+[a.'b'.c.d]
+[a.'b'.c]
+[[bin]] # bin 3
+"#;
     let expected = r#"
 [[bin]] # bin 1
 [[bin]] # bin 2
@@ -107,6 +117,11 @@ fn table_reordering() {
     let doc = toml.parse::<Document>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
+
+    assert_eq!(
+        doc.to_string_in_original_order().unwrap(),
+        expected_original_order
+    );
     assert_eq!(doc.to_string(), expected);
 }
 

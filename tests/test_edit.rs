@@ -65,6 +65,13 @@ mod tests {
             assert_eq!(
                 PrettyString(expected),
                 PrettyString(&self.doc.to_string()));
+            self
+        }
+
+        fn produces_sorted(&self, expected: &str) {
+            assert_eq!(
+                PrettyString(expected),
+                PrettyString(&self.doc.to_string_in_original_order().unwrap()));
         }
     }
 
@@ -387,7 +394,17 @@ fn test_sort_values() {
 
         [a.y]
 "#
-    );
+    ).produces_sorted(r#"
+        [a.z]
+
+        [a]
+        a = 1
+        # this comment is attached to b
+        b = 2 # as well as this
+        c = 3
+
+        [a.y]
+"#);
 }
 
 macro_rules! as_array {

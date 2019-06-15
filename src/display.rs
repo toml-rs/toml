@@ -2,7 +2,7 @@ use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{Display, Error, Formatter, Result, Write};
 
 impl Display for Repr {
     fn fmt(&self, f: &mut Formatter) -> Result {
@@ -78,6 +78,64 @@ impl Display for InlineTable {
 }
 
 impl Table {
+    fn visit_nested_tables_in_original_order<'t, F>(
+        &'t self,
+        path: &mut Vec<&'t str>,
+        is_array_of_tables: bool,
+        callback: &mut F,
+    ) -> Result
+    where
+        F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
+    {
+        let mut current_position = 0usize;
+        let mut last_position = 0usize;
+        let mut max_position = 0usize;
+        let mut should_print = true;
+        loop {
+            self.visit_nested_tables(path, is_array_of_tables, &mut |t, path, is_array| {
+                match &t.position {
+                    Some(ref pos) => {
+                        if *pos > max_position {
+                            max_position = *pos;
+                        }
+                        if *pos == current_position {
+                            // if this table is from from the position we're
+                            // looking for, print it.
+                            should_print = true;
+                            current_position += 1;
+                        } else {
+                            // if this table isn't from the position we're
+                            // looking for, skip it.
+                            should_print = false;
+                        }
+                    }
+                    // If this table doesn't have a position then it was
+                    // probably made programmatically, so put it after wherever
+                    // it happens to be after in the tree. We only want to print
+                    // it once though, so rely on should_print from the previous
+                    // table to tell you whether you need to print this one.
+                    None => (),
+                }
+                if should_print {
+                    callback(t, path, is_array)
+                } else {
+                    Ok(())
+                }
+            })?;
+            if current_position > max_position || max_position == 0 {
+                break;
+            } else if current_position == last_position {
+                current_position += 1;
+            }
+            last_position = current_position;
+            // we set should_print to true the first time we went around the
+            // loop, so initially None-positioned Tables will have already been
+            // printed.
+            should_print = false;
+        }
+        Ok(())
+    }
+
     fn visit_nested_tables<'t, F>(
         &'t self,
         path: &mut Vec<&'t str>,
@@ -110,12 +168,7 @@ impl Table {
     }
 }
 
-fn visit_table(
-    f: &mut Formatter,
-    table: &Table,
-    path: &[&str],
-    is_array_of_tables: bool,
-) -> Result {
+fn visit_table(f: &mut Write, table: &Table, path: &[&str], is_array_of_tables: bool) -> Result {
     if path.is_empty() {
         // don't print header for the root node
     } else if is_array_of_tables {
@@ -144,6 +197,32 @@ impl Display for Table {
             visit_table(f, t, path, is_array)
         })?;
         Ok(())
+    }
+}
+
+impl Document {
+    /// Returns a string representation of the TOML document, attempting to keep
+    /// the table headers in their original order.
+    ///
+    /// Known issues:
+    /// * If you have created your Document by parsing two .toml files and
+    ///   merging the results together, this method may silently skip some
+    ///   tables. Please use Document.to_string() instead, which doesn't have
+    ///   this problem.
+    /// * The best case performance of this function is similar to
+    ///   Document.to_string(). This will be true for  If you have lots of
+    ///   tables that have been deleted or are in strange orders.
+    pub fn to_string_in_original_order(&self) -> std::result::Result<String, Error> {
+        let mut string = String::default();
+        let mut path = Vec::new();
+
+        self.as_table().visit_nested_tables_in_original_order(
+            &mut path,
+            false,
+            &mut |t, path, is_array| visit_table(&mut string, t, path, is_array),
+        )?;
+
+        Ok(string)
     }
 }
 

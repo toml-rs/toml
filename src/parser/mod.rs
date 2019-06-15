@@ -25,6 +25,7 @@ use crate::table::Table;
 pub struct TomlParser {
     document: Box<Document>,
     current_table: *mut Table,
+    current_table_position: usize,
 }
 
 impl Default for TomlParser {
@@ -34,6 +35,7 @@ impl Default for TomlParser {
         Self {
             document: doc,
             current_table: table,
+            current_table_position: 0,
         }
     }
 }
