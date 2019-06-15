@@ -386,6 +386,8 @@ impl TableLike for Table {
 /// # Examples
 /// ```rust
 /// # extern crate toml_edit;
+/// # extern crate pretty_assertions;
+/// # use pretty_assertions::assert_eq;
 /// # use toml_edit::*;
 /// # fn main() {
 /// let mut table = Table::default();

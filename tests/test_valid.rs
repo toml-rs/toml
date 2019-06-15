@@ -1,6 +1,8 @@
+extern crate pretty_assertions;
 extern crate serde_json;
 extern crate toml_edit;
 
+use pretty_assertions::assert_eq;
 use serde_json::Map as JsonMap;
 use serde_json::Value as Json;
 

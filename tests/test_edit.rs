@@ -1,3 +1,4 @@
+extern crate pretty_assertions;
 extern crate toml_edit;
 
 macro_rules! parse_key {
@@ -21,6 +22,21 @@ macro_rules! as_table {
 mod tests {
     use toml_edit::{Document, Key, Value, Table, Item, value, table, array};
     use std::iter::FromIterator;
+    use std::fmt;
+    use pretty_assertions::assert_eq;
+
+    // Copied from https://github.com/colin-kiegel/rust-pretty-assertions/issues/24
+    /// Wrapper around string slice that makes debug output `{:?}` to print string same way as `{}`.
+    /// Used in different `assert*!` macros in combination with `pretty_assertions` crate to make
+    /// test failures to show nice diffs.
+    #[derive(PartialEq, Eq)]
+    struct PrettyString<'a>(pub &'a str);
+    /// Make diff to display string as multi-line string
+    impl<'a> fmt::Debug for PrettyString<'a> {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str(self.0)
+        }
+    }
 
     struct Test {
         doc: Document,
@@ -45,8 +61,10 @@ mod tests {
             self
         }
 
-        fn produces(&self, expected: &str) {
-            assert_eq!(self.doc.to_string(), expected);
+        fn produces(&self, expected: &str) -> &Self {
+            assert_eq!(
+                PrettyString(expected),
+                PrettyString(&self.doc.to_string()));
         }
     }
 
