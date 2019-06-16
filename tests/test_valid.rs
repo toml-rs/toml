@@ -83,25 +83,15 @@ macro_rules! t(
 );
 
 #[test]
-fn table_reordering() {
+fn test_table_reordering() {
     let toml = r#"
 [[bin]] # bin 1
-[a.'b'.c.e]
+[a.b.c.e]
 [a]
 [other.table]
 [[bin]] # bin 2
 [a.b.c.d]
-[a."b".c]
-[[bin]] # bin 3
-"#;
-    let expected_original_order = r#"
-[[bin]] # bin 1
-[a.'b'.c.e]
-[a]
-[other.table]
-[[bin]] # bin 2
-[a.'b'.c.d]
-[a.'b'.c]
+[a.b.c]
 [[bin]] # bin 3
 "#;
     let expected = r#"
@@ -109,20 +99,39 @@ fn table_reordering() {
 [[bin]] # bin 2
 [[bin]] # bin 3
 [a]
-[a.'b'.c]
-[a.'b'.c.e]
-[a.'b'.c.d]
+[a.b.c]
+[a.b.c.e]
+[a.b.c.d]
 [other.table]
 "#;
     let doc = toml.parse::<Document>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
 
-    assert_eq!(
-        doc.to_string_in_original_order().unwrap(),
-        expected_original_order
-    );
     assert_eq!(doc.to_string(), expected);
+    assert_eq!(doc.to_string_in_original_order().unwrap(), toml);
+}
+
+#[test]
+fn test_key_unification() {
+    let toml = r#"
+[a]
+[a.'b'.c]
+[a."b".c.e]
+[a.b.c.d]
+"#;
+    let expected = r#"
+[a]
+[a.'b'.c]
+[a.'b'.c.e]
+[a.'b'.c.d]
+"#;
+    let doc = toml.parse::<Document>();
+    assert!(doc.is_ok());
+    let doc = doc.unwrap();
+
+    assert_eq!(doc.to_string(), expected);
+    assert_eq!(doc.to_string_in_original_order().unwrap(), expected);
 }
 
 t!(
