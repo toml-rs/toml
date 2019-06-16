@@ -66,17 +66,23 @@ mod tests {
             self
         }
 
-        fn produces(&self, expected: &str) -> &Self {
+        fn produces_display(&self, expected: &str) -> &Self {
             assert_eq!(
                 PrettyString(expected),
                 PrettyString(&self.doc.to_string()));
             self
         }
 
-        fn produces_sorted(&self, expected: &str) {
+        fn produces_in_original_order(&self, expected: &str) -> &Self {
             assert_eq!(
                 PrettyString(expected),
                 PrettyString(&self.doc.to_string_in_original_order().unwrap()));
+            self
+        }
+
+        fn produces(&self, expected: &str) -> &Self {
+            self.produces_display(expected).produces_in_original_order(expected);
+            self
         }
     }
 
@@ -112,6 +118,50 @@ dc = "eqdc10"
     );
 }
 
+#[test]
+fn test_inserted_leaf_table_goes_after_last_sibling() {
+    given(r#"
+        [package]
+        [dependencies]
+        [[example]]
+        [dependencies.opencl]
+        [dev-dependencies]"#
+    ).running(|root| {
+        root["dependencies"]["newthing"] = table();
+    }).produces_display(r#"
+        [package]
+        [dependencies]
+        [dependencies.opencl]
+
+[dependencies.newthing]
+        [[example]]
+        [dev-dependencies]
+"#).produces_in_original_order(r#"
+        [package]
+        [dependencies]
+        [[example]]
+        [dependencies.opencl]
+
+[dependencies.newthing]
+        [dev-dependencies]
+"#);
+}
+
+#[test]
+fn test_inserting_tables_from_different_parsed_docs() {
+    given(
+        "[a]"
+    ).running(|root| {
+        let other = "[b]".parse::<Document>().unwrap();
+        root["b"] = other["b"].clone();
+    }).produces_display(
+        "[a]\n[b]\n"
+    ).produces_in_original_order(
+        // Known limitation of the current approach: b goes missing when
+        // printing.
+        "[a]\n"
+    );
+}
 #[test]
 fn test_insert_nonleaf_table() {
     given(r#"
@@ -388,7 +438,7 @@ fn test_sort_values() {
         let a = root.entry("a");
         let a = as_table!(a);
         a.sort_values();
-    }).produces(r#"
+    }).produces_display(r#"
         [a]
         a = 1
         # this comment is attached to b
@@ -399,7 +449,7 @@ fn test_sort_values() {
 
         [a.y]
 "#
-    ).produces_sorted(r#"
+    ).produces_in_original_order(r#"
         [a.z]
 
         [a]
