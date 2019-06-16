@@ -1,3 +1,4 @@
+extern crate color_backtrace;
 extern crate pretty_assertions;
 extern crate toml_edit;
 
@@ -24,6 +25,9 @@ mod tests {
     use std::iter::FromIterator;
     use std::fmt;
     use pretty_assertions::assert_eq;
+    use std::sync::{Once, ONCE_INIT};
+
+    static INIT_BACKTRACE: Once = ONCE_INIT;
 
     // Copied from https://github.com/colin-kiegel/rust-pretty-assertions/issues/24
     /// Wrapper around string slice that makes debug output `{:?}` to print string same way as `{}`.
@@ -43,6 +47,7 @@ mod tests {
     }
 
     fn given(input: &str) -> Test {
+        INIT_BACKTRACE.call_once(color_backtrace::install);
         let doc = input.parse::<Document>();
         assert!(doc.is_ok());
         Test {
