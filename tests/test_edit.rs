@@ -154,12 +154,8 @@ fn test_inserting_tables_from_different_parsed_docs() {
     ).running(|root| {
         let other = "[b]".parse::<Document>().unwrap();
         root["b"] = other["b"].clone();
-    }).produces_display(
+    }).produces(
         "[a]\n[b]\n"
-    ).produces_in_original_order(
-        // Known limitation of the current approach: b goes missing when
-        // printing.
-        "[a]\n"
     );
 }
 #[test]

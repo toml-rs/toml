@@ -87,22 +87,40 @@ impl Table {
     where
         F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
     {
-        let mut current_position = 0usize;
-        let mut last_position = 0usize;
-        let mut max_position = 0usize;
+        let mut known_positions = vec![];
+        self.visit_nested_tables(path, is_array_of_tables, &mut |t, _path, _is_array| {
+            if let Some(pos) = t.position {
+                known_positions.push(pos);
+            }
+            Ok(())
+        })?;
+        known_positions.sort();
+
+        let mut position_iter = known_positions.iter();
+        let mut current_position: usize = match position_iter.next() {
+            Some(pos) => *pos,
+            None => return Ok(()),
+        };
+
         let mut should_print = true;
-        loop {
+        let mut done = false;
+        while !done {
+            let mut progressed_this_loop = false;
             self.visit_nested_tables(path, is_array_of_tables, &mut |t, path, is_array| {
+                if done && !should_print {
+                    return Ok(());
+                }
                 match &t.position {
                     Some(ref pos) => {
-                        if *pos > max_position {
-                            max_position = *pos;
-                        }
                         if *pos == current_position {
                             // if this table is from from the position we're
                             // looking for, print it.
                             should_print = true;
-                            current_position += 1;
+                            match position_iter.next() {
+                                Some(pos) => current_position = *pos,
+                                None => done = true,
+                            };
+                            progressed_this_loop = true;
                         } else {
                             // if this table isn't from the position we're
                             // looking for, skip it.
@@ -122,12 +140,12 @@ impl Table {
                     Ok(())
                 }
             })?;
-            if current_position > max_position || max_position == 0 {
-                break;
-            } else if current_position == last_position {
-                current_position += 1;
+            if !progressed_this_loop {
+                match position_iter.next() {
+                    Some(pos) => current_position = *pos,
+                    None => done = true,
+                };
             }
-            last_position = current_position;
             // we set should_print to true the first time we went around the
             // loop, so initially None-positioned Tables will have already been
             // printed.
