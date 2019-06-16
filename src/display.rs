@@ -87,68 +87,51 @@ impl Table {
     where
         F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
     {
-        let mut known_positions = vec![];
-        self.visit_nested_tables(path, is_array_of_tables, &mut |t, _path, _is_array| {
+        let mut positions = vec![];
+        self.visit_nested_tables(path, is_array_of_tables, &mut |t, _, _| {
             if let Some(pos) = t.position {
-                known_positions.push(pos);
+                positions.push(pos);
             }
             Ok(())
         })?;
-        known_positions.sort();
+        positions.sort();
+        let mut position_iter = positions.iter();
 
-        let mut position_iter = known_positions.iter();
-        let mut current_position: usize = match position_iter.next() {
-            Some(pos) => *pos,
-            None => return Ok(()),
-        };
-
+        // If a table has a .position set then we calculate whether we should
+        // print based on whether it matches current_position. If .position is
+        // None then it was added programatically and we decide whether to print
+        // it based on whether we printed the previous table we visited. This
+        // is to avoid printing tables more than once.
+        //
+        // We set should_print to true the first time we went around the
+        // loop, so initially None-positioned Tables will have already been
+        // printed.
         let mut should_print = true;
-        let mut done = false;
-        while !done {
-            let mut progressed_this_loop = false;
+
+        let mut current_position: Option<&usize> = position_iter.next();
+        while current_position.is_some() {
             self.visit_nested_tables(path, is_array_of_tables, &mut |t, path, is_array| {
-                if done && !should_print {
+                if current_position.is_none() && !should_print {
                     return Ok(());
                 }
                 match &t.position {
-                    Some(ref pos) => {
-                        if *pos == current_position {
-                            // if this table is from from the position we're
-                            // looking for, print it.
+                    Some(_) => {
+                        if t.position.as_ref() == current_position {
+                            current_position = position_iter.next();
                             should_print = true;
-                            match position_iter.next() {
-                                Some(pos) => current_position = *pos,
-                                None => done = true,
-                            };
-                            progressed_this_loop = true;
                         } else {
-                            // if this table isn't from the position we're
-                            // looking for, skip it.
                             should_print = false;
                         }
                     }
-                    // If this table doesn't have a position then it was
-                    // probably made programmatically, so put it after wherever
-                    // it happens to be after in the tree. We only want to print
-                    // it once though, so rely on should_print from the previous
-                    // table to tell you whether you need to print this one.
+                    // This table doesn't have a position, so only print it if
+                    // should_print is still set from the previous table.
                     None => (),
                 }
                 if should_print {
-                    callback(t, path, is_array)
-                } else {
-                    Ok(())
+                    callback(t, path, is_array)?
                 }
+                Ok(())
             })?;
-            if !progressed_this_loop {
-                match position_iter.next() {
-                    Some(pos) => current_position = *pos,
-                    None => done = true,
-                };
-            }
-            // we set should_print to true the first time we went around the
-            // loop, so initially None-positioned Tables will have already been
-            // printed.
             should_print = false;
         }
         Ok(())
@@ -222,14 +205,10 @@ impl Document {
     /// Returns a string representation of the TOML document, attempting to keep
     /// the table headers in their original order.
     ///
-    /// Known issues:
-    /// * If you have created your Document by parsing two .toml files and
-    ///   merging the results together, this method may silently skip some
-    ///   tables. Please use Document.to_string() instead, which doesn't have
-    ///   this problem.
-    /// * The best case performance of this function is similar to
-    ///   Document.to_string(). This will be true for  If you have lots of
-    ///   tables that have been deleted or are in strange orders.
+    /// The best case performance of this function is slightly slower than
+    /// Document.to_string(). If you have lots of tables that are in strange
+    /// orders then it may be significantly slower as it has to walk the tree
+    /// multiple times.
     pub fn to_string_in_original_order(&self) -> std::result::Result<String, Error> {
         let mut string = String::default();
         let mut path = Vec::new();
