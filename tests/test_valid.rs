@@ -109,7 +109,7 @@ fn test_table_reordering() {
     let doc = doc.unwrap();
 
     assert_eq!(doc.to_string(), expected);
-    assert_eq!(doc.to_string_in_original_order().unwrap(), toml);
+    assert_eq!(doc.to_string_in_original_order(), toml);
 }
 
 #[test]
@@ -131,7 +131,7 @@ fn test_key_unification() {
     let doc = doc.unwrap();
 
     assert_eq!(doc.to_string(), expected);
-    assert_eq!(doc.to_string_in_original_order().unwrap(), expected);
+    assert_eq!(doc.to_string_in_original_order(), expected);
 }
 
 t!(

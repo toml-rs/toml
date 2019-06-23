@@ -71,7 +71,7 @@ mod tests {
         fn produces_in_original_order(&self, expected: &str) -> &Self {
             assert_eq!(
                 PrettyString(expected),
-                PrettyString(&self.doc.to_string_in_original_order().unwrap()));
+                PrettyString(&self.doc.to_string_in_original_order()));
             self
         }
 

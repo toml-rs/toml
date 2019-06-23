@@ -2,7 +2,7 @@ use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
-use std::fmt::{Display, Error, Formatter, Result, Write};
+use std::fmt::{Display, Formatter, Result, Write};
 
 impl Display for Repr {
     fn fmt(&self, f: &mut Formatter) -> Result {
@@ -209,18 +209,20 @@ impl Document {
     /// Document.to_string(). If you have lots of tables that are in strange
     /// orders then it may be significantly slower as it has to walk the tree
     /// multiple times.
-    pub fn to_string_in_original_order(&self) -> std::result::Result<String, Error> {
+    pub fn to_string_in_original_order(&self) -> String {
         let mut string = String::default();
         let mut path = Vec::new();
 
-        self.as_table().visit_nested_tables_in_original_order(
-            &mut path,
-            false,
-            &mut |t, path, is_array| visit_table(&mut string, t, path, is_array),
-        )?;
+        self.as_table()
+            .visit_nested_tables_in_original_order(&mut path, false, &mut |t, path, is_array| {
+                visit_table(&mut string, t, path, is_array)
+            })
+            // write! to string always succeeds, unless we are out of memory,
+            // in which case we can't do much about it.
+            .unwrap();
 
-        write!(string, "{}", self.trailing)?;
-        Ok(string)
+        string.push_str(&self.trailing);
+        string
     }
 }
 
