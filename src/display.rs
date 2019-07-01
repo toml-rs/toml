@@ -78,65 +78,6 @@ impl Display for InlineTable {
 }
 
 impl Table {
-    fn visit_nested_tables_in_original_order<'t, F>(
-        &'t self,
-        path: &mut Vec<&'t str>,
-        is_array_of_tables: bool,
-        callback: &mut F,
-    ) -> Result
-    where
-        F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
-    {
-        let mut positions = vec![];
-        self.visit_nested_tables(path, is_array_of_tables, &mut |t, _, _| {
-            if let Some(pos) = t.position {
-                positions.push(pos);
-            }
-            Ok(())
-        })?;
-        positions.sort();
-        let mut position_iter = positions.iter();
-
-        // If a table has a .position set then we calculate whether we should
-        // print based on whether it matches current_position. If .position is
-        // None then it was added programatically and we decide whether to print
-        // it based on whether we printed the previous table we visited. This
-        // is to avoid printing tables more than once.
-        //
-        // We set should_print to true the first time we went around the
-        // loop, so initially None-positioned Tables will have already been
-        // printed.
-        let mut should_print = true;
-
-        let mut current_position: Option<&usize> = position_iter.next();
-        while current_position.is_some() {
-            self.visit_nested_tables(path, is_array_of_tables, &mut |t, path, is_array| {
-                if current_position.is_none() && !should_print {
-                    return Ok(());
-                }
-                match &t.position {
-                    Some(_) => {
-                        if t.position.as_ref() == current_position {
-                            current_position = position_iter.next();
-                            should_print = true;
-                        } else {
-                            should_print = false;
-                        }
-                    }
-                    // This table doesn't have a position, so only print it if
-                    // should_print is still set from the previous table.
-                    None => (),
-                }
-                if should_print {
-                    callback(t, path, is_array)?
-                }
-                Ok(())
-            })?;
-            should_print = false;
-        }
-        Ok(())
-    }
-
     fn visit_nested_tables<'t, F>(
         &'t self,
         path: &mut Vec<&'t str>,
@@ -204,23 +145,27 @@ impl Display for Table {
 impl Document {
     /// Returns a string representation of the TOML document, attempting to keep
     /// the table headers in their original order.
-    ///
-    /// The best case performance of this function is slightly slower than
-    /// Document.to_string(). If you have lots of tables that are in strange
-    /// orders then it may be significantly slower as it has to walk the tree
-    /// multiple times.
     pub fn to_string_in_original_order(&self) -> String {
-        let mut string = String::default();
+        let mut string = String::new();
         let mut path = Vec::new();
-
+        let mut last_position = 0;
+        let mut tables = Vec::new();
         self.as_table()
-            .visit_nested_tables_in_original_order(&mut path, false, &mut |t, path, is_array| {
-                visit_table(&mut string, t, path, is_array)
+            .visit_nested_tables(&mut path, false, &mut |t, p, is_array| {
+                if let Some(pos) = t.position {
+                    last_position = pos;
+                }
+                let mut s = String::new();
+                visit_table(&mut s, t, p, is_array)?;
+                tables.push((last_position, s));
+                Ok(())
             })
-            // write! to string always succeeds, unless we are out of memory,
-            // in which case we can't do much about it.
             .unwrap();
 
+        tables.sort_by_key(|&(id, _)| id);
+        for (_, table) in tables {
+            string.push_str(&table);
+        }
         string.push_str(&self.trailing);
         string
     }
