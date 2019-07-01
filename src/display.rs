@@ -2,7 +2,7 @@ use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{Display, Formatter, Result, Write};
 
 impl Display for Repr {
     fn fmt(&self, f: &mut Formatter) -> Result {
@@ -110,12 +110,7 @@ impl Table {
     }
 }
 
-fn visit_table(
-    f: &mut Formatter,
-    table: &Table,
-    path: &[&str],
-    is_array_of_tables: bool,
-) -> Result {
+fn visit_table(f: &mut Write, table: &Table, path: &[&str], is_array_of_tables: bool) -> Result {
     if path.is_empty() {
         // don't print header for the root node
     } else if is_array_of_tables {
@@ -144,6 +139,35 @@ impl Display for Table {
             visit_table(f, t, path, is_array)
         })?;
         Ok(())
+    }
+}
+
+impl Document {
+    /// Returns a string representation of the TOML document, attempting to keep
+    /// the table headers in their original order.
+    pub fn to_string_in_original_order(&self) -> String {
+        let mut string = String::new();
+        let mut path = Vec::new();
+        let mut last_position = 0;
+        let mut tables = Vec::new();
+        self.as_table()
+            .visit_nested_tables(&mut path, false, &mut |t, p, is_array| {
+                if let Some(pos) = t.position {
+                    last_position = pos;
+                }
+                let mut s = String::new();
+                visit_table(&mut s, t, p, is_array)?;
+                tables.push((last_position, s));
+                Ok(())
+            })
+            .unwrap();
+
+        tables.sort_by_key(|&(id, _)| id);
+        for (_, table) in tables {
+            string.push_str(&table);
+        }
+        string.push_str(&self.trailing);
+        string
     }
 }
 

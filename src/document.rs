@@ -15,7 +15,7 @@ pub struct Document {
 impl Default for Document {
     fn default() -> Self {
         Self {
-            root: Item::Table(Table::default()),
+            root: Item::Table(Table::with_pos(Some(0))),
             trailing: Default::default(),
         }
     }

@@ -130,6 +130,7 @@ impl TomlParser {
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
         let table = self.document.as_table_mut();
+        self.current_table_position += 1;
 
         let table = Self::descend_path(table, &path[..path.len() - 1], 0);
         let key = &path[path.len() - 1];
@@ -140,7 +141,10 @@ impl TomlParser {
 
                 let entry = table.entry(key.raw());
                 if entry.is_none() {
-                    *entry = Item::Table(Table::with_decor(decor));
+                    *entry = Item::Table(Table::with_decor_and_pos(
+                        decor,
+                        Some(self.current_table_position),
+                    ));
                     self.current_table = entry.as_table_mut().unwrap();
                     return Ok(());
                 }
@@ -149,6 +153,7 @@ impl TomlParser {
                     Item::Table(ref mut t) if t.implicit => {
                         debug_assert!(t.values_len() == 0);
                         t.decor = decor;
+                        t.position = Some(self.current_table_position);
                         t.set_implicit(false);
                         self.current_table = t;
                         return Ok(());
@@ -179,7 +184,12 @@ impl TomlParser {
                         .entry(key.raw())
                         .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
                     let array = entry.as_array_of_tables_mut().unwrap();
-                    self.current_table = array.append(Table::with_decor(decor));
+
+                    self.current_table_position += 1;
+                    self.current_table = array.append(Table::with_decor_and_pos(
+                        decor,
+                        Some(self.current_table_position),
+                    ));
 
                     Ok(())
                 } else {

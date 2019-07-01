@@ -1,3 +1,4 @@
+extern crate pretty_assertions;
 extern crate toml_edit;
 
 macro_rules! parse_key {
@@ -21,6 +22,21 @@ macro_rules! as_table {
 mod tests {
     use toml_edit::{Document, Key, Value, Table, Item, value, table, array};
     use std::iter::FromIterator;
+    use std::fmt;
+    use pretty_assertions::assert_eq;
+
+    // Copied from https://github.com/colin-kiegel/rust-pretty-assertions/issues/24
+    /// Wrapper around string slice that makes debug output `{:?}` to print string same way as `{}`.
+    /// Used in different `assert*!` macros in combination with `pretty_assertions` crate to make
+    /// test failures to show nice diffs.
+    #[derive(PartialEq, Eq)]
+    struct PrettyString<'a>(pub &'a str);
+    /// Make diff to display string as multi-line string
+    impl<'a> fmt::Debug for PrettyString<'a> {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str(self.0)
+        }
+    }
 
     struct Test {
         doc: Document,
@@ -45,8 +61,23 @@ mod tests {
             self
         }
 
-        fn produces(&self, expected: &str) {
-            assert_eq!(self.doc.to_string(), expected);
+        fn produces_display(&self, expected: &str) -> &Self {
+            assert_eq!(
+                PrettyString(expected),
+                PrettyString(&self.doc.to_string()));
+            self
+        }
+
+        fn produces_in_original_order(&self, expected: &str) -> &Self {
+            assert_eq!(
+                PrettyString(expected),
+                PrettyString(&self.doc.to_string_in_original_order()));
+            self
+        }
+
+        fn produces(&self, expected: &str) -> &Self {
+            self.produces_display(expected).produces_in_original_order(expected);
+            self
         }
     }
 
@@ -82,6 +113,46 @@ dc = "eqdc10"
     );
 }
 
+#[test]
+fn test_inserted_leaf_table_goes_after_last_sibling() {
+    given(r#"
+        [package]
+        [dependencies]
+        [[example]]
+        [dependencies.opencl]
+        [dev-dependencies]"#
+    ).running(|root| {
+        root["dependencies"]["newthing"] = table();
+    }).produces_display(r#"
+        [package]
+        [dependencies]
+        [dependencies.opencl]
+
+[dependencies.newthing]
+        [[example]]
+        [dev-dependencies]
+"#).produces_in_original_order(r#"
+        [package]
+        [dependencies]
+        [[example]]
+        [dependencies.opencl]
+
+[dependencies.newthing]
+        [dev-dependencies]
+"#);
+}
+
+#[test]
+fn test_inserting_tables_from_different_parsed_docs() {
+    given(
+        "[a]"
+    ).running(|root| {
+        let other = "[b]".parse::<Document>().unwrap();
+        root["b"] = other["b"].clone();
+    }).produces(
+        "[a]\n[b]\n"
+    );
+}
 #[test]
 fn test_insert_nonleaf_table() {
     given(r#"
@@ -358,7 +429,7 @@ fn test_sort_values() {
         let a = root.entry("a");
         let a = as_table!(a);
         a.sort_values();
-    }).produces(r#"
+    }).produces_display(r#"
         [a]
         a = 1
         # this comment is attached to b
@@ -369,7 +440,17 @@ fn test_sort_values() {
 
         [a.y]
 "#
-    );
+    ).produces_in_original_order(r#"
+        [a.z]
+
+        [a]
+        a = 1
+        # this comment is attached to b
+        b = 2 # as well as this
+        c = 3
+
+        [a.y]
+"#);
 }
 
 macro_rules! as_array {
