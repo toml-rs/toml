@@ -57,6 +57,14 @@ pub(crate) fn decorate(value: &mut Value, prefix: &str, suffix: &str) {
     decor.suffix = InternalString::from(suffix);
 }
 
+/// Sets the prefix and the suffix for value.
+/// # Example
+/// ```rust
+/// let mut v = toml_edit::Value::from(42);
+/// assert_eq!(&v.to_string(), "42");
+/// let d = toml_edit::decorated(v, " ", " ");
+/// assert_eq!(&d.to_string(), " 42 ");
+/// ```
 pub fn decorated(mut value: Value, prefix: &str, suffix: &str) -> Value {
     {
         decorate(&mut value, prefix, suffix);
