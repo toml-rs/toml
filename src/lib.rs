@@ -88,3 +88,4 @@ pub use crate::key::Key;
 pub use crate::parser::TomlError;
 pub use crate::table::{array, table, value, Item, Iter, Table, TableLike};
 pub use crate::value::{Array, InlineTable, Value};
+pub use formatted::decorated;

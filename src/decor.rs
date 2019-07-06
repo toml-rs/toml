@@ -14,22 +14,33 @@ pub(crate) struct Repr {
     pub raw_value: InternalString,
 }
 
-// A prefix and suffix,
-// including comments, whitespaces and newlines.
+/// A prefix and suffix,
+/// including comments, whitespaces and newlines.
 #[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
-pub(crate) struct Decor {
-    pub prefix: InternalString,
-    pub suffix: InternalString,
+pub struct Decor {
+    pub(crate) prefix: InternalString,
+    pub(crate) suffix: InternalString,
 }
 
 pub(crate) type InternalString = String;
 
 impl Decor {
+    /// Creates a new decor from the given prefix and suffix.
     pub fn new<S: Into<InternalString>>(prefix: S, suffix: S) -> Self {
         Self {
             prefix: prefix.into(),
             suffix: suffix.into(),
         }
+    }
+
+    /// Get the prefix.
+    pub fn prefix(&self) -> &str {
+        &self.prefix
+    }
+
+    /// Get the suffix.
+    pub fn suffix(&self) -> &str {
+        &self.suffix
     }
 }
 

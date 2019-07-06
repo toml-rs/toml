@@ -413,6 +413,26 @@ impl Value {
     }
 }
 
+impl Value {
+    /// Get the decoration of the value.
+    /// # Example
+    /// ```rust
+    /// let v = toml_edit::Value::from(true);
+    /// assert_eq!(v.decor().suffix(), "");
+    ///```
+    pub fn decor(&self) -> &Decor {
+        match *self {
+            Value::Integer(ref f) => &f.repr.decor,
+            Value::String(ref f) => &f.repr.decor,
+            Value::Float(ref f) => &f.repr.decor,
+            Value::DateTime(ref f) => &f.repr.decor,
+            Value::Boolean(ref f) => &f.repr.decor,
+            Value::Array(ref a) => &a.decor,
+            Value::InlineTable(ref t) => &t.decor,
+        }
+    }
+}
+
 pub(crate) fn sort_key_value_pairs(items: &mut LinkedHashMap<InternalString, TableKeyValue>) {
     let mut keys: Vec<InternalString> = items
         .iter()
