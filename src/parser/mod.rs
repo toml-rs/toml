@@ -20,21 +20,19 @@ pub(crate) use self::key::key as key_parser;
 pub(crate) use self::value::value as value_parser;
 
 use crate::document::Document;
-use crate::table::Table;
+use crate::key::Key;
 
 pub struct TomlParser {
     document: Box<Document>,
-    current_table: *mut Table,
+    current_table_path: Vec<Key>,
     current_table_position: usize,
 }
 
 impl Default for TomlParser {
     fn default() -> Self {
-        let mut doc = Box::new(Document::new());
-        let table = doc.as_table_mut() as *mut Table;
         Self {
-            document: doc,
-            current_table: table,
+            document: Box::new(Document::new()),
+            current_table_path: Vec::new(),
             current_table_position: 0,
         }
     }

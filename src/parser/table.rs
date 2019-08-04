@@ -92,17 +92,17 @@ pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
 }
 
 impl TomlParser {
-    fn descend_path<'a>(
+    pub(crate) fn descend_path<'a>(
         table: &'a mut Table,
         path: &[Key],
         i: usize,
     ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(i) {
-            let mut new_table = Table::new();
-            new_table.set_implicit(true);
-
             let entry = table.entry(key.raw());
             if entry.is_none() {
+                let mut new_table = Table::new();
+                new_table.set_implicit(true);
+
                 *entry = Item::Table(new_table);
             }
             match *entry {
@@ -145,17 +145,19 @@ impl TomlParser {
                         decor,
                         Some(self.current_table_position),
                     ));
-                    self.current_table = entry.as_table_mut().unwrap();
+                    self.current_table_path = path.to_vec();
                     return Ok(());
                 }
                 match *entry {
                     // if [a.b.c] header preceded [a.b]
                     Item::Table(ref mut t) if t.implicit => {
                         debug_assert!(t.values_len() == 0);
+
                         t.decor = decor;
                         t.position = Some(self.current_table_position);
                         t.set_implicit(false);
-                        self.current_table = t;
+
+                        self.current_table_path = path.to_vec();
                         return Ok(());
                     }
                     _ => {}
@@ -186,10 +188,11 @@ impl TomlParser {
                     let array = entry.as_array_of_tables_mut().unwrap();
 
                     self.current_table_position += 1;
-                    self.current_table = array.append(Table::with_decor_and_pos(
+                    array.append(Table::with_decor_and_pos(
                         decor,
                         Some(self.current_table_position),
                     ));
+                    self.current_table_path = path.to_vec();
 
                     Ok(())
                 } else {
