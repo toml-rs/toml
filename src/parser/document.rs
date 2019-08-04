@@ -114,11 +114,11 @@ impl TomlParser {
     }
 
     fn on_keyval(&mut self, key: InternalString, mut kv: TableKeyValue) -> Result<(), CustomError> {
-        let table = unsafe { &mut *self.current_table };
-
         let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
         kv.key.decor.prefix = prefix + &kv.key.decor.prefix;
 
+        let root = self.document.as_table_mut();
+        let table = Self::descend_path(root, self.current_table_path.as_slice(), 0).expect("the table path is valid; qed");
         if table.contains_key(&key) {
             Err(CustomError::DuplicateKey {
                 key,
