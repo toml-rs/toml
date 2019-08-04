@@ -110,7 +110,7 @@ impl Table {
     }
 }
 
-fn visit_table(f: &mut Write, table: &Table, path: &[&str], is_array_of_tables: bool) -> Result {
+fn visit_table(f: &mut dyn Write, table: &Table, path: &[&str], is_array_of_tables: bool) -> Result {
     if path.is_empty() {
         // don't print header for the root node
     } else if is_array_of_tables {
