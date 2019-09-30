@@ -158,6 +158,21 @@ t!(
     "fixtures/invalid/integer-underscore-double.toml"
 );
 t!(
+    test_integer_invalid_hex_char,
+    "",
+    "fixtures/invalid/integer-invalid-hex-char.toml"
+);
+t!(
+    test_integer_invalid_octal_char,
+    "",
+    "fixtures/invalid/integer-invalid-octal-char.toml"
+);
+t!(
+    test_integer_invalid_binary_char,
+    "",
+    "fixtures/invalid/integer-invalid-binary-char.toml"
+);
+t!(
     test_key_after_array,
     "",
     "fixtures/invalid/key-after-array.toml"
