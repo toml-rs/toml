@@ -1,4 +1,4 @@
-use combine::char::{char, digit};
+use combine::char::{char, digit, hex_digit, oct_digit, string};
 use combine::range::{range, recognize};
 use combine::stream::RangeStream;
 use combine::*;
@@ -35,9 +35,56 @@ parse!(parse_integer() -> &'a str, {
 });
 
 parse!(integer() -> i64, {
-    parse_integer()
-        .and_then(|s| s.replace("_", "").parse())
-        .message("While parsing an Integer")
+    choice!(
+        attempt(parse_hex_integer()),
+        attempt(parse_octal_integer()),
+        attempt(parse_binary_integer()),
+        parse_integer()
+            .and_then(|s| s.replace("_", "").parse())
+            .message("While parsing an Integer")
+    )
+});
+
+// hex-int = "0x" HEXDIGIT *( HEXDIGIT / _ HEXDIGIT )
+parse!(parse_hex_integer() -> i64, {
+    string("0x").with(
+        recognize((
+            hex_digit(),
+            skip_many((
+                optional(char('_')),
+                skip_many1(hex_digit()),
+            )),
+        ).map(|t| t.0)
+    )).and_then(|s: &str| i64::from_str_radix(&s.replace("_", ""), 16))
+       .message("While parsing a hexadecimal Integer")
+});
+
+// oct-int = "0o" digit0-7 *( digit0-7 / _ digit0-7 )
+parse!(parse_octal_integer() -> i64, {
+    string("0o").with(
+        recognize((
+            oct_digit(),
+            skip_many((
+                optional(char('_')),
+                skip_many1(oct_digit()),
+            )),
+        ).map(|t| t.0)
+    )).and_then(|s: &str| i64::from_str_radix(&s.replace("_", ""), 8))
+       .message("While parsing an octal Integer")
+});
+
+// bin-int = "0b" digit0-1 *( digit0-1 / _ digit0-1 )
+parse!(parse_binary_integer() -> i64, {
+    string("0b").with(
+        recognize((
+            satisfy(|c: char| c.is_digit(0x2)),
+            skip_many((
+                optional(char('_')),
+                skip_many1(satisfy(|c: char| c.is_digit(0x2))),
+            )),
+        ).map(|t| t.0)
+    )).and_then(|s: &str| i64::from_str_radix(&s.replace("_", ""), 2))
+       .message("While parsing a binary Integer")
 });
 
 // ;; Float
