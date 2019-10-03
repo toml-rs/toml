@@ -3,12 +3,12 @@ use crate::document::Document;
 use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
 use crate::parser::inline_table::KEYVAL_SEP;
-use crate::parser::key::key;
-use crate::parser::table::table;
+use crate::parser::table::{table, keyval_key_path};
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
 use crate::table::{Item, TableKeyValue};
+use crate::key::Key;
 use combine::char::char;
 use combine::range::recognize;
 use combine::stream::state::State;
@@ -32,12 +32,12 @@ toml_parser!(parse_newline, parser, {
 });
 
 toml_parser!(keyval, parser, {
-    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(k, kv))
+    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(&k, kv))
 });
 
 // keyval = key keyval-sep val
 parser! {
-    fn parse_keyval['a, I]()(I) -> (InternalString, TableKeyValue)
+    fn parse_keyval['a, I]()(I) -> (Vec<Key>, TableKeyValue)
     where
         [I: RangeStream<
          Range = &'a str,
@@ -50,15 +50,18 @@ parser! {
          From<crate::parser::errors::CustomError>
     ] {
         (
-            (key(), ws()),
+            (keyval_key_path(), ws()),
             char(KEYVAL_SEP),
             (ws(), value(), line_trailing())
         ).map(|(k, _, v)| {
             let (pre, v, suf) = v;
             let v = decorated(v, pre, suf);
-            let ((raw, key), suf) = k;
+            let (path, suf) = k;
+            let raw = {
+                path.last().expect("Non empty path").raw().clone()
+            };
             (
-                key,
+                path.clone(),
                 TableKeyValue {
                     key: Repr::new("", raw, suf),
                     value: Item::Value(v),
@@ -113,16 +116,24 @@ impl TomlParser {
         self.document.trailing.push_str(e);
     }
 
-    fn on_keyval(&mut self, key: InternalString, mut kv: TableKeyValue) -> Result<(), CustomError> {
+    fn on_keyval(&mut self, path: &[Key], mut kv: TableKeyValue) -> Result<(), CustomError> {
+        debug_assert!(!path.is_empty());
+
         let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
         kv.key.decor.prefix = prefix + &kv.key.decor.prefix;
 
         let root = self.document.as_table_mut();
+
+        // Descend to path relative to current_table_path.
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0)
+            .expect("the current table path is valid; qed");
+        let table = Self::descend_path(table, &path[.. path.len() - 1], 0)
             .expect("the table path is valid; qed");
-        if table.contains_key(&key) {
+        let key = &path[path.len() - 1];
+
+        if table.contains_key(key.get()) {
             Err(CustomError::DuplicateKey {
-                key,
+                key: key.get().to_string(),
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
@@ -130,7 +141,7 @@ impl TomlParser {
                 key: kv.key,
                 value: kv.value,
             };
-            table.items.insert(key, tkv);
+            table.items.insert(key.get().to_string(), tkv);
             Ok(())
         }
     }

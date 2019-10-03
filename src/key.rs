@@ -66,6 +66,13 @@ impl Key {
         }
     }
 
+    pub(crate) fn new_with_string(raw: InternalString, key: InternalString) -> Self {
+        Self {
+            raw,
+            key,
+        }
+    }
+
     /// Returns the parsed key value.
     pub fn get(&self) -> &str {
         &self.key

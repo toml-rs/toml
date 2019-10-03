@@ -379,3 +379,8 @@ t!(
     "fixtures/valid/windows-path.json",
     "fixtures/valid/windows-path.toml"
 );
+t!(
+    test_dotted_key,
+    "fixtures/valid/dotted-key.json",
+    "fixtures/valid/dotted-key.toml"
+);

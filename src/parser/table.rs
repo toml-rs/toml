@@ -34,6 +34,12 @@ parse!(key_path() -> Vec<Key>, {
             char(TABLE_KEY_SEP))
 });
 
+// Parse key or key path in table.
+parse!(keyval_key_path() -> Vec<Key>, {
+    sep_by1((ws(), key(), ws()).map(|(_, (raw, key), suf)| Key::new_with_string(raw.to_string() + suf, key)),
+            char(TABLE_KEY_SEP))
+});
+
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
