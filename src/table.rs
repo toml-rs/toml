@@ -14,7 +14,11 @@ pub struct Table {
     // comments/spaces before and after the header
     pub(crate) decor: Decor,
     // whether to hide an empty table
+    // For std headers or array headers, [a.b.c], a, a.b are implicit.
     pub(crate) implicit: bool,
+    // In a.b = val, a is for dotted if [a] has not 
+    // been previously created.
+    pub(crate) for_dotted: bool,
     // used for putting tables back in their original order when serialising.
     // Will be None when the Table wasn't parsed from a file.
     pub(crate) position: Option<usize>,
@@ -189,6 +193,10 @@ impl Table {
     /// ```
     pub fn set_implicit(&mut self, implicit: bool) {
         self.implicit = implicit;
+    }
+
+    pub fn set_for_dotted(&mut self, for_dotted: bool) {
+        self.for_dotted = for_dotted;
     }
 }
 

@@ -71,6 +71,7 @@ impl Display for InlineTable {
             if i > 0 {
                 write!(f, ",")?;
             }
+            // dbg!(&key);
             write!(f, "{}={}", key, value)?;
         }
         write!(f, "}}{}", self.decor.suffix)
@@ -122,7 +123,8 @@ fn visit_table(
         write!(f, "{}[[", table.decor.prefix)?;
         write!(f, "{}", path.join("."))?;
         writeln!(f, "]]{}", table.decor.suffix)?;
-    } else if !(table.implicit && table.values_len() == 0) {
+    } else if !(table.implicit && table.values_len() == 0) &&
+              !table.for_dotted {
         write!(f, "{}[", table.decor.prefix)?;
         write!(f, "{}", path.join("."))?;
         writeln!(f, "]{}", table.decor.suffix)?;

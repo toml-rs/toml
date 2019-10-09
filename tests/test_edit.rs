@@ -633,4 +633,37 @@ fn test_inline_table_append() {
     assert!(b.is_empty());
 }
 
+
+// Dotted keys
+#[test]
+fn test_dotted_keys_insert() {
+    given(r#"
+        [servers]
+
+        [servers.alpha]
+        ip = "10.0.0.1"
+        dc = "eqdc10"
+
+        [other.table]"#
+    ).running(|root| {
+        root["za.b.c"] = value("10.0.0.3");
+        root["a.b.d"] = value(1);
+        root["a.'c'.d"] = value(3);
+
+        root.sort_values();
+    }).produces(r#"a.b.d = 1
+a.'c'.d = 3
+za.b.c = "10.0.0.3"
+
+        [servers]
+
+        [servers.alpha]
+        ip = "10.0.0.1"
+        dc = "eqdc10"
+
+        [other.table]
+"#
+    );
+}
+
 } // mod tests
