@@ -18,5 +18,21 @@
             "type": "bool",
             "value": "true"
         }
+    },
+    "table": {
+        "bowl": {
+            "pepper": {
+                "type": "integer",
+                "value": "3"
+            },
+            "salt": {
+                "tuna": {
+                    "jar": {
+                        "type": "integer",
+                        "value": "1"
+                    }
+                }
+            }
+        }
     }
 }

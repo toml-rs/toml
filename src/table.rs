@@ -3,7 +3,9 @@ use crate::decor::{Decor, InternalString, Repr};
 use crate::formatted::{decorated, key_repr};
 use crate::key::Key;
 use crate::value::{sort_key_value_pairs, Array, DateTime, InlineTable, Value};
+use crate::parser::TomlParser;
 use linked_hash_map::LinkedHashMap;
+use std::cell::Cell;
 
 // TODO: add method to convert a table into inline table
 
@@ -156,13 +158,36 @@ impl Table {
     ///
     /// To insert to table, use `entry` to return a mutable reference
     /// and set it to the appropriate value.
-    pub fn entry<'a>(&'a mut self, key: &str) -> &'a mut Item {
-        let parsed_key = key.parse::<Key>().expect("invalid key");
-        &mut self
-            .items
-            .entry(parsed_key.get().to_owned())
-            .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
-            .value
+    pub fn entry<'a>(&'a mut self, key_str: &str) -> &'a mut Item {
+        let parsed_key = key_str.parse::<Key>().expect("invalid key");
+        let path = parsed_key.get_key_path();
+        let key = &path[path.len() - 1];
+
+        // I don't know how to do this in safe rust.
+        // let tmp = Table::default();
+        // let table = Cell::new(&tmp);
+        // if path.len() > 1 {
+        //     table.replace(TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
+        //         .expect("the table path is valid; qed"));
+        // } else {
+        //     table.replace(self);
+        // }
+
+        if path.len() > 1 {
+            let table = TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
+                .expect("the table path is valid; qed");
+            &mut table
+                .items
+                .entry(key.get().to_owned())
+                .or_insert(TableKeyValue::new(key_repr(key.raw()), Item::None))
+                .value
+        } else {
+            &mut self
+                .items
+                .entry(key.get().to_owned())
+                .or_insert(TableKeyValue::new(key_repr(key.raw()), Item::None))
+                .value
+        }
     }
 
     /// Returns an optional reference to an item given the key.

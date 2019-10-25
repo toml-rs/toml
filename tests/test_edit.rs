@@ -666,4 +666,13 @@ za.b.c = "10.0.0.3"
     );
 }
 
+#[test]
+fn test_dotted() {
+    given(r#"x.y=2"#).running(|root| {
+        root["a.b"] = value(3);
+        dbg!(root.clone());
+        assert!(root["a"]["b"].as_integer().unwrap() == 3);
+    });
+}
+
 } // mod tests
