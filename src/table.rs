@@ -173,21 +173,18 @@ impl Table {
         //     table.replace(self);
         // }
 
-        if path.len() > 1 {
-            let table = TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
-                .expect("the table path is valid; qed");
-            &mut table
-                .items
-                .entry(key.get().to_owned())
-                .or_insert(TableKeyValue::new(key_repr(key.raw()), Item::None))
-                .value
+        let table = if path.len() > 1 {
+            TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
+                .expect("the table path is valid; qed")
         } else {
-            &mut self
-                .items
-                .entry(key.get().to_owned())
-                .or_insert(TableKeyValue::new(key_repr(key.raw()), Item::None))
-                .value
-        }
+            self
+        };
+
+        &mut table
+            .items
+            .entry(key.get().to_owned())
+            .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
+            .value
     }
 
     /// Returns an optional reference to an item given the key.

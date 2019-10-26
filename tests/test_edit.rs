@@ -648,6 +648,9 @@ fn test_dotted_keys_insert() {
     ).running(|root| {
         root["za.b.c"] = value("10.0.0.3");
         root["a.b.d"] = value(1);
+        root["d.b.d"] = value(1);
+        root["c.b.d"] = value(1);
+        root["b.b.d"] = value(1);
         root["a.'c'.d"] = value(3);
 
         root.sort_values();
@@ -670,7 +673,7 @@ za.b.c = "10.0.0.3"
 fn test_dotted() {
     given(r#"x.y=2"#).running(|root| {
         root["a.b"] = value(3);
-        dbg!(root.clone());
+        // dbg!(root.clone());
         assert!(root["a"]["b"].as_integer().unwrap() == 3);
     });
 }
