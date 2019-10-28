@@ -142,6 +142,10 @@ impl Key {
         self.parts.iter().map(|r| r.key.clone()).collect()
     }
 
+    pub fn get_string_path2(&self) -> Vec<&str> {
+        self.parts.iter().map(|r| r.key.as_str()).collect()
+    }
+
     pub fn len(&self) -> usize {
         self.parts.len()
     }

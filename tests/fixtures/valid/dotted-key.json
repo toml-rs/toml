@@ -3,34 +3,28 @@
         "type": "string",
         "value": "Orange"
     },
-    "physical": {
-        "color": {
+    "physical.color": {
             "type": "string",
             "value": "orange"
-        },
-        "shape": {
-            "type": "string",
-            "value": "round"
-        }
     },
-    "site": {
-        "google.com": {
-            "type": "bool",
-            "value": "true"
-        }
+    "physical.shape": {
+        "type": "string",
+        "value": "round"
+    },
+    "site.\"google.com\"": {
+        "type": "bool",
+        "value": "true"
     },
     "table": {
+        "bowl.pepper": {
+            "type": "integer",
+            "value": "3"
+        },
         "bowl": {
-            "pepper": {
-                "type": "integer",
-                "value": "3"
-            },
             "salt": {
-                "tuna": {
-                    "jar": {
-                        "type": "integer",
-                        "value": "1"
-                    }
+                "tuna.jar": {
+                    "type": "integer",
+                    "value": "1"
                 }
             }
         }

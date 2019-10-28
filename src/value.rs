@@ -151,7 +151,7 @@ impl Array {
 }
 
 /// An iterator type over key/value pairs of an inline table.
-pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
+pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a[InternalString], &'a Value)> + 'a>;
 
 impl InlineTable {
     /// Returns the number of key/value pairs.
@@ -180,13 +180,33 @@ impl InlineTable {
     }
 
     /// Returns true iff the table contains given key.
-    pub fn contains_key(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
+    // pub fn contains_key(&self, key: &str) -> bool {
+    //     if let Some(kv) = self.items.get(key) {
+    //         !kv.value.is_none()
+    //     } else {
+    //         false
+    //     }
+    // }
+    pub fn contains_key(&self, key: &[&str]) -> bool {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        if let Some(kv) = self.items.get(&path) {
             !kv.value.is_none()
         } else {
             false
         }
     }
+
+    pub fn contains_key2(&self, key_str: &str) -> bool {
+        let parsed = key_str.parse::<Key>().expect("invalid key");
+
+        if let Some(kv) = self.items.get(&parsed.get_string_path()) {
+            !kv.value.is_none()
+        } else {
+            false
+        }
+    }
+
 
     /// Merges the key/value pairs into the `other` table leaving
     /// `self` empty.
@@ -202,7 +222,7 @@ impl InlineTable {
     pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
         let parsed = key.parse::<Key>().expect("invalid key");
         self.items
-            .entry(parsed.get().to_owned())
+            .entry(parsed.get_string_path())
             .or_insert(formatted::to_key_value(key, value.into()))
             .value
             .as_value_mut()
@@ -215,21 +235,54 @@ impl InlineTable {
     }
 
     /// Removes a key/value pair given the key.
-    pub fn remove(&mut self, key: &str) -> Option<Value> {
+    // pub fn remove(&mut self, key: &str) -> Option<Value> {
+    //     self.items
+    //         .remove(key)
+    //         .and_then(|kv| kv.value.as_value().cloned())
+    // }
+    pub fn remove(&mut self, key: &[&str]) -> Option<Value> {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
         self.items
-            .remove(key)
+            .remove(&path)
+            .and_then(|kv| kv.value.as_value().cloned())
+    }
+    pub fn remove2(&mut self, key_str: &str) -> Option<Value> {
+        let parsed = key_str.parse::<Key>().expect("invalid key");
+
+        self.items
+            .remove(&parsed.get_string_path())
             .and_then(|kv| kv.value.as_value().cloned())
     }
 
     /// Return an optional reference to the value at the given the key.
-    pub fn get(&self, key: &str) -> Option<&Value> {
-        self.items.get(key).and_then(|kv| kv.value.as_value())
+    // pub fn get(&self, key: &str) -> Option<&Value> {
+    //     self.items.get(key).and_then(|kv| kv.value.as_value())
+    // }
+    pub fn get(&self, key: &[&str]) -> Option<&Value> {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        self.items.get(&path).and_then(|kv| kv.value.as_value())
     }
 
+
+    pub fn get2(&self, key_str: &str) -> Option<&Value> {
+        let parsed = key_str.parse::<Key>().expect("invalid key");
+        self.items.get(&parsed.get_string_path()).and_then(|kv| kv.value.as_value())
+    }
+
+
     /// Return an optional mutable reference to the value at the given the key.
-    pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
+    // pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
+    //     self.items
+    //         .get_mut(key)
+    //         .and_then(|kv| kv.value.as_value_mut())
+    // }
+    pub fn get_mut(&mut self, key: &[&str]) -> Option<&mut Value> {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
         self.items
-            .get_mut(key)
+            .get_mut(&path)
             .and_then(|kv| kv.value.as_value_mut())
     }
 }
@@ -238,8 +291,18 @@ impl TableLike for InlineTable {
     fn iter(&self) -> Iter {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
-    fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
-        self.items.get(key).map(|kv| &kv.value)
+    // fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
+    //     self.items.get(key).map(|kv| &kv.value)
+    // }
+    fn get<'s>(&'s self, key: &[&str]) -> Option<&'s Item> {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        self.items.get(&path).map(|kv| &kv.value)
+    }
+    
+    fn get2<'s>(&'s self, key_str: &str) -> Option<&'s Item> {
+        let parsed = key_str.parse::<Key>().expect("invalid key");
+        self.items.get(&parsed.get_string_path()).map(|kv| &kv.value)
     }
 }
 

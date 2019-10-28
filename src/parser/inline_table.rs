@@ -7,6 +7,7 @@ use crate::parser::value::value;
 use crate::table::{Item, TableKeyValue};
 use crate::decor::Repr;
 use crate::value::InlineTable;
+use crate::key::Key;
 use combine::char::char;
 use combine::stream::RangeStream;
 use combine::*;
@@ -27,13 +28,14 @@ fn table_from_pairs(
     table.preamble = InternalString::from(preamble);
 
     for (k, kv) in v {
-        if table.contains_key(&k) {
+        let parsed = k.parse::<Key>().expect("invalid key");
+        if table.contains_key(&parsed.get_string_path2()) {
             return Err(CustomError::DuplicateKey {
                 key: k,
                 table: "inline".into(),
             });
         }
-        table.items.insert(k, kv);
+        table.items.insert(parsed.get_string_path(), kv);
     }
     Ok(table)
 }

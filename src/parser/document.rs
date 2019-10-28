@@ -33,7 +33,7 @@ toml_parser!(parse_newline, parser, {
 });
 
 toml_parser!(keyval, parser, {
-    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(&k.get_key_path(), kv))
+    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(k, kv))
 });
 
 // keyval = key keyval-sep val
@@ -114,9 +114,7 @@ impl TomlParser {
         self.document.trailing.push_str(e);
     }
 
-    fn on_keyval(&mut self, path: &[SimpleKey], mut kv: TableKeyValue) -> Result<(), CustomError> {
-        debug_assert!(!path.is_empty());
-
+    fn on_keyval(&mut self, key: Key, mut kv: TableKeyValue) -> Result<(), CustomError> {
         let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
         kv.key.decor.prefix = prefix + &kv.key.decor.prefix;
 
@@ -125,11 +123,8 @@ impl TomlParser {
         // Descend to path relative to current_table_path.
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)
             .expect("the current table path is valid; qed");
-        let table = Self::descend_path(table, &path[.. path.len() - 1], 0, true)
-            .expect("the table path is valid; qed");
-        let key = &path[path.len() - 1];
 
-        if table.contains_key(key.get()) {
+        if table.contains_key(&key.get_string_path2()) {
             Err(CustomError::DuplicateKey {
                 key: key.get().to_string(),
                 table: "<unknown>".into(), // TODO: get actual table name
@@ -141,7 +136,7 @@ impl TomlParser {
                 key: kv.key,
                 value: kv.value,
             };
-            table.items.insert(key.get().to_string(), tkv);
+            table.items.insert(key.get_string_path(), tkv);
             Ok(())
         }
     }

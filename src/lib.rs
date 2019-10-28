@@ -92,6 +92,8 @@ pub use crate::array_of_tables::ArrayOfTables;
 pub use crate::document::Document;
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
-pub use crate::table::{array, table, value, Item, Iter, Table, TableLike};
+pub use crate::table::{array, table, value, Item, Iter, IterRepr, Table, TableLike};
 pub use crate::value::{Array, InlineTable, Value};
 pub use formatted::decorated;
+
+pub use crate::decor::{InternalString, Repr};

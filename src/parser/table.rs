@@ -48,7 +48,7 @@ toml_parser!(std_table, parser, {
         between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key_path2()),
         line_trailing(),
     )
-        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h.get_key_path(), t))
+        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h, t))
 });
 
 // ;; Array Table
@@ -63,7 +63,7 @@ toml_parser!(array_table, parser, {
         ),
         line_trailing(),
     )
-        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h.get_key_path(), t))
+        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h, t))
 });
 
 // ;; Table
@@ -135,7 +135,8 @@ impl TomlParser {
     }
 
     
-    fn on_std_header(&mut self, path: &[SimpleKey], trailing: &str) -> Result<(), CustomError> {
+    fn on_std_header(&mut self, key: &Key, trailing: &str) -> Result<(), CustomError> {
+        let path = key.get_key_path();
         debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
@@ -143,13 +144,13 @@ impl TomlParser {
         self.current_table_position += 1;
 
         let table = Self::descend_path(table, &path[..path.len() - 1], 0, false);
-        let key = &path[path.len() - 1];
+        let last_part = &path[path.len() - 1];
 
         match table {
             Ok(table) => {
                 let decor = Decor::new(leading, trailing.into());
 
-                let entry = table.entry(key.raw());
+                let entry = table.entry(last_part.raw());
                 if entry.is_none() {
                     *entry = Item::Table(Table::with_decor_and_pos(
                         decor,
@@ -178,22 +179,25 @@ impl TomlParser {
         }
     }
 
-    fn on_array_header(&mut self, path: &[SimpleKey], trailing: &str) -> Result<(), CustomError> {
+    fn on_array_header(&mut self, key: &Key, trailing: &str) -> Result<(), CustomError> {
+        let path = key.get_key_path();
+
         debug_assert!(!path.is_empty());
 
         let leading = mem::replace(&mut self.document.trailing, InternalString::new());
         let table = self.document.as_table_mut();
 
-        let key = &path[path.len() - 1];
+        let last_part = &path[path.len() - 1];
         let table = Self::descend_path(table, &path[..path.len() - 1], 0, false);
 
         match table {
             Ok(table) => {
-                if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
+                if !table.contains_table(&[last_part.get()]) && 
+                        !table.contains_value(&[last_part.get()]) {
                     let decor = Decor::new(leading, trailing.into());
 
                     let entry = table
-                        .entry(key.raw())
+                        .entry(last_part.raw())
                         .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
                     let array = entry.as_array_of_tables_mut().unwrap();
 

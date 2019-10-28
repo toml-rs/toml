@@ -2,6 +2,7 @@ use crate::document::Document;
 use crate::formatted::to_table_key_value;
 use crate::table::{value, Item, Table};
 use crate::value::{InlineTable, Value};
+use crate::key::Key;
 use std::ops;
 
 // copied from
@@ -56,10 +57,10 @@ impl Index for usize {
 impl Index for str {
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item> {
         match *v {
-            Item::Table(ref t) => t.get(self),
+            Item::Table(ref t) => t.get(&[self]),
             Item::Value(ref v) if v.is_inline_table() => v
                 .as_inline_table()
-                .and_then(|t| t.items.get(self).map(|kv| &kv.value)),
+                .and_then(|t| t.items.get(&vec![self.to_owned()]).map(|kv| &kv.value)),
             _ => None,
         }
     }
@@ -67,7 +68,7 @@ impl Index for str {
         if let Item::None = *v {
             let mut t = InlineTable::default();
             t.items
-                .insert(self.to_owned(), to_table_key_value(self, Item::None));
+                .insert(vec![self.to_owned()], to_table_key_value(self, Item::None));
             *v = value(Value::InlineTable(t));
         }
         match *v {
@@ -77,7 +78,7 @@ impl Index for str {
                     .as_inline_table_mut()
                     .unwrap()
                     .items
-                    .entry(self.to_owned())
+                    .entry(vec![self.to_owned()])
                     .or_insert(to_table_key_value(self, Item::None))
                     .value
             }
@@ -131,9 +132,11 @@ where
 impl<'s> ops::Index<&'s str> for Table {
     type Output = Item;
 
-    fn index(&self, key: &'s str) -> &Item {
+    fn index(&self, key_str: &'s str) -> &Item {
         static NONE: Item = Item::None;
-        self.get(key).unwrap_or(&NONE)
+        let parsed_key = key_str.parse::<Key>().expect("invalid key");
+
+        self.get(&parsed_key.get_string_path2()).unwrap_or(&NONE)
     }
 }
 

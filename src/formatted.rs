@@ -240,7 +240,7 @@ where
 {
     let v = iter.into_iter().map(|(a, b)| {
         let s: &Key = a.into();
-        (s.get().into(), to_key_value(s.raw(), b.into()))
+        (s.get_string_path(), to_key_value(s.raw(), b.into()))
     });
     KeyValuePairs::from_iter(v)
 }

@@ -7,8 +7,9 @@ use serde_json::Map as JsonMap;
 use serde_json::Value as Json;
 
 use toml_edit::{Document, Item, Iter, Value};
+use toml_edit::{InternalString};
 
-fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
+fn pair_to_json((key, value): (&[InternalString], Item)) -> (String, Json) {
     fn typed_json(s: &str, json: Json) -> Json {
         let mut map = JsonMap::new();
         map.insert("type".to_owned(), Json::String(s.into()));
@@ -41,14 +42,15 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
         Item::Table(ref table) => to_json(iter_to_owned(table.iter())),
         Item::None => Json::Null,
     };
-    (key.to_owned(), json)
+    (key.join("."), json)
 }
 
 fn iter_to_owned(iter: Iter) -> OwnedIter {
     Box::new(iter.map(|(k, v)| (k, v.clone())))
 }
 
-type OwnedIter<'s> = Box<dyn Iterator<Item = (&'s str, Item)> + 's>;
+type OwnedIter<'s> = Box<dyn Iterator<Item = (&'s[InternalString], Item)> + 's>;
+
 
 fn to_json(iter: OwnedIter) -> Json {
     Json::Object(iter.map(pair_to_json).collect())
@@ -57,6 +59,7 @@ fn to_json(iter: OwnedIter) -> Json {
 fn run(json: &str, toml: &str) {
     let doc = toml.parse::<Document>();
     dbg!(doc.clone().unwrap().to_string());
+    dbg!(doc.clone());
 
     assert!(doc.is_ok());
     let doc = doc.unwrap();

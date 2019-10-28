@@ -22,7 +22,7 @@ pub struct Decor {
     pub(crate) suffix: InternalString,
 }
 
-pub(crate) type InternalString = String;
+pub type InternalString = String;
 
 impl Decor {
     /// Creates a new decor from the given prefix and suffix.

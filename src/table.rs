@@ -26,7 +26,7 @@ pub struct Table {
     pub(crate) position: Option<usize>,
 }
 
-pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
+pub(crate) type KeyValuePairs = LinkedHashMap<Vec<InternalString>, TableKeyValue>;
 
 /// Type representing either a value, a table, an array of tables, or none.
 #[derive(Debug, Clone)]
@@ -62,7 +62,8 @@ impl TableKeyValue {
 }
 
 /// An iterator type over `Table`'s key/value pairs.
-pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
+pub type Iter<'a> = Box<dyn Iterator<Item = (&'a [InternalString], &'a Item)> + 'a>;
+pub type IterRepr<'a> = Box<dyn Iterator<Item = (&'a Repr, &'a Item)> + 'a>;
 
 impl Table {
     /// Creates an empty table.
@@ -86,8 +87,17 @@ impl Table {
     }
 
     /// Returns true iff the table contains an item with the given key.
-    pub fn contains_key(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
+    // pub fn contains_key(&self, key: &str) -> bool {
+    //     if let Some(kv) = self.items.get(key) {
+    //         !kv.value.is_none()
+    //     } else {
+    //         false
+    //     }
+    // }
+    pub fn contains_key(&self, key: &[&str]) -> bool {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        if let Some(kv) = self.items.get(&path) {
             !kv.value.is_none()
         } else {
             false
@@ -95,8 +105,17 @@ impl Table {
     }
 
     /// Returns true iff the table contains a table with the given key.
-    pub fn contains_table(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
+    // pub fn contains_table(&self, key: &str) -> bool {
+    //     if let Some(kv) = self.items.get(key) {
+    //         kv.value.is_table()
+    //     } else {
+    //         false
+    //     }
+    // }
+    pub fn contains_table(&self, key: &[&str]) -> bool {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        if let Some(kv) = self.items.get(&path) {
             kv.value.is_table()
         } else {
             false
@@ -104,8 +123,18 @@ impl Table {
     }
 
     /// Returns true iff the table contains a value with the given key.
-    pub fn contains_value(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
+    // pub fn contains_value(&self, key: &str) -> bool {
+    //     if let Some(kv) = self.items.get(key) {
+    //         kv.value.is_value()
+    //     } else {
+    //         false
+    //     }
+    // }
+
+    pub fn contains_value(&self, key: &[&str]) -> bool {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        if let Some(kv) = self.items.get(&path) {
             kv.value.is_value()
         } else {
             false
@@ -113,8 +142,17 @@ impl Table {
     }
 
     /// Returns true iff the table contains an array of tables with the given key.
-    pub fn contains_array_of_tables(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
+    // pub fn contains_array_of_tables(&self, key: &str) -> bool {
+    //     if let Some(kv) = self.items.get(key) {
+    //         kv.value.is_array_of_tables()
+    //     } else {
+    //         false
+    //     }
+    // }
+    pub fn contains_array_of_tables(&self, key: &[&str]) -> bool {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        if let Some(kv) = self.items.get(&path) {
             kv.value.is_array_of_tables()
         } else {
             false
@@ -126,9 +164,24 @@ impl Table {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
 
+    pub fn iter_repr(&self) -> IterRepr {
+        Box::new(self.items.iter().map(|(key, kv)| (&kv.key, &kv.value)))
+    }
+
     /// Removes an item given the key.
-    pub fn remove(&mut self, key: &str) -> Option<Item> {
-        self.items.remove(key).map(|kv| kv.value)
+    // pub fn remove(&mut self, key: &str) -> Option<Item> {
+    //     self.remove_dotted(&[key])
+    // }
+
+    pub fn remove(&mut self, key: &[&str]) -> Option<Item> {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        self.items.remove(&path).map(|kv| kv.value)
+    }
+
+    pub fn remove2(&mut self, key_str: &str) -> Option<Item> {
+        let parsed_key = key_str.parse::<Key>().expect("invalid key");
+        self.items.remove(&parsed_key.get_string_path()).map(|kv| kv.value)
     }
 
     /// Sorts Key/Value Pairs of the table,
@@ -160,8 +213,9 @@ impl Table {
     /// and set it to the appropriate value.
     pub fn entry<'a>(&'a mut self, key_str: &str) -> &'a mut Item {
         let parsed_key = key_str.parse::<Key>().expect("invalid key");
-        let path = parsed_key.get_key_path();
-        let key = &path[path.len() - 1];
+        // let path = parsed_key.get_key_path();
+        // let key = &path[path.len() - 1];
+        let path = parsed_key.get_string_path();
 
         // I don't know how to do this in safe rust.
         // let tmp = Table::default();
@@ -173,23 +227,31 @@ impl Table {
         //     table.replace(self);
         // }
 
-        let table = if path.len() > 1 {
-            TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
-                .expect("the table path is valid; qed")
-        } else {
-            self
-        };
+        // let table = if path.len() > 1 {
+        //     TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
+        //         .expect("the table path is valid; qed")
+        // } else {
+        //     self
+        // };
 
-        &mut table
+        &mut self
             .items
-            .entry(key.get().to_owned())
+            .entry(path)
             .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
             .value
     }
 
     /// Returns an optional reference to an item given the key.
-    pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
-        self.items.get(key).map(|kv| &kv.value)
+    pub fn get<'a>(&'a self, key: &[&str]) -> Option<&'a Item> {
+        let path: Vec<InternalString> = key.iter()
+            .map(|k| String::from(*k)).collect();
+        self.items.get(&path).map(|kv| &kv.value)
+    }
+
+    pub fn get2<'a>(&'a self, key_str: &str) -> Option<&'a Item> {
+        let parsed = key_str.parse::<Key>().expect("invalid key");
+
+        self.items.get(&parsed.get_string_path()).map(|kv| &kv.value)
     }
 
     /// If a table has no key/value pairs and implicit, it will not be displayed.
@@ -405,7 +467,9 @@ pub trait TableLike {
         self.len() == 0
     }
     /// Returns an optional reference to an item given the key.
-    fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
+    // fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
+    fn get<'s>(&'s self, key: &[&str]) -> Option<&'s Item>;
+    fn get2<'s>(&'s self, key_str: &str) -> Option<&'s Item>;
 }
 
 impl TableLike for Table {
@@ -413,8 +477,16 @@ impl TableLike for Table {
     fn iter(&self) -> Iter {
         self.iter()
     }
-    fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
-        self.get(key)
+    // fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
+    //     self.get(key)
+    // }
+    fn get<'s>(&'s self, key: &[&str]) -> Option<&'s Item> {
+        // let path: Vec<InternalString> = key.iter()
+        //     .map(|k| String::from(*k)).collect();
+        self.get(&key)
+    }
+    fn get2<'s>(&'s self, key_str: &str) -> Option<&'s Item> {
+        self.get2(key_str)
     }
 }
 
