@@ -125,6 +125,12 @@ impl TomlParser {
         // Descend to path relative to current_table_path.
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)
             .expect("the current table path is valid; qed");
+
+        table.items.insert(key.get().to_string(), TableKeyValue {
+            key: kv.key,
+            value: Item::DottedKey,
+        });
+        
         let table = Self::descend_path(table, &path[.. path.len() - 1], 0, true)
             .expect("the table path is valid; qed");
         let key = &path[path.len() - 1];

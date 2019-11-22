@@ -145,6 +145,10 @@ impl Key {
     pub fn len(&self) -> usize {
         self.parts.len()
     }
+
+    pub fn is_dotted_key(&self) -> bool {
+        self.parts.len() > 1
+    }
 }
 
 

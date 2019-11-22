@@ -110,7 +110,7 @@ impl TomlParser {
                 let mut new_table = Table::new();
                 new_table.set_implicit(true);
                 if dotted_value {
-                    new_table.set_for_dotted(true);
+                    new_table.set_has_dotted(true);
                 }
                 *entry = Item::Table(new_table);
             }

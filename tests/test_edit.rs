@@ -656,6 +656,9 @@ fn test_dotted_keys_insert() {
         root.sort_values();
     }).produces(r#"a.b.d = 1
 a.'c'.d = 3
+b.b.d = 1
+c.b.d = 1
+d.b.d = 1
 za.b.c = "10.0.0.3"
 
         [servers]

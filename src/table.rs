@@ -20,7 +20,7 @@ pub struct Table {
     pub(crate) implicit: bool,
     // In a.b = val, a is for dotted if [a] has not 
     // been previously created.
-    pub(crate) for_dotted: bool,
+    pub(crate) has_dotted: bool,
     // used for putting tables back in their original order when serialising.
     // Will be None when the Table wasn't parsed from a file.
     pub(crate) position: Option<usize>,
@@ -39,6 +39,10 @@ pub enum Item {
     Table(Table),
     /// Type representing array of tables.
     ArrayOfTables(ArrayOfTables),
+    /// Type for display walker to know where po
+    /// print dotted key. To get value, parse
+    /// the key and descend table tree.
+    DottedKey(Vec<SimpleKey>),
 }
 
 impl Default for Item {
@@ -217,8 +221,8 @@ impl Table {
         self.implicit = implicit;
     }
 
-    pub fn set_for_dotted(&mut self, for_dotted: bool) {
-        self.for_dotted = for_dotted;
+    pub fn set_has_dotted(&mut self, has_dotted: bool) {
+        self.has_dotted = has_dotted;
     }
 }
 

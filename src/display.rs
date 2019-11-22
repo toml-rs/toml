@@ -2,6 +2,9 @@ use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
+use crate::key::Key;
+use std::str::FromStr;
+
 use std::fmt::{Display, Formatter, Result, Write};
 
 impl Display for Repr {
@@ -111,6 +114,26 @@ impl Table {
     }
 }
 
+fn visit_for_dotted(
+    f: &mut dyn Write,
+    table: &Table,
+) -> Result {
+    for kv in table.items.values() {
+        if let Item::Value(ref value) = kv.value {
+            let key = Key::from_str(&kv.key.raw_value).unwrap();
+            if key.is_dotted_key() {
+                writeln!(f, "{}={}", kv.key, value)?;
+            }
+        } else if let Item::Table(ref t) = kv.value {
+            if t.has_dotted {
+                visit_for_dotted(f, t)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn visit_table(
     f: &mut dyn Write,
     table: &Table,
@@ -124,7 +147,7 @@ fn visit_table(
         write!(f, "{}", path.join("."))?;
         writeln!(f, "]]{}", table.decor.suffix)?;
     } else if !(table.implicit && table.values_len() == 0) &&
-              !table.for_dotted {
+              !(table.implicit && table.has_dotted) {
         write!(f, "{}[", table.decor.prefix)?;
         write!(f, "{}", path.join("."))?;
         writeln!(f, "]{}", table.decor.suffix)?;
@@ -132,7 +155,17 @@ fn visit_table(
     // print table body
     for kv in table.items.values() {
         if let Item::Value(ref value) = kv.value {
-            writeln!(f, "{}={}", kv.key, value)?;
+            let key = Key::from_str(&kv.key.raw_value).unwrap();
+            if !key.is_dotted_key() {
+                dbg!(key);
+                // Should have been written out in the parent table of
+                // first simple-key of the dotted key.
+                writeln!(f, "{}={}", kv.key, value)?;
+            }
+        } else if let Item::Table(ref t) = kv.value {
+            if t.has_dotted {
+                visit_for_dotted(f, t)?;
+            }
         }
     }
     Ok(())
