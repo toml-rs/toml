@@ -57,7 +57,6 @@ fn to_json(iter: OwnedIter) -> Json {
 
 fn run(json: &str, toml: &str) {
     let doc = toml.parse::<Document>();
-    dbg!(doc.clone().unwrap().to_string());
 
     assert!(doc.is_ok());
     let doc = doc.unwrap();

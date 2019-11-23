@@ -85,27 +85,6 @@ impl Key {
         }
     }
 
-    // pub(crate) fn new(raw: &str, key: InternalString) -> Self {
-    //     Self {
-    //         raw: raw.into(),
-    //         key: vec![key],
-    //     }
-    // }
-
-    // pub(crate) fn new_with_string(raw: InternalString, key: InternalString) -> Self {
-    //     Self {
-    //         raw,
-    //         key: vec![key],
-    //     }
-    // }
-
-    // pub(crate) fn new_simple(raw: InternalString, key: InternalString) -> Self {
-    //     Self {
-    //         raw,
-    //         key: vec![Repr::new("", &key, "")],
-    //     }
-    // }
-
     pub(crate) fn new(raw: InternalString, parts: Vec<SimpleKey>) -> Self {
         Self {
             raw,

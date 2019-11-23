@@ -75,7 +75,6 @@ impl Display for InlineTable {
             if i > 0 {
                 write!(f, ",")?;
             }
-            // dbg!(&key);
             write!(f, "{}={}", key, value)?;
         }
         write!(f, "}}{}", self.decor.suffix)
@@ -161,23 +160,17 @@ fn visit_table(
             // written out in the parent table of first simple-key
             // of the dotted key.
             if !key.is_dotted_key() {
-                // dbg!(kv);
                 writeln!(f, "{}={}", kv.key, value)?;
             }
         } else if let Item::DottedKeyMarker(_) = kv.value {
             // Descend to dotted key given parts.
             let mut current = table;
             for p in &key.parts[.. key.parts.len() - 1] {
-                // println!("Looking for {:?}", p.get());
-                // dbg!(current);
                 let next = current.get(p.get()).unwrap();
                 current = next.as_table().unwrap();
             }
-            // dbg!(table);
-            // dbg!(current);
             let real_kv = current.items.get(key.parts.last().unwrap().get()).unwrap();
             if let Item::Value(ref value) = real_kv.value {
-                // writeln!(f, "{}={}", kv.key, Value::from_str(value).unwrap())?;
                 writeln!(f, "{}={}", real_kv.key, value)?;
             }
         }

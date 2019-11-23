@@ -128,7 +128,6 @@ impl TomlParser {
             .expect("the current table path is valid; qed");
 
         if key.is_dotted_key() {
-            println!("dotted! {:?}", key);
             // Insert marker key. So we know when we need to print it in display walker.
             table.items.insert(key.get().to_string(), TableKeyValue {
                 key: kv.key.clone(),
@@ -146,8 +145,6 @@ impl TomlParser {
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
-            // dbg!(kv.clone());
-
             let tkv = TableKeyValue {
                 key: kv.key.clone(),
                 value: kv.value,

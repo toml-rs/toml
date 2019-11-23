@@ -35,10 +35,7 @@ parse!(simple_key() -> (&'a str, (&'a str, InternalString), &'a str), {
                 basic_string(),
                 literal_string().map(|s: &'a str| s.into()),
                 unquoted_key().map(|s: &'a str| s.into()),
-            )).map(|a| {
-                // dbg!(a.clone());
-                a
-            })
+            ))
         ),
         ws()
     )
@@ -54,8 +51,6 @@ parse!(key() -> (&'a str, Vec<SimpleKey>), {
             simple_key(),
             many::<Vec<_>, _>(char(DOT_SEP).with(simple_key()))
         ).map(|(first, rest)| {
-            // dbg!(first.clone());
-
             let (pre, (raw, val), suf) = first;
             // same as raw = pre.to_string() + &val + suf?
             let mut keys = vec![SimpleKey::new(Decor::new(pre.clone(), suf.clone()), raw.into(), val.clone())];
@@ -64,7 +59,6 @@ parse!(key() -> (&'a str, Vec<SimpleKey>), {
                 SimpleKey::new(Decor::new(pre.clone(), suf.clone()), raw.to_string(), val.clone())
             }).collect();
             keys.append(&mut more_keys);
-            // dbg!(keys.clone());
 
             keys
         })

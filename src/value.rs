@@ -446,32 +446,11 @@ pub(crate) fn sort_key_value_pairs(items: &mut KeyValuePairs) {
         })
         .cloned()
         .collect();
-    dbg!(keys.clone());
-    dbg!(items.clone());
     keys.sort();
     for key in keys {
         items.get_refresh(&key);
     }
 }
-
-// pub(crate) fn sort_key_value_pairs(items: &mut KeyValuePairs) {
-//     let mut keys: Vec<_> = items
-//         .iter()
-//         .filter_map(|(key, val)| { // key val of KeyValuePairs (LinkedHashMap)
-//             // val.value.as_value().map(|_| (key, key))
-//             // Some(val.key.raw_value)
-//             val.value.as_value().map(|_| 
-//                 (key.clone(), val.key.raw_value.clone()))
-//         })
-//         .collect();
-//     keys.sort_by(|(_, raw1), (_, raw2)| raw1.cmp(raw2));
-//     // dbg!(&keys);
-//     // dbg!(&items);
-
-//     for (key, _) in keys {
-//         items.get_refresh(&key);
-//     }
-// }
 
 impl FromStr for Value {
     type Err = parser::TomlError;

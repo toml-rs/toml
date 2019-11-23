@@ -176,8 +176,6 @@ impl Table {
                     key_repr(parsed_key.raw()),
                     Item::DottedKeyMarker(parsed_key.parts.clone())
                 ));
-            // dbg!(parsed_key.raw());
-            // dbg!(&self.items);
             TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
                 .expect("the table path is valid; qed")
         } else {
