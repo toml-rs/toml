@@ -33,7 +33,7 @@ toml_parser!(parse_newline, parser, {
 });
 
 toml_parser!(keyval, parser, {
-    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(&k.get_key_path(), kv))
+    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(&k, kv))
 });
 
 // keyval = key keyval-sep val
@@ -114,7 +114,8 @@ impl TomlParser {
         self.document.trailing.push_str(e);
     }
 
-    fn on_keyval(&mut self, path: &[SimpleKey], mut kv: TableKeyValue) -> Result<(), CustomError> {
+    fn on_keyval(&mut self, key: &Key, mut kv: TableKeyValue) -> Result<(), CustomError> {
+        let path = key.get_key_path();
         debug_assert!(!path.is_empty());
 
         let prefix = mem::replace(&mut self.document.trailing, InternalString::new());
@@ -126,28 +127,32 @@ impl TomlParser {
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)
             .expect("the current table path is valid; qed");
 
-        table.items.insert(key.get().to_string(), TableKeyValue {
-            key: kv.key,
-            value: Item::DottedKey,
-        });
+        if key.is_dotted_key() {
+            println!("dotted! {:?}", key);
+            // Insert marker key. So we know when we need to print it in display walker.
+            table.items.insert(key.get().to_string(), TableKeyValue {
+                key: kv.key.clone(),
+                value: Item::DottedKey(key.parts.clone()),
+            });
+        }
         
         let table = Self::descend_path(table, &path[.. path.len() - 1], 0, true)
             .expect("the table path is valid; qed");
-        let key = &path[path.len() - 1];
+        let last_simple_key = &path[path.len() - 1];
 
-        if table.contains_key(key.get()) {
+        if table.contains_key(last_simple_key.get()) {
             Err(CustomError::DuplicateKey {
-                key: key.get().to_string(),
+                key: last_simple_key.get().to_string(),
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
             // dbg!(kv.clone());
 
             let tkv = TableKeyValue {
-                key: kv.key,
+                key: kv.key.clone(),
                 value: kv.value,
             };
-            table.items.insert(key.get().to_string(), tkv);
+            table.items.insert(last_simple_key.get().to_string(), tkv);
             Ok(())
         }
     }

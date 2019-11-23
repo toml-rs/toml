@@ -652,13 +652,15 @@ fn test_dotted_keys_insert() {
         root["c.b.d"] = value(1);
         root["b.b.d"] = value(1);
         root["a.'c'.d"] = value(3);
+        root["x"] = value(3);
 
         root.sort_values();
-    }).produces(r#"a.b.d = 1
-a.'c'.d = 3
+    }).produces(r#"a.'c'.d = 3
+a.b.d = 1
 b.b.d = 1
 c.b.d = 1
 d.b.d = 1
+x = 3
 za.b.c = "10.0.0.3"
 
         [servers]

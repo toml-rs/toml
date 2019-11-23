@@ -4,6 +4,7 @@ use crate::table::{Item, Table};
 use crate::value::{Array, DateTime, InlineTable, Value};
 use crate::key::Key;
 use std::str::FromStr;
+use std::cell::RefCell;
 
 use std::fmt::{Display, Formatter, Result, Write};
 
@@ -154,17 +155,30 @@ fn visit_table(
     }
     // print table body
     for kv in table.items.values() {
+        let key = Key::from_str(&kv.key.raw_value).unwrap();
         if let Item::Value(ref value) = kv.value {
-            let key = Key::from_str(&kv.key.raw_value).unwrap();
+            // If this key is a dotted key it should have been 
+            // written out in the parent table of first simple-key
+            // of the dotted key.
             if !key.is_dotted_key() {
-                dbg!(key);
-                // Should have been written out in the parent table of
-                // first simple-key of the dotted key.
+                // dbg!(kv);
                 writeln!(f, "{}={}", kv.key, value)?;
             }
-        } else if let Item::Table(ref t) = kv.value {
-            if t.has_dotted {
-                visit_for_dotted(f, t)?;
+        } else if let Item::DottedKey(_) = kv.value {
+            // Descend to dotted key given parts.
+            let mut current = table;
+            for p in &key.parts[.. key.parts.len() - 1] {
+                // println!("Looking for {:?}", p.get());
+                // dbg!(current);
+                let next = current.get(p.get()).unwrap();
+                current = next.as_table().unwrap();
+            }
+            // dbg!(table);
+            // dbg!(current);
+            let real_kv = current.items.get(key.parts.last().unwrap().get()).unwrap();
+            if let Item::Value(ref value) = real_kv.value {
+                // writeln!(f, "{}={}", kv.key, Value::from_str(value).unwrap())?;
+                writeln!(f, "{}={}", real_kv.key, value)?;
             }
         }
     }

@@ -1,7 +1,7 @@
 use crate::array_of_tables::ArrayOfTables;
 use crate::decor::{Decor, InternalString, Repr};
 use crate::formatted::{decorated, key_repr};
-use crate::key::Key;
+use crate::key::{Key, SimpleKey};
 use crate::value::{sort_key_value_pairs, Array, DateTime, InlineTable, Value};
 use crate::parser::TomlParser;
 use linked_hash_map::LinkedHashMap;
@@ -26,6 +26,7 @@ pub struct Table {
     pub(crate) position: Option<usize>,
 }
 
+// See parse_keyval to see what goes into key and value of this hash map.
 pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
 
 /// Type representing either a value, a table, an array of tables, or none.
@@ -39,7 +40,7 @@ pub enum Item {
     Table(Table),
     /// Type representing array of tables.
     ArrayOfTables(ArrayOfTables),
-    /// Type for display walker to know where po
+    /// Type for display walker to know where (during walk) to
     /// print dotted key. To get value, parse
     /// the key and descend table tree.
     DottedKey(Vec<SimpleKey>),
@@ -177,7 +178,15 @@ impl Table {
         //     table.replace(self);
         // }
 
-        let table = if path.len() > 1 {
+        let table = if parsed_key.is_dotted_key() {
+            self.items
+                .entry(parsed_key.raw().to_owned())
+                .or_insert(TableKeyValue::new(
+                    key_repr(parsed_key.raw()),
+                    Item::DottedKey(parsed_key.parts.clone())
+                ));
+            // dbg!(parsed_key.raw());
+            // dbg!(&self.items);
             TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
                 .expect("the table path is valid; qed")
         } else {
@@ -246,6 +255,16 @@ impl Item {
             _ => None,
         }
     }
+
+    /// Should this item be sorted?
+    pub fn is_sortable_name(&self) -> bool {
+        match *self {
+            Item::Value(_) => true,
+            Item::DottedKey(_) => true,
+            _ => false,
+        }
+    }
+
     /// Casts `self` to table.
     pub fn as_table(&self) -> Option<&Table> {
         match *self {

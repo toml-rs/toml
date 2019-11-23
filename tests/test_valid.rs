@@ -40,6 +40,7 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
         ),
         Item::Table(ref table) => to_json(iter_to_owned(table.iter())),
         Item::None => Json::Null,
+        Item::DottedKey(_) => Json::Null,
     };
     (key.to_owned(), json)
 }

@@ -13,12 +13,15 @@
             "value": "round"
         }
     },
+    "physical.color": null,
+    "physical.shape": null,
     "site": {
         "google.com": {
             "type": "bool",
             "value": "true"
         }
     },
+    "site.google.com": null,
     "table": {
         "bowl": {
             "pepper": {
@@ -31,8 +34,10 @@
                         "type": "integer",
                         "value": "1"
                     }
-                }
+                },
+                "tuna.jar": null
             }
-        }
+        },
+        "bowl.pepper": null
     }
 }
