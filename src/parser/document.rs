@@ -132,7 +132,7 @@ impl TomlParser {
             // Insert marker key. So we know when we need to print it in display walker.
             table.items.insert(key.get().to_string(), TableKeyValue {
                 key: kv.key.clone(),
-                value: Item::DottedKey(key.parts.clone()),
+                value: Item::DottedKeyMarker(key.parts.clone()),
             });
         }
         

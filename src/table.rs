@@ -43,7 +43,7 @@ pub enum Item {
     /// Type for display walker to know where (during walk) to
     /// print dotted key. To get value, parse
     /// the key and descend table tree.
-    DottedKey(Vec<SimpleKey>),
+    DottedKeyMarker(Vec<SimpleKey>),
 }
 
 impl Default for Item {
@@ -168,22 +168,13 @@ impl Table {
         let path = parsed_key.get_key_path();
         let key = &path[path.len() - 1];
 
-        // I don't know how to do this in safe rust.
-        // let tmp = Table::default();
-        // let table = Cell::new(&tmp);
-        // if path.len() > 1 {
-        //     table.replace(TomlParser::descend_path(self, &path[..path.len() - 1], 0, true)
-        //         .expect("the table path is valid; qed"));
-        // } else {
-        //     table.replace(self);
-        // }
-
         let table = if parsed_key.is_dotted_key() {
+            // Insert the marker for dotted key.
             self.items
                 .entry(parsed_key.raw().to_owned())
                 .or_insert(TableKeyValue::new(
                     key_repr(parsed_key.raw()),
-                    Item::DottedKey(parsed_key.parts.clone())
+                    Item::DottedKeyMarker(parsed_key.parts.clone())
                 ));
             // dbg!(parsed_key.raw());
             // dbg!(&self.items);
@@ -260,7 +251,7 @@ impl Item {
     pub fn is_sortable_name(&self) -> bool {
         match *self {
             Item::Value(_) => true,
-            Item::DottedKey(_) => true,
+            Item::DottedKeyMarker(_) => true,
             _ => false,
         }
     }

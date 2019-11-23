@@ -164,7 +164,7 @@ fn visit_table(
                 // dbg!(kv);
                 writeln!(f, "{}={}", kv.key, value)?;
             }
-        } else if let Item::DottedKey(_) = kv.value {
+        } else if let Item::DottedKeyMarker(_) = kv.value {
             // Descend to dotted key given parts.
             let mut current = table;
             for p in &key.parts[.. key.parts.len() - 1] {

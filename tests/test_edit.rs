@@ -653,7 +653,7 @@ fn test_dotted_keys_insert() {
         root["b.b.d"] = value(1);
         root["a.'c'.d"] = value(3);
         root["x"] = value(3);
-
+    
         root.sort_values();
     }).produces(r#"a.'c'.d = 3
 a.b.d = 1
@@ -675,12 +675,23 @@ za.b.c = "10.0.0.3"
 }
 
 #[test]
-fn test_dotted() {
+fn test_dotted_keys_remove() {
     given(r#"x.y=2"#).running(|root| {
+        // Remove works.
         root["a.b"] = value(3);
-        // dbg!(root.clone());
         assert!(root["a"]["b"].as_integer().unwrap() == 3);
-    });
+        root.remove("a.b");
+        
+        // Repeated insert and remove works.
+        root["a.c"] = value(2);
+        root.remove("a.b");
+        root["a.c"] = value("string");
+        root.remove("a.b");
+        root["a.c"] = value("derp");
+    }).produces(r#"x.y=2
+a.c = "derp"
+"#
+    );
 }
 
 } // mod tests
