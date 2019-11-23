@@ -694,4 +694,26 @@ a.c = "derp"
     );
 }
 
+// TODO: finish this.
+#[test]
+fn test_dotted_keys_table_interaction() {
+    given(r#"
+        [other.table]"#
+    ).running(|root| {
+        root["servers"] = table();
+        root["servers"]["alpha"] = table();
+        root["servers"]["alpha"]["ip"] = value("10.0.0.1");
+        root["servers"]["alpha"]["dc"] = value("eqdc10");
+    }).produces(r#"
+        [other.table]
+
+[servers]
+
+[servers.alpha]
+ip = "10.0.0.1"
+dc = "eqdc10"
+"#
+    );
+}
+
 } // mod tests
