@@ -114,23 +114,32 @@ impl Table {
     }
 }
 
-fn visit_for_dotted(
+fn visit_dotted_key(
     f: &mut dyn Write,
     table: &Table,
+    key: &Key
 ) -> Result {
-    for kv in table.items.values() {
-        if let Item::Value(ref value) = kv.value {
-            let key = Key::from_str(&kv.key.raw_value).unwrap();
-            if key.is_dotted_key() {
-                writeln!(f, "{}={}", kv.key, value)?;
-            }
-        } else if let Item::Table(ref t) = kv.value {
-            if t.has_dotted {
-                visit_for_dotted(f, t)?;
-            }
+    // Descend to dotted key given parts.
+    let mut current = table;
+    for p in &key.parts[.. key.parts.len() - 1] {
+        let next = match current.get(p.get()) {
+            None => return Err(std::fmt::Error),
+            Some(thing) => thing
+        };
+        current = match next.as_table() {
+            None => return Err(std::fmt::Error),
+            Some(thing) => thing
         }
     }
+    let real_kv = match current.items.get(key.parts[key.parts.len() - 1].get()) {
+        None => return Err(std::fmt::Error),
+        Some(thing) => thing
+    };
 
+
+    if let Item::Value(ref value) = real_kv.value {
+        writeln!(f, "{}={}", real_kv.key, value)?
+    }
     Ok(())
 }
 
@@ -163,15 +172,8 @@ fn visit_table(
                 writeln!(f, "{}={}", kv.key, value)?;
             }
         } else if let Item::DottedKeyMarker(_) = kv.value {
-            // Descend to dotted key given parts.
-            let mut current = table;
-            for p in &key.parts[.. key.parts.len() - 1] {
-                let next = current.get(p.get()).unwrap();
-                current = next.as_table().unwrap();
-            }
-            let real_kv = current.items.get(key.parts.last().unwrap().get()).unwrap();
-            if let Item::Value(ref value) = real_kv.value {
-                writeln!(f, "{}={}", real_kv.key, value)?;
+            if let Err(_e) = visit_dotted_key(f, table, &key) {
+                eprintln!("Something went wrong with dotted key {}, continuing.", key.get());
             }
         }
     }

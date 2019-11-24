@@ -700,14 +700,15 @@ fn test_dotted_keys_table_interaction() {
     given(r#"
         [other.table]"#
     ).running(|root| {
-        root["servers"] = table();
+        root["servers.thing"] = value(4);
+        // This would delete the dotted key servers.thing. So don't do this.
+        // root["servers"] = table();
         root["servers"]["alpha"] = table();
         root["servers"]["alpha"]["ip"] = value("10.0.0.1");
         root["servers"]["alpha"]["dc"] = value("eqdc10");
-    }).produces(r#"
-        [other.table]
+    }).produces(r#"servers.thing = 4
 
-[servers]
+        [other.table]
 
 [servers.alpha]
 ip = "10.0.0.1"
