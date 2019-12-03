@@ -11,6 +11,7 @@ use std::f64;
 use std::fmt;
 use std::iter;
 use std::marker::PhantomData;
+use std::ops::Deref;
 use std::str;
 use std::vec;
 
@@ -663,34 +664,52 @@ impl<'de, 'b> de::Deserializer<'de> for MapVisitor<'de, 'b> {
     }
 
     fn deserialize_enum<V>(
-        self,
+        mut self,
         _name: &'static str,
-        _variants: &'static [&'static str],
+        variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Error>
     where
         V: de::Visitor<'de>,
     {
-        if self.tables.len() != 1 {
-            return Err(Error::custom(
-                Some(self.cur),
-                "enum table must contain exactly one table".into(),
-            ));
-        }
-        let table = &mut self.tables[0];
-        let values = table.values.take().expect("table has no values?");
-        if table.header.is_empty() {
-            return Err(self.de.error(self.cur, ErrorKind::EmptyTableKey));
-        }
+        let table = &mut self.tables[self.cur_parent];
         let name = table.header[table.header.len() - 1].1.to_owned();
-        visitor.visit_enum(DottedTableDeserializer {
-            name,
-            value: Value {
-                e: E::DottedTable(values),
-                start: 0,
-                end: 0,
-            },
-        })
+        let mut values: Vec<TablePair<'_>> = if self.values.peek().is_some() {
+            self.values.collect()
+        } else {
+            table.values.take().unwrap_or_else(Vec::new)
+        };
+
+        if variants.contains(&name.deref()) {
+            visitor.visit_enum(DottedTableDeserializer {
+                name,
+                value: Value {
+                    e: E::DottedTable(values),
+                    start: 0,
+                    end: 0,
+                },
+            })
+        } else if values.len() == 1 {
+            let value = values.remove(0);
+            let name = (value.0).1.clone();
+
+            visitor.visit_enum(DottedTableDeserializer {
+                name: name,
+                value: Value {
+                    e: value.1.e,
+                    start: 0,
+                    end: 0,
+                },
+            })
+        } else {
+            Err(Error::from_kind(
+                None, // FIXME: How do we get an offset here?
+                ErrorKind::Wanted {
+                    expected: "to be able to determine enum type",
+                    found: "no values",
+                },
+            ))
+        }
     }
 
     serde::forward_to_deserialize_any! {
