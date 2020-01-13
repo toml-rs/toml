@@ -38,7 +38,7 @@ impl TomlError {
 /// While parsing a Time
 /// While parsing a Date-Time
 impl Display for TomlError {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", self.message)
     }
 }
@@ -62,7 +62,7 @@ impl<'a> FancyError<'a> {
 }
 
 impl<'a> Display for FancyError<'a> {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let SourcePosition { line, column } = self.error.position;
 
         let offset = line.to_string().len();
@@ -113,7 +113,7 @@ impl StdError for CustomError {
 }
 
 impl Display for CustomError {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match *self {
             CustomError::MixedArrayType {
                 ref got,

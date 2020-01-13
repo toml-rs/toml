@@ -1,5 +1,5 @@
-extern crate pretty_assertions;
-extern crate toml_edit;
+
+
 
 macro_rules! parse_key {
     ($s:expr) => {{
@@ -33,7 +33,7 @@ mod tests {
     struct PrettyString<'a>(pub &'a str);
     /// Make diff to display string as multi-line string
     impl<'a> fmt::Debug for PrettyString<'a> {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             f.write_str(self.0)
         }
     }

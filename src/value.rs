@@ -95,7 +95,7 @@ impl Array {
     }
 
     /// Returns an iterator over all values.
-    pub fn iter(&self) -> ArrayIter {
+    pub fn iter(&self) -> ArrayIter<'_> {
         Box::new(self.values.iter().filter_map(Item::as_value))
     }
 
@@ -165,7 +165,7 @@ impl InlineTable {
     }
 
     /// Returns an iterator over key/value pairs.
-    pub fn iter(&self) -> InlineTableIter {
+    pub fn iter(&self) -> InlineTableIter<'_> {
         Box::new(
             self.items
                 .iter()
@@ -235,7 +235,7 @@ impl InlineTable {
 }
 
 impl TableLike for InlineTable {
-    fn iter(&self) -> Iter {
+    fn iter(&self) -> Iter<'_> {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {

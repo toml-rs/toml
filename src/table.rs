@@ -116,7 +116,7 @@ impl Table {
     }
 
     /// Returns an iterator over all key/value pairs, including empty.
-    pub fn iter(&self) -> Iter {
+    pub fn iter(&self) -> Iter<'_> {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
 
@@ -361,7 +361,7 @@ impl Item {
 /// This trait represents either a `Table`, or an `InlineTable`.
 pub trait TableLike {
     /// Returns an iterator over key/value pairs.
-    fn iter(&self) -> Iter;
+    fn iter(&self) -> Iter<'_>;
     /// Returns the number of nonempty items.
     fn len(&self) -> usize {
         self.iter().filter(|&(_, v)| !v.is_none()).count()
@@ -376,7 +376,7 @@ pub trait TableLike {
 
 impl TableLike for Table {
     /// Returns an iterator over all subitems, including `Item::None`.
-    fn iter(&self) -> Iter {
+    fn iter(&self) -> Iter<'_> {
         self.iter()
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {

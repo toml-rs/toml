@@ -5,7 +5,7 @@ use crate::value::{Array, DateTime, InlineTable, Value};
 use std::fmt::{Display, Formatter, Result, Write};
 
 impl Display for Repr {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
             "{}{}{}",
@@ -15,13 +15,13 @@ impl Display for Repr {
 }
 
 impl<T> Display for Formatted<T> {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", self.repr)
     }
 }
 
 impl Display for DateTime {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match *self {
             DateTime::OffsetDateTime(d) => write!(f, "{}", d),
             DateTime::LocalDateTime(d) => write!(f, "{}", d),
@@ -32,7 +32,7 @@ impl Display for DateTime {
 }
 
 impl Display for Value {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match *self {
             Value::Integer(ref repr) => write!(f, "{}", repr),
             Value::String(ref repr) => write!(f, "{}", repr),
@@ -46,7 +46,7 @@ impl Display for Value {
 }
 
 impl Display for Array {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}[", self.decor.prefix)?;
         join(f, self.iter(), ",")?;
         if self.trailing_comma {
@@ -58,7 +58,7 @@ impl Display for Array {
 }
 
 impl Display for InlineTable {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}{{", self.decor.prefix)?;
         write!(f, "{}", self.preamble)?;
         for (i, (key, value)) in self
@@ -137,7 +137,7 @@ fn visit_table(
 }
 
 impl Display for Table {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut path = Vec::new();
 
         self.visit_nested_tables(&mut path, false, &mut |t, path, is_array| {
@@ -177,13 +177,13 @@ impl Document {
 }
 
 impl Display for Document {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", self.as_table())?;
         write!(f, "{}", self.trailing)
     }
 }
 
-fn join<D, I>(f: &mut Formatter, iter: I, sep: &str) -> Result
+fn join<D, I>(f: &mut Formatter<'_>, iter: I, sep: &str) -> Result
 where
     D: Display,
     I: Iterator<Item = D>,
