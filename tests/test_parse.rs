@@ -1,5 +1,3 @@
-extern crate toml_edit;
-
 use toml_edit::{Key, Value};
 
 macro_rules! parse {

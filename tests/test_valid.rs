@@ -1,6 +1,4 @@
-extern crate pretty_assertions;
-extern crate serde_json;
-extern crate toml_edit;
+use serde_json;
 
 use pretty_assertions::assert_eq;
 use serde_json::Map as JsonMap;
@@ -44,13 +42,13 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
     (key.to_owned(), json)
 }
 
-fn iter_to_owned(iter: Iter) -> OwnedIter {
+fn iter_to_owned(iter: Iter<'_>) -> OwnedIter<'_> {
     Box::new(iter.map(|(k, v)| (k, v.clone())))
 }
 
 type OwnedIter<'s> = Box<dyn Iterator<Item = (&'s str, Item)> + 's>;
 
-fn to_json(iter: OwnedIter) -> Json {
+fn to_json(iter: OwnedIter<'_>) -> Json {
     Json::Object(iter.map(pair_to_json).collect())
 }
 

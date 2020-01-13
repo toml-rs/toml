@@ -17,7 +17,7 @@ impl ArrayOfTables {
     }
 
     /// Returns an iterator over tables.
-    pub fn iter(&self) -> ArrayOfTablesIter {
+    pub fn iter(&self) -> ArrayOfTablesIter<'_> {
         Box::new(self.values.iter().filter_map(Item::as_table))
     }
 

@@ -40,7 +40,7 @@ impl Document {
     }
 
     /// Returns an iterator over the root table.
-    pub fn iter(&self) -> Iter {
+    pub fn iter(&self) -> Iter<'_> {
         self.root
             .as_table()
             .expect("root should always be a table")
