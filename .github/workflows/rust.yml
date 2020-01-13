@@ -9,17 +9,12 @@ jobs:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
       - uses: actions/checkout@v2
-
-      - name: Rust toolchain
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
-      - name: Check
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -34,17 +29,12 @@ jobs:
           - windows-latest
           - macOS-latest
     steps:
-      - name: Checkout
       - uses: actions/checkout@v2
-
-      - name: Rust toolchain
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
-      - name: Check
       - uses: actions-rs/cargo@v1
         with:
           command: test
