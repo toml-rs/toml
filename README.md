@@ -1,6 +1,6 @@
 # toml_edit
 
-[![Build Status](https://github.com/ordian/toml_edit/workflows/rust/badge.svg)](https://github.com/ordian/toml_edit/actions)
+[![Build Status](https://github.com/ordian/toml_edit/workflows/Continious%20integration/badge.svg)](https://github.com/ordian/toml_edit/actions)
 [![codecov](https://codecov.io/gh/ordian/toml_edit/branch/master/graph/badge.svg)](https://codecov.io/gh/ordian/toml_edit)
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 [![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit)
