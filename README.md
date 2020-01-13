@@ -1,7 +1,6 @@
 # toml_edit
 
-[![Build Status](https://img.shields.io/travis/ordian/toml_edit/master.svg?label=linux%20%26%20osx)](https://travis-ci.org/ordian/toml_edit)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/ordian/toml_edit?svg=true)](https://ci.appveyor.com/project/ordian/toml-edit/branch/master)
+[![Build Status](https://github.com/ordian/toml_edit/workflows/build/badge.svg)](https://github.com/ordian/toml_edit/actions)
 [![codecov](https://codecov.io/gh/ordian/toml_edit/branch/master/graph/badge.svg)](https://codecov.io/gh/ordian/toml_edit)
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 [![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit)
