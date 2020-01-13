@@ -1,5 +1,3 @@
-
-
 use toml_edit::Document;
 
 fn run(toml: &str, msg: &str) {

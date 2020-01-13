@@ -1,6 +1,3 @@
-
-
-
 macro_rules! parse_key {
     ($s:expr) => {{
         let key = $s.parse::<Key>();
