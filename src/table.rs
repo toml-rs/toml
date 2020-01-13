@@ -177,15 +177,11 @@ impl Table {
     /// In the document above, tables `target` and `target."x86_64/windows.json"` are implicit.
     ///
     /// ```
-    /// # extern crate toml_edit;
-    /// # use toml_edit::Document;
-    /// #
-    /// # fn main() {
+    /// use toml_edit::Document;
     /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
     ///
     /// doc["a"].as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");
-    /// # }
     /// ```
     pub fn set_implicit(&mut self, implicit: bool) {
         self.implicit = implicit;
@@ -396,11 +392,8 @@ impl TableLike for Table {
 ///
 /// # Examples
 /// ```rust
-/// # extern crate toml_edit;
-/// # extern crate pretty_assertions;
 /// # use pretty_assertions::assert_eq;
 /// # use toml_edit::*;
-/// # fn main() {
 /// let mut table = Table::default();
 /// let mut array = Array::default();
 /// array.push("hello");
@@ -413,7 +406,6 @@ impl TableLike for Table {
 /// key2 = 42
 /// key3 = ["hello", '\, world']
 /// "#);
-/// # }
 /// ```
 pub fn value<V: Into<Value>>(v: V) -> Item {
     Item::Value(decorated(v.into(), " ", ""))

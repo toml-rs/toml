@@ -156,13 +156,13 @@ fn parse_string_guess_delimiters(s: &str) -> (InternalString, InternalString) {
     let ml_basic = format!("\"\"\"{}\"\"\"", s);
     let ml_literal = format!("'''{}'''", s);
     if let Ok(r) = try_parse!(s, strings::string()) {
-        return (r, s.into());
+        (r, s.into())
     } else if let Ok(r) = try_parse!(&basic[..], strings::basic_string()) {
-        return (r, basic);
+        (r, basic)
     } else if let Ok(r) = try_parse!(&literal[..], strings::literal_string()) {
-        return (r.into(), literal.clone());
+        (r.into(), literal.clone())
     } else if let Ok(r) = try_parse!(&ml_basic[..], strings::ml_basic_string()) {
-        return (r, ml_literal);
+        (r, ml_literal)
     } else {
         try_parse!(&ml_literal[..], strings::ml_literal_string())
             .map(|r| (r, ml_literal))
