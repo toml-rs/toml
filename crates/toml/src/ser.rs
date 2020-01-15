@@ -113,13 +113,20 @@ pub enum Error {
     ///
     /// Currently the TOML format does not support serializing types such as
     /// enums, tuples and tuple structs.
-    UnsupportedType,
+    UnsupportedType {
+        /// Name of the type for which serialization is not supported, if any.
+        name: Option<String>,
+        /// Name of the variant for which serialization is not supported, if any.
+        variant: Option<String>,
+        /// The variety of type which failed to serialize .
+        variety: String,
+    },
 
     /// The key of all TOML maps must be strings, but serialization was
     /// attempted where the key of a map was not a string.
     KeyNotString,
 
-    /// An error that we never omit but keep for backwards compatibility
+    /// An error that we never emit but keep for backwards compatibility
     #[doc(hidden)]
     KeyNewline,
 
@@ -855,11 +862,19 @@ impl<'a, 'b> ser::Serializer for &'b mut Serializer<'a> {
     }
 
     fn serialize_unit(self) -> Result<(), Self::Error> {
-        Err(Error::UnsupportedType)
+        Err(Error::UnsupportedType {
+            name: None,
+            variant: None,
+            variety: String::from("unit"),
+        })
     }
 
-    fn serialize_unit_struct(self, _name: &'static str) -> Result<(), Self::Error> {
-        Err(Error::UnsupportedType)
+    fn serialize_unit_struct(self, name: &'static str) -> Result<(), Self::Error> {
+        Err(Error::UnsupportedType {
+            name: Some(String::from(name)),
+            variant: None,
+            variety: String::from("unit struct"),
+        })
     }
 
     fn serialize_unit_variant(
@@ -884,15 +899,19 @@ impl<'a, 'b> ser::Serializer for &'b mut Serializer<'a> {
 
     fn serialize_newtype_variant<T: ?Sized>(
         self,
-        _name: &'static str,
+        name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
         _value: &T,
     ) -> Result<(), Self::Error>
     where
         T: ser::Serialize,
     {
-        Err(Error::UnsupportedType)
+        Err(Error::UnsupportedType {
+            name: Some(String::from(name)),
+            variant: Some(String::from(variant)),
+            variety: String::from("newtype variant"),
+        })
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
@@ -958,12 +977,16 @@ impl<'a, 'b> ser::Serializer for &'b mut Serializer<'a> {
 
     fn serialize_struct_variant(
         self,
-        _name: &'static str,
+        name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(Error::UnsupportedType)
+        Err(Error::UnsupportedType {
+            name: Some(String::from(name)),
+            variant: Some(String::from(variant)),
+            variety: String::from("struct variant"),
+        })
     }
 }
 
@@ -1528,8 +1551,26 @@ impl ser::Serializer for StringExtractor {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Error::UnsupportedType => "unsupported Rust type".fmt(f),
+        match self {
+            Error::UnsupportedType {
+                name: Some(name),
+                variant: Some(variant),
+                variety,
+            } => write!(
+                f,
+                "cannot serialize {} named {} in Rust type {}",
+                variety, variant, name
+            ),
+            Error::UnsupportedType {
+                name: Some(name),
+                variant: None,
+                variety,
+            } => write!(f, "cannot serialize {} in Rust type {}", variety, name),
+            Error::UnsupportedType {
+                name: None,
+                variant: _,
+                variety,
+            } => write!(f, "cannot serialize Rust {} type", variety),
             Error::KeyNotString => "map key was not a string".fmt(f),
             Error::ValueAfterTable => "values must be emitted before tables".fmt(f),
             Error::DateInvalid => "a serialized date was invalid".fmt(f),

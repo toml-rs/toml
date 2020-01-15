@@ -797,11 +797,19 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_unit(self) -> Result<Value, crate::ser::Error> {
-        Err(crate::ser::Error::UnsupportedType)
+        Err(crate::ser::Error::UnsupportedType {
+            name: None,
+            variant: None,
+            variety: String::from("unit"),
+        })
     }
 
-    fn serialize_unit_struct(self, _name: &'static str) -> Result<Value, crate::ser::Error> {
-        Err(crate::ser::Error::UnsupportedType)
+    fn serialize_unit_struct(self, name: &'static str) -> Result<Value, crate::ser::Error> {
+        Err(crate::ser::Error::UnsupportedType {
+            name: Some(String::from(name)),
+            variant: None,
+            variety: String::from("unit struct"),
+        })
     }
 
     fn serialize_unit_variant(
@@ -826,15 +834,19 @@ impl ser::Serializer for Serializer {
 
     fn serialize_newtype_variant<T: ?Sized>(
         self,
-        _name: &'static str,
+        name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
         _value: &T,
     ) -> Result<Value, crate::ser::Error>
     where
         T: ser::Serialize,
     {
-        Err(crate::ser::Error::UnsupportedType)
+        Err(crate::ser::Error::UnsupportedType {
+            name: Some(String::from(name)),
+            variant: Some(String::from(variant)),
+            variety: String::from("newtype variant"),
+        })
     }
 
     fn serialize_none(self) -> Result<Value, crate::ser::Error> {
@@ -893,12 +905,16 @@ impl ser::Serializer for Serializer {
 
     fn serialize_struct_variant(
         self,
-        _name: &'static str,
+        name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, crate::ser::Error> {
-        Err(crate::ser::Error::UnsupportedType)
+        Err(crate::ser::Error::UnsupportedType {
+            name: Some(String::from(name)),
+            variant: Some(String::from(variant)),
+            variety: String::from("newtype variant"),
+        })
     }
 }
 
