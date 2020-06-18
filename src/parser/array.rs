@@ -26,7 +26,7 @@ fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, C
             got: format!("{:?}", val.get_type()),
             expected: format!("{:?}", array.value_type()),
         });
-        if !array.push_value(val, /* decorate = */ false) {
+        if array.push_formatted(val).is_err() {
             return err;
         }
     }

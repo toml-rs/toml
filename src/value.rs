@@ -99,9 +99,18 @@ impl Array {
         Box::new(self.values.iter().filter_map(Item::as_value))
     }
 
-    /// Appends a new value.
-    pub fn push<V: Into<Value>>(&mut self, v: V) -> bool {
+    /// Appends a new value to the end of the array, applying default formatting to it.
+    ///
+    /// Returns an error if the value was of a different type than the values in the array.
+    pub fn push<V: Into<Value>>(&mut self, v: V) -> Result<(), Value> {
         self.push_value(v.into(), true)
+    }
+
+    /// Appends a new, already formatted value to the end of the array.
+    ///
+    /// Returns an error if the value was of a different type than the array.
+    pub fn push_formatted(&mut self, v: Value) -> Result<(), Value> {
+        self.push_value(v, false)
     }
 
     /// Returns a reference to the value at the given index, or `None` if the index is out of
@@ -127,7 +136,7 @@ impl Array {
         formatted::decorate_array(self);
     }
 
-    pub(crate) fn push_value(&mut self, v: Value, decorate: bool) -> bool {
+    pub(crate) fn push_value(&mut self, v: Value, decorate: bool) -> Result<(), Value> {
         let mut value = v;
         if !self.is_empty() && decorate {
             formatted::decorate(&mut value, " ", "");
@@ -136,9 +145,9 @@ impl Array {
         }
         if self.is_empty() || value.get_type() == self.value_type() {
             self.values.push(Item::Value(value));
-            true
+            Ok(())
         } else {
-            false
+            Err(value)
         }
     }
 
