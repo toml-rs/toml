@@ -104,8 +104,9 @@ impl Array {
         self.push_value(v.into(), true)
     }
 
-    /// Return an optional reference to the value at the given index.
-    pub fn get(&mut self, index: usize) -> Option<&Value> {
+    /// Returns a reference to the value at the given index, or `None` if the index is out of
+    /// bounds.
+    pub fn get(&self, index: usize) -> Option<&Value> {
         self.values.get(index).and_then(Item::as_value)
     }
 
