@@ -80,9 +80,10 @@ mod table;
 mod value;
 
 pub use crate::array_of_tables::ArrayOfTables;
+pub use crate::decor::Decor;
 pub use crate::document::Document;
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
 pub use crate::table::{array, table, value, Item, Iter, Table, TableLike};
-pub use crate::value::{Array, InlineTable, Value};
+pub use crate::value::{Array, ArrayIter, InlineTable, Value};
 pub use formatted::decorated;
