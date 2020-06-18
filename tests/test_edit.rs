@@ -462,7 +462,7 @@ macro_rules! as_array {
 }
 
 #[test]
-fn test_insert_into_array() {
+fn test_insert_replace_into_array() {
     given(r#"
         a = [1,2,3]
         b = []"#
@@ -485,14 +485,22 @@ fn test_insert_into_array() {
         assert!(b.push_formatted(decorated("world".into(), "\n", "\n")).is_ok());
         assert!(b.push_formatted(decorated("test".into(), "", "")).is_ok());
 
+        assert!(b.insert(1, "beep").is_ok());
+        assert!(b.insert_formatted(2, decorated("boop".into(), "   ", "   ")).is_ok());
+
+        // This should preserve formatting.
+        assert_eq!(b.replace(2, "zoink").unwrap().as_str(), Some("boop"));
+        // This should replace formatting.
+        assert_eq!(b.replace_formatted(4, decorated("yikes".into(), "  ", "")).unwrap().as_str(), Some("test"));
+
         // Check that pushing a different type into an array fails.
         assert!(b.push(42).is_err());
 
     }).produces(r#"
         a = [1, 2, 3, 4]
-        b = ["hello",
+        b = ["hello", "beep",   "zoink"   ,
 "world"
-,"test"]
+,  "yikes"]
 "#
     );
 }

@@ -80,8 +80,8 @@ mod table;
 mod value;
 
 pub use crate::array_of_tables::ArrayOfTables;
-pub use crate::document::Document;
 pub use crate::decor::Decor;
+pub use crate::document::Document;
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
 pub use crate::table::{array, table, value, Item, Iter, Table, TableLike};

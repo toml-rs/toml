@@ -1,8 +1,8 @@
 use crate::decor::{Decor, Formatted, InternalString};
-use crate::formatted;
 use crate::key::Key;
 use crate::parser;
 use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
+use crate::{decorated, formatted};
 use chrono::{self, FixedOffset};
 use combine::stream::state::State;
 use linked_hash_map::LinkedHashMap;
@@ -103,14 +103,69 @@ impl Array {
     ///
     /// Returns an error if the value was of a different type than the values in the array.
     pub fn push<V: Into<Value>>(&mut self, v: V) -> Result<(), Value> {
-        self.push_value(v.into(), true)
+        self.value_op(v.into(), true, |items, value| {
+            items.push(Item::Value(value))
+        })
     }
 
     /// Appends a new, already formatted value to the end of the array.
     ///
     /// Returns an error if the value was of a different type than the array.
     pub fn push_formatted(&mut self, v: Value) -> Result<(), Value> {
-        self.push_value(v, false)
+        self.value_op(v, false, |items, value| items.push(Item::Value(value)))
+    }
+
+    /// Inserts an element at the given position within the array, applying default formatting to
+    /// it and shifting all values after it to the right.
+    ///
+    /// Returns an error if the value was of a different type than the values in the array.
+    ///
+    /// Panics if `index > len`.
+    pub fn insert<V: Into<Value>>(&mut self, index: usize, v: V) -> Result<(), Value> {
+        self.value_op(v.into(), true, |items, value| {
+            items.insert(index, Item::Value(value))
+        })
+    }
+
+    /// Inserts an already formatted value at the given position within the array, shifting all
+    /// values after it to the right.
+    ///
+    /// Returns an error if the value was of a different type than the values in the array.
+    ///
+    /// Panics if `index > len`.
+    pub fn insert_formatted(&mut self, index: usize, v: Value) -> Result<(), Value> {
+        self.value_op(v, false, |items, value| {
+            items.insert(index, Item::Value(value))
+        })
+    }
+
+    /// Replaces the element at the given position within the array, preserving existing formatting.
+    ///
+    /// Returns an error if the replacement was of a different type than the values in the array.
+    ///
+    /// Panics if `index >= len`.
+    pub fn replace<V: Into<Value>>(&mut self, index: usize, v: V) -> Result<Value, Value> {
+        // Read the existing value's decor and preserve it.
+        let existing_decor = self
+            .get(index)
+            .unwrap_or_else(|| panic!("index {} out of bounds (len = {})", index, self.len()))
+            .decor();
+        let value = decorated(v.into(), existing_decor.prefix(), existing_decor.suffix());
+        self.replace_formatted(index, value)
+    }
+
+    /// Replaces the element at the given position within the array with an already formatted value.
+    ///
+    /// Returns an error if the replacement was of a different type than the values in the array.
+    ///
+    /// Panics if `index >= len`.
+    pub fn replace_formatted(&mut self, index: usize, v: Value) -> Result<Value, Value> {
+        self.value_op(v, false, |items, value| {
+            match mem::replace(&mut items[index], Item::Value(value)) {
+                Item::Value(old_value) => old_value,
+                x => panic!("non-value item {:?} in an array", x),
+            }
+        })
     }
 
     /// Returns a reference to the value at the given index, or `None` if the index is out of
@@ -136,7 +191,12 @@ impl Array {
         formatted::decorate_array(self);
     }
 
-    pub(crate) fn push_value(&mut self, v: Value, decorate: bool) -> Result<(), Value> {
+    fn value_op<T>(
+        &mut self,
+        v: Value,
+        decorate: bool,
+        op: impl FnOnce(&mut Vec<Item>, Value) -> T,
+    ) -> Result<T, Value> {
         let mut value = v;
         if !self.is_empty() && decorate {
             formatted::decorate(&mut value, " ", "");
@@ -144,8 +204,7 @@ impl Array {
             formatted::decorate(&mut value, "", "");
         }
         if self.is_empty() || value.get_type() == self.value_type() {
-            self.values.push(Item::Value(value));
-            Ok(())
+            Ok(op(&mut self.values, value))
         } else {
             Err(value)
         }
