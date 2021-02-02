@@ -186,6 +186,11 @@ impl Table {
     pub fn set_implicit(&mut self, implicit: bool) {
         self.implicit = implicit;
     }
+
+    /// Returns the decor associated with a given key of the table.
+    pub fn decor(&self, key: &str) -> Option<&Decor> {
+        self.items.get(key).map(|kv| &kv.key.decor)
+    }
 }
 
 impl Item {
