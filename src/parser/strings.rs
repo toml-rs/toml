@@ -38,7 +38,10 @@ fn is_basic_unescaped(c: char) -> bool {
 //                    %x55 8HEXDIG )  ; UXXXXXXXX            U+XXXXXXXX
 #[inline]
 fn is_escape_char(c: char) -> bool {
-    matches!(c, '\\' | '"' | 'b' | '/' | 'f' | 'n' | 'r' | 't' | 'u' | 'U')
+    matches!(
+        c,
+        '\\' | '"' | 'b' | '/' | 'f' | 'n' | 'r' | 't' | 'u' | 'U'
+    )
 }
 
 parse!(escape() -> char, {
