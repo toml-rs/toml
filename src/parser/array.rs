@@ -18,9 +18,11 @@ parse!(array() -> Array, {
 });
 
 fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, CustomError> {
-    let mut array = Array::default();
-    array.trailing_comma = comma;
-    array.trailing = InternalString::from(trailing);
+    let mut array = Array {
+        trailing_comma: comma,
+        trailing: InternalString::from(trailing),
+        ..Default::default()
+    };
     for val in v {
         let err = Err(CustomError::MixedArrayType {
             got: format!("{:?}", val.get_type()),

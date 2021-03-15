@@ -6,10 +6,7 @@ use combine::*;
 
 #[inline]
 fn is_unquoted_char(c: char) -> bool {
-    match c {
-        'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_' => true,
-        _ => false,
-    }
+    matches!(c, 'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_')
 }
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _

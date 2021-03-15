@@ -22,8 +22,10 @@ fn table_from_pairs(
     preamble: &str,
     v: Vec<(InternalString, TableKeyValue)>,
 ) -> Result<InlineTable, CustomError> {
-    let mut table = InlineTable::default();
-    table.preamble = InternalString::from(preamble);
+    let mut table = InlineTable {
+        preamble: InternalString::from(preamble),
+        ..Default::default()
+    };
 
     for (k, kv) in v {
         if table.contains_key(&k) {

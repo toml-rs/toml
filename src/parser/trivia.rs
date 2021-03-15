@@ -7,10 +7,7 @@ use combine::*;
 //            %x09 )              ; Horizontal tab
 #[inline]
 fn is_wschar(c: char) -> bool {
-    match c {
-        ' ' | '\t' => true,
-        _ => false,
-    }
+    matches!(c, ' ' | '\t')
 }
 
 // ws = *wschar
@@ -21,10 +18,7 @@ parse!(ws() -> &'a str, {
 // non-eol = %x09 / %x20-10FFFF
 #[inline]
 fn is_non_eol(c: char) -> bool {
-    match c {
-        '\u{09}' | '\u{20}'..='\u{10FFFF}' => true,
-        _ => false,
-    }
+    matches!(c, '\u{09}' | '\u{20}'..='\u{10FFFF}')
 }
 
 // comment-start-symbol = %x23 ; #
