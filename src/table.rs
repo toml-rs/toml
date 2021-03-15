@@ -262,10 +262,7 @@ impl Item {
     }
     /// Returns true iff `self` is `None`.
     pub fn is_none(&self) -> bool {
-        match *self {
-            Item::None => true,
-            _ => false,
-        }
+        matches!(*self, Item::None)
     }
 
     // Duplicate Value downcasting API

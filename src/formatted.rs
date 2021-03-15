@@ -242,7 +242,7 @@ where
         let s: &Key = a.into();
         (s.get().into(), to_key_value(s.raw(), b.into()))
     });
-    KeyValuePairs::from_iter(v)
+    v.collect()
 }
 
 impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for Value {

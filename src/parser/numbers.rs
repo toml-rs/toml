@@ -24,7 +24,7 @@ parse!(parse_integer() -> &'a str, {
         choice((
             char('0'),
             (
-                satisfy(|c| '1' <= c && c <= '9'),
+                satisfy(|c| ('1'..='9').contains(&c)),
                 skip_many((
                     optional(char('_')),
                     skip_many1(digit()),

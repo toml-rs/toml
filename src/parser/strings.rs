@@ -23,10 +23,7 @@ parse!(string() -> InternalString, {
 // basic-unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
 #[inline]
 fn is_basic_unescaped(c: char) -> bool {
-    match c {
-        '\u{20}'..='\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{10FFFF}' => true,
-        _ => false,
-    }
+    matches!(c, '\u{20}'..='\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{10FFFF}')
 }
 
 // escaped = escape ( %x22 /          ; "    quotation mark  U+0022
@@ -41,10 +38,10 @@ fn is_basic_unescaped(c: char) -> bool {
 //                    %x55 8HEXDIG )  ; UXXXXXXXX            U+XXXXXXXX
 #[inline]
 fn is_escape_char(c: char) -> bool {
-    match c {
-        '\\' | '"' | 'b' | '/' | 'f' | 'n' | 'r' | 't' | 'u' | 'U' => true,
-        _ => false,
-    }
+    matches!(
+        c,
+        '\\' | '"' | 'b' | '/' | 'f' | 'n' | 'r' | 't' | 'u' | 'U'
+    )
 }
 
 parse!(escape() -> char, {
@@ -70,7 +67,7 @@ parse!(escape() -> char, {
 parse!(hexescape(n: usize) -> char, {
     take(*n)
         .and_then(|s| u32::from_str_radix(s, 16))
-        .and_then(|h| char::from_u32(h).ok_or_else(|| CustomError::InvalidHexEscape(h)))
+        .and_then(|h| char::from_u32(h).ok_or(CustomError::InvalidHexEscape(h)))
 });
 
 // escape = %x5C                    ; \
@@ -102,10 +99,7 @@ parse!(basic_string() -> InternalString, {
 // ml-basic-unescaped = %x20-5B / %x5D-10FFFF
 #[inline]
 fn is_ml_basic_unescaped(c: char) -> bool {
-    match c {
-        '\u{20}'..='\u{5B}' | '\u{5D}'..='\u{10FFFF}' => true,
-        _ => false,
-    }
+    matches!(c, '\u{20}'..='\u{5B}' | '\u{5D}'..='\u{10FFFF}')
 }
 
 // ml-basic-string-delim = 3quotation-mark
@@ -171,10 +165,7 @@ const APOSTROPHE: char = '\'';
 // literal-char = %x09 / %x20-26 / %x28-10FFFF
 #[inline]
 fn is_literal_char(c: char) -> bool {
-    match c {
-        '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{10FFFF}' => true,
-        _ => false,
-    }
+    matches!(c, '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{10FFFF}')
 }
 
 // literal-string = apostrophe *literal-char apostrophe
@@ -192,10 +183,7 @@ const ML_LITERAL_STRING_DELIM: &str = "'''";
 // ml-literal-char = %x09 / %x20-10FFFF
 #[inline]
 fn is_ml_literal_char(c: char) -> bool {
-    match c {
-        '\u{09}' | '\u{20}'..='\u{10FFFF}' => true,
-        _ => false,
-    }
+    matches!(c, '\u{09}' | '\u{20}'..='\u{10FFFF}')
 }
 
 // ml-literal-body = *( ml-literal-char / newline )
