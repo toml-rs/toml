@@ -18,7 +18,7 @@ combine = "3.8.1"
 
 [dev-dependencies]
 serde_json = "1.0.44"
-pretty_assertions = "0.6.1"
+pretty_assertions = "0.7.1"
 
 [profile.dev]
 opt-level = 1
