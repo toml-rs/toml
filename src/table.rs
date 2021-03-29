@@ -57,6 +57,7 @@ impl TableKeyValue {
 
 /// An iterator type over `Table`'s key/value pairs.
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
+pub type IterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Item)> + 'a>;
 
 impl Table {
     /// Creates an empty table.
@@ -118,6 +119,15 @@ impl Table {
     /// Returns an iterator over all key/value pairs, including empty.
     pub fn iter(&self) -> Iter<'_> {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
+    }
+
+    /// Returns an mutable iterator over all key/value pairs, including empty.
+    pub fn iter_mut(&mut self) -> IterMut<'_> {
+        Box::new(
+            self.items
+                .iter_mut()
+                .map(|(key, kv)| (&key[..], &mut kv.value)),
+        )
     }
 
     /// Removes an item given the key.
