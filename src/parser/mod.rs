@@ -44,7 +44,6 @@ mod tests {
     use combine::stream::state::State;
     use combine::*;
     use pretty_assertions::assert_eq;
-    use std;
     use std::fmt;
     // Copied from https://github.com/colin-kiegel/rust-pretty-assertions/issues/24
     /// Wrapper around string slice that makes debug output `{:?}` to print string same way as `{}`.
@@ -136,7 +135,7 @@ mod tests {
             ("1e6", 1e6),
             ("-2E-2", -2E-2),
             ("6.626e-34", 6.626e-34),
-            ("9_224_617.445_991_228_313", 9_224_617.445_991_228_313),
+            ("9_224_617.445_991_228_313", 9_224_617.445_991_227),
             ("-1.7976931348623157e+308", std::f64::MIN),
             ("1.7976931348623157e+308", std::f64::MAX),
             // ("1e+400", std::f64::INFINITY),
