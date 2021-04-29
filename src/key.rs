@@ -78,8 +78,8 @@ impl Key {
 }
 
 #[doc(hidden)]
-impl Into<InternalString> for Key {
-    fn into(self) -> InternalString {
-        self.key
+impl From<Key> for InternalString {
+    fn from(key: Key) -> InternalString {
+        key.key
     }
 }
