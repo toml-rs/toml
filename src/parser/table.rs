@@ -162,7 +162,7 @@ impl TomlParser {
                     }
                     _ => {}
                 }
-                Err(duplicate_key(&path[..], path.len() - 1))
+                Err(duplicate_key(path, path.len() - 1))
             }
             Err(e) => Err(e),
         }
@@ -196,7 +196,7 @@ impl TomlParser {
 
                     Ok(())
                 } else {
-                    Err(duplicate_key(&path[..], path.len() - 1))
+                    Err(duplicate_key(path, path.len() - 1))
                 }
             }
             Err(e) => Err(e),
