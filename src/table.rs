@@ -57,6 +57,7 @@ impl TableKeyValue {
 
 /// An iterator type over `Table`'s key/value pairs.
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
+/// A mutable iterator type over `Table`'s key/value pairs.
 pub type IterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Item)> + 'a>;
 
 impl Table {
