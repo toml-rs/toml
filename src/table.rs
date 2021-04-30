@@ -202,6 +202,16 @@ impl Table {
     pub fn decor(&self, key: &str) -> Option<&Decor> {
         self.items.get(key).map(|kv| &kv.key.decor)
     }
+
+    /// Sets the position of the `Table` within the `Document`.
+    pub fn set_position(&mut self, position: usize) {
+        self.position = Some(position);
+    }
+
+    /// The position of the `Table` within the `Document`.
+    pub fn position(&self) -> Option<usize> {
+        self.position
+    }
 }
 
 impl Item {
