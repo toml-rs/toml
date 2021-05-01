@@ -1,6 +1,6 @@
 # Baseon on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md
 
-on: [push]
+on: [push, pull_request]
 
 name: Continuous integration
 
