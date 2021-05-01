@@ -205,13 +205,16 @@ impl Table {
 
     /// Sets the position of the `Table` within the `Document`.
     ///
-    /// This will never create invalid toml but, formatting may not be
-    /// preserved (see `tests::test_edit::test_multiple_max_usize_positions`).
+    /// Setting the position of a table will only affect output when
+    /// `Document::to_string_in_original_order` is used.
     pub fn set_position(&mut self, position: usize) {
         self.position = Some(position);
     }
 
     /// The position of the `Table` within the `Document`.
+    ///
+    /// Returns `None` if the `Table` was created manually (i.e. not via parsing)
+    /// in which case its position is set automatically.
     pub fn position(&self) -> Option<usize> {
         self.position
     }

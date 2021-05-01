@@ -451,19 +451,24 @@ fn test_sort_values() {
 }
 
 #[test]
-fn test_multiple_positions() {
+fn test_set_position() {
     given(r#"
         [package]
         [dependencies]
         [dependencies.opencl]
         [dev-dependencies]"#
     ).running(|root| {
-        for (_, table) in root.iter_mut() {
-            as_table!(table).set_position(2)
+        for (header, table) in root.iter_mut() {
+            if header == "dependencies" {
+                let tab = as_table!(table);
+                tab.set_position(0);
+                let (_, segmented) = tab.iter_mut().next().unwrap();
+                as_table!(segmented).set_position(5)
+            }
         }
-    }).produces_in_original_order(r#"
+    }).produces_in_original_order(r#"         [dependencies]
+
         [package]
-        [dependencies]
         [dev-dependencies]
         [dependencies.opencl]
 "#);
