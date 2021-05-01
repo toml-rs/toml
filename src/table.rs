@@ -204,6 +204,9 @@ impl Table {
     }
 
     /// Sets the position of the `Table` within the `Document`.
+    ///
+    /// This will never create invalid toml but, formatting may not be
+    /// preserved (see `tests::test_edit::test_multiple_max_usize_positions`).
     pub fn set_position(&mut self, position: usize) {
         self.position = Some(position);
     }

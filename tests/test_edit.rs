@@ -15,7 +15,7 @@ macro_rules! as_table {
 
 // rusfmt, U Can't Touch This
 #[cfg(test)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod tests {
     use toml_edit::{Document, Key, Value, Table, Item, value, table, array, decorated};
     use std::iter::FromIterator;
@@ -447,6 +447,67 @@ fn test_sort_values() {
         c = 3
 
         [a.y]
+"#);
+}
+
+#[test]
+fn test_multiple_positions() {
+    given(r#"
+        [package]
+        [dependencies]
+        [dependencies.opencl]
+        [dev-dependencies]"#
+    ).running(|root| {
+        for (_, table) in root.iter_mut() {
+            as_table!(table).set_position(2)
+        }
+    }).produces_in_original_order(r#"
+        [package]
+        [dependencies]
+        [dev-dependencies]
+        [dependencies.opencl]
+"#);
+}
+
+#[test]
+fn test_multiple_zero_positions() {
+    given(r#"
+        [package]
+        [dependencies]
+        [dependencies.opencl]
+        a=""
+        [dev-dependencies]"#
+    ).running(|root| {
+        for (_, table) in root.iter_mut() {
+            as_table!(table).set_position(0)
+        }
+    }).produces_in_original_order(r#"
+        [package]
+        [dependencies]
+        [dev-dependencies]
+        [dependencies.opencl]
+        a=""
+"#);
+}
+
+#[test]
+fn test_multiple_max_usize_positions() {
+    given(r#"
+        [package]
+        [dependencies]
+        [dependencies.opencl]
+        a=""
+        [dev-dependencies]"#
+    ).running(|root| {
+        for (_, table) in root.iter_mut() {
+            as_table!(table).set_position(usize::MAX)
+        }
+    }).produces_in_original_order(r#"        [dependencies.opencl]
+        a=""
+
+        [package]
+        [dependencies]
+        [dev-dependencies]
 "#);
 }
 
