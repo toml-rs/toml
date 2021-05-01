@@ -53,8 +53,6 @@ fn test_key_from_str() {
     test_key!(wp, wp);
 }
 
-// wat?
-#[allow(clippy::panic_params)]
 #[test]
 fn test_value_from_str() {
     assert!(parse_value!("1979-05-27T00:32:00.999999-07:00").is_date_time());

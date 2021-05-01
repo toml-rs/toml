@@ -466,7 +466,7 @@ fn test_set_position() {
                 as_table!(segmented).set_position(5)
             }
         }
-    }).produces_in_original_order(r#"         [dependencies]
+    }).produces_in_original_order(r#"        [dependencies]
 
         [package]
         [dev-dependencies]
