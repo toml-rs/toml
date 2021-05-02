@@ -1,5 +1,5 @@
 use crate::array_of_tables::ArrayOfTables;
-use crate::decor::{Decor, InternalString};
+use crate::decor::Decor;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
@@ -128,7 +128,7 @@ impl TomlParser {
     fn on_std_header(&mut self, path: &[Key], trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
-        let leading = mem::replace(&mut self.document.trailing, InternalString::new());
+        let leading = mem::take(&mut self.document.trailing);
         let table = self.document.as_table_mut();
         self.current_table_position += 1;
 
@@ -171,7 +171,7 @@ impl TomlParser {
     fn on_array_header(&mut self, path: &[Key], trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
-        let leading = mem::replace(&mut self.document.trailing, InternalString::new());
+        let leading = mem::take(&mut self.document.trailing);
         let table = self.document.as_table_mut();
 
         let key = &path[path.len() - 1];

@@ -8,7 +8,7 @@ fn run(toml: &str, msg: &str) {
         Err(e) => e.to_string(),
         _ => unreachable!(""),
     };
-    assert!(err.find(msg).is_some());
+    assert!(err.contains(msg));
 }
 
 macro_rules! t(

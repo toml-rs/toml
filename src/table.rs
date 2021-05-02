@@ -202,6 +202,22 @@ impl Table {
     pub fn decor(&self, key: &str) -> Option<&Decor> {
         self.items.get(key).map(|kv| &kv.key.decor)
     }
+
+    /// Sets the position of the `Table` within the `Document`.
+    ///
+    /// Setting the position of a table will only affect output when
+    /// `Document::to_string_in_original_order` is used.
+    pub fn set_position(&mut self, position: usize) {
+        self.position = Some(position);
+    }
+
+    /// The position of the `Table` within the `Document`.
+    ///
+    /// Returns `None` if the `Table` was created manually (i.e. not via parsing)
+    /// in which case its position is set automatically.
+    pub fn position(&self) -> Option<usize> {
+        self.position
+    }
 }
 
 impl Item {
