@@ -310,6 +310,9 @@ impl TableLike for InlineTable {
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.items.get(key).map(|kv| &kv.value)
     }
+    fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
+        self.items.get_mut(key).map(|kv| &mut kv.value)
+    }
 }
 
 /// Downcasting

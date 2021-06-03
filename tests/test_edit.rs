@@ -615,9 +615,9 @@ fn test_insert_into_inline_table() {
     ).running(|root| {
         {
             let a = root.entry("a");
-            let a = as_inline_table!(a);
+            let mut a = as_inline_table!(a);
             assert_eq!(a.len(), 2);
-            assert!(a.contains_key("a") && a.get("c").is_some());
+            assert!(a.contains_key("a") && a.get("c").is_some() && a.get_mut("c").is_some());
             a.get_or_insert("b", 42);
             assert_eq!(a.len(), 3);
             a.fmt();
