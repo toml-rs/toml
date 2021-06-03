@@ -1,12 +1,12 @@
 use crate::value;
-use combine::char::{char, digit};
-use combine::combinator::{skip_count_min_max, SkipCountMinMax};
-use combine::range::{recognize, recognize_with_value};
+use combine::parser::char::{char, digit};
+use combine::parser::range::{recognize, recognize_with_value};
+use combine::parser::repeat::{skip_count_min_max, SkipCountMinMax};
 use combine::stream::RangeStream;
 use combine::*;
 
 #[inline]
-pub fn repeat<P: Parser>(count: usize, parser: P) -> SkipCountMinMax<P> {
+pub fn repeat<I: Stream, P: Parser<I>>(count: usize, parser: P) -> SkipCountMinMax<I, P> {
     skip_count_min_max(count, count, parser)
 }
 

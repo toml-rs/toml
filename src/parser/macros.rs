@@ -7,7 +7,7 @@ macro_rules! parse (
                 where
                 [I: RangeStream<
                  Range = &'a str,
-                 Item = char>,
+                 Token = char>,
                  I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
                  <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
                  From<std::num::ParseIntError> +
@@ -31,7 +31,7 @@ macro_rules! toml_parser (
             where
                 [I: RangeStream<
                  Range = &'a str,
-                 Item = char>,
+                 Token = char>,
                  I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
                  <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
                  From<std::num::ParseIntError> +

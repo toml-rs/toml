@@ -4,8 +4,8 @@ use crate::parser::errors::CustomError;
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
 use crate::value::{Array, Value};
-use combine::char::char;
-use combine::range::recognize_with_value;
+use combine::parser::char::char;
+use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
 

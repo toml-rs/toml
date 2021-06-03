@@ -6,8 +6,8 @@ use crate::parser::key::key;
 use crate::parser::trivia::{line_trailing, ws};
 use crate::parser::TomlParser;
 use crate::table::{Item, Table};
-use combine::char::char;
-use combine::range::range;
+use combine::parser::char::char;
+use combine::parser::range::range;
 use combine::stream::RangeStream;
 use combine::*;
 use std::cell::RefCell;
@@ -68,7 +68,7 @@ parser! {
     where
         [I: RangeStream<
          Range = &'a str,
-         Item = char>,
+         Token = char>,
          I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
          <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
          From<std::num::ParseIntError> +

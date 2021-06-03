@@ -1,9 +1,9 @@
 use crate::decor::InternalString;
 use crate::parser::errors::CustomError;
 use crate::parser::trivia::{newline, ws, ws_newlines};
-use combine::char::char;
-use combine::error::{Consumed, Info};
-use combine::range::{range, take, take_while};
+use combine::error::{Commit, Info};
+use combine::parser::char::char;
+use combine::parser::range::{range, take, take_while};
 use combine::stream::RangeStream;
 use combine::*;
 use std::char;
@@ -50,15 +50,15 @@ parse!(escape() -> char, {
         .then(|c| {
             parser(move |input| {
                 match c {
-                    'b'  => Ok(('\u{8}', Consumed::Empty(()))),
-                    'f'  => Ok(('\u{c}', Consumed::Empty(()))),
-                    'n'  => Ok(('\n',    Consumed::Empty(()))),
-                    'r'  => Ok(('\r',    Consumed::Empty(()))),
-                    't'  => Ok(('\t',    Consumed::Empty(()))),
-                    'u'  => hexescape(4).parse_stream(input),
-                    'U'  => hexescape(8).parse_stream(input),
+                    'b'  => Ok(('\u{8}', Commit::Peek(()))),
+                    'f'  => Ok(('\u{c}', Commit::Peek(()))),
+                    'n'  => Ok(('\n',    Commit::Peek(()))),
+                    'r'  => Ok(('\r',    Commit::Peek(()))),
+                    't'  => Ok(('\t',    Commit::Peek(()))),
+                    'u'  => hexescape(4).parse_stream(input).into_result(),
+                    'U'  => hexescape(8).parse_stream(input).into_result(),
                     // ['\\', '"', '/']
-                    _    => Ok((c,       Consumed::Empty(()))),
+                    _    => Ok((c,       Commit::Peek(()))),
                 }
             })
         })
@@ -78,8 +78,8 @@ parse!(basic_char() -> char, {
     satisfy(|c| is_basic_unescaped(c) || c == ESCAPE)
         .then(|c| parser(move |input| {
             match c {
-                ESCAPE => escape().parse_stream(input),
-                _      => Ok((c, Consumed::Empty(()))),
+                ESCAPE => escape().parse_stream(input).into_result(),
+                _      => Ok((c, Commit::Peek(()))),
             }
         }))
 });
@@ -110,8 +110,8 @@ parse!(ml_basic_char() -> char, {
     satisfy(|c| is_ml_basic_unescaped(c) || c == ESCAPE)
         .then(|c| parser(move |input| {
             match c {
-                ESCAPE => escape().parse_stream(input),
-                _      => Ok((c, Consumed::Empty(()))),
+                ESCAPE => escape().parse_stream(input).into_result(),
+                _      => Ok((c, Commit::Peek(()))),
             }
         }))
 });

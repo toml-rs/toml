@@ -4,7 +4,7 @@ use crate::parser::strings;
 use crate::parser::TomlError;
 use crate::table::{Item, KeyValuePairs, TableKeyValue};
 use crate::value::{Array, DateTime, InlineTable, Value};
-use combine::stream::state::State;
+use combine::stream::position::Stream as PositionStream;
 use std::iter::FromIterator;
 
 pub(crate) fn decorate_array(array: &mut Array) {
@@ -137,8 +137,8 @@ impl From<f64> for Value {
 
 macro_rules! try_parse {
     ($s:expr, $p:expr) => {{
-        use combine::Parser;
-        let result = $p.easy_parse(State::new($s));
+        use combine::EasyParser;
+        let result = $p.easy_parse(PositionStream::new($s));
         match result {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(TomlError::from_unparsed(rest.positioner, $s))

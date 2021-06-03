@@ -9,9 +9,9 @@ use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
 use crate::table::{Item, TableKeyValue};
-use combine::char::char;
-use combine::range::recognize;
-use combine::stream::state::State;
+use combine::parser::char::char;
+use combine::parser::range::recognize;
+use combine::stream::position::Stream;
 use combine::stream::RangeStream;
 use combine::Parser;
 use combine::*;
@@ -23,9 +23,11 @@ toml_parser!(parse_comment, parser, {
     (comment(), line_ending()).map(|(c, e)| parser.borrow_mut().deref_mut().on_comment(c, e))
 });
 
-toml_parser!(parse_ws, parser, {
+toml_parser!(
+    parse_ws,
+    parser,
     ws().map(|w| parser.borrow_mut().deref_mut().on_ws(w))
-});
+);
 
 toml_parser!(parse_newline, parser, {
     recognize(newline()).map(|w| parser.borrow_mut().deref_mut().on_ws(w))
@@ -41,7 +43,7 @@ parser! {
     where
         [I: RangeStream<
          Range = &'a str,
-         Item = char>,
+         Token = char>,
          I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
          <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
          From<std::num::ParseIntError> +
@@ -79,7 +81,7 @@ impl TomlParser {
     //                  ws )
     pub fn parse(s: &str) -> Result<Document, TomlError> {
         let parser = RefCell::new(Self::default());
-        let input = State::new(s);
+        let input = Stream::new(s);
 
         let parsed = parse_ws(&parser)
             .with(choice((

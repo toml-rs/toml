@@ -1,6 +1,6 @@
 use combine::easy::Errors as ParseError;
 use combine::stream::easy::Error;
-use combine::stream::state::SourcePosition;
+use combine::stream::position::SourcePosition;
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
@@ -118,7 +118,9 @@ impl Display for CustomError {
             CustomError::MixedArrayType {
                 ref got,
                 ref expected,
-            } => writeln!(f, "Mixed types in array: {} and {}", expected, got),
+            } => {
+                writeln!(f, "Mixed types in array: {} and {}", expected, got)
+            }
             CustomError::DuplicateKey { ref key, ref table } => {
                 writeln!(f, "Duplicate key `{}` in `{}` table", key, table)
             }
