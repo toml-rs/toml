@@ -177,6 +177,11 @@ impl Table {
         self.items.get(key).map(|kv| &kv.value)
     }
 
+    /// Returns an optional mutable reference to an item given the key.
+    pub fn get_mut<'a>(&'a mut self, key: &str) -> Option<&'a mut Item> {
+        self.items.get_mut(key).map(|kv| &mut kv.value)
+    }
+
     /// If a table has no key/value pairs and implicit, it will not be displayed.
     ///
     /// # Examples
@@ -401,6 +406,8 @@ pub trait TableLike {
     }
     /// Returns an optional reference to an item given the key.
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
+    /// Returns an optional mutable reference to an item given the key.
+    fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item>;
 }
 
 impl TableLike for Table {
@@ -410,6 +417,9 @@ impl TableLike for Table {
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.get(key)
+    }
+    fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
+        self.get_mut(key)
     }
 }
 
