@@ -1,6 +1,6 @@
 use crate::decor::InternalString;
 use crate::parser;
-use combine::stream::state::State;
+use combine::stream::position::Stream;
 use std::str::FromStr;
 
 /// Key as part of a Key/Value Pair or a table header.
@@ -48,8 +48,8 @@ impl FromStr for Key {
 
 impl Key {
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
-        use combine::Parser;
-        let result = parser::key_parser().easy_parse(State::new(s));
+        use combine::EasyParser;
+        let result = parser::key_parser().easy_parse(Stream::new(s));
         match result {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(parser::TomlError::from_unparsed(rest.positioner, s))

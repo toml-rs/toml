@@ -1,5 +1,5 @@
-use combine::char::{char, digit, hex_digit, oct_digit, string};
-use combine::range::{range, recognize};
+use combine::parser::char::{char, digit, hex_digit, oct_digit, string};
+use combine::parser::range::{range, recognize};
 use combine::stream::RangeStream;
 use combine::*;
 

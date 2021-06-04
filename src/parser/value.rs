@@ -6,7 +6,7 @@ use crate::parser::inline_table::inline_table;
 use crate::parser::numbers::{boolean, float, integer};
 use crate::parser::strings::string;
 use crate::value as v;
-use combine::range::recognize_with_value;
+use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
 

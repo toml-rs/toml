@@ -1,5 +1,5 @@
-use combine::char::{char, crlf, newline as lf};
-use combine::range::{recognize, take_while, take_while1};
+use combine::parser::char::{char, crlf, newline as lf};
+use combine::parser::range::{recognize, take_while, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
 

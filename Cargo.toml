@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 chrono = "0.4.10"
 linked-hash-map = "0.5.2"
-combine = "3.8.1"
+combine = "4.5.2"
 
 [dev-dependencies]
 serde_json = "1.0.44"

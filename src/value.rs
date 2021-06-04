@@ -4,7 +4,7 @@ use crate::parser;
 use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 use crate::{decorated, formatted};
 use chrono::{self, FixedOffset};
-use combine::stream::state::State;
+use combine::stream::position::Stream;
 use linked_hash_map::LinkedHashMap;
 use std::mem;
 use std::str::FromStr;
@@ -519,8 +519,8 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use combine::Parser;
-        let parsed = parser::value_parser().easy_parse(State::new(s));
+        use combine::EasyParser;
+        let parsed = parser::value_parser().easy_parse(Stream::new(s));
         match parsed {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(Self::Err::from_unparsed(rest.positioner, s))

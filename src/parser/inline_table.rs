@@ -6,7 +6,7 @@ use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::{Item, TableKeyValue};
 use crate::value::InlineTable;
-use combine::char::char;
+use combine::parser::char::char;
 use combine::stream::RangeStream;
 use combine::*;
 

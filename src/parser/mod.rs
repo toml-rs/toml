@@ -41,7 +41,7 @@ impl Default for TomlParser {
 #[cfg(test)]
 mod tests {
     use crate::parser::*;
-    use combine::stream::state::State;
+    use combine::stream::position::Stream;
     use combine::*;
     use pretty_assertions::assert_eq;
     use std::fmt;
@@ -69,7 +69,7 @@ mod tests {
 
     macro_rules! parsed_float_eq {
         ($input:ident, $expected:expr) => {{
-            let parsed = numbers::float().easy_parse(State::new($input));
+            let parsed = numbers::float().easy_parse(Stream::new($input));
             assert!(parsed.is_ok());
             let (v, rest) = parsed.unwrap();
             assert!(($expected - v).abs() < std::f64::EPSILON);
@@ -79,7 +79,7 @@ mod tests {
 
     macro_rules! parsed_value_eq {
         ($input:expr) => {
-            let parsed = value::value().easy_parse(State::new(*$input));
+            let parsed = value::value().easy_parse(Stream::new(*$input));
             assert!(parsed.is_ok());
             let (v, rest) = parsed.unwrap();
             assert_eq!(v.to_string(), *$input);
@@ -89,7 +89,7 @@ mod tests {
 
     macro_rules! parsed_date_time_eq {
         ($input:expr, $is:ident) => {{
-            let parsed = value::value().easy_parse(State::new(*$input));
+            let parsed = value::value().easy_parse(Stream::new(*$input));
             assert!(parsed.is_ok());
             let (v, rest) = parsed.unwrap();
             assert_eq!(v.to_string(), *$input);
@@ -116,12 +116,12 @@ mod tests {
             (&std::i64::MAX.to_string()[..], std::i64::MAX),
         ];
         for &(input, expected) in &cases {
-            let parsed = numbers::integer().easy_parse(State::new(input));
+            let parsed = numbers::integer().easy_parse(Stream::new(input));
             parsed_eq!(parsed, expected);
         }
 
         let overflow = "1000000000000000000000000000000000";
-        let parsed = numbers::integer().easy_parse(State::new(overflow));
+        let parsed = numbers::integer().easy_parse(Stream::new(overflow));
         assert!(parsed.is_err());
     }
 
@@ -149,7 +149,7 @@ mod tests {
     fn basic_string() {
         let input =
             r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
-        let parsed = strings::string().easy_parse(State::new(input));
+        let parsed = strings::string().easy_parse(Stream::new(input));
         parsed_eq!(
             parsed,
             "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}"
@@ -171,14 +171,14 @@ Violets are blue"#,
         ];
 
         for &(input, expected) in &cases {
-            let parsed = strings::string().easy_parse(State::new(input));
+            let parsed = strings::string().easy_parse(Stream::new(input));
             parsed_eq!(parsed, expected);
         }
 
         let invalid_cases = [r#""""  """#, r#""""  \""""#];
 
         for input in &invalid_cases {
-            let parsed = strings::ml_basic_string().easy_parse(State::new(*input));
+            let parsed = strings::ml_basic_string().easy_parse(Stream::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -199,7 +199,7 @@ The quick brown \
        """"#,
         ];
         for input in &inputs {
-            let parsed = strings::string().easy_parse(State::new(*input));
+            let parsed = strings::string().easy_parse(Stream::new(*input));
             parsed_eq!(parsed, "The quick brown fox jumps over the lazy dog.");
         }
         let empties = [
@@ -211,7 +211,7 @@ The quick brown \
 """"#,
         ];
         for empty in &empties {
-            let parsed = strings::string().easy_parse(State::new(*empty));
+            let parsed = strings::string().easy_parse(Stream::new(*empty));
             parsed_eq!(parsed, "");
         }
     }
@@ -226,7 +226,7 @@ The quick brown \
         ];
 
         for input in &inputs {
-            let parsed = strings::string().easy_parse(State::new(*input));
+            let parsed = strings::string().easy_parse(Stream::new(*input));
             parsed_eq!(parsed, &input[1..input.len() - 1]);
         }
     }
@@ -234,7 +234,7 @@ The quick brown \
     #[test]
     fn ml_literal_string() {
         let input = r#"'''I [dw]on't need \d{2} apples'''"#;
-        let parsed = strings::string().easy_parse(State::new(input));
+        let parsed = strings::string().easy_parse(Stream::new(input));
         parsed_eq!(parsed, &input[3..input.len() - 3]);
         let input = r#"'''
 The first newline is
@@ -242,7 +242,7 @@ trimmed in raw strings.
    All other whitespace
    is preserved.
 '''"#;
-        let parsed = strings::string().easy_parse(State::new(input));
+        let parsed = strings::string().easy_parse(Stream::new(input));
         parsed_eq!(parsed, &input[4..input.len() - 3]);
     }
 
@@ -305,7 +305,7 @@ trimmed in raw strings.
    "#,
         ];
         for input in &inputs {
-            let parsed = trivia::ws_comment_newline().easy_parse(State::new(*input));
+            let parsed = trivia::ws_comment_newline().easy_parse(Stream::new(*input));
             assert!(parsed.is_ok());
             let (t, rest) = parsed.unwrap();
             assert!(rest.input.is_empty());
@@ -356,7 +356,7 @@ trimmed in raw strings.
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#, r#"[ 1, 2.0 ]"#];
         for input in &invalid_inputs {
-            let parsed = array::array().easy_parse(State::new(*input));
+            let parsed = array::array().easy_parse(Stream::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -374,7 +374,7 @@ trimmed in raw strings.
         }
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in &invalid_inputs {
-            let parsed = inline_table::inline_table().easy_parse(State::new(*input));
+            let parsed = inline_table::inline_table().easy_parse(Stream::new(*input));
             assert!(parsed.is_err());
         }
     }
@@ -388,7 +388,7 @@ trimmed in raw strings.
         ];
 
         for &(input, expected) in &cases {
-            let parsed = key::key().easy_parse(State::new(input));
+            let parsed = key::key().easy_parse(Stream::new(input));
             assert!(parsed.is_ok());
             let ((.., k), rest) = parsed.unwrap();
             assert_eq!(k, expected);
