@@ -6,7 +6,7 @@ use combine::*;
 // wschar = ( %x20 /              ; Space
 //            %x09 )              ; Horizontal tab
 #[inline]
-fn is_wschar(c: char) -> bool {
+pub fn is_wschar(c: char) -> bool {
     matches!(c, ' ' | '\t')
 }
 
@@ -15,10 +15,16 @@ parse!(ws() -> &'a str, {
     take_while(is_wschar)
 });
 
-// non-eol = %x09 / %x20-10FFFF
+// non-ascii = %x80-D7FF / %xE000-10FFFF
+#[inline]
+pub fn is_non_ascii(c: char) -> bool {
+    matches!(c, '\u{80}'..='\u{D7FF}' | '\u{E000}'..='\u{10FFFF}')
+}
+
+// non-eol = %x09 / %x20-7E / non-ascii
 #[inline]
 fn is_non_eol(c: char) -> bool {
-    matches!(c, '\u{09}' | '\u{20}'..='\u{10FFFF}')
+    matches!(c, '\u{09}' | '\u{20}'..='\u{7E}') | is_non_ascii(c)
 }
 
 // comment-start-symbol = %x23 ; #

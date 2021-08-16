@@ -3,12 +3,6 @@ fn main() {
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness
         .ignore([
-            "invalid/control/comment-del.toml",
-            "invalid/control/multi-del.toml",
-            "invalid/control/rawmulti-del.toml",
-            "invalid/control/rawstring-del.toml",
-            "invalid/control/string-del.toml",
-            "invalid/string/bad-slash-escape.toml",
             "valid/array/array.toml",
             "valid/array/mixed-int-array.toml",
             "valid/array/mixed-int-float.toml",
