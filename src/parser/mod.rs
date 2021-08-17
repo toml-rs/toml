@@ -358,7 +358,7 @@ trimmed in raw strings.
             parsed_value_eq!(input);
         }
 
-        let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#, r#"[ 1, 2.0 ]"#];
+        let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in &invalid_inputs {
             let parsed = array::array().easy_parse(Stream::new(*input));
             assert!(parsed.is_err());

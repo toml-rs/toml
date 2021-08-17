@@ -21,21 +21,6 @@ macro_rules! t(
 );
 
 t!(
-    test_array_mixed_types_arrays_and_ints,
-    "Mixed types in array",
-    "fixtures/invalid/array-mixed-types-arrays-and-ints.toml"
-);
-t!(
-    test_array_mixed_types_ints_and_floats,
-    "Mixed types in array",
-    "fixtures/invalid/array-mixed-types-ints-and-floats.toml"
-);
-t!(
-    test_array_mixed_types_strings_and_ints,
-    "Mixed types in array",
-    "fixtures/invalid/array-mixed-types-strings-and-ints.toml"
-);
-t!(
     test_datetime_malformed_no_leads,
     "While parsing a Date-Time",
     "fixtures/invalid/datetime-malformed-no-leads.toml"

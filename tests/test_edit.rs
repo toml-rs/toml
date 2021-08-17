@@ -538,29 +538,26 @@ fn test_insert_replace_into_array() {
             let a = as_array!(a);
             assert_eq!(a.len(), 3);
             assert!(a.get(2).is_some());
-            assert!(a.push(4).is_ok());
+            a.push(4);
             assert_eq!(a.len(), 4);
             a.fmt();
         }
         let b = root.entry("b");
         let b = as_array!(b);
         assert!(b.is_empty());
-        assert!(b.push("hello").is_ok());
+        b.push("hello");
         assert_eq!(b.len(), 1);
 
-        assert!(b.push_formatted(decorated("world".into(), "\n", "\n")).is_ok());
-        assert!(b.push_formatted(decorated("test".into(), "", "")).is_ok());
+        b.push_formatted(decorated("world".into(), "\n", "\n"));
+        b.push_formatted(decorated("test".into(), "", ""));
 
-        assert!(b.insert(1, "beep").is_ok());
-        assert!(b.insert_formatted(2, decorated("boop".into(), "   ", "   ")).is_ok());
+        b.insert(1, "beep");
+        b.insert_formatted(2, decorated("boop".into(), "   ", "   "));
 
         // This should preserve formatting.
-        assert_eq!(b.replace(2, "zoink").unwrap().as_str(), Some("boop"));
+        assert_eq!(b.replace(2, "zoink").as_str(), Some("boop"));
         // This should replace formatting.
-        assert_eq!(b.replace_formatted(4, decorated("yikes".into(), "  ", "")).unwrap().as_str(), Some("test"));
-
-        // Check that pushing a different type into an array fails.
-        assert!(b.push(42).is_err());
+        assert_eq!(b.replace_formatted(4, decorated("yikes".into(), "  ", "")).as_str(), Some("test"));
 
     }).produces(r#"
         a = [1, 2, 3, 4]
