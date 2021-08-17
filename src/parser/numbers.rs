@@ -127,7 +127,30 @@ parse!(parse_float() -> &'a str, {
 });
 
 parse!(float() -> f64, {
-    parse_float()
-        .and_then(|s| s.replace("_", "").parse())
-        .message("While parsing a Float")
+    choice((
+        parse_float()
+            .and_then(|s| s.replace("_", "").parse()),
+        special_float(),
+    )).message("While parsing a Float")
+});
+
+// special-float = [ minus / plus ] ( inf / nan )
+parse!(special_float() -> f64, {
+    attempt(optional(one_of("+-".chars())).and(choice((inf(), nan()))).map(|(s, f)| {
+        match s {
+            Some('+') | None => f,
+            Some('-') => -f,
+            _ => unreachable!("one_of should prevent this"),
+        }
+    }))
+});
+
+// inf = %x69.6e.66  ; inf
+parse!(inf() -> f64, {
+    range("inf").map(|_| f64::INFINITY)
+});
+
+// nan = %x6e.61.6e  ; nan
+parse!(nan() -> f64, {
+    range("nan").map(|_| f64::NAN)
 });
