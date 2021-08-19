@@ -19,7 +19,7 @@ parse!(date_time() -> value::DateTime, {
         (
             full_date(),
             optional((
-                char('T'),
+                satisfy(is_time_delim),
                 partial_time(),
                 optional(time_offset()),
             ))
@@ -84,7 +84,7 @@ parse!(partial_time() -> chrono::NaiveTime, {
 // time-offset    = "Z" / time-numoffset
 // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
 parse!(time_offset() -> chrono::FixedOffset, {
-    attempt(char('Z')).map(|_| chrono::FixedOffset::east(0))
+    attempt(satisfy(|c| c == 'Z' || c == 'z')).map(|_| chrono::FixedOffset::east(0))
         .or(
             (
                 attempt(choice([char('+'), char('-')])),
@@ -119,6 +119,11 @@ parse!(date_month() -> u32, {
 parse!(date_mday() -> u32, {
     unsigned_digits(2)
 });
+
+// time-delim     = "T" / %x20 ; T, t, or space
+fn is_time_delim(c: char) -> bool {
+    matches!(c, 'T' | 't' | ' ')
+}
 
 // time-hour      = 2DIGIT  ; 00-23
 parse!(time_hour() -> u32, {

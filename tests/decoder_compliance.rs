@@ -3,18 +3,9 @@ fn main() {
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness
         .ignore([
-            "valid/array/array.toml",
-            "valid/comment/everywhere.toml",
-            "valid/datetime/datetime.toml",
-            "valid/datetime/local.toml",
-            "valid/datetime/milliseconds.toml",
-            "valid/datetime/timezone.toml",
-            "valid/example.toml",
             "valid/inline-table/key-dotted.toml",
             "valid/key/dotted.toml",
             "valid/key/numeric-dotted.toml",
-            "valid/spec-example-1-compact.toml",
-            "valid/spec-example-1.toml",
             "valid/string/multiline-quotes.toml",
         ])
         .unwrap();
@@ -72,7 +63,7 @@ fn value_to_encoded(
         )),
         toml_edit::Value::DateTime(v) => match *v.value() {
             toml_edit::DateTime::OffsetDateTime(v) => Ok(toml_test_harness::Encoded::Value(
-                toml_test_harness::EncodedValue::from(v.to_string()),
+                toml_test_harness::EncodedValue::Datetime(v.to_rfc3339()),
             )),
             toml_edit::DateTime::LocalDateTime(v) => Ok(toml_test_harness::Encoded::Value(
                 toml_test_harness::EncodedValue::DatetimeLocal(v.to_string()),
