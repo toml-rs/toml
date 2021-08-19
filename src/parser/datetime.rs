@@ -1,14 +1,8 @@
 use crate::value;
 use combine::parser::char::{char, digit};
-use combine::parser::range::{recognize, recognize_with_value};
-use combine::parser::repeat::{skip_count_min_max, SkipCountMinMax};
+use combine::parser::range::{recognize, recognize_with_value, take};
 use combine::stream::RangeStream;
 use combine::*;
-
-#[inline]
-pub fn repeat<I: Stream, P: Parser<I>>(count: usize, parser: P) -> SkipCountMinMax<I, P> {
-    skip_count_min_max(count, count, parser)
-}
 
 // ;; Date and Time (as defined in RFC 3339)
 
@@ -63,10 +57,10 @@ parse!(date_time() -> value::DateTime, {
 // date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
 parse!(full_date() -> &'a str, {
     recognize((
-        attempt((repeat(4, digit()), char('-'))),
-        repeat(2, digit()),
+        attempt((digits(4), char('-'))),
+        digits(2),
         char('-'),
-        repeat(2, digit()),
+        digits(2),
     ))
 });
 
@@ -78,12 +72,12 @@ parse!(full_date() -> &'a str, {
 parse!(partial_time() -> (), {
     (
         attempt((
-            repeat(2, digit()),
+            digits(2),
             char(':'),
         )),
-        repeat(2, digit()),
+        digits(2),
         char(':'),
-        repeat(2, digit()),
+        digits(2),
         optional(attempt(char('.')).and(skip_many1(digit()))),
     ).map(|_| ())
 });
@@ -95,9 +89,13 @@ parse!(time_offset() -> (), {
         .or(
             (
                 attempt(choice([char('+'), char('-')])),
-                repeat(2, digit()),
+                digits(2),
                 char(':'),
-                repeat(2, digit()),
+                digits(2),
             ).map(|_| ())
         ).message("While parsing a Time Offset")
+});
+
+parse!(digits(count: usize) -> i32, {
+    take(*count).and_then(|s: &str| s.parse::<i32>())
 });
