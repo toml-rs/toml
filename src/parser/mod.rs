@@ -80,8 +80,12 @@ mod tests {
     macro_rules! parsed_value_eq {
         ($input:expr) => {
             let parsed = value::value().easy_parse(Stream::new(*$input));
-            assert!(parsed.is_ok());
-            let (v, rest) = parsed.unwrap();
+            let (v, rest) = match parsed {
+                Ok(parsed) => parsed,
+                Err(err) => {
+                    panic!("Unexpected error for {:?}: {}", $input, err);
+                }
+            };
             assert_eq!(v.to_string(), *$input);
             assert!(rest.input.is_empty());
         };
@@ -411,7 +415,7 @@ trimmed in raw strings.
    is preserved.
 '''"#,
             r#""Jos\u00E9\n""#,
-            r#""\\\"\b\/\f\n\r\t\u00E9\U000A0000""#,
+            r#""\\\"\b/\f\n\r\t\u00E9\U000A0000""#,
             r#"{ hello = "world", a = 1}"#,
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
