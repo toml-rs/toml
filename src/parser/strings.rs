@@ -100,7 +100,7 @@ fn is_mlb_unescaped(c: char) -> bool {
     is_wschar(c)
         | matches!(c, '\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{7E}')
         | is_non_ascii(c)
-        // Unlike he official grammar, we can handle quotes just fine
+        // Unlike the official grammar, we can handle quotes just fine
         | (c == '\u{22}')
 }
 
@@ -186,7 +186,7 @@ const ML_LITERAL_STRING_DELIM: &str = "'''";
 #[inline]
 fn is_mll_char(c: char) -> bool {
     matches!(c, '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{7E}') | is_non_ascii(c)
-        // Unlike he official grammar, we can handle quotes just fine
+        // Unlike the official grammar, we can handle quotes just fine
         | (c == '\u{27}')
 }
 
