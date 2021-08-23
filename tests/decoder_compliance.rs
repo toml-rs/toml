@@ -12,7 +12,6 @@ fn main() {
             "valid/datetime/milliseconds.toml",
             "valid/datetime/timezone.toml",
             "valid/example.toml",
-            "valid/float/underscore.toml",
             "valid/float/zero.toml",
             "valid/inline-table/key-dotted.toml",
             "valid/key/dotted.toml",
