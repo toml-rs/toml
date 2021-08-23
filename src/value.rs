@@ -30,6 +30,7 @@ pub enum Value {
 
 /// Type representing a TOML Date-Time,
 /// payload of the `Value::DateTime` variant's value
+#[allow(clippy::enum_variant_names)]
 #[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub enum DateTime {
     /// An RFC 3339 formatted date-time with offset.
