@@ -62,7 +62,7 @@ parse!(full_date() -> chrono::NaiveDate, {
         char('-'),
         date_mday(),
     ).and_then(|((year, _), month, _, day)| {
-        chrono::NaiveDate::from_ymd_opt(year, month, day).ok_or_else(|| CustomError::DateOutOfRange { year, month, day })
+        chrono::NaiveDate::from_ymd_opt(year, month, day).ok_or(CustomError::DateOutOfRange { year, month, day })
     })
 });
 
@@ -100,7 +100,7 @@ parse!(time_offset() -> chrono::FixedOffset, {
                     '+' => chrono::FixedOffset::east_opt(secs),
                     '-' => chrono::FixedOffset::west_opt(secs),
                     _ => unreachable!("Parser prevents this"),
-                }.ok_or_else(||CustomError::OffsetOutOfRange { sign, hour, minute})
+                }.ok_or(CustomError::OffsetOutOfRange { sign, hour, minute})
             })
         ).message("While parsing a Time Offset")
 });
