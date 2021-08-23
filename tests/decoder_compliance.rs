@@ -6,8 +6,6 @@ fn main() {
             "valid/array/array.toml",
             "valid/comment/everywhere.toml",
             "valid/datetime/datetime.toml",
-            "valid/datetime/local-date.toml",
-            "valid/datetime/local-time.toml",
             "valid/datetime/local.toml",
             "valid/datetime/milliseconds.toml",
             "valid/datetime/timezone.toml",
@@ -72,9 +70,20 @@ fn value_to_encoded(
         toml_edit::Value::Float(v) => Ok(toml_test_harness::Encoded::Value(
             toml_test_harness::EncodedValue::from(*v.value()),
         )),
-        toml_edit::Value::DateTime(v) => Ok(toml_test_harness::Encoded::Value(
-            toml_test_harness::EncodedValue::from(v.value().to_string()),
-        )),
+        toml_edit::Value::DateTime(v) => match *v.value() {
+            toml_edit::DateTime::OffsetDateTime(v) => Ok(toml_test_harness::Encoded::Value(
+                toml_test_harness::EncodedValue::from(v.to_string()),
+            )),
+            toml_edit::DateTime::LocalDateTime(v) => Ok(toml_test_harness::Encoded::Value(
+                toml_test_harness::EncodedValue::DatetimeLocal(v.to_string()),
+            )),
+            toml_edit::DateTime::LocalDate(v) => Ok(toml_test_harness::Encoded::Value(
+                toml_test_harness::EncodedValue::DateLocal(v.to_string()),
+            )),
+            toml_edit::DateTime::LocalTime(v) => Ok(toml_test_harness::Encoded::Value(
+                toml_test_harness::EncodedValue::TimeLocal(v.to_string()),
+            )),
+        },
         toml_edit::Value::Boolean(v) => Ok(toml_test_harness::Encoded::Value(
             toml_test_harness::EncodedValue::from(*v.value()),
         )),
