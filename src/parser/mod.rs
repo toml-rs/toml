@@ -70,9 +70,22 @@ mod tests {
     macro_rules! parsed_float_eq {
         ($input:ident, $expected:expr) => {{
             let parsed = numbers::float().easy_parse(Stream::new($input));
-            assert!(parsed.is_ok());
-            let (v, rest) = parsed.unwrap();
-            assert!(($expected - v).abs() < std::f64::EPSILON);
+            let (v, rest) = match parsed {
+                Ok(parsed) => parsed,
+                Err(err) => {
+                    panic!("Unexpected error for {:?}: {}", $input, err);
+                }
+            };
+            if $expected.is_nan() {
+                assert!(v.is_nan());
+            } else if $expected.is_infinite() {
+                assert!(v.is_infinite());
+                assert_eq!($expected.is_sign_positive(), v.is_sign_positive());
+            } else {
+                dbg!($expected);
+                dbg!(v);
+                assert!(($expected - v).abs() < std::f64::EPSILON);
+            }
             assert!(rest.input.is_empty());
         }};
     }
@@ -142,6 +155,12 @@ mod tests {
             ("9_224_617.445_991_228_313", 9_224_617.445_991_227),
             ("-1.7976931348623157e+308", std::f64::MIN),
             ("1.7976931348623157e+308", std::f64::MAX),
+            ("nan", f64::NAN),
+            ("+nan", f64::NAN),
+            ("-nan", f64::NAN),
+            ("inf", f64::INFINITY),
+            ("+inf", f64::INFINITY),
+            ("-inf", f64::NEG_INFINITY),
             // ("1e+400", std::f64::INFINITY),
         ];
         for &(input, expected) in &cases {
