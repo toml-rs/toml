@@ -91,10 +91,16 @@ parse!(parse_binary_integer() -> i64, {
 
 // frac = decimal-point zero-prefixable-int
 // decimal-point = %x2E               ; .
-// zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
 parse!(frac() -> &'a str, {
     recognize((
         char('.'),
+        parse_zero_prefixable_int(),
+    ))
+});
+
+// zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
+parse!(parse_zero_prefixable_int() -> &'a str, {
+    recognize((
         skip_many1(digit()),
         skip_many((
             optional(char('_')),
@@ -103,12 +109,13 @@ parse!(frac() -> &'a str, {
     ))
 });
 
-// exp = e integer
-// e = %x65 / %x45                    ; e E
+// exp = "e" float-exp-part
+// float-exp-part = [ minus / plus ] zero-prefixable-int
 parse!(exp() -> &'a str, {
     recognize((
         one_of("eE".chars()),
-        parse_integer(),
+        optional(one_of("+-".chars())),
+        parse_zero_prefixable_int(),
     ))
 });
 
