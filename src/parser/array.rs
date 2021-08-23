@@ -24,13 +24,7 @@ fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, C
         ..Default::default()
     };
     for val in v {
-        let err = Err(CustomError::MixedArrayType {
-            got: format!("{:?}", val.get_type()),
-            expected: format!("{:?}", array.value_type()),
-        });
-        if array.push_formatted(val).is_err() {
-            return err;
-        }
+        array.push_formatted(val)
     }
     Ok(array)
 }

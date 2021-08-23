@@ -67,18 +67,6 @@ pub struct InlineTable {
     pub(crate) decor: Decor,
 }
 
-#[derive(Eq, PartialEq, Clone, Copy, Debug, Hash)]
-pub(crate) enum ValueType {
-    None,
-    Integer,
-    String,
-    Float,
-    DateTime,
-    Boolean,
-    Array,
-    InlineTable,
-}
-
 /// An iterator type over `Array`'s values.
 pub type ArrayIter<'a> = Box<dyn Iterator<Item = &'a Value> + 'a>;
 
@@ -102,7 +90,7 @@ impl Array {
     /// Appends a new value to the end of the array, applying default formatting to it.
     ///
     /// Returns an error if the value was of a different type than the values in the array.
-    pub fn push<V: Into<Value>>(&mut self, v: V) -> Result<(), Value> {
+    pub fn push<V: Into<Value>>(&mut self, v: V) {
         self.value_op(v.into(), true, |items, value| {
             items.push(Item::Value(value))
         })
@@ -111,7 +99,7 @@ impl Array {
     /// Appends a new, already formatted value to the end of the array.
     ///
     /// Returns an error if the value was of a different type than the array.
-    pub fn push_formatted(&mut self, v: Value) -> Result<(), Value> {
+    pub fn push_formatted(&mut self, v: Value) {
         self.value_op(v, false, |items, value| items.push(Item::Value(value)))
     }
 
@@ -121,7 +109,7 @@ impl Array {
     /// Returns an error if the value was of a different type than the values in the array.
     ///
     /// Panics if `index > len`.
-    pub fn insert<V: Into<Value>>(&mut self, index: usize, v: V) -> Result<(), Value> {
+    pub fn insert<V: Into<Value>>(&mut self, index: usize, v: V) {
         self.value_op(v.into(), true, |items, value| {
             items.insert(index, Item::Value(value))
         })
@@ -133,7 +121,7 @@ impl Array {
     /// Returns an error if the value was of a different type than the values in the array.
     ///
     /// Panics if `index > len`.
-    pub fn insert_formatted(&mut self, index: usize, v: Value) -> Result<(), Value> {
+    pub fn insert_formatted(&mut self, index: usize, v: Value) {
         self.value_op(v, false, |items, value| {
             items.insert(index, Item::Value(value))
         })
@@ -144,7 +132,7 @@ impl Array {
     /// Returns an error if the replacement was of a different type than the values in the array.
     ///
     /// Panics if `index >= len`.
-    pub fn replace<V: Into<Value>>(&mut self, index: usize, v: V) -> Result<Value, Value> {
+    pub fn replace<V: Into<Value>>(&mut self, index: usize, v: V) -> Value {
         // Read the existing value's decor and preserve it.
         let existing_decor = self
             .get(index)
@@ -159,7 +147,7 @@ impl Array {
     /// Returns an error if the replacement was of a different type than the values in the array.
     ///
     /// Panics if `index >= len`.
-    pub fn replace_formatted(&mut self, index: usize, v: Value) -> Result<Value, Value> {
+    pub fn replace_formatted(&mut self, index: usize, v: Value) -> Value {
         self.value_op(v, false, |items, value| {
             match mem::replace(&mut items[index], Item::Value(value)) {
                 Item::Value(old_value) => old_value,
@@ -196,26 +184,14 @@ impl Array {
         v: Value,
         decorate: bool,
         op: impl FnOnce(&mut Vec<Item>, Value) -> T,
-    ) -> Result<T, Value> {
+    ) -> T {
         let mut value = v;
         if !self.is_empty() && decorate {
             formatted::decorate(&mut value, " ", "");
         } else if decorate {
             formatted::decorate(&mut value, "", "");
         }
-        if self.is_empty() || value.get_type() == self.value_type() {
-            Ok(op(&mut self.values, value))
-        } else {
-            Err(value)
-        }
-    }
-
-    pub(crate) fn value_type(&self) -> ValueType {
-        if let Some(value) = self.values.get(0).and_then(Item::as_value) {
-            value.get_type()
-        } else {
-            ValueType::None
-        }
+        op(&mut self.values, value)
     }
 }
 
@@ -470,18 +446,6 @@ impl Value {
     /// Returns true iff `self` is an inline table.
     pub fn is_inline_table(&self) -> bool {
         self.as_inline_table().is_some()
-    }
-
-    pub(crate) fn get_type(&self) -> ValueType {
-        match *self {
-            Value::Integer(..) => ValueType::Integer,
-            Value::String(..) => ValueType::String,
-            Value::Float(..) => ValueType::Float,
-            Value::DateTime(..) => ValueType::DateTime,
-            Value::Boolean(..) => ValueType::Boolean,
-            Value::Array(..) => ValueType::Array,
-            Value::InlineTable(..) => ValueType::InlineTable,
-        }
     }
 }
 

@@ -4,11 +4,6 @@ fn main() {
     harness
         .ignore([
             "valid/array/array.toml",
-            "valid/array/mixed-int-array.toml",
-            "valid/array/mixed-int-float.toml",
-            "valid/array/mixed-int-string.toml",
-            "valid/array/mixed-string-table.toml",
-            "valid/array/nested-double.toml",
             "valid/comment/everywhere.toml",
             "valid/datetime/datetime.toml",
             "valid/datetime/local-date.toml",

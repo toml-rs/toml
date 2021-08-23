@@ -100,7 +100,6 @@ impl<'a> Display for FancyError<'a> {
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
-    MixedArrayType { got: String, expected: String },
     DuplicateKey { key: String, table: String },
     InvalidHexEscape(u32),
     UnparsedLine,
@@ -115,12 +114,6 @@ impl StdError for CustomError {
 impl Display for CustomError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match *self {
-            CustomError::MixedArrayType {
-                ref got,
-                ref expected,
-            } => {
-                writeln!(f, "Mixed types in array: {} and {}", expected, got)
-            }
             CustomError::DuplicateKey { ref key, ref table } => {
                 writeln!(f, "Duplicate key `{}` in `{}` table", key, table)
             }
