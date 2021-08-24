@@ -23,6 +23,10 @@ impl TomlError {
             input,
         )
     }
+
+    pub(crate) fn custom(message: String) -> Self {
+        Self { message }
+    }
 }
 
 /// Displays a TOML parse error
