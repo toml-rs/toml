@@ -17,7 +17,7 @@ parse!(value() -> v::Value, {
             .map(|s|
                  v::Value::String(Formatted::new(
                      s,
-                     Repr::new("".to_string(), "who cares?".into(), "".to_string()),
+                     Repr::new("", "who cares?", ""),
                  ))
             ),
         boolean()

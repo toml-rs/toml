@@ -26,7 +26,7 @@ pub(crate) type InternalString = String;
 
 impl Decor {
     /// Creates a new decor from the given prefix and suffix.
-    pub fn new<S: Into<InternalString>>(prefix: S, suffix: S) -> Self {
+    pub fn new(prefix: impl Into<String>, suffix: impl Into<String>) -> Self {
         Self {
             prefix: prefix.into(),
             suffix: suffix.into(),
@@ -45,11 +45,21 @@ impl Decor {
 }
 
 impl Repr {
-    pub fn new<S: Into<InternalString>>(prefix: S, value: S, suffix: S) -> Self {
+    pub fn new(
+        prefix: impl Into<InternalString>,
+        value: impl Into<InternalString>,
+        suffix: impl Into<InternalString>,
+    ) -> Self {
         Repr {
             decor: Decor::new(prefix, suffix),
             raw_value: value.into(),
         }
+    }
+}
+
+impl<D: std::fmt::Display> From<&D> for Repr {
+    fn from(other: &D) -> Self {
+        Self::new("", other.to_string(), "")
     }
 }
 
@@ -72,5 +82,12 @@ impl<T> Formatted<T> {
 
     pub(crate) fn new(v: T, repr: Repr) -> Self {
         Self { value: v, repr }
+    }
+}
+
+impl<D: std::fmt::Display> From<D> for Formatted<D> {
+    fn from(other: D) -> Self {
+        let repr = Repr::from(&other);
+        Self { value: other, repr }
     }
 }

@@ -137,7 +137,7 @@ impl TomlParser {
 
         match table {
             Ok(table) => {
-                let decor = Decor::new(leading, trailing.into());
+                let decor = Decor::new(leading, trailing);
 
                 let entry = table.entry(key.raw());
                 if entry.is_none() {
@@ -180,7 +180,7 @@ impl TomlParser {
         match table {
             Ok(table) => {
                 if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
-                    let decor = Decor::new(leading, trailing.into());
+                    let decor = Decor::new(leading, trailing);
 
                     let entry = table
                         .entry(key.raw())
