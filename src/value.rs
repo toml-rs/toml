@@ -1,9 +1,9 @@
+use crate::datetime::*;
 use crate::decor::{Decor, Formatted, InternalString};
 use crate::key::Key;
 use crate::parser;
 use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
 use crate::{decorated, formatted};
-use chrono::{self, FixedOffset};
 use combine::stream::position::Stream;
 use linked_hash_map::LinkedHashMap;
 use std::mem;
@@ -18,29 +18,20 @@ pub enum Value {
     String(Formatted<String>),
     /// A 64-bit float value.
     Float(Formatted<f64>),
-    /// A Date-Time value.
-    DateTime(Formatted<DateTime>),
+    /// An RFC 3339 formatted date-time with offset.
+    OffsetDateTime(Formatted<OffsetDateTime>),
+    /// An RFC 3339 formatted date-time without offset.
+    LocalDateTime(Formatted<LocalDateTime>),
+    /// Date portion of an RFC 3339 formatted date-time.
+    LocalDate(Formatted<LocalDate>),
+    /// Time portion of an RFC 3339 formatted date-time.
+    LocalTime(Formatted<LocalTime>),
     /// A boolean value.
     Boolean(Formatted<bool>),
     /// An inline array of values.
     Array(Array),
     /// An inline table of key/value pairs.
     InlineTable(InlineTable),
-}
-
-/// Type representing a TOML Date-Time,
-/// payload of the `Value::DateTime` variant's value
-#[allow(clippy::enum_variant_names)]
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
-pub enum DateTime {
-    /// An RFC 3339 formatted date-time with offset.
-    OffsetDateTime(chrono::DateTime<FixedOffset>),
-    /// An RFC 3339 formatted date-time without offset.
-    LocalDateTime(chrono::NaiveDateTime),
-    /// Date portion of an RFC 3339 formatted date-time.
-    LocalDate(chrono::NaiveDate),
-    /// Time portion of an RFC 3339 formatted date-time.
-    LocalTime(chrono::NaiveTime),
 }
 
 /// Type representing a TOML array,
@@ -293,54 +284,6 @@ impl TableLike for InlineTable {
 }
 
 /// Downcasting
-impl DateTime {
-    /// Casts `self` to offset date-time.
-    pub fn as_offset_date_time(&self) -> Option<&chrono::DateTime<FixedOffset>> {
-        match *self {
-            DateTime::OffsetDateTime(ref dt) => Some(dt),
-            _ => None,
-        }
-    }
-    /// Casts `self` to local date-time.
-    pub fn as_local_date_time(&self) -> Option<&chrono::NaiveDateTime> {
-        match *self {
-            DateTime::LocalDateTime(ref dt) => Some(dt),
-            _ => None,
-        }
-    }
-    /// Casts `self` to local date.
-    pub fn as_local_date(&self) -> Option<&chrono::NaiveDate> {
-        match *self {
-            DateTime::LocalDate(ref d) => Some(d),
-            _ => None,
-        }
-    }
-    /// Casts `self` to local time.
-    pub fn as_local_time(&self) -> Option<&chrono::NaiveTime> {
-        match *self {
-            DateTime::LocalTime(ref t) => Some(t),
-            _ => None,
-        }
-    }
-    /// Returns true iff `self` is an offset date-time.
-    pub fn is_offset_date_time(&self) -> bool {
-        self.as_offset_date_time().is_some()
-    }
-    /// Returns true iff `self` is a local date-time.
-    pub fn is_local_date_time(&self) -> bool {
-        self.as_local_date_time().is_some()
-    }
-    /// Returns true iff `self` is a local date.
-    pub fn is_local_date(&self) -> bool {
-        self.as_local_date().is_some()
-    }
-    /// Returns true iff `self` is a local time.
-    pub fn is_local_time(&self) -> bool {
-        self.as_local_time().is_some()
-    }
-}
-
-/// Downcasting
 impl Value {
     /// Casts `self` to integer.
     pub fn as_integer(&self) -> Option<i64> {
@@ -395,16 +338,55 @@ impl Value {
     }
 
     /// Casts `self` to date-time.
-    pub fn as_date_time(&self) -> Option<&DateTime> {
+    pub fn as_offset_datetime(&self) -> Option<&OffsetDateTime> {
         match *self {
-            Value::DateTime(ref value) => Some(value.value()),
+            Value::OffsetDateTime(ref value) => Some(value.value()),
             _ => None,
         }
     }
 
     /// Returns true iff `self` is a date-time.
-    pub fn is_date_time(&self) -> bool {
-        self.as_date_time().is_some()
+    pub fn is_offset_datetime(&self) -> bool {
+        self.as_offset_datetime().is_some()
+    }
+
+    /// Casts `self` to date-time.
+    pub fn as_local_datetime(&self) -> Option<&LocalDateTime> {
+        match *self {
+            Value::LocalDateTime(ref value) => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    /// Returns true iff `self` is a date-time.
+    pub fn is_local_datetime(&self) -> bool {
+        self.as_local_datetime().is_some()
+    }
+
+    /// Casts `self` to date-time.
+    pub fn as_local_date(&self) -> Option<&LocalDate> {
+        match *self {
+            Value::LocalDate(ref value) => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    /// Returns true iff `self` is a date-time.
+    pub fn is_local_date(&self) -> bool {
+        self.as_local_date().is_some()
+    }
+
+    /// Casts `self` to date-time.
+    pub fn as_local_time(&self) -> Option<&LocalTime> {
+        match *self {
+            Value::LocalTime(ref value) => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    /// Returns true iff `self` is a date-time.
+    pub fn is_local_time(&self) -> bool {
+        self.as_local_time().is_some()
     }
 
     /// Casts `self` to array.
@@ -462,7 +444,10 @@ impl Value {
             Value::Integer(ref f) => &f.repr.decor,
             Value::String(ref f) => &f.repr.decor,
             Value::Float(ref f) => &f.repr.decor,
-            Value::DateTime(ref f) => &f.repr.decor,
+            Value::OffsetDateTime(ref f) => &f.repr.decor,
+            Value::LocalDateTime(ref f) => &f.repr.decor,
+            Value::LocalDate(ref f) => &f.repr.decor,
+            Value::LocalTime(ref f) => &f.repr.decor,
             Value::Boolean(ref f) => &f.repr.decor,
             Value::Array(ref a) => &a.decor,
             Value::InlineTable(ref t) => &t.decor,

@@ -111,8 +111,7 @@ mod tests {
             let (v, rest) = parsed.unwrap();
             assert_eq!(v.to_string(), *$input);
             assert!(rest.input.is_empty());
-            assert!(v.is_date_time());
-            assert!(v.as_date_time().unwrap().$is());
+            assert!(v.$is());
         }};
     }
 
@@ -277,7 +276,7 @@ trimmed in raw strings.
             "1979-05-27T00:32:00.999999-07:00",
         ];
         for input in &inputs {
-            parsed_date_time_eq!(input, is_offset_date_time);
+            parsed_date_time_eq!(input, is_offset_datetime);
         }
     }
 
@@ -285,7 +284,7 @@ trimmed in raw strings.
     fn local_date_time() {
         let inputs = ["1979-05-27T07:32:00", "1979-05-27T00:32:00.999999"];
         for input in &inputs {
-            parsed_date_time_eq!(input, is_local_date_time);
+            parsed_date_time_eq!(input, is_local_datetime);
         }
     }
 

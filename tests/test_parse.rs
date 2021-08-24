@@ -54,12 +54,12 @@ fn test_key_from_str() {
 
 #[test]
 fn test_value_from_str() {
-    assert!(parse_value!("1979-05-27T00:32:00.999999-07:00").is_date_time());
-    assert!(parse_value!("1979-05-27T00:32:00.999999Z").is_date_time());
-    assert!(parse_value!("1979-05-27T00:32:00.999999").is_date_time());
-    assert!(parse_value!("1979-05-27T00:32:00").is_date_time());
-    assert!(parse_value!("1979-05-27").is_date_time());
-    assert!(parse_value!("00:32:00").is_date_time());
+    assert!(parse_value!("1979-05-27T00:32:00.999999-07:00").is_offset_datetime());
+    assert!(parse_value!("1979-05-27T00:32:00.999999Z").is_offset_datetime());
+    assert!(parse_value!("1979-05-27T00:32:00.999999").is_local_datetime());
+    assert!(parse_value!("1979-05-27T00:32:00").is_local_datetime());
+    assert!(parse_value!("1979-05-27").is_local_date());
+    assert!(parse_value!("00:32:00").is_local_time());
     assert!(parse_value!("-239").is_integer());
     assert!(parse_value!("1e200").is_float());
     assert!(parse_value!("9_224_617.445_991_228_313").is_float());

@@ -1,7 +1,7 @@
 use crate::decor::{Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
-use crate::value::{Array, DateTime, InlineTable, Value};
+use crate::value::{Array, InlineTable, Value};
 use std::fmt::{Display, Formatter, Result, Write};
 
 impl Display for Repr {
@@ -20,17 +20,6 @@ impl<T> Display for Formatted<T> {
     }
 }
 
-impl Display for DateTime {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        match *self {
-            DateTime::OffsetDateTime(d) => write!(f, "{}", d),
-            DateTime::LocalDateTime(d) => write!(f, "{}", d),
-            DateTime::LocalDate(d) => write!(f, "{}", d),
-            DateTime::LocalTime(d) => write!(f, "{}", d),
-        }
-    }
-}
-
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match *self {
@@ -38,7 +27,10 @@ impl Display for Value {
             Value::String(ref repr) => write!(f, "{}", repr),
             Value::Float(ref repr) => write!(f, "{}", repr),
             Value::Boolean(ref repr) => write!(f, "{}", repr),
-            Value::DateTime(ref repr) => write!(f, "{}", repr),
+            Value::OffsetDateTime(ref repr) => write!(f, "{}", repr),
+            Value::LocalDateTime(ref repr) => write!(f, "{}", repr),
+            Value::LocalDate(ref repr) => write!(f, "{}", repr),
+            Value::LocalTime(ref repr) => write!(f, "{}", repr),
             Value::Array(ref array) => write!(f, "{}", array),
             Value::InlineTable(ref table) => write!(f, "{}", table),
         }

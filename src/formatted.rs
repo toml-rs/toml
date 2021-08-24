@@ -1,9 +1,10 @@
+use crate::datetime::*;
 use crate::decor::{Decor, Formatted, InternalString, Repr};
 use crate::key::Key;
 use crate::parser::strings;
 use crate::parser::TomlError;
 use crate::table::{Item, KeyValuePairs, TableKeyValue};
-use crate::value::{Array, DateTime, InlineTable, Value};
+use crate::value::{Array, InlineTable, Value};
 use combine::stream::position::Stream as PositionStream;
 use std::iter::FromIterator;
 
@@ -48,7 +49,10 @@ pub(crate) fn decorate(value: &mut Value, prefix: &str, suffix: &str) {
         Value::Integer(ref mut f) => &mut f.repr.decor,
         Value::String(ref mut f) => &mut f.repr.decor,
         Value::Float(ref mut f) => &mut f.repr.decor,
-        Value::DateTime(ref mut f) => &mut f.repr.decor,
+        Value::OffsetDateTime(ref mut f) => &mut f.repr.decor,
+        Value::LocalDateTime(ref mut f) => &mut f.repr.decor,
+        Value::LocalDate(ref mut f) => &mut f.repr.decor,
+        Value::LocalTime(ref mut f) => &mut f.repr.decor,
         Value::Boolean(ref mut f) => &mut f.repr.decor,
         Value::Array(ref mut a) => &mut a.decor,
         Value::InlineTable(ref mut t) => &mut t.decor,
@@ -83,7 +87,16 @@ pub(crate) fn value(mut val: Value, raw: &str) -> Value {
         Value::Float(ref mut f) => {
             f.repr.raw_value = InternalString::from(raw);
         }
-        Value::DateTime(ref mut f) => {
+        Value::OffsetDateTime(ref mut f) => {
+            f.repr.raw_value = InternalString::from(raw);
+        }
+        Value::LocalDateTime(ref mut f) => {
+            f.repr.raw_value = InternalString::from(raw);
+        }
+        Value::LocalDate(ref mut f) => {
+            f.repr.raw_value = InternalString::from(raw);
+        }
+        Value::LocalTime(ref mut f) => {
             f.repr.raw_value = InternalString::from(raw);
         }
         Value::Boolean(ref mut f) => {
@@ -195,10 +208,40 @@ impl From<bool> for Value {
     }
 }
 
-impl From<DateTime> for Value {
-    fn from(d: DateTime) -> Self {
+impl From<OffsetDateTime> for Value {
+    fn from(d: OffsetDateTime) -> Self {
         let s = d.to_string();
-        Value::DateTime(Formatted::new(
+        Value::OffsetDateTime(Formatted::new(
+            d,
+            Repr::new("".to_string(), s, "".to_string()),
+        ))
+    }
+}
+
+impl From<LocalDateTime> for Value {
+    fn from(d: LocalDateTime) -> Self {
+        let s = d.to_string();
+        Value::LocalDateTime(Formatted::new(
+            d,
+            Repr::new("".to_string(), s, "".to_string()),
+        ))
+    }
+}
+
+impl From<LocalDate> for Value {
+    fn from(d: LocalDate) -> Self {
+        let s = d.to_string();
+        Value::LocalDate(Formatted::new(
+            d,
+            Repr::new("".to_string(), s, "".to_string()),
+        ))
+    }
+}
+
+impl From<LocalTime> for Value {
+    fn from(d: LocalTime) -> Self {
+        let s = d.to_string();
+        Value::LocalTime(Formatted::new(
             d,
             Repr::new("".to_string(), s, "".to_string()),
         ))

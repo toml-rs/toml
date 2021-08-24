@@ -26,8 +26,7 @@ parse!(value() -> v::Value, {
             .map(v::Value::Array),
         inline_table()
             .map(v::Value::InlineTable),
-        date_time()
-            .map(v::Value::from),
+        date_time(),
         float()
             .map(v::Value::from),
         integer()
