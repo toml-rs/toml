@@ -1,9 +1,9 @@
 use crate::datetime::*;
 use crate::decor::{Decor, Formatted, InternalString};
+use crate::formatted;
 use crate::key::Key;
 use crate::parser;
 use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
-use crate::{decorated, formatted};
 use combine::stream::position::Stream;
 use linked_hash_map::LinkedHashMap;
 use std::mem;
@@ -120,7 +120,8 @@ impl Array {
             .get(index)
             .unwrap_or_else(|| panic!("index {} out of bounds (len = {})", index, self.len()))
             .decor();
-        let value = decorated(v.into(), existing_decor.prefix(), existing_decor.suffix());
+        let mut value = v.into();
+        *value.decor_mut() = existing_decor.clone();
         self.replace_formatted(index, value)
     }
 
@@ -439,6 +440,27 @@ impl Value {
             Value::Boolean(ref f) => &f.decor,
             Value::Array(ref a) => &a.decor,
             Value::InlineTable(ref t) => &t.decor,
+        }
+    }
+
+    /// Get the decoration of the value.
+    /// # Example
+    /// ```rust
+    /// let v = toml_edit::Value::from(true);
+    /// assert_eq!(v.decor().suffix(), "");
+    ///```
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        match self {
+            Value::Integer(f) => &mut f.decor,
+            Value::String(f) => &mut f.decor,
+            Value::Float(f) => &mut f.decor,
+            Value::OffsetDateTime(f) => &mut f.decor,
+            Value::LocalDateTime(f) => &mut f.decor,
+            Value::LocalDate(f) => &mut f.decor,
+            Value::LocalTime(f) => &mut f.decor,
+            Value::Boolean(f) => &mut f.decor,
+            Value::Array(a) => &mut a.decor,
+            Value::InlineTable(t) => &mut t.decor,
         }
     }
 }
