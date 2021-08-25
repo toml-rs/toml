@@ -1,4 +1,4 @@
-use crate::decor::{Formatted, Repr};
+use crate::decor::{Decor, Formatted, Repr};
 use crate::formatted;
 use crate::parser::array::array;
 use crate::parser::datetime::date_time;
@@ -15,10 +15,11 @@ parse!(value() -> v::Value, {
     recognize_with_value(choice((
         string()
             .map(|s|
-                 v::Value::String(Formatted::new(
-                     s,
-                     Repr::new("", "who cares?", ""),
-                 ))
+                v::Value::String(Formatted::new(
+                    s,
+                    Repr::new("who cares?"),
+                    Decor::new("", ""),
+                ))
             ),
         boolean()
             .map(v::Value::from),

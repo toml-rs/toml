@@ -1,4 +1,4 @@
-use crate::decor::{InternalString, Repr};
+use crate::decor::{Decor, InternalString, Repr};
 use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
@@ -74,7 +74,8 @@ parse!(keyval() -> (InternalString, TableKeyValue), {
         (
             key,
             TableKeyValue {
-                key: Repr::new(pre, raw, suf),
+                key_repr: Repr::new(raw),
+                key_decor: Decor::new(pre, suf),
                 value: Item::Value(v),
             }
         )

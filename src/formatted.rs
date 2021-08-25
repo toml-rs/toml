@@ -26,16 +26,16 @@ pub(crate) fn decorate_array(array: &mut Array) {
 
 pub(crate) fn decorate_inline_table(table: &mut InlineTable) {
     let n = table.len();
-    for (i, (key, value)) in table
+    for (i, (key_decor, value)) in table
         .items
         .iter_mut()
         .filter(|&(_, ref kv)| kv.value.is_value())
-        .map(|(_, kv)| (&mut kv.key, kv.value.as_value_mut().unwrap()))
+        .map(|(_, kv)| (&mut kv.key_decor, kv.value.as_value_mut().unwrap()))
         .enumerate()
     {
         // { key1 = value1, key2 = value2 }
-        key.decor.prefix = InternalString::from(" ");
-        key.decor.suffix = InternalString::from(" ");
+        key_decor.prefix = InternalString::from(" ");
+        key_decor.suffix = InternalString::from(" ");
         if i == n - 1 {
             decorate(value, " ", " ");
         } else {
@@ -46,14 +46,14 @@ pub(crate) fn decorate_inline_table(table: &mut InlineTable) {
 
 pub(crate) fn decorate(value: &mut Value, prefix: &str, suffix: &str) {
     let decor = match *value {
-        Value::Integer(ref mut f) => &mut f.repr.decor,
-        Value::String(ref mut f) => &mut f.repr.decor,
-        Value::Float(ref mut f) => &mut f.repr.decor,
-        Value::OffsetDateTime(ref mut f) => &mut f.repr.decor,
-        Value::LocalDateTime(ref mut f) => &mut f.repr.decor,
-        Value::LocalDate(ref mut f) => &mut f.repr.decor,
-        Value::LocalTime(ref mut f) => &mut f.repr.decor,
-        Value::Boolean(ref mut f) => &mut f.repr.decor,
+        Value::Integer(ref mut f) => &mut f.decor,
+        Value::String(ref mut f) => &mut f.decor,
+        Value::Float(ref mut f) => &mut f.decor,
+        Value::OffsetDateTime(ref mut f) => &mut f.decor,
+        Value::LocalDateTime(ref mut f) => &mut f.decor,
+        Value::LocalDate(ref mut f) => &mut f.decor,
+        Value::LocalTime(ref mut f) => &mut f.decor,
+        Value::Boolean(ref mut f) => &mut f.decor,
         Value::Array(ref mut a) => &mut a.decor,
         Value::InlineTable(ref mut t) => &mut t.decor,
     };
@@ -115,26 +115,22 @@ pub(crate) fn to_key_value(key: &str, mut value: Value) -> TableKeyValue {
 
 pub(crate) fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
     TableKeyValue {
-        key: key_repr(key),
+        key_repr: Repr::new(key),
+        key_decor: default_key_decor(),
         value,
     }
 }
 
-pub(crate) fn key_repr(raw: &str) -> Repr {
-    Repr {
-        decor: Decor {
-            prefix: InternalString::from(""),
-            suffix: InternalString::from(" "),
-        },
-        raw_value: raw.into(),
-    }
+pub(crate) fn default_key_decor() -> Decor {
+    Decor::new("", " ")
 }
 
 impl From<i64> for Value {
     fn from(i: i64) -> Self {
         Value::Integer(Formatted::new(
             i,
-            Repr::new("".to_string(), i.to_string(), "".to_string()),
+            Repr::new(i.to_string()),
+            Decor::new("", ""),
         ))
     }
 }
@@ -143,7 +139,8 @@ impl From<f64> for Value {
     fn from(f: f64) -> Self {
         Value::Float(Formatted::new(
             f,
-            Repr::new("".to_string(), f.to_string(), "".to_string()),
+            Repr::new(f.to_string()),
+            Decor::new("", ""),
         ))
     }
 }
@@ -186,10 +183,7 @@ fn parse_string_guess_delimiters(s: &str) -> (InternalString, InternalString) {
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
         let (value, raw) = parse_string_guess_delimiters(s);
-        Value::String(Formatted::new(
-            value,
-            Repr::new("".to_string(), raw, "".to_string()),
-        ))
+        Value::String(Formatted::new(value, Repr::new(raw), Decor::new("", "")))
     }
 }
 
@@ -203,7 +197,8 @@ impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Boolean(Formatted::new(
             b,
-            Repr::new("", if b { "true" } else { "false" }, ""),
+            Repr::new(if b { "true" } else { "false" }),
+            Decor::new("", ""),
         ))
     }
 }
@@ -211,40 +206,28 @@ impl From<bool> for Value {
 impl From<OffsetDateTime> for Value {
     fn from(d: OffsetDateTime) -> Self {
         let s = d.to_string();
-        Value::OffsetDateTime(Formatted::new(
-            d,
-            Repr::new("".to_string(), s, "".to_string()),
-        ))
+        Value::OffsetDateTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
     }
 }
 
 impl From<LocalDateTime> for Value {
     fn from(d: LocalDateTime) -> Self {
         let s = d.to_string();
-        Value::LocalDateTime(Formatted::new(
-            d,
-            Repr::new("".to_string(), s, "".to_string()),
-        ))
+        Value::LocalDateTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
     }
 }
 
 impl From<LocalDate> for Value {
     fn from(d: LocalDate) -> Self {
         let s = d.to_string();
-        Value::LocalDate(Formatted::new(
-            d,
-            Repr::new("".to_string(), s, "".to_string()),
-        ))
+        Value::LocalDate(Formatted::new(d, Repr::new(s), Decor::new("", "")))
     }
 }
 
 impl From<LocalTime> for Value {
     fn from(d: LocalTime) -> Self {
         let s = d.to_string();
-        Value::LocalTime(Formatted::new(
-            d,
-            Repr::new("".to_string(), s, "".to_string()),
-        ))
+        Value::LocalTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
     }
 }
 

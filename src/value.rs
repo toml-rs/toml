@@ -429,14 +429,14 @@ impl Value {
     ///```
     pub fn decor(&self) -> &Decor {
         match *self {
-            Value::Integer(ref f) => &f.repr.decor,
-            Value::String(ref f) => &f.repr.decor,
-            Value::Float(ref f) => &f.repr.decor,
-            Value::OffsetDateTime(ref f) => &f.repr.decor,
-            Value::LocalDateTime(ref f) => &f.repr.decor,
-            Value::LocalDate(ref f) => &f.repr.decor,
-            Value::LocalTime(ref f) => &f.repr.decor,
-            Value::Boolean(ref f) => &f.repr.decor,
+            Value::Integer(ref f) => &f.decor,
+            Value::String(ref f) => &f.decor,
+            Value::Float(ref f) => &f.decor,
+            Value::OffsetDateTime(ref f) => &f.decor,
+            Value::LocalDateTime(ref f) => &f.decor,
+            Value::LocalDate(ref f) => &f.decor,
+            Value::LocalTime(ref f) => &f.decor,
+            Value::Boolean(ref f) => &f.decor,
             Value::Array(ref a) => &a.decor,
             Value::InlineTable(ref t) => &t.decor,
         }

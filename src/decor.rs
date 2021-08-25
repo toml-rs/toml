@@ -4,14 +4,14 @@
 pub struct Formatted<T> {
     value: T,
     pub(crate) repr: Repr,
+    pub(crate) decor: Decor,
 }
 
 // String representation of a key or a value
 // together with a decoration.
 #[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub(crate) struct Repr {
-    pub decor: Decor,
-    pub raw_value: InternalString,
+    pub(crate) raw_value: InternalString,
 }
 
 /// A prefix and suffix,
@@ -20,6 +20,14 @@ pub(crate) struct Repr {
 pub struct Decor {
     pub(crate) prefix: InternalString,
     pub(crate) suffix: InternalString,
+}
+
+/// A prefix and suffix,
+/// including comments, whitespaces and newlines.
+#[derive(Debug)]
+pub struct DecorDisplay<'d, D> {
+    pub(crate) inner: &'d D,
+    pub(crate) decor: &'d Decor,
 }
 
 pub(crate) type InternalString = String;
@@ -42,16 +50,19 @@ impl Decor {
     pub fn suffix(&self) -> &str {
         &self.suffix
     }
+
+    /// Render a value with its decor
+    pub fn display<'d, D: std::fmt::Display + std::fmt::Debug>(
+        &'d self,
+        inner: &'d D,
+    ) -> DecorDisplay<'d, D> {
+        DecorDisplay { inner, decor: self }
+    }
 }
 
 impl Repr {
-    pub fn new(
-        prefix: impl Into<InternalString>,
-        value: impl Into<InternalString>,
-        suffix: impl Into<InternalString>,
-    ) -> Self {
+    pub fn new(value: impl Into<InternalString>) -> Self {
         Repr {
-            decor: Decor::new(prefix, suffix),
             raw_value: value.into(),
         }
     }
@@ -59,7 +70,7 @@ impl Repr {
 
 impl<D: std::fmt::Display> From<&D> for Repr {
     fn from(other: &D) -> Self {
-        Self::new("", other.to_string(), "")
+        Self::new(other.to_string())
     }
 }
 
@@ -69,25 +80,33 @@ impl<T> Formatted<T> {
     }
 
     pub fn prefix(&self) -> &str {
-        &self.repr.decor.prefix
+        &self.decor.prefix
     }
 
     pub fn suffix(&self) -> &str {
-        &self.repr.decor.suffix
+        &self.decor.suffix
     }
 
     pub fn value(&self) -> &T {
         &self.value
     }
 
-    pub(crate) fn new(v: T, repr: Repr) -> Self {
-        Self { value: v, repr }
+    pub(crate) fn new(v: T, repr: Repr, decor: Decor) -> Self {
+        Self {
+            value: v,
+            repr,
+            decor,
+        }
     }
 }
 
 impl<D: std::fmt::Display> From<D> for Formatted<D> {
     fn from(other: D) -> Self {
         let repr = Repr::from(&other);
-        Self { value: other, repr }
+        Self {
+            value: other,
+            repr,
+            decor: Decor::new("", ""),
+        }
     }
 }

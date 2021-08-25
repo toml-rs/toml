@@ -1,22 +1,28 @@
-use crate::decor::{Formatted, Repr};
+use crate::decor::{DecorDisplay, Formatted, Repr};
 use crate::document::Document;
 use crate::table::{Item, Table};
 use crate::value::{Array, InlineTable, Value};
 use std::fmt::{Display, Formatter, Result, Write};
 
-impl Display for Repr {
+impl<'d, D: Display> Display for DecorDisplay<'d, D> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
             "{}{}{}",
-            self.decor.prefix, self.raw_value, self.decor.suffix
+            self.decor.prefix, self.inner, self.decor.suffix
         )
+    }
+}
+
+impl Display for Repr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        self.raw_value.fmt(f)
     }
 }
 
 impl<T> Display for Formatted<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.repr)
+        write!(f, "{}", self.decor.display(&self.repr))
     }
 }
 
@@ -57,7 +63,12 @@ impl Display for InlineTable {
             .items
             .iter()
             .filter(|&(_, kv)| kv.value.is_value())
-            .map(|(_, kv)| (&kv.key, kv.value.as_value().unwrap()))
+            .map(|(_, kv)| {
+                (
+                    kv.key_decor.display(&kv.key_repr),
+                    kv.value.as_value().unwrap(),
+                )
+            })
             .enumerate()
         {
             if i > 0 {
@@ -84,13 +95,13 @@ impl Table {
         for kv in self.items.values() {
             match kv.value {
                 Item::Table(ref t) => {
-                    path.push(&kv.key.raw_value);
+                    path.push(&kv.key_repr.raw_value);
                     t.visit_nested_tables(path, false, callback)?;
                     path.pop();
                 }
                 Item::ArrayOfTables(ref a) => {
                     for t in a.iter() {
-                        path.push(&kv.key.raw_value);
+                        path.push(&kv.key_repr.raw_value);
                         t.visit_nested_tables(path, true, callback)?;
                         path.pop();
                     }
@@ -122,7 +133,7 @@ fn visit_table(
     // print table body
     for kv in table.items.values() {
         if let Item::Value(ref value) = kv.value {
-            writeln!(f, "{}={}", kv.key, value)?;
+            writeln!(f, "{}={}", kv.key_decor.display(&kv.key_repr), value)?;
         }
     }
     Ok(())
