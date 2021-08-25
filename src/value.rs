@@ -80,8 +80,6 @@ impl Array {
     }
 
     /// Appends a new value to the end of the array, applying default formatting to it.
-    ///
-    /// Returns an error if the value was of a different type than the values in the array.
     pub fn push<V: Into<Value>>(&mut self, v: V) {
         self.value_op(v.into(), true, |items, value| {
             items.push(Item::Value(value))
@@ -89,16 +87,12 @@ impl Array {
     }
 
     /// Appends a new, already formatted value to the end of the array.
-    ///
-    /// Returns an error if the value was of a different type than the array.
     pub fn push_formatted(&mut self, v: Value) {
         self.value_op(v, false, |items, value| items.push(Item::Value(value)))
     }
 
     /// Inserts an element at the given position within the array, applying default formatting to
     /// it and shifting all values after it to the right.
-    ///
-    /// Returns an error if the value was of a different type than the values in the array.
     ///
     /// Panics if `index > len`.
     pub fn insert<V: Into<Value>>(&mut self, index: usize, v: V) {
@@ -110,8 +104,6 @@ impl Array {
     /// Inserts an already formatted value at the given position within the array, shifting all
     /// values after it to the right.
     ///
-    /// Returns an error if the value was of a different type than the values in the array.
-    ///
     /// Panics if `index > len`.
     pub fn insert_formatted(&mut self, index: usize, v: Value) {
         self.value_op(v, false, |items, value| {
@@ -120,8 +112,6 @@ impl Array {
     }
 
     /// Replaces the element at the given position within the array, preserving existing formatting.
-    ///
-    /// Returns an error if the replacement was of a different type than the values in the array.
     ///
     /// Panics if `index >= len`.
     pub fn replace<V: Into<Value>>(&mut self, index: usize, v: V) -> Value {
@@ -135,8 +125,6 @@ impl Array {
     }
 
     /// Replaces the element at the given position within the array with an already formatted value.
-    ///
-    /// Returns an error if the replacement was of a different type than the values in the array.
     ///
     /// Panics if `index >= len`.
     pub fn replace_formatted(&mut self, index: usize, v: Value) -> Value {
