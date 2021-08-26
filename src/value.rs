@@ -269,7 +269,11 @@ impl FromStr for Value {
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
         let (value, raw) = parse_string_guess_delimiters(s);
-        Value::String(Formatted::new(value, Repr::new(raw), Decor::new("", "")))
+        Value::String(Formatted::new(
+            value,
+            Repr::new_unchecked(raw),
+            Decor::new("", ""),
+        ))
     }
 }
 
@@ -318,7 +322,7 @@ impl From<i64> for Value {
     fn from(i: i64) -> Self {
         Value::Integer(Formatted::new(
             i,
-            Repr::new(i.to_string()),
+            Repr::new_unchecked(i.to_string()),
             Decor::new("", ""),
         ))
     }
@@ -328,7 +332,7 @@ impl From<f64> for Value {
     fn from(f: f64) -> Self {
         Value::Float(Formatted::new(
             f,
-            Repr::new(f.to_string()),
+            Repr::new_unchecked(f.to_string()),
             Decor::new("", ""),
         ))
     }
@@ -338,7 +342,7 @@ impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Boolean(Formatted::new(
             b,
-            Repr::new(if b { "true" } else { "false" }),
+            Repr::new_unchecked(if b { "true" } else { "false" }),
             Decor::new("", ""),
         ))
     }
@@ -347,28 +351,44 @@ impl From<bool> for Value {
 impl From<OffsetDateTime> for Value {
     fn from(d: OffsetDateTime) -> Self {
         let s = d.to_string();
-        Value::OffsetDateTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+        Value::OffsetDateTime(Formatted::new(
+            d,
+            Repr::new_unchecked(s),
+            Decor::new("", ""),
+        ))
     }
 }
 
 impl From<LocalDateTime> for Value {
     fn from(d: LocalDateTime) -> Self {
         let s = d.to_string();
-        Value::LocalDateTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+        Value::LocalDateTime(Formatted::new(
+            d,
+            Repr::new_unchecked(s),
+            Decor::new("", ""),
+        ))
     }
 }
 
 impl From<LocalDate> for Value {
     fn from(d: LocalDate) -> Self {
         let s = d.to_string();
-        Value::LocalDate(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+        Value::LocalDate(Formatted::new(
+            d,
+            Repr::new_unchecked(s),
+            Decor::new("", ""),
+        ))
     }
 }
 
 impl From<LocalTime> for Value {
     fn from(d: LocalTime) -> Self {
         let s = d.to_string();
-        Value::LocalTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+        Value::LocalTime(Formatted::new(
+            d,
+            Repr::new_unchecked(s),
+            Decor::new("", ""),
+        ))
     }
 }
 

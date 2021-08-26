@@ -128,7 +128,7 @@ impl Table {
             .items
             .entry(parsed_key.get().to_owned())
             .or_insert(TableKeyValue::new(
-                Repr::new(parsed_key.raw()),
+                Repr::new_unchecked(parsed_key.raw()),
                 default_key_decor(),
                 Item::None,
             ))

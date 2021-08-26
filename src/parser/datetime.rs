@@ -1,6 +1,6 @@
 use crate::datetime::*;
 use crate::parser::errors::CustomError;
-use crate::repr::Formatted;
+use crate::repr::{Decor, Formatted, Repr};
 use crate::Value;
 use chrono::TimeZone;
 use combine::parser::char::{char, digit};
@@ -32,21 +32,26 @@ parse!(date_time() -> Value, {
                     Some((_, t, Some(o))) => {
                         let dt = chrono::NaiveDateTime::new(d, t);
                         let dt = OffsetDateTime { inner: o.from_local_datetime(&dt).unwrap() };
+                        let repr = Repr::new_unchecked(dt.to_string());
                         Value::OffsetDateTime(
-                            Formatted::from(dt)
+                            Formatted::new(dt, repr, Decor::default())
                         )
                     }
                     // Local Date-Time
                     Some((_, t, None)) => {
                         let dt = LocalDateTime { inner: chrono::NaiveDateTime::new(d, t)};
+                        let repr = Repr::new_unchecked(dt.to_string());
                         Value::LocalDateTime(
-                            Formatted::from(dt)
+                            Formatted::new(dt, repr, Decor::default())
                         )
                     }
                     // Local Date
                     None => {
-                        let d = LocalDate { inner: d};
-                        Value::LocalDate(Formatted::from(d))
+                        let dt = LocalDate { inner: d};
+                        let repr = Repr::new_unchecked(dt.to_string());
+                        Value::LocalDate(
+                            Formatted::new(dt, repr, Decor::default())
+                        )
                     }
                 }
 
@@ -55,8 +60,11 @@ parse!(date_time() -> Value, {
         partial_time()
             .message("While parsing a Time")
             .map(|t| {
-                let t = LocalTime { inner: t};
-                Value::LocalTime(Formatted::from(t))
+                let dt = LocalTime { inner: t};
+                let repr = Repr::new_unchecked(dt.to_string());
+                Value::LocalTime(
+                    Formatted::new(dt, repr, Decor::default())
+                )
             })
     )
         .message("While parsing a Date-Time")
