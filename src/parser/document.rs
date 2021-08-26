@@ -1,4 +1,4 @@
-use crate::decor::{InternalString, Repr};
+use crate::decor::{Decor, InternalString, Repr};
 use crate::document::Document;
 use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
@@ -62,7 +62,8 @@ parser! {
             (
                 key,
                 TableKeyValue {
-                    key: Repr::new("", raw, suf),
+                    key_repr: Repr::new(raw),
+                    key_decor: Decor::new("", suf),
                     value: Item::Value(v),
                 }
             )
@@ -117,7 +118,7 @@ impl TomlParser {
 
     fn on_keyval(&mut self, key: InternalString, mut kv: TableKeyValue) -> Result<(), CustomError> {
         let prefix = mem::take(&mut self.document.trailing);
-        kv.key.decor.prefix = prefix + &kv.key.decor.prefix;
+        kv.key_decor.prefix = prefix + &kv.key_decor.prefix;
 
         let root = self.document.as_table_mut();
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0)
@@ -129,7 +130,8 @@ impl TomlParser {
             })
         } else {
             let tkv = TableKeyValue {
-                key: kv.key,
+                key_repr: kv.key_repr,
+                key_decor: kv.key_decor,
                 value: kv.value,
             };
             table.items.insert(key, tkv);

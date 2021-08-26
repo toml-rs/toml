@@ -1,7 +1,7 @@
 use crate::array_of_tables::ArrayOfTables;
 use crate::datetime::*;
 use crate::decor::{Decor, InternalString, Repr};
-use crate::formatted::{decorated, key_repr};
+use crate::formatted::{decorated, default_key_decor};
 use crate::key::Key;
 use crate::value::{sort_key_value_pairs, Array, InlineTable, Value};
 use linked_hash_map::LinkedHashMap;
@@ -46,13 +46,18 @@ impl Default for Item {
 #[doc(hidden)]
 #[derive(Debug, Clone)]
 pub struct TableKeyValue {
-    pub(crate) key: Repr,
+    pub(crate) key_repr: Repr,
+    pub(crate) key_decor: Decor,
     pub(crate) value: Item,
 }
 
 impl TableKeyValue {
-    pub(crate) fn new(key: Repr, value: Item) -> Self {
-        TableKeyValue { key, value }
+    pub(crate) fn new(key_repr: Repr, key_decor: Decor, value: Item) -> Self {
+        TableKeyValue {
+            key_repr,
+            key_decor,
+            value,
+        }
     }
 }
 
@@ -169,7 +174,11 @@ impl Table {
         &mut self
             .items
             .entry(parsed_key.get().to_owned())
-            .or_insert(TableKeyValue::new(key_repr(parsed_key.raw()), Item::None))
+            .or_insert(TableKeyValue::new(
+                Repr::new(parsed_key.raw()),
+                default_key_decor(),
+                Item::None,
+            ))
             .value
     }
 
@@ -206,7 +215,7 @@ impl Table {
 
     /// Returns the decor associated with a given key of the table.
     pub fn decor(&self, key: &str) -> Option<&Decor> {
-        self.items.get(key).map(|kv| &kv.key.decor)
+        self.items.get(key).map(|kv| &kv.key_decor)
     }
 
     /// Sets the position of the `Table` within the `Document`.

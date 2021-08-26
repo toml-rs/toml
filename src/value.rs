@@ -1,9 +1,9 @@
 use crate::datetime::*;
 use crate::decor::{Decor, Formatted, InternalString};
+use crate::formatted;
 use crate::key::Key;
 use crate::parser;
 use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
-use crate::{decorated, formatted};
 use combine::stream::position::Stream;
 use linked_hash_map::LinkedHashMap;
 use std::mem;
@@ -120,7 +120,8 @@ impl Array {
             .get(index)
             .unwrap_or_else(|| panic!("index {} out of bounds (len = {})", index, self.len()))
             .decor();
-        let value = decorated(v.into(), existing_decor.prefix(), existing_decor.suffix());
+        let mut value = v.into();
+        *value.decor_mut() = existing_decor.clone();
         self.replace_formatted(index, value)
     }
 
@@ -429,16 +430,37 @@ impl Value {
     ///```
     pub fn decor(&self) -> &Decor {
         match *self {
-            Value::Integer(ref f) => &f.repr.decor,
-            Value::String(ref f) => &f.repr.decor,
-            Value::Float(ref f) => &f.repr.decor,
-            Value::OffsetDateTime(ref f) => &f.repr.decor,
-            Value::LocalDateTime(ref f) => &f.repr.decor,
-            Value::LocalDate(ref f) => &f.repr.decor,
-            Value::LocalTime(ref f) => &f.repr.decor,
-            Value::Boolean(ref f) => &f.repr.decor,
+            Value::Integer(ref f) => &f.decor,
+            Value::String(ref f) => &f.decor,
+            Value::Float(ref f) => &f.decor,
+            Value::OffsetDateTime(ref f) => &f.decor,
+            Value::LocalDateTime(ref f) => &f.decor,
+            Value::LocalDate(ref f) => &f.decor,
+            Value::LocalTime(ref f) => &f.decor,
+            Value::Boolean(ref f) => &f.decor,
             Value::Array(ref a) => &a.decor,
             Value::InlineTable(ref t) => &t.decor,
+        }
+    }
+
+    /// Get the decoration of the value.
+    /// # Example
+    /// ```rust
+    /// let v = toml_edit::Value::from(true);
+    /// assert_eq!(v.decor().suffix(), "");
+    ///```
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        match self {
+            Value::Integer(f) => &mut f.decor,
+            Value::String(f) => &mut f.decor,
+            Value::Float(f) => &mut f.decor,
+            Value::OffsetDateTime(f) => &mut f.decor,
+            Value::LocalDateTime(f) => &mut f.decor,
+            Value::LocalDate(f) => &mut f.decor,
+            Value::LocalTime(f) => &mut f.decor,
+            Value::Boolean(f) => &mut f.decor,
+            Value::Array(a) => &mut a.decor,
+            Value::InlineTable(t) => &mut t.decor,
         }
     }
 }
