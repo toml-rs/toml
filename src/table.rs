@@ -123,15 +123,29 @@ impl Table {
     /// To insert to table, use `entry` to return a mutable reference
     /// and set it to the appropriate value.
     pub fn entry<'a>(&'a mut self, key: &str) -> &'a mut Item {
-        let parsed_key = key.parse::<Key>().expect("invalid key");
+        let key = Key::with_key(key);
         &mut self
             .items
-            .entry(parsed_key.get().to_owned())
-            .or_insert(TableKeyValue::new(
-                Repr::new_unchecked(parsed_key.raw()),
-                default_key_decor(),
-                Item::None,
-            ))
+            .entry(key.get().to_owned())
+            .or_insert_with(|| {
+                TableKeyValue::new(key.repr().to_owned(), default_key_decor(), Item::None)
+            })
+            .value
+    }
+
+    /// Given the `key`, return a mutable reference to the value.
+    /// If there is no entry associated with the given key in the table,
+    /// a `Item::None` value will be inserted.
+    ///
+    /// To insert to table, use `entry` to return a mutable reference
+    /// and set it to the appropriate value.
+    pub fn entry_format<'a>(&'a mut self, key: &Key) -> &'a mut Item {
+        &mut self
+            .items
+            .entry(key.get().to_owned())
+            .or_insert_with(|| {
+                TableKeyValue::new(key.repr().to_owned(), default_key_decor(), Item::None)
+            })
             .value
     }
 

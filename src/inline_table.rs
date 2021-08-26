@@ -67,10 +67,10 @@ impl InlineTable {
     /// Inserts a key/value pair if the table does not contain the key.
     /// Returns a mutable reference to the corresponding value.
     pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
-        let parsed = key.parse::<Key>().expect("invalid key");
+        let key = Key::with_key(key);
         self.items
-            .entry(parsed.get().to_owned())
-            .or_insert(to_key_value(key, value.into()))
+            .entry(key.get().to_owned())
+            .or_insert(to_key_value(key.into_repr(), value.into()))
             .value
             .as_value_mut()
             .expect("non-value type in inline table")
@@ -155,15 +155,15 @@ where
 {
     let v = iter.into_iter().map(|(a, b)| {
         let s: &Key = a.into();
-        (s.get().into(), to_key_value(s.raw(), b.into()))
+        (s.get().into(), to_key_value(s.repr().to_owned(), b.into()))
     });
     v.collect()
 }
 
-pub fn to_key_value(key: &str, mut value: Value) -> TableKeyValue {
+pub fn to_key_value(key_repr: Repr, mut value: Value) -> TableKeyValue {
     value.decorate(" ", "");
     TableKeyValue {
-        key_repr: Repr::new_unchecked(key),
+        key_repr,
         key_decor: default_key_decor(),
         value: Item::Value(value),
     }

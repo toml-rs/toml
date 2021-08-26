@@ -4,7 +4,7 @@ use crate::parser::errors::CustomError;
 use crate::parser::key::key;
 use crate::parser::trivia::{line_trailing, ws};
 use crate::parser::TomlParser;
-use crate::repr::Decor;
+use crate::repr::{Decor, Repr};
 use crate::{Item, Table};
 use combine::parser::char::char;
 use combine::parser::range::range;
@@ -30,7 +30,7 @@ const ARRAY_TABLE_CLOSE: &str = "]]";
 // note: this rule is not present in the original grammar
 // key-path = key *( table-key-sep key)
 parse!(key_path() -> Vec<Key>, {
-    sep_by1(between(ws(), ws(), key().map(|(raw, key)| Key::new(raw, key))),
+    sep_by1(between(ws(), ws(), key().map(|(raw, key)| Key::new(Repr::new_unchecked(raw), key))),
             char(TABLE_KEY_SEP))
 });
 
@@ -84,9 +84,9 @@ parser! {
 
 pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
     assert!(i < path.len());
-    let header: Vec<&str> = path[..i].iter().map(Key::raw).collect();
+    let header: Vec<&str> = path[..i].iter().map(|k| k.repr().as_raw()).collect();
     CustomError::DuplicateKey {
-        key: path[i].raw().into(),
+        key: path[i].repr().as_raw().into(),
         table: format!("[{}]", header.join(".")),
     }
 }
@@ -98,7 +98,7 @@ impl TomlParser {
         i: usize,
     ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(i) {
-            let entry = table.entry(key.raw());
+            let entry = table.entry_format(key);
             if entry.is_none() {
                 let mut new_table = Table::new();
                 new_table.set_implicit(true);
@@ -139,7 +139,7 @@ impl TomlParser {
             Ok(table) => {
                 let decor = Decor::new(leading, trailing);
 
-                let entry = table.entry(key.raw());
+                let entry = table.entry_format(key);
                 if entry.is_none() {
                     *entry = Item::Table(Table::with_decor_and_pos(
                         decor,
@@ -183,7 +183,7 @@ impl TomlParser {
                     let decor = Decor::new(leading, trailing);
 
                     let entry = table
-                        .entry(key.raw())
+                        .entry_format(key)
                         .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
                     let array = entry.as_array_of_tables_mut().unwrap();
 

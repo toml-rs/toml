@@ -2,6 +2,7 @@ use std::ops;
 
 use crate::document::Document;
 use crate::key::default_key_decor;
+use crate::key::Key;
 use crate::repr::Repr;
 use crate::table::TableKeyValue;
 use crate::{value, InlineTable, Item, Table, Value};
@@ -57,24 +58,27 @@ impl Index for str {
         }
     }
     fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
+        let key = Key::with_key(self);
         if let Item::None = *v {
             let mut t = InlineTable::default();
-            t.items
-                .insert(self.to_owned(), to_table_key_value(self, Item::None));
+            t.items.insert(
+                key.get().to_owned(),
+                to_table_key_value(key.repr().to_owned(), Item::None),
+            );
             *v = value(Value::InlineTable(t));
         }
         match *v {
-            Item::Table(ref mut t) => t.entry(self).or_insert(Item::None),
+            Item::Table(ref mut t) => t.entry(key.get()).or_insert(Item::None),
             Item::Value(ref mut v) if v.is_inline_table() => {
                 &mut v
                     .as_inline_table_mut()
                     .unwrap()
                     .items
-                    .entry(self.to_owned())
-                    .or_insert(to_table_key_value(self, Item::None))
+                    .entry(key.get().to_owned())
+                    .or_insert(to_table_key_value(key.repr().to_owned(), Item::None))
                     .value
             }
-            _ => panic!("cannot access key {}", self),
+            _ => panic!("cannot access key {}", key),
         }
     }
 }
@@ -150,9 +154,9 @@ impl<'s> ops::IndexMut<&'s str> for Document {
     }
 }
 
-pub fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
+pub fn to_table_key_value(key_repr: Repr, value: Item) -> TableKeyValue {
     TableKeyValue {
-        key_repr: Repr::new_unchecked(key),
+        key_repr,
         key_decor: default_key_decor(),
         value,
     }
