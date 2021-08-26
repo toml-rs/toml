@@ -1,9 +1,8 @@
-use crate::decor::InternalString;
-use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::value::{Array, Value};
+use crate::repr::InternalString;
+use crate::{Array, Value};
 use combine::parser::char::char;
 use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
@@ -60,5 +59,5 @@ parse!(array_value() -> Value, {
         ws_comment_newline(),
         value(),
         ws_comment_newline(),
-    )).map(|(ws1, v, ws2)| decorated(v, ws1, ws2))
+    )).map(|(ws1, v, ws2)| v.decorated(ws1, ws2))
 });

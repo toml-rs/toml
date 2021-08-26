@@ -1,6 +1,6 @@
 use crate::datetime::*;
-use crate::decor::Formatted;
 use crate::parser::errors::CustomError;
+use crate::repr::Formatted;
 use crate::Value;
 use chrono::TimeZone;
 use combine::parser::char::{char, digit};

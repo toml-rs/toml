@@ -1,7 +1,9 @@
-use crate::decor::InternalString;
-use crate::parser;
-use crate::table::{Item, Iter, Table};
 use std::str::FromStr;
+
+use crate::parser;
+use crate::repr::InternalString;
+use crate::table::Iter;
+use crate::{Item, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
@@ -10,15 +12,6 @@ pub struct Document {
     pub root: Item,
     // Trailing comments and whitespaces
     pub(crate) trailing: InternalString,
-}
-
-impl Default for Document {
-    fn default() -> Self {
-        Self {
-            root: Item::Table(Table::with_pos(Some(0))),
-            trailing: Default::default(),
-        }
-    }
 }
 
 impl Document {
@@ -45,6 +38,15 @@ impl Document {
             .as_table()
             .expect("root should always be a table")
             .iter()
+    }
+}
+
+impl Default for Document {
+    fn default() -> Self {
+        Self {
+            root: Item::Table(Table::with_pos(Some(0))),
+            trailing: Default::default(),
+        }
     }
 }
 

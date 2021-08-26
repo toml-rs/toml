@@ -1,20 +1,13 @@
-use crate::document::Document;
-use crate::formatted::to_table_key_value;
-use crate::table::{value, Item, Table};
-use crate::value::{InlineTable, Value};
 use std::ops;
+
+use crate::document::Document;
+use crate::key::default_key_decor;
+use crate::repr::Repr;
+use crate::table::TableKeyValue;
+use crate::{value, InlineTable, Item, Table, Value};
 
 // copied from
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs
-
-// Prevent users from implementing the Index trait.
-mod private {
-    pub trait Sealed {}
-    impl Sealed for usize {}
-    impl Sealed for str {}
-    impl Sealed for String {}
-    impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
-}
 
 pub trait Index: private::Sealed {
     /// Return `Option::None` if the key is not already in the array or table.
@@ -155,4 +148,21 @@ impl<'s> ops::IndexMut<&'s str> for Document {
     fn index_mut(&mut self, key: &'s str) -> &mut Item {
         self.root.index_mut(key)
     }
+}
+
+pub fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
+    TableKeyValue {
+        key_repr: Repr::new(key),
+        key_decor: default_key_decor(),
+        value,
+    }
+}
+
+// Prevent users from implementing the Index trait.
+mod private {
+    pub trait Sealed {}
+    impl Sealed for usize {}
+    impl Sealed for str {}
+    impl Sealed for String {}
+    impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
 }

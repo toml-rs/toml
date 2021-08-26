@@ -67,24 +67,28 @@
 //!
 //! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
 
+mod array;
 mod array_of_tables;
 mod datetime;
-mod decor;
-mod display;
 mod document;
-pub(crate) mod formatted;
+mod encode;
 mod index;
+mod inline_table;
+mod item;
 mod key;
 mod parser;
+mod repr;
 mod table;
 mod value;
 
+pub use crate::array::{Array, ArrayIter};
 pub use crate::array_of_tables::ArrayOfTables;
 pub use crate::datetime::*;
-pub use crate::decor::Decor;
 pub use crate::document::Document;
+pub use crate::inline_table::InlineTable;
+pub use crate::item::{array, table, value, Item};
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
-pub use crate::table::{array, table, value, Item, Iter, IterMut, Table, TableLike};
-pub use crate::value::{Array, ArrayIter, InlineTable, Value};
-pub use formatted::decorated;
+pub use crate::repr::Decor;
+pub use crate::table::{Iter, IterMut, Table, TableLike};
+pub use crate::value::Value;

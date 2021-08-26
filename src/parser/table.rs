@@ -1,11 +1,11 @@
 use crate::array_of_tables::ArrayOfTables;
-use crate::decor::Decor;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
 use crate::parser::trivia::{line_trailing, ws};
 use crate::parser::TomlParser;
-use crate::table::{Item, Table};
+use crate::repr::Decor;
+use crate::{Item, Table};
 use combine::parser::char::char;
 use combine::parser::range::range;
 use combine::stream::RangeStream;

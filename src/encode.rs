@@ -1,8 +1,8 @@
-use crate::decor::{DecorDisplay, Formatted, Repr};
-use crate::document::Document;
-use crate::table::{Item, Table};
-use crate::value::{Array, InlineTable, Value};
 use std::fmt::{Display, Formatter, Result, Write};
+
+use crate::document::Document;
+use crate::repr::{DecorDisplay, Formatted, Repr};
+use crate::{Array, InlineTable, Item, Table, Value};
 
 impl<'d, D: Display> Display for DecorDisplay<'d, D> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
@@ -29,8 +29,8 @@ impl<T> Display for Formatted<T> {
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match *self {
-            Value::Integer(ref repr) => write!(f, "{}", repr),
             Value::String(ref repr) => write!(f, "{}", repr),
+            Value::Integer(ref repr) => write!(f, "{}", repr),
             Value::Float(ref repr) => write!(f, "{}", repr),
             Value::Boolean(ref repr) => write!(f, "{}", repr),
             Value::OffsetDateTime(ref repr) => write!(f, "{}", repr),

@@ -17,7 +17,7 @@ macro_rules! as_table {
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
-    use toml_edit::{Document, Key, Value, Table, Item, value, table, array, decorated};
+    use toml_edit::{Document, Key, Value, Table, Item, value, table, array};
     use std::iter::FromIterator;
     use std::fmt;
     use pretty_assertions::assert_eq;
@@ -548,16 +548,16 @@ fn test_insert_replace_into_array() {
         b.push("hello");
         assert_eq!(b.len(), 1);
 
-        b.push_formatted(decorated("world".into(), "\n", "\n"));
-        b.push_formatted(decorated("test".into(), "", ""));
+        b.push_formatted(Value::from("world").decorated("\n", "\n"));
+        b.push_formatted(Value::from("test").decorated("", ""));
 
         b.insert(1, "beep");
-        b.insert_formatted(2, decorated("boop".into(), "   ", "   "));
+        b.insert_formatted(2, Value::from("boop").decorated("   ", "   "));
 
         // This should preserve formatting.
         assert_eq!(b.replace(2, "zoink").as_str(), Some("boop"));
         // This should replace formatting.
-        assert_eq!(b.replace_formatted(4, decorated("yikes".into(), "  ", "")).as_str(), Some("test"));
+        assert_eq!(b.replace_formatted(4, Value::from("yikes").decorated("  ", "")).as_str(), Some("test"));
 
     }).produces(r#"
         a = [1, 2, 3, 4]

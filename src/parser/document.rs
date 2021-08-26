@@ -1,6 +1,4 @@
-use crate::decor::{Decor, InternalString, Repr};
 use crate::document::Document;
-use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
 use crate::parser::inline_table::KEYVAL_SEP;
 use crate::parser::key::key;
@@ -8,7 +6,9 @@ use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
-use crate::table::{Item, TableKeyValue};
+use crate::repr::{Decor, InternalString, Repr};
+use crate::table::TableKeyValue;
+use crate::Item;
 use combine::parser::char::char;
 use combine::parser::range::recognize;
 use combine::stream::position::Stream;
@@ -57,7 +57,7 @@ parser! {
             (ws(), value(), line_trailing())
         ).map(|(k, _, v)| {
             let (pre, v, suf) = v;
-            let v = decorated(v, pre, suf);
+            let v = v.decorated(pre, suf);
             let ((raw, key), suf) = k;
             (
                 key,

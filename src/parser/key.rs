@@ -1,5 +1,5 @@
-use crate::decor::InternalString;
 use crate::parser::strings::{basic_string, literal_string};
+use crate::repr::InternalString;
 use combine::parser::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
 use combine::*;

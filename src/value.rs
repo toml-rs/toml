@@ -1,23 +1,28 @@
+use std::iter::FromIterator;
+use std::str::FromStr;
+
+use combine::stream::position::Stream;
+use combine::stream::position::Stream as PositionStream;
+
 use crate::datetime::*;
-use crate::decor::{Decor, Formatted, InternalString};
-use crate::formatted;
 use crate::key::Key;
 use crate::parser;
-use crate::table::{Item, Iter, KeyValuePairs, TableKeyValue, TableLike};
-use combine::stream::position::Stream;
-use linked_hash_map::LinkedHashMap;
-use std::mem;
-use std::str::FromStr;
+use crate::parser::strings;
+use crate::parser::TomlError;
+use crate::repr::{Decor, Formatted, InternalString, Repr};
+use crate::{Array, InlineTable};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
 pub enum Value {
-    /// A 64-bit integer value.
-    Integer(Formatted<i64>),
     /// A string value.
     String(Formatted<String>),
+    /// A 64-bit integer value.
+    Integer(Formatted<i64>),
     /// A 64-bit float value.
     Float(Formatted<f64>),
+    /// A boolean value.
+    Boolean(Formatted<bool>),
     /// An RFC 3339 formatted date-time with offset.
     OffsetDateTime(Formatted<OffsetDateTime>),
     /// An RFC 3339 formatted date-time without offset.
@@ -26,254 +31,27 @@ pub enum Value {
     LocalDate(Formatted<LocalDate>),
     /// Time portion of an RFC 3339 formatted date-time.
     LocalTime(Formatted<LocalTime>),
-    /// A boolean value.
-    Boolean(Formatted<bool>),
     /// An inline array of values.
     Array(Array),
     /// An inline table of key/value pairs.
     InlineTable(InlineTable),
 }
 
-/// Type representing a TOML array,
-/// payload of the `Value::Array` variant's value
-#[derive(Debug, Default, Clone)]
-pub struct Array {
-    // always Vec<Item::Value>
-    pub(crate) values: Vec<Item>,
-    // `trailing` represents whitespaces, newlines
-    // and comments in an empty array or after the trailing comma
-    pub(crate) trailing: InternalString,
-    pub(crate) trailing_comma: bool,
-    // prefix before `[` and suffix after `]`
-    pub(crate) decor: Decor,
-}
-
-/// Type representing a TOML inline table,
-/// payload of the `Value::InlineTable` variant
-#[derive(Debug, Default, Clone)]
-pub struct InlineTable {
-    pub(crate) items: KeyValuePairs,
-    // `preamble` represents whitespaces in an empty table
-    pub(crate) preamble: InternalString,
-    // prefix before `{` and suffix after `}`
-    pub(crate) decor: Decor,
-}
-
-/// An iterator type over `Array`'s values.
-pub type ArrayIter<'a> = Box<dyn Iterator<Item = &'a Value> + 'a>;
-
-impl Array {
-    /// Returns the length of the underlying Vec.
-    /// To get the actual number of items use `a.iter().count()`.
-    pub fn len(&self) -> usize {
-        self.values.len()
-    }
-
-    /// Return true iff `self.len() == 0`.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns an iterator over all values.
-    pub fn iter(&self) -> ArrayIter<'_> {
-        Box::new(self.values.iter().filter_map(Item::as_value))
-    }
-
-    /// Appends a new value to the end of the array, applying default formatting to it.
-    pub fn push<V: Into<Value>>(&mut self, v: V) {
-        self.value_op(v.into(), true, |items, value| {
-            items.push(Item::Value(value))
-        })
-    }
-
-    /// Appends a new, already formatted value to the end of the array.
-    pub fn push_formatted(&mut self, v: Value) {
-        self.value_op(v, false, |items, value| items.push(Item::Value(value)))
-    }
-
-    /// Inserts an element at the given position within the array, applying default formatting to
-    /// it and shifting all values after it to the right.
-    ///
-    /// Panics if `index > len`.
-    pub fn insert<V: Into<Value>>(&mut self, index: usize, v: V) {
-        self.value_op(v.into(), true, |items, value| {
-            items.insert(index, Item::Value(value))
-        })
-    }
-
-    /// Inserts an already formatted value at the given position within the array, shifting all
-    /// values after it to the right.
-    ///
-    /// Panics if `index > len`.
-    pub fn insert_formatted(&mut self, index: usize, v: Value) {
-        self.value_op(v, false, |items, value| {
-            items.insert(index, Item::Value(value))
-        })
-    }
-
-    /// Replaces the element at the given position within the array, preserving existing formatting.
-    ///
-    /// Panics if `index >= len`.
-    pub fn replace<V: Into<Value>>(&mut self, index: usize, v: V) -> Value {
-        // Read the existing value's decor and preserve it.
-        let existing_decor = self
-            .get(index)
-            .unwrap_or_else(|| panic!("index {} out of bounds (len = {})", index, self.len()))
-            .decor();
-        let mut value = v.into();
-        *value.decor_mut() = existing_decor.clone();
-        self.replace_formatted(index, value)
-    }
-
-    /// Replaces the element at the given position within the array with an already formatted value.
-    ///
-    /// Panics if `index >= len`.
-    pub fn replace_formatted(&mut self, index: usize, v: Value) -> Value {
-        self.value_op(v, false, |items, value| {
-            match mem::replace(&mut items[index], Item::Value(value)) {
-                Item::Value(old_value) => old_value,
-                x => panic!("non-value item {:?} in an array", x),
-            }
-        })
-    }
-
-    /// Returns a reference to the value at the given index, or `None` if the index is out of
-    /// bounds.
-    pub fn get(&self, index: usize) -> Option<&Value> {
-        self.values.get(index).and_then(Item::as_value)
-    }
-
-    /// Removes the value at the given index.
-    pub fn remove(&mut self, index: usize) -> Value {
-        let removed = self.values.remove(index);
-        if self.is_empty() {
-            self.trailing_comma = false;
-        }
-        match removed {
-            Item::Value(v) => v,
-            x => panic!("non-value item {:?} in an array", x),
-        }
-    }
-
-    /// Auto formats the array.
-    pub fn fmt(&mut self) {
-        formatted::decorate_array(self);
-    }
-
-    fn value_op<T>(
-        &mut self,
-        v: Value,
-        decorate: bool,
-        op: impl FnOnce(&mut Vec<Item>, Value) -> T,
-    ) -> T {
-        let mut value = v;
-        if !self.is_empty() && decorate {
-            formatted::decorate(&mut value, " ", "");
-        } else if decorate {
-            formatted::decorate(&mut value, "", "");
-        }
-        op(&mut self.values, value)
-    }
-}
-
-/// An iterator type over key/value pairs of an inline table.
-pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
-
-impl InlineTable {
-    /// Returns the number of key/value pairs.
-    pub fn len(&self) -> usize {
-        self.iter().count()
-    }
-
-    /// Returns true iff the table is empty.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns an iterator over key/value pairs.
-    pub fn iter(&self) -> InlineTableIter<'_> {
-        Box::new(
-            self.items
-                .iter()
-                .filter(|&(_, kv)| kv.value.is_value())
-                .map(|(k, kv)| (&k[..], kv.value.as_value().unwrap())),
-        )
-    }
-
-    /// Sorts the key/value pairs by key.
-    pub fn sort(&mut self) {
-        sort_key_value_pairs(&mut self.items);
-    }
-
-    /// Returns true iff the table contains given key.
-    pub fn contains_key(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
-            !kv.value.is_none()
-        } else {
-            false
-        }
-    }
-
-    /// Merges the key/value pairs into the `other` table leaving
-    /// `self` empty.
-    pub fn merge_into(&mut self, other: &mut InlineTable) {
-        let items = mem::replace(&mut self.items, KeyValuePairs::new());
-        for (k, kv) in items {
-            other.items.insert(k, kv);
-        }
-    }
-
-    /// Inserts a key/value pair if the table does not contain the key.
-    /// Returns a mutable reference to the corresponding value.
-    pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
-        let parsed = key.parse::<Key>().expect("invalid key");
-        self.items
-            .entry(parsed.get().to_owned())
-            .or_insert(formatted::to_key_value(key, value.into()))
-            .value
-            .as_value_mut()
-            .expect("non-value type in inline table")
-    }
-
-    /// Auto formats the table.
-    pub fn fmt(&mut self) {
-        formatted::decorate_inline_table(self);
-    }
-
-    /// Removes a key/value pair given the key.
-    pub fn remove(&mut self, key: &str) -> Option<Value> {
-        self.items
-            .remove(key)
-            .and_then(|kv| kv.value.as_value().cloned())
-    }
-
-    /// Return an optional reference to the value at the given the key.
-    pub fn get(&self, key: &str) -> Option<&Value> {
-        self.items.get(key).and_then(|kv| kv.value.as_value())
-    }
-
-    /// Return an optional mutable reference to the value at the given the key.
-    pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
-        self.items
-            .get_mut(key)
-            .and_then(|kv| kv.value.as_value_mut())
-    }
-}
-
-impl TableLike for InlineTable {
-    fn iter(&self) -> Iter<'_> {
-        Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
-    }
-    fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
-        self.items.get(key).map(|kv| &kv.value)
-    }
-    fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
-        self.items.get_mut(key).map(|kv| &mut kv.value)
-    }
-}
-
 /// Downcasting
 impl Value {
+    /// Casts `self` to str.
+    pub fn as_str(&self) -> Option<&str> {
+        match *self {
+            Value::String(ref value) => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    /// Returns true iff `self` is a string.
+    pub fn is_str(&self) -> bool {
+        self.as_str().is_some()
+    }
+
     /// Casts `self` to integer.
     pub fn as_integer(&self) -> Option<i64> {
         match *self {
@@ -311,19 +89,6 @@ impl Value {
     /// Returns true iff `self` is a boolean.
     pub fn is_bool(&self) -> bool {
         self.as_bool().is_some()
-    }
-
-    /// Casts `self` to str.
-    pub fn as_str(&self) -> Option<&str> {
-        match *self {
-            Value::String(ref value) => Some(value.value()),
-            _ => None,
-        }
-    }
-
-    /// Returns true iff `self` is a string.
-    pub fn is_str(&self) -> bool {
-        self.as_str().is_some()
     }
 
     /// Casts `self` to date-time.
@@ -430,14 +195,14 @@ impl Value {
     ///```
     pub fn decor(&self) -> &Decor {
         match *self {
-            Value::Integer(ref f) => &f.decor,
             Value::String(ref f) => &f.decor,
+            Value::Integer(ref f) => &f.decor,
             Value::Float(ref f) => &f.decor,
+            Value::Boolean(ref f) => &f.decor,
             Value::OffsetDateTime(ref f) => &f.decor,
             Value::LocalDateTime(ref f) => &f.decor,
             Value::LocalDate(ref f) => &f.decor,
             Value::LocalTime(ref f) => &f.decor,
-            Value::Boolean(ref f) => &f.decor,
             Value::Array(ref a) => &a.decor,
             Value::InlineTable(ref t) => &t.decor,
         }
@@ -451,29 +216,36 @@ impl Value {
     ///```
     pub fn decor_mut(&mut self) -> &mut Decor {
         match self {
-            Value::Integer(f) => &mut f.decor,
             Value::String(f) => &mut f.decor,
+            Value::Integer(f) => &mut f.decor,
             Value::Float(f) => &mut f.decor,
+            Value::Boolean(f) => &mut f.decor,
             Value::OffsetDateTime(f) => &mut f.decor,
             Value::LocalDateTime(f) => &mut f.decor,
             Value::LocalDate(f) => &mut f.decor,
             Value::LocalTime(f) => &mut f.decor,
-            Value::Boolean(f) => &mut f.decor,
             Value::Array(a) => &mut a.decor,
             Value::InlineTable(t) => &mut t.decor,
         }
     }
-}
 
-pub(crate) fn sort_key_value_pairs(items: &mut LinkedHashMap<InternalString, TableKeyValue>) {
-    let mut keys: Vec<InternalString> = items
-        .iter()
-        .filter_map(|i| (i.1).value.as_value().map(|_| i.0))
-        .cloned()
-        .collect();
-    keys.sort();
-    for key in keys {
-        items.get_refresh(&key);
+    /// Sets the prefix and the suffix for value.
+    /// # Example
+    /// ```rust
+    /// let mut v = toml_edit::Value::from(42);
+    /// assert_eq!(&v.to_string(), "42");
+    /// let d = v.decorated(" ", " ");
+    /// assert_eq!(&d.to_string(), " 42 ");
+    /// ```
+    pub fn decorated(mut self, prefix: &str, suffix: &str) -> Self {
+        self.decorate(prefix, suffix);
+        self
+    }
+
+    pub(crate) fn decorate(&mut self, prefix: &str, suffix: &str) {
+        let decor = self.decor_mut();
+        decor.prefix = InternalString::from(prefix);
+        decor.suffix = InternalString::from(suffix);
     }
 }
 
@@ -491,5 +263,143 @@ impl FromStr for Value {
             Ok((value, _)) => Ok(value),
             Err(e) => Err(Self::Err::new(e, s)),
         }
+    }
+}
+
+impl<'b> From<&'b str> for Value {
+    fn from(s: &'b str) -> Self {
+        let (value, raw) = parse_string_guess_delimiters(s);
+        Value::String(Formatted::new(value, Repr::new(raw), Decor::new("", "")))
+    }
+}
+
+impl From<InternalString> for Value {
+    fn from(s: InternalString) -> Self {
+        Value::from(s.as_ref())
+    }
+}
+
+macro_rules! try_parse {
+    ($s:expr, $p:expr) => {{
+        use combine::EasyParser;
+        let result = $p.easy_parse(PositionStream::new($s));
+        match result {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(TomlError::from_unparsed(rest.positioner, $s))
+            }
+            Ok((s, _)) => Ok(s),
+            Err(e) => Err(TomlError::new(e.into(), $s)),
+        }
+    }};
+}
+
+// TODO: clean this mess
+fn parse_string_guess_delimiters(s: &str) -> (InternalString, InternalString) {
+    let basic = format!("\"{}\"", s);
+    let literal = format!("'{}'", s);
+    let ml_basic = format!("\"\"\"{}\"\"\"", s);
+    let ml_literal = format!("'''{}'''", s);
+    if let Ok(r) = try_parse!(s, strings::string()) {
+        (r, s.into())
+    } else if let Ok(r) = try_parse!(&basic[..], strings::basic_string()) {
+        (r, basic)
+    } else if let Ok(r) = try_parse!(&literal[..], strings::literal_string()) {
+        (r.into(), literal.clone())
+    } else if let Ok(r) = try_parse!(&ml_basic[..], strings::ml_basic_string()) {
+        (r, ml_literal)
+    } else {
+        try_parse!(&ml_literal[..], strings::ml_literal_string())
+            .map(|r| (r, ml_literal))
+            .unwrap_or_else(|e| panic!("toml string parse error: {}, {}", e, s))
+    }
+}
+
+impl From<i64> for Value {
+    fn from(i: i64) -> Self {
+        Value::Integer(Formatted::new(
+            i,
+            Repr::new(i.to_string()),
+            Decor::new("", ""),
+        ))
+    }
+}
+
+impl From<f64> for Value {
+    fn from(f: f64) -> Self {
+        Value::Float(Formatted::new(
+            f,
+            Repr::new(f.to_string()),
+            Decor::new("", ""),
+        ))
+    }
+}
+
+impl From<bool> for Value {
+    fn from(b: bool) -> Self {
+        Value::Boolean(Formatted::new(
+            b,
+            Repr::new(if b { "true" } else { "false" }),
+            Decor::new("", ""),
+        ))
+    }
+}
+
+impl From<OffsetDateTime> for Value {
+    fn from(d: OffsetDateTime) -> Self {
+        let s = d.to_string();
+        Value::OffsetDateTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+    }
+}
+
+impl From<LocalDateTime> for Value {
+    fn from(d: LocalDateTime) -> Self {
+        let s = d.to_string();
+        Value::LocalDateTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+    }
+}
+
+impl From<LocalDate> for Value {
+    fn from(d: LocalDate) -> Self {
+        let s = d.to_string();
+        Value::LocalDate(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+    }
+}
+
+impl From<LocalTime> for Value {
+    fn from(d: LocalTime) -> Self {
+        let s = d.to_string();
+        Value::LocalTime(Formatted::new(d, Repr::new(s), Decor::new("", "")))
+    }
+}
+
+impl From<Array> for Value {
+    fn from(array: Array) -> Self {
+        Value::Array(array)
+    }
+}
+
+impl From<InlineTable> for Value {
+    fn from(table: InlineTable) -> Self {
+        Value::InlineTable(table)
+    }
+}
+
+impl<V: Into<Value>> FromIterator<V> for Value {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = V>,
+    {
+        let array: Array = iter.into_iter().collect();
+        Value::Array(array)
+    }
+}
+
+impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+    {
+        let table: InlineTable = iter.into_iter().collect();
+        Value::InlineTable(table)
     }
 }
