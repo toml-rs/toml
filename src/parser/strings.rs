@@ -1,6 +1,6 @@
-use crate::decor::InternalString;
 use crate::parser::errors::CustomError;
 use crate::parser::trivia::{is_non_ascii, is_wschar, newline, ws, ws_newlines};
+use crate::repr::InternalString;
 use combine::error::{Commit, Info};
 use combine::parser::char::char;
 use combine::parser::range::{range, take, take_while};

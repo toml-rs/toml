@@ -1,4 +1,4 @@
-use crate::table::{Item, Table};
+use crate::{Item, Table};
 
 /// Type representing a TOML array of tables
 #[derive(Clone, Debug, Default)]
@@ -6,9 +6,6 @@ pub struct ArrayOfTables {
     // always Vec<Item::Table>
     pub(crate) values: Vec<Item>,
 }
-
-/// An iterator type over `ArrayOfTables`'s values.
-type ArrayOfTablesIter<'a> = Box<dyn Iterator<Item = &'a Table> + 'a>;
 
 impl ArrayOfTables {
     /// Creates an empty array of tables.
@@ -59,3 +56,6 @@ impl ArrayOfTables {
         self.len() == 0
     }
 }
+
+/// An iterator type over `ArrayOfTables`'s values.
+type ArrayOfTablesIter<'a> = Box<dyn Iterator<Item = &'a Table> + 'a>;

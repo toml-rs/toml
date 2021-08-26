@@ -1,7 +1,9 @@
-use crate::decor::InternalString;
-use crate::parser;
-use combine::stream::position::Stream;
 use std::str::FromStr;
+
+use combine::stream::position::Stream;
+
+use crate::parser;
+use crate::repr::{Decor, InternalString};
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -29,21 +31,6 @@ use std::str::FromStr;
 pub struct Key {
     key: InternalString,
     raw: InternalString,
-}
-
-impl FromStr for Key {
-    type Err = parser::TomlError;
-
-    /// Tries to parse a key from a &str,
-    /// if fails, tries as basic quoted key (surrounds with "")
-    /// and then literal quoted key (surrounds with '')
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let basic = format!("\"{}\"", s);
-        let literal = format!("'{}'", s);
-        Key::try_parse(s)
-            .or_else(|_| Key::try_parse(&basic))
-            .or_else(|_| Key::try_parse(&literal))
-    }
 }
 
 impl Key {
@@ -77,9 +64,28 @@ impl Key {
     }
 }
 
+impl FromStr for Key {
+    type Err = parser::TomlError;
+
+    /// Tries to parse a key from a &str,
+    /// if fails, tries as basic quoted key (surrounds with "")
+    /// and then literal quoted key (surrounds with '')
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let basic = format!("\"{}\"", s);
+        let literal = format!("'{}'", s);
+        Key::try_parse(s)
+            .or_else(|_| Key::try_parse(&basic))
+            .or_else(|_| Key::try_parse(&literal))
+    }
+}
+
 #[doc(hidden)]
 impl From<Key> for InternalString {
     fn from(key: Key) -> InternalString {
         key.key
     }
+}
+
+pub(crate) fn default_key_decor() -> Decor {
+    Decor::new("", " ")
 }

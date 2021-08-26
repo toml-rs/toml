@@ -1,5 +1,6 @@
-use crate::parser;
 use std::str::FromStr;
+
+use crate::parser;
 
 /// A RFC-3339 formatted TOML date/time w/ timezone
 ///

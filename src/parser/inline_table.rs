@@ -1,11 +1,10 @@
-use crate::decor::{Decor, InternalString, Repr};
-use crate::formatted::decorated;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
-use crate::table::{Item, TableKeyValue};
-use crate::value::InlineTable;
+use crate::repr::{Decor, InternalString, Repr};
+use crate::table::TableKeyValue;
+use crate::{InlineTable, Item};
 use combine::parser::char::char;
 use combine::stream::RangeStream;
 use combine::*;
@@ -69,7 +68,7 @@ parse!(keyval() -> (InternalString, TableKeyValue), {
         (ws(), value(), ws()),
     ).map(|(k, _, v)| {
         let (pre, v, suf) = v;
-        let v = decorated(v, pre, suf);
+        let v = v.decorated(pre, suf);
         let (pre, (raw, key), suf) = k;
         (
             key,
