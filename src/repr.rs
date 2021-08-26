@@ -35,21 +35,21 @@ impl<T> Formatted<T> {
     }
 }
 
-// String representation of a key or a value
-// together with a decoration.
+/// TOML-encoded value
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
-pub(crate) struct Repr {
+pub struct Repr {
     raw_value: InternalString,
 }
 
 impl Repr {
-    pub fn new_unchecked(raw: impl Into<InternalString>) -> Self {
+    pub(crate) fn new_unchecked(raw: impl Into<InternalString>) -> Self {
         Repr {
             raw_value: raw.into(),
         }
     }
 
-    pub(crate) fn as_raw(&self) -> &str {
+    /// Access the underlying value
+    pub fn as_raw(&self) -> &str {
         &self.raw_value
     }
 }

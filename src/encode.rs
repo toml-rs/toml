@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Result, Write};
 
 use crate::document::Document;
+use crate::key::Key;
 use crate::repr::{DecorDisplay, Formatted, Repr};
 use crate::{Array, InlineTable, Item, Table, Value};
 
@@ -23,6 +24,12 @@ impl Display for Repr {
 impl<T> Display for Formatted<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", self.decor.display(&self.repr))
+    }
+}
+
+impl Display for Key {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        self.repr().fmt(f)
     }
 }
 

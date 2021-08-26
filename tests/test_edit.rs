@@ -204,13 +204,13 @@ fn test_insert_values() {
         [tbl.son]"#
     ).running(|root| {
         root["tbl"]["key1"] = value("value1");
-        root["tbl"]["\"key2\""] = value(42);
-        root["tbl"]["'key3'"] = value(8.1415926);
+        root["tbl"]["key2"] = value(42);
+        root["tbl"]["key3"] = value(8.1415926);
     }).produces(r#"
 [tbl]
 key1 = "value1"
-"key2" = 42
-'key3' = 8.1415926
+key2 = 42
+key3 = 8.1415926
 
         [tbl.son]
 "#
@@ -622,12 +622,12 @@ fn test_insert_into_inline_table() {
         let b = root.entry("b");
         let b = as_inline_table!(b);
         assert!(b.is_empty());
-        b.get_or_insert("'hello'", "world");
+        b.get_or_insert("hello", "world");
         assert_eq!(b.len(), 1);
         b.fmt()
     }).produces(r#"
         a = { a = 2, c = 3, b = 42 }
-        b = { 'hello' = "world" }
+        b = { hello = "world" }
 "#
     );
 }

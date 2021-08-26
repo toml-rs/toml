@@ -89,6 +89,6 @@ pub use crate::inline_table::InlineTable;
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
-pub use crate::repr::Decor;
+pub use crate::repr::{Decor, Repr};
 pub use crate::table::{Iter, IterMut, Table, TableLike};
 pub use crate::value::Value;

@@ -3,7 +3,7 @@ use std::str::FromStr;
 use combine::stream::position::Stream;
 
 use crate::parser;
-use crate::repr::{Decor, InternalString};
+use crate::repr::{Decor, InternalString, Repr};
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -30,27 +30,16 @@ use crate::repr::{Decor, InternalString};
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
 pub struct Key {
     key: InternalString,
-    raw: InternalString,
+    repr: Repr,
 }
 
 impl Key {
-    fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
-        use combine::EasyParser;
-        let result = parser::key_parser().easy_parse(Stream::new(s));
-        match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(parser::TomlError::from_unparsed(rest.positioner, s))
-            }
-            Ok(((raw, key), _)) => Ok(Key::new(raw, key)),
-            Err(e) => Err(parser::TomlError::new(e, s)),
-        }
+    pub(crate) fn new(repr: Repr, key: InternalString) -> Self {
+        Self { repr, key }
     }
 
-    pub(crate) fn new(raw: &str, key: InternalString) -> Self {
-        Self {
-            raw: raw.into(),
-            key,
-        }
+    pub(crate) fn with_key(key: &str) -> Self {
+        key_string_repr(key)
     }
 
     /// Returns the parsed key value.
@@ -59,8 +48,25 @@ impl Key {
     }
 
     /// Returns the key raw representation.
-    pub fn raw(&self) -> &str {
-        &self.raw
+    pub fn repr(&self) -> &Repr {
+        &self.repr
+    }
+
+    /// Returns the key raw representation.
+    pub fn into_repr(self) -> Repr {
+        self.repr
+    }
+
+    fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
+        use combine::EasyParser;
+        let result = parser::key_parser().easy_parse(Stream::new(s));
+        match result {
+            Ok((_, ref rest)) if !rest.input.is_empty() => {
+                Err(parser::TomlError::from_unparsed(rest.positioner, s))
+            }
+            Ok(((raw, key), _)) => Ok(Key::new(Repr::new_unchecked(raw), key)),
+            Err(e) => Err(parser::TomlError::new(e, s)),
+        }
     }
 }
 
@@ -79,6 +85,12 @@ impl FromStr for Key {
     }
 }
 
+impl<'b> From<&'b str> for Key {
+    fn from(s: &'b str) -> Self {
+        Key::with_key(s)
+    }
+}
+
 #[doc(hidden)]
 impl From<Key> for InternalString {
     fn from(key: Key) -> InternalString {
@@ -88,4 +100,29 @@ impl From<Key> for InternalString {
 
 pub(crate) fn default_key_decor() -> Decor {
     Decor::new("", " ")
+}
+
+// TODO: clean this mess
+pub(crate) fn key_string_repr(s: &str) -> Key {
+    if let Ok(k) = Key::try_parse(s) {
+        if k.get() == s {
+            return k;
+        }
+    }
+
+    let basic = format!("\"{}\"", s);
+    if let Ok(k) = Key::try_parse(&basic) {
+        if k.get() == s {
+            return k;
+        }
+    }
+
+    let literal = format!("'{}'", s);
+    if let Ok(k) = Key::try_parse(&literal) {
+        if k.get() == s {
+            return k;
+        }
+    }
+
+    panic!("toml key parse error: {}", s);
 }
