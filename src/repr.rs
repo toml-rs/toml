@@ -35,35 +35,22 @@ impl<T> Formatted<T> {
     }
 }
 
-impl<D: std::fmt::Display> From<D> for Formatted<D> {
-    fn from(other: D) -> Self {
-        let repr = Repr::from(&other);
-        Self {
-            value: other,
-            repr,
-            decor: Decor::new("", ""),
-        }
-    }
-}
-
 // String representation of a key or a value
 // together with a decoration.
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
 pub(crate) struct Repr {
-    pub(crate) raw_value: InternalString,
+    raw_value: InternalString,
 }
 
 impl Repr {
-    pub fn new(value: impl Into<InternalString>) -> Self {
+    pub fn new_unchecked(raw: impl Into<InternalString>) -> Self {
         Repr {
-            raw_value: value.into(),
+            raw_value: raw.into(),
         }
     }
-}
 
-impl<D: std::fmt::Display> From<&D> for Repr {
-    fn from(other: &D) -> Self {
-        Self::new(other.to_string())
+    pub(crate) fn as_raw(&self) -> &str {
+        &self.raw_value
     }
 }
 

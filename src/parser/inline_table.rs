@@ -73,7 +73,7 @@ parse!(keyval() -> (InternalString, TableKeyValue), {
         (
             key,
             TableKeyValue {
-                key_repr: Repr::new(raw),
+                key_repr: Repr::new_unchecked(raw),
                 key_decor: Decor::new(pre, suf),
                 value: Item::Value(v),
             }

@@ -16,7 +16,7 @@ impl<'d, D: Display> Display for DecorDisplay<'d, D> {
 
 impl Display for Repr {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        self.raw_value.fmt(f)
+        self.as_raw().fmt(f)
     }
 }
 
@@ -95,13 +95,13 @@ impl Table {
         for kv in self.items.values() {
             match kv.value {
                 Item::Table(ref t) => {
-                    path.push(&kv.key_repr.raw_value);
+                    path.push(kv.key_repr.as_raw());
                     t.visit_nested_tables(path, false, callback)?;
                     path.pop();
                 }
                 Item::ArrayOfTables(ref a) => {
                     for t in a.iter() {
-                        path.push(&kv.key_repr.raw_value);
+                        path.push(kv.key_repr.as_raw());
                         t.visit_nested_tables(path, true, callback)?;
                         path.pop();
                     }

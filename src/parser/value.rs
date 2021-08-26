@@ -3,7 +3,7 @@ use crate::parser::datetime::date_time;
 use crate::parser::inline_table::inline_table;
 use crate::parser::numbers::{boolean, float, integer};
 use crate::parser::strings::string;
-use crate::repr::{Decor, Formatted, InternalString, Repr};
+use crate::repr::{Decor, Formatted, Repr};
 use crate::value as v;
 use crate::Value;
 use combine::parser::range::recognize_with_value;
@@ -17,7 +17,7 @@ parse!(value() -> v::Value, {
             .map(|s|
                 v::Value::String(Formatted::new(
                     s,
-                    Repr::new("who cares?"),
+                    Repr::new_unchecked("who cares?"),
                     Decor::new("", ""),
                 ))
             ),
@@ -38,28 +38,28 @@ parse!(value() -> v::Value, {
 fn apply_raw(mut val: Value, raw: &str) -> Value {
     match val {
         Value::String(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::Integer(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::Float(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::Boolean(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::OffsetDateTime(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::LocalDateTime(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::LocalDate(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::LocalTime(ref mut f) => {
-            f.repr.raw_value = InternalString::from(raw);
+            f.repr = Repr::new_unchecked(raw);
         }
         Value::Array(_) | Value::InlineTable(_) => {}
     };

@@ -152,7 +152,7 @@ impl<'s> ops::IndexMut<&'s str> for Document {
 
 pub fn to_table_key_value(key: &str, value: Item) -> TableKeyValue {
     TableKeyValue {
-        key_repr: Repr::new(key),
+        key_repr: Repr::new_unchecked(key),
         key_decor: default_key_decor(),
         value,
     }

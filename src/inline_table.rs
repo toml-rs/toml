@@ -163,7 +163,7 @@ where
 pub fn to_key_value(key: &str, mut value: Value) -> TableKeyValue {
     value.decorate(" ", "");
     TableKeyValue {
-        key_repr: Repr::new(key),
+        key_repr: Repr::new_unchecked(key),
         key_decor: default_key_decor(),
         value: Item::Value(value),
     }
