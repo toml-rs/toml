@@ -1,6 +1,6 @@
 use linked_hash_map::LinkedHashMap;
 
-use crate::key::{default_key_decor, Key};
+use crate::key::Key;
 use crate::repr::{Decor, InternalString, Repr};
 use crate::Item;
 
@@ -307,4 +307,8 @@ impl TableLike for Table {
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.get_mut(key)
     }
+}
+
+fn default_key_decor() -> Decor {
+    Decor::new("", " ")
 }
