@@ -39,43 +39,9 @@ impl Table {
             ..Default::default()
         }
     }
+}
 
-    /// Returns true iff the table contains an item with the given key.
-    pub fn contains_key(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
-            !kv.value.is_none()
-        } else {
-            false
-        }
-    }
-
-    /// Returns true iff the table contains a table with the given key.
-    pub fn contains_table(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
-            kv.value.is_table()
-        } else {
-            false
-        }
-    }
-
-    /// Returns true iff the table contains a value with the given key.
-    pub fn contains_value(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
-            kv.value.is_value()
-        } else {
-            false
-        }
-    }
-
-    /// Returns true iff the table contains an array of tables with the given key.
-    pub fn contains_array_of_tables(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
-            kv.value.is_array_of_tables()
-        } else {
-            false
-        }
-    }
-
+impl Table {
     /// Returns an iterator over all key/value pairs, including empty.
     pub fn iter(&self) -> Iter<'_> {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
@@ -88,17 +54,6 @@ impl Table {
                 .iter_mut()
                 .map(|(key, kv)| (&key[..], &mut kv.value)),
         )
-    }
-
-    /// Removes an item given the key.
-    pub fn remove(&mut self, key: &str) -> Option<Item> {
-        self.items.remove(key).map(|kv| kv.value)
-    }
-
-    /// Sorts Key/Value Pairs of the table,
-    /// doesn't affect subtables or subarrays.
-    pub fn sort_values(&mut self) {
-        sort_key_value_pairs(&mut self.items);
     }
 
     /// Returns the number of non-empty items in the table.
@@ -114,6 +69,11 @@ impl Table {
     /// Returns true iff the table is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Clears the table, removing all key-value pairs. Keeps the allocated memory for reuse.
+    pub fn clear(&mut self) {
+        self.items.clear()
     }
 
     /// Given the `key`, return a mutable reference to the value.
@@ -159,6 +119,58 @@ impl Table {
         self.items.get_mut(key).map(|kv| &mut kv.value)
     }
 
+    /// Returns true iff the table contains an item with the given key.
+    pub fn contains_key(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            !kv.value.is_none()
+        } else {
+            false
+        }
+    }
+
+    /// Returns true iff the table contains a table with the given key.
+    pub fn contains_table(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            kv.value.is_table()
+        } else {
+            false
+        }
+    }
+
+    /// Returns true iff the table contains a value with the given key.
+    pub fn contains_value(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            kv.value.is_value()
+        } else {
+            false
+        }
+    }
+
+    /// Returns true iff the table contains an array of tables with the given key.
+    pub fn contains_array_of_tables(&self, key: &str) -> bool {
+        if let Some(kv) = self.items.get(key) {
+            kv.value.is_array_of_tables()
+        } else {
+            false
+        }
+    }
+
+    /// Inserts a key-value pair into the map.
+    pub fn insert_formatted(&mut self, key: &str, item: Item) -> Option<Item> {
+        let key = Key::with_key(key);
+        let kv = TableKeyValue::new(key.repr().to_owned(), default_key_decor(), item);
+        self.items
+            .insert(key.get().to_owned(), kv)
+            .map(|kv| kv.value)
+    }
+
+    /// Removes an item given the key.
+    pub fn remove(&mut self, key: &str) -> Option<Item> {
+        self.items.remove(key).map(|kv| kv.value)
+    }
+}
+
+impl Table {
     /// If a table has no key/value pairs and implicit, it will not be displayed.
     ///
     /// # Examples
@@ -178,6 +190,18 @@ impl Table {
     /// ```
     pub fn set_implicit(&mut self, implicit: bool) {
         self.implicit = implicit;
+    }
+
+    /// Sorts Key/Value Pairs of the table.
+    ///
+    /// Doesn't affect subtables or subarrays.
+    pub fn sort_values(&mut self) {
+        sort_key_value_pairs(&mut self.items);
+    }
+
+    /// Auto formats the table.
+    pub fn fmt(&mut self) {
+        decorate_table(self);
     }
 
     /// Returns the decor associated with a given key of the table.
@@ -213,6 +237,20 @@ pub(crate) fn sort_key_value_pairs(items: &mut LinkedHashMap<InternalString, Tab
     keys.sort();
     for key in keys {
         items.get_refresh(&key);
+    }
+}
+
+fn decorate_table(table: &mut Table) {
+    for (key_decor, value) in table
+        .items
+        .iter_mut()
+        .filter(|&(_, ref kv)| kv.value.is_value())
+        .map(|(_, kv)| (&mut kv.key_decor, kv.value.as_value_mut().unwrap()))
+    {
+        // `key1 = value1`
+        key_decor.prefix = InternalString::from("");
+        key_decor.suffix = InternalString::from(" ");
+        value.decorate(" ", "");
     }
 }
 
