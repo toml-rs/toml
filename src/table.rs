@@ -158,8 +158,7 @@ impl Table {
     }
 
     /// Inserts a key-value pair into the map.
-    pub fn insert_formatted(&mut self, key: &str, item: Item) -> Option<Item> {
-        let key = Key::with_key(key);
+    pub fn insert_formatted(&mut self, key: &Key, item: Item) -> Option<Item> {
         let kv = TableKeyValue::new(key.repr().to_owned(), default_key_decor(), item);
         self.items
             .insert(key.get().to_owned(), kv)
