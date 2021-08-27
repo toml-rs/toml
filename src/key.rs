@@ -3,7 +3,7 @@ use std::str::FromStr;
 use combine::stream::position::Stream;
 
 use crate::parser;
-use crate::repr::{Decor, InternalString, Repr};
+use crate::repr::{InternalString, Repr};
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -96,10 +96,6 @@ impl From<Key> for InternalString {
     fn from(key: Key) -> InternalString {
         key.key
     }
-}
-
-pub(crate) fn default_key_decor() -> Decor {
-    Decor::new("", " ")
 }
 
 // TODO: clean this mess

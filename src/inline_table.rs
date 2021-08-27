@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 use std::mem;
 
-use crate::key::{default_key_decor, Key};
+use crate::key::Key;
 use crate::repr::{Decor, InternalString, Repr};
 use crate::table::{sort_key_value_pairs, Iter, KeyValuePairs, TableKeyValue, TableLike};
 use crate::{Item, Value};
@@ -147,7 +147,7 @@ impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for InlineTable 
     }
 }
 
-pub fn to_key_value_pairs<'k, K, V, I>(iter: I) -> KeyValuePairs
+fn to_key_value_pairs<'k, K, V, I>(iter: I) -> KeyValuePairs
 where
     K: Into<&'k Key>,
     V: Into<Value>,
@@ -160,11 +160,15 @@ where
     v.collect()
 }
 
-pub fn to_key_value(key_repr: Repr, mut value: Value) -> TableKeyValue {
+fn to_key_value(key_repr: Repr, mut value: Value) -> TableKeyValue {
     value.decorate(" ", "");
     TableKeyValue {
         key_repr,
-        key_decor: default_key_decor(),
+        key_decor: default_inline_key_decor(),
         value: Item::Value(value),
     }
+}
+
+pub(crate) fn default_inline_key_decor() -> Decor {
+    Decor::new(" ", " ")
 }
