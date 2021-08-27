@@ -1,8 +1,10 @@
+use std::iter::FromIterator;
+
 use linked_hash_map::LinkedHashMap;
 
 use crate::key::Key;
 use crate::repr::{Decor, InternalString, Repr};
-use crate::Item;
+use crate::{Item, Value};
 
 // TODO: add method to convert a table into inline table
 
@@ -223,6 +225,28 @@ impl Table {
     /// in which case its position is set automatically.
     pub fn position(&self) -> Option<usize> {
         self.position
+    }
+}
+
+impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for Table {
+    fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
+        for (key, value) in iter {
+            let key = key.into();
+            let value = Item::Value(value.into());
+            let value = TableKeyValue::new(key.repr().to_owned(), default_key_decor(), value);
+            self.items.insert(key.into(), value);
+        }
+    }
+}
+
+impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Table {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+    {
+        let mut table = Table::new();
+        table.extend(iter);
+        table
     }
 }
 
