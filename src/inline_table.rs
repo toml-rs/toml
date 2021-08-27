@@ -101,7 +101,7 @@ impl InlineTable {
     }
 }
 
-pub fn decorate_inline_table(table: &mut InlineTable) {
+fn decorate_inline_table(table: &mut InlineTable) {
     let n = table.len();
     for (i, (key_decor, value)) in table
         .items
