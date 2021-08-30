@@ -1,10 +1,18 @@
+use crate::key::Key;
 use crate::parser::strings::{basic_string, literal_string};
-use crate::repr::InternalString;
+use crate::parser::trivia::ws;
+use crate::repr::{InternalString, Repr};
+use combine::parser::char::char;
 use combine::parser::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
 
 // key = simple-key / dotted-key
+// dotted-key = simple-key 1*( dot-sep simple-key )
+parse!(key() -> Vec<Key>, {
+    sep_by1(between(ws(), ws(), simple_key().map(|(raw, key)| Key::new(Repr::new_unchecked(raw), key))),
+            char(DOT_SEP))
+});
 
 // simple-key = quoted-key / unquoted-key
 parse!(simple_key() -> (&'a str, InternalString), {
@@ -32,4 +40,5 @@ parse!(quoted_key() -> InternalString, {
     ))
 });
 
-// dotted-key = simple-key 1*( dot-sep simple-key )
+// dot-sep   = ws %x2E ws  ; . Period
+const DOT_SEP: char = '.';
