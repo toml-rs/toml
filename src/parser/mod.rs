@@ -16,7 +16,7 @@ mod trivia;
 mod value;
 
 pub use self::errors::TomlError;
-pub(crate) use self::key::key as key_parser;
+pub(crate) use self::key::simple_key as key_parser;
 pub(crate) use self::value::value as value_parser;
 
 use crate::document::Document;
@@ -410,7 +410,7 @@ trimmed in raw strings.
         ];
 
         for &(input, expected) in &cases {
-            let parsed = key::key().easy_parse(Stream::new(input));
+            let parsed = key::simple_key().easy_parse(Stream::new(input));
             assert!(parsed.is_ok());
             let ((.., k), rest) = parsed.unwrap();
             assert_eq!(k, expected);

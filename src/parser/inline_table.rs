@@ -1,5 +1,5 @@
 use crate::parser::errors::CustomError;
-use crate::parser::key::key;
+use crate::parser::key::simple_key;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::repr::{Decor, InternalString, Repr};
@@ -63,7 +63,7 @@ parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, TableKeyValue)>)
 
 parse!(keyval() -> (InternalString, TableKeyValue), {
     (
-        attempt((ws(), key(), ws())),
+        attempt((ws(), simple_key(), ws())),
         char(KEYVAL_SEP),
         (ws(), value(), ws()),
     ).map(|(k, _, v)| {

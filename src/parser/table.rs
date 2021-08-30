@@ -1,7 +1,7 @@
 use crate::array_of_tables::ArrayOfTables;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
-use crate::parser::key::key;
+use crate::parser::key::simple_key;
 use crate::parser::trivia::{line_trailing, ws};
 use crate::parser::TomlParser;
 use crate::repr::{Decor, Repr};
@@ -30,7 +30,7 @@ const ARRAY_TABLE_CLOSE: &str = "]]";
 // note: this rule is not present in the original grammar
 // key-path = key *( table-key-sep key)
 parse!(key_path() -> Vec<Key>, {
-    sep_by1(between(ws(), ws(), key().map(|(raw, key)| Key::new(Repr::new_unchecked(raw), key))),
+    sep_by1(between(ws(), ws(), simple_key().map(|(raw, key)| Key::new(Repr::new_unchecked(raw), key))),
             char(TABLE_KEY_SEP))
 });
 
