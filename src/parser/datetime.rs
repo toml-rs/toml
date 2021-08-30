@@ -1,6 +1,6 @@
 use crate::datetime::*;
 use crate::parser::errors::CustomError;
-use crate::repr::{Decor, Formatted, Repr};
+use crate::repr::{Formatted, Repr};
 use crate::Value;
 use chrono::TimeZone;
 use combine::parser::char::{char, digit};
@@ -34,7 +34,7 @@ parse!(date_time() -> Value, {
                         let dt = OffsetDateTime { inner: o.from_local_datetime(&dt).unwrap() };
                         let repr = Repr::new_unchecked(dt.to_string());
                         Value::OffsetDateTime(
-                            Formatted::new(dt, repr, Decor::default())
+                            Formatted::new(dt, repr)
                         )
                     }
                     // Local Date-Time
@@ -42,7 +42,7 @@ parse!(date_time() -> Value, {
                         let dt = LocalDateTime { inner: chrono::NaiveDateTime::new(d, t)};
                         let repr = Repr::new_unchecked(dt.to_string());
                         Value::LocalDateTime(
-                            Formatted::new(dt, repr, Decor::default())
+                            Formatted::new(dt, repr)
                         )
                     }
                     // Local Date
@@ -50,7 +50,7 @@ parse!(date_time() -> Value, {
                         let dt = LocalDate { inner: d};
                         let repr = Repr::new_unchecked(dt.to_string());
                         Value::LocalDate(
-                            Formatted::new(dt, repr, Decor::default())
+                            Formatted::new(dt, repr)
                         )
                     }
                 }
@@ -63,7 +63,7 @@ parse!(date_time() -> Value, {
                 let dt = LocalTime { inner: t};
                 let repr = Repr::new_unchecked(dt.to_string());
                 Value::LocalTime(
-                    Formatted::new(dt, repr, Decor::default())
+                    Formatted::new(dt, repr)
                 )
             })
     )

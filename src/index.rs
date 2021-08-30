@@ -1,9 +1,7 @@
 use std::ops;
 
 use crate::document::Document;
-use crate::inline_table::default_inline_key_decor;
 use crate::key::Key;
-use crate::repr::Repr;
 use crate::table::TableKeyValue;
 use crate::{value, InlineTable, Item, Table, Value};
 
@@ -63,7 +61,7 @@ impl Index for str {
             let mut t = InlineTable::default();
             t.items.insert(
                 key.get().to_owned(),
-                to_inline_table_key_value(key.repr().to_owned(), Item::None),
+                TableKeyValue::new(key.repr().to_owned(), Item::None),
             );
             *v = value(Value::InlineTable(t));
         }
@@ -75,7 +73,7 @@ impl Index for str {
                     .unwrap()
                     .items
                     .entry(key.get().to_owned())
-                    .or_insert(to_inline_table_key_value(key.repr().to_owned(), Item::None))
+                    .or_insert(TableKeyValue::new(key.repr().to_owned(), Item::None))
                     .value
             }
             _ => panic!("cannot access key {}", key),
@@ -151,14 +149,6 @@ impl<'s> ops::Index<&'s str> for Document {
 impl<'s> ops::IndexMut<&'s str> for Document {
     fn index_mut(&mut self, key: &'s str) -> &mut Item {
         self.root.index_mut(key)
-    }
-}
-
-pub fn to_inline_table_key_value(key_repr: Repr, value: Item) -> TableKeyValue {
-    TableKeyValue {
-        key_repr,
-        key_decor: default_inline_key_decor(),
-        value,
     }
 }
 

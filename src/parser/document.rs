@@ -118,7 +118,10 @@ impl TomlParser {
 
     fn on_keyval(&mut self, key: InternalString, mut kv: TableKeyValue) -> Result<(), CustomError> {
         let prefix = mem::take(&mut self.document.trailing);
-        kv.key_decor.prefix = prefix + &kv.key_decor.prefix;
+        kv.key_decor = Decor::new(
+            prefix + kv.key_decor.prefix().unwrap_or_default(),
+            kv.key_decor.suffix().unwrap_or_default(),
+        );
 
         let root = self.document.as_table_mut();
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0)

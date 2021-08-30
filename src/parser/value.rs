@@ -18,8 +18,7 @@ parse!(value() -> v::Value, {
                 v::Value::String(Formatted::new(
                     s,
                     Repr::new_unchecked("who cares?"),
-                    Decor::new("", ""),
-                ))
+                ).set_decor(Decor::new("", "")))
             ),
         boolean()
             .map(v::Value::from),

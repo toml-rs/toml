@@ -1,8 +1,11 @@
 use std::fmt::{Display, Formatter, Result, Write};
 
 use crate::document::Document;
+use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{DecorDisplay, Formatted, Repr};
+use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_TABLE_DECOR};
+use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{Array, InlineTable, Item, Table, Value};
 
 impl<'d, D: Display> Display for DecorDisplay<'d, D> {
@@ -10,7 +13,9 @@ impl<'d, D: Display> Display for DecorDisplay<'d, D> {
         write!(
             f,
             "{}{}{}",
-            self.decor.prefix, self.inner, self.decor.suffix
+            self.decor.prefix().unwrap_or(self.default.0),
+            self.inner,
+            self.decor.suffix().unwrap_or(self.default.1)
         )
     }
 }
@@ -23,7 +28,7 @@ impl Display for Repr {
 
 impl<T> Display for Formatted<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.decor.display(&self.repr))
+        write!(f, "{}", self.decor.display(&self.repr, DEFAULT_VALUE_DECOR))
     }
 }
 
@@ -52,19 +57,31 @@ impl Display for Value {
 
 impl Display for Array {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}[", self.decor.prefix)?;
+        write!(
+            f,
+            "{}[",
+            self.decor.prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
+        )?;
         join(f, self.iter(), ",")?;
         if self.trailing_comma {
             write!(f, ",")?;
         }
         write!(f, "{}", self.trailing)?;
-        write!(f, "]{}", self.decor.suffix)
+        write!(
+            f,
+            "]{}",
+            self.decor.suffix().unwrap_or(DEFAULT_VALUE_DECOR.1)
+        )
     }
 }
 
 impl Display for InlineTable {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}{{", self.decor.prefix)?;
+        write!(
+            f,
+            "{}{{",
+            self.decor.prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
+        )?;
         write!(f, "{}", self.preamble)?;
         for (i, (key, value)) in self
             .items
@@ -72,7 +89,7 @@ impl Display for InlineTable {
             .filter(|&(_, kv)| kv.value.is_value())
             .map(|(_, kv)| {
                 (
-                    kv.key_decor.display(&kv.key_repr),
+                    kv.key_decor.display(&kv.key_repr, DEFAULT_INLINE_KEY_DECOR),
                     kv.value.as_value().unwrap(),
                 )
             })
@@ -83,7 +100,11 @@ impl Display for InlineTable {
             }
             write!(f, "{}={}", key, value)?;
         }
-        write!(f, "}}{}", self.decor.suffix)
+        write!(
+            f,
+            "}}{}",
+            self.decor.suffix().unwrap_or(DEFAULT_VALUE_DECOR.1)
+        )
     }
 }
 
@@ -129,18 +150,39 @@ fn visit_table(
     if path.is_empty() {
         // don't print header for the root node
     } else if is_array_of_tables {
-        write!(f, "{}[[", table.decor.prefix)?;
+        write!(
+            f,
+            "{}[[",
+            table.decor.prefix().unwrap_or(DEFAULT_TABLE_DECOR.0)
+        )?;
         write!(f, "{}", path.join("."))?;
-        writeln!(f, "]]{}", table.decor.suffix)?;
+        writeln!(
+            f,
+            "]]{}",
+            table.decor.suffix().unwrap_or(DEFAULT_TABLE_DECOR.1)
+        )?;
     } else if !(table.implicit && table.values_len() == 0) {
-        write!(f, "{}[", table.decor.prefix)?;
+        write!(
+            f,
+            "{}[",
+            table.decor.prefix().unwrap_or(DEFAULT_TABLE_DECOR.0)
+        )?;
         write!(f, "{}", path.join("."))?;
-        writeln!(f, "]{}", table.decor.suffix)?;
+        writeln!(
+            f,
+            "]{}",
+            table.decor.suffix().unwrap_or(DEFAULT_TABLE_DECOR.1)
+        )?;
     }
     // print table body
     for kv in table.items.values() {
         if let Item::Value(ref value) = kv.value {
-            writeln!(f, "{}={}", kv.key_decor.display(&kv.key_repr), value)?;
+            writeln!(
+                f,
+                "{}={}",
+                kv.key_decor.display(&kv.key_repr, DEFAULT_KEY_DECOR),
+                value
+            )?;
         }
     }
     Ok(())
