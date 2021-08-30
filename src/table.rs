@@ -25,7 +25,7 @@ pub struct Table {
 impl Table {
     /// Creates an empty table.
     pub fn new() -> Self {
-        Self::with_decor_and_pos(Decor::new("\n", ""), None)
+        Default::default()
     }
 
     pub(crate) fn with_pos(position: Option<usize>) -> Self {
@@ -275,7 +275,7 @@ fn decorate_table(table: &mut Table) {
 
 // `key1 = value1`
 pub(crate) const DEFAULT_KEY_DECOR: (&str, &str) = ("", " ");
-pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("", "");
+pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
 
 // TODO: make pub(crate)
 #[doc(hidden)]
