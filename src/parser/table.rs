@@ -1,10 +1,10 @@
 use crate::array_of_tables::ArrayOfTables;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
-use crate::parser::key::simple_key;
-use crate::parser::trivia::{line_trailing, ws};
+use crate::parser::key::key;
+use crate::parser::trivia::line_trailing;
 use crate::parser::TomlParser;
-use crate::repr::{Decor, Repr};
+use crate::repr::Decor;
 use crate::{Item, Table};
 use combine::parser::char::char;
 use combine::parser::range::range;
@@ -16,8 +16,6 @@ use std::mem;
 #[allow(unused_imports)]
 use std::ops::DerefMut;
 
-// table-key-sep   = ws %x2E ws  ; . Period
-const TABLE_KEY_SEP: char = '.';
 // std-table-open  = %x5B ws     ; [ Left square bracket
 const STD_TABLE_OPEN: char = '[';
 // std-table-close = ws %x5D     ; ] Right square bracket
@@ -27,19 +25,12 @@ const ARRAY_TABLE_OPEN: &str = "[[";
 // array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
 const ARRAY_TABLE_CLOSE: &str = "]]";
 
-// note: this rule is not present in the original grammar
-// key-path = key *( table-key-sep key)
-parse!(key_path() -> Vec<Key>, {
-    sep_by1(between(ws(), ws(), simple_key().map(|(raw, key)| Key::new(Repr::new_unchecked(raw), key))),
-            char(TABLE_KEY_SEP))
-});
-
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
 toml_parser!(std_table, parser, {
     (
-        between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key_path()),
+        between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key()),
         line_trailing(),
     )
         .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h, t))
@@ -50,11 +41,7 @@ toml_parser!(std_table, parser, {
 // array-table = array-table-open key *( table-key-sep key) array-table-close
 toml_parser!(array_table, parser, {
     (
-        between(
-            range(ARRAY_TABLE_OPEN),
-            range(ARRAY_TABLE_CLOSE),
-            key_path(),
-        ),
+        between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE), key()),
         line_trailing(),
     )
         .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h, t))
