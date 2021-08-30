@@ -1,7 +1,7 @@
 use crate::document::Document;
 use crate::parser::errors::CustomError;
 use crate::parser::inline_table::KEYVAL_SEP;
-use crate::parser::key::key;
+use crate::parser::key::simple_key;
 use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
@@ -52,7 +52,7 @@ parser! {
          From<crate::parser::errors::CustomError>
     ] {
         (
-            (key(), ws()),
+            (simple_key(), ws()),
             char(KEYVAL_SEP),
             (ws(), value(), line_trailing())
         ).map(|(k, _, v)| {
