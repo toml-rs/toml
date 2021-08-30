@@ -2,6 +2,7 @@ use std::iter::FromIterator;
 use std::mem;
 
 use crate::repr::{Decor, InternalString};
+use crate::value::{DEFAULT_LEADING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
 use crate::{Item, Value};
 
 /// Type representing a TOML array,
@@ -151,17 +152,17 @@ impl<V: Into<Value>> FromIterator<V> for Array {
 }
 
 pub fn decorate_array(array: &mut Array) {
-    for (i, val) in array
+    for (i, value) in array
         .values
         .iter_mut()
         .filter_map(Item::as_value_mut)
         .enumerate()
     {
         // [value1, value2, value3]
-        if i > 0 {
-            val.decorate(" ", "");
+        if i == 0 {
+            value.decorate(DEFAULT_LEADING_VALUE_DECOR.0, DEFAULT_LEADING_VALUE_DECOR.1);
         } else {
-            val.decorate("", "");
+            value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
         }
     }
 }

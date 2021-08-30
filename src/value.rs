@@ -191,7 +191,7 @@ impl Value {
     /// # Example
     /// ```rust
     /// let v = toml_edit::Value::from(true);
-    /// assert_eq!(v.decor().suffix(), "");
+    /// assert_eq!(v.decor().suffix(), None);
     ///```
     pub fn decor(&self) -> &Decor {
         match *self {
@@ -212,7 +212,7 @@ impl Value {
     /// # Example
     /// ```rust
     /// let v = toml_edit::Value::from(true);
-    /// assert_eq!(v.decor().suffix(), "");
+    /// assert_eq!(v.decor().suffix(), None);
     ///```
     pub fn decor_mut(&mut self) -> &mut Decor {
         match self {
@@ -233,7 +233,7 @@ impl Value {
     /// # Example
     /// ```rust
     /// let mut v = toml_edit::Value::from(42);
-    /// assert_eq!(&v.to_string(), "42");
+    /// assert_eq!(&v.to_string(), " 42");
     /// let d = v.decorated(" ", " ");
     /// assert_eq!(&d.to_string(), " 42 ");
     /// ```
@@ -244,8 +244,7 @@ impl Value {
 
     pub(crate) fn decorate(&mut self, prefix: &str, suffix: &str) {
         let decor = self.decor_mut();
-        decor.prefix = InternalString::from(prefix);
-        decor.suffix = InternalString::from(suffix);
+        *decor = Decor::new(prefix, suffix);
     }
 }
 
@@ -269,11 +268,7 @@ impl FromStr for Value {
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
         let (value, raw) = parse_string_guess_delimiters(s);
-        Value::String(Formatted::new(
-            value,
-            Repr::new_unchecked(raw),
-            Decor::new("", ""),
-        ))
+        Value::String(Formatted::new(value, Repr::new_unchecked(raw)))
     }
 }
 
@@ -320,21 +315,13 @@ fn parse_string_guess_delimiters(s: &str) -> (InternalString, InternalString) {
 
 impl From<i64> for Value {
     fn from(i: i64) -> Self {
-        Value::Integer(Formatted::new(
-            i,
-            Repr::new_unchecked(i.to_string()),
-            Decor::new("", ""),
-        ))
+        Value::Integer(Formatted::new(i, Repr::new_unchecked(i.to_string())))
     }
 }
 
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
-        Value::Float(Formatted::new(
-            f,
-            Repr::new_unchecked(f.to_string()),
-            Decor::new("", ""),
-        ))
+        Value::Float(Formatted::new(f, Repr::new_unchecked(f.to_string())))
     }
 }
 
@@ -343,7 +330,6 @@ impl From<bool> for Value {
         Value::Boolean(Formatted::new(
             b,
             Repr::new_unchecked(if b { "true" } else { "false" }),
-            Decor::new("", ""),
         ))
     }
 }
@@ -351,44 +337,28 @@ impl From<bool> for Value {
 impl From<OffsetDateTime> for Value {
     fn from(d: OffsetDateTime) -> Self {
         let s = d.to_string();
-        Value::OffsetDateTime(Formatted::new(
-            d,
-            Repr::new_unchecked(s),
-            Decor::new("", ""),
-        ))
+        Value::OffsetDateTime(Formatted::new(d, Repr::new_unchecked(s)))
     }
 }
 
 impl From<LocalDateTime> for Value {
     fn from(d: LocalDateTime) -> Self {
         let s = d.to_string();
-        Value::LocalDateTime(Formatted::new(
-            d,
-            Repr::new_unchecked(s),
-            Decor::new("", ""),
-        ))
+        Value::LocalDateTime(Formatted::new(d, Repr::new_unchecked(s)))
     }
 }
 
 impl From<LocalDate> for Value {
     fn from(d: LocalDate) -> Self {
         let s = d.to_string();
-        Value::LocalDate(Formatted::new(
-            d,
-            Repr::new_unchecked(s),
-            Decor::new("", ""),
-        ))
+        Value::LocalDate(Formatted::new(d, Repr::new_unchecked(s)))
     }
 }
 
 impl From<LocalTime> for Value {
     fn from(d: LocalTime) -> Self {
         let s = d.to_string();
-        Value::LocalTime(Formatted::new(
-            d,
-            Repr::new_unchecked(s),
-            Decor::new("", ""),
-        ))
+        Value::LocalTime(Formatted::new(d, Repr::new_unchecked(s)))
     }
 }
 
@@ -423,3 +393,10 @@ impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
         Value::InlineTable(table)
     }
 }
+
+// `key1 = value1`
+pub(crate) const DEFAULT_VALUE_DECOR: (&str, &str) = (" ", "");
+// `{ key = value }`
+pub(crate) const DEFAULT_TRAILING_VALUE_DECOR: (&str, &str) = (" ", " ");
+// `[value1, value2]`
+pub(crate) const DEFAULT_LEADING_VALUE_DECOR: (&str, &str) = ("", "");

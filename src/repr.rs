@@ -14,24 +14,29 @@ impl<T> Formatted<T> {
         &self.repr.raw_value
     }
 
-    pub fn prefix(&self) -> &str {
-        &self.decor.prefix
+    pub fn prefix(&self) -> Option<&str> {
+        self.decor.prefix()
     }
 
-    pub fn suffix(&self) -> &str {
-        &self.decor.suffix
+    pub fn suffix(&self) -> Option<&str> {
+        self.decor.suffix()
     }
 
     pub fn value(&self) -> &T {
         &self.value
     }
 
-    pub(crate) fn new(v: T, repr: Repr, decor: Decor) -> Self {
+    pub(crate) fn new(v: T, repr: Repr) -> Self {
         Self {
             value: v,
             repr,
-            decor,
+            decor: Default::default(),
         }
+    }
+
+    pub(crate) fn set_decor(mut self, decor: Decor) -> Self {
+        self.decor = decor;
+        self
     }
 }
 
@@ -55,45 +60,53 @@ impl Repr {
 }
 
 /// A prefix and suffix,
-/// including comments, whitespaces and newlines.
+///
+/// Including comments, whitespaces and newlines.
 #[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
 pub struct Decor {
-    pub(crate) prefix: InternalString,
-    pub(crate) suffix: InternalString,
+    prefix: Option<InternalString>,
+    suffix: Option<InternalString>,
 }
 
 impl Decor {
     /// Creates a new decor from the given prefix and suffix.
     pub fn new(prefix: impl Into<String>, suffix: impl Into<String>) -> Self {
         Self {
-            prefix: prefix.into(),
-            suffix: suffix.into(),
+            prefix: Some(prefix.into()),
+            suffix: Some(suffix.into()),
         }
     }
 
     /// Get the prefix.
-    pub fn prefix(&self) -> &str {
-        &self.prefix
+    pub fn prefix(&self) -> Option<&str> {
+        self.prefix.as_deref()
     }
 
     /// Get the suffix.
-    pub fn suffix(&self) -> &str {
-        &self.suffix
+    pub fn suffix(&self) -> Option<&str> {
+        self.suffix.as_deref()
     }
 
     /// Render a value with its decor
-    pub fn display<'d, D: std::fmt::Display + std::fmt::Debug>(
+    pub(crate) fn display<'d, D: std::fmt::Display + std::fmt::Debug>(
         &'d self,
         inner: &'d D,
+        default: (&'static str, &'static str),
     ) -> DecorDisplay<'d, D> {
-        DecorDisplay { inner, decor: self }
+        DecorDisplay {
+            inner,
+            decor: self,
+            default,
+        }
     }
 }
 
-/// A prefix and suffix,
-/// including comments, whitespaces and newlines.
+/// Render a prefix and suffix,
+///
+/// Including comments, whitespaces and newlines.
 #[derive(Debug)]
-pub struct DecorDisplay<'d, D> {
+pub(crate) struct DecorDisplay<'d, D> {
     pub(crate) inner: &'d D,
     pub(crate) decor: &'d Decor,
+    pub(crate) default: (&'static str, &'static str),
 }

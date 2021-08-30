@@ -4,6 +4,7 @@ use linked_hash_map::LinkedHashMap;
 
 use crate::key::Key;
 use crate::repr::{Decor, InternalString, Repr};
+use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{Item, Value};
 
 // TODO: add method to convert a table into inline table
@@ -89,9 +90,7 @@ impl Table {
         &mut self
             .items
             .entry(key.get().to_owned())
-            .or_insert_with(|| {
-                TableKeyValue::new(key.repr().to_owned(), default_key_decor(), Item::None)
-            })
+            .or_insert_with(|| TableKeyValue::new(key.repr().to_owned(), Item::None))
             .value
     }
 
@@ -105,9 +104,7 @@ impl Table {
         &mut self
             .items
             .entry(key.get().to_owned())
-            .or_insert_with(|| {
-                TableKeyValue::new(key.repr().to_owned(), default_key_decor(), Item::None)
-            })
+            .or_insert_with(|| TableKeyValue::new(key.repr().to_owned(), Item::None))
             .value
     }
 
@@ -159,7 +156,7 @@ impl Table {
 
     /// Inserts a key-value pair into the map.
     pub fn insert_formatted(&mut self, key: &Key, item: Item) -> Option<Item> {
-        let kv = TableKeyValue::new(key.repr().to_owned(), default_key_decor(), item);
+        let kv = TableKeyValue::new(key.repr().to_owned(), item);
         self.items
             .insert(key.get().to_owned(), kv)
             .map(|kv| kv.value)
@@ -232,7 +229,7 @@ impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for Table {
         for (key, value) in iter {
             let key = key.into();
             let value = Item::Value(value.into());
-            let value = TableKeyValue::new(key.repr().to_owned(), default_key_decor(), value);
+            let value = TableKeyValue::new(key.repr().to_owned(), value);
             self.items.insert(key.into(), value);
         }
     }
@@ -271,11 +268,14 @@ fn decorate_table(table: &mut Table) {
         .map(|(_, kv)| (&mut kv.key_decor, kv.value.as_value_mut().unwrap()))
     {
         // `key1 = value1`
-        key_decor.prefix = InternalString::from("");
-        key_decor.suffix = InternalString::from(" ");
-        value.decorate(" ", "");
+        *key_decor = Decor::new(DEFAULT_KEY_DECOR.0, DEFAULT_KEY_DECOR.1);
+        value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
     }
 }
+
+// `key1 = value1`
+pub(crate) const DEFAULT_KEY_DECOR: (&str, &str) = ("", " ");
+pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("", "");
 
 // TODO: make pub(crate)
 #[doc(hidden)]
@@ -287,10 +287,10 @@ pub struct TableKeyValue {
 }
 
 impl TableKeyValue {
-    pub(crate) fn new(key_repr: Repr, key_decor: Decor, value: Item) -> Self {
+    pub(crate) fn new(key_repr: Repr, value: Item) -> Self {
         TableKeyValue {
             key_repr,
-            key_decor,
+            key_decor: Default::default(),
             value,
         }
     }
@@ -330,8 +330,4 @@ impl TableLike for Table {
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.get_mut(key)
     }
-}
-
-fn default_key_decor() -> Decor {
-    Decor::new("", " ")
 }

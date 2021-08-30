@@ -2,8 +2,9 @@ use std::iter::FromIterator;
 use std::mem;
 
 use crate::key::Key;
-use crate::repr::{Decor, InternalString, Repr};
+use crate::repr::{Decor, InternalString};
 use crate::table::{sort_key_value_pairs, Iter, KeyValuePairs, TableKeyValue, TableLike};
+use crate::value::{DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
 use crate::{Item, Value};
 
 /// Type representing a TOML inline table,
@@ -70,7 +71,10 @@ impl InlineTable {
         let key = Key::with_key(key);
         self.items
             .entry(key.get().to_owned())
-            .or_insert(to_key_value(key.into_repr(), value.into()))
+            .or_insert(TableKeyValue::new(
+                key.into_repr(),
+                Item::Value(value.into()),
+            ))
             .value
             .as_value_mut()
             .expect("non-value type in inline table")
@@ -111,12 +115,14 @@ fn decorate_inline_table(table: &mut InlineTable) {
         .enumerate()
     {
         // { key1 = value1, key2 = value2 }
-        key_decor.prefix = InternalString::from(" ");
-        key_decor.suffix = InternalString::from(" ");
+        *key_decor = Decor::new(DEFAULT_INLINE_KEY_DECOR.0, DEFAULT_INLINE_KEY_DECOR.1);
         if i == n - 1 {
-            value.decorate(" ", " ");
+            value.decorate(
+                DEFAULT_TRAILING_VALUE_DECOR.0,
+                DEFAULT_TRAILING_VALUE_DECOR.1,
+            );
         } else {
-            value.decorate(" ", "");
+            value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
         }
     }
 }
@@ -155,20 +161,13 @@ where
 {
     let v = iter.into_iter().map(|(a, b)| {
         let s: &Key = a.into();
-        (s.get().into(), to_key_value(s.repr().to_owned(), b.into()))
+        (
+            s.get().into(),
+            TableKeyValue::new(s.repr().to_owned(), Item::Value(b.into())),
+        )
     });
     v.collect()
 }
 
-fn to_key_value(key_repr: Repr, mut value: Value) -> TableKeyValue {
-    value.decorate(" ", "");
-    TableKeyValue {
-        key_repr,
-        key_decor: default_inline_key_decor(),
-        value: Item::Value(value),
-    }
-}
-
-pub(crate) fn default_inline_key_decor() -> Decor {
-    Decor::new(" ", " ")
-}
+// `{ key1 = value1, ... }`
+pub(crate) const DEFAULT_INLINE_KEY_DECOR: (&str, &str) = (" ", " ");
