@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter, Result, Write};
 
+use itertools::Itertools;
+
 use crate::document::Document;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
@@ -89,7 +91,7 @@ impl Display for InlineTable {
             .filter(|&(_, kv)| kv.value.is_value())
             .map(|(_, kv)| {
                 (
-                    kv.key_decor.display(&kv.key_repr, DEFAULT_INLINE_KEY_DECOR),
+                    kv.key_decor.display(&kv.key, DEFAULT_INLINE_KEY_DECOR),
                     kv.value.as_value().unwrap(),
                 )
             })
@@ -111,25 +113,25 @@ impl Display for InlineTable {
 impl Table {
     fn visit_nested_tables<'t, F>(
         &'t self,
-        path: &mut Vec<&'t str>,
+        path: &mut Vec<&'t Key>,
         is_array_of_tables: bool,
         callback: &mut F,
     ) -> Result
     where
-        F: FnMut(&'t Table, &Vec<&'t str>, bool) -> Result,
+        F: FnMut(&'t Table, &Vec<&'t Key>, bool) -> Result,
     {
         callback(self, path, is_array_of_tables)?;
 
         for kv in self.items.values() {
             match kv.value {
                 Item::Table(ref t) => {
-                    path.push(kv.key_repr.as_raw());
+                    path.push(&kv.key);
                     t.visit_nested_tables(path, false, callback)?;
                     path.pop();
                 }
                 Item::ArrayOfTables(ref a) => {
                     for t in a.iter() {
-                        path.push(kv.key_repr.as_raw());
+                        path.push(&kv.key);
                         t.visit_nested_tables(path, true, callback)?;
                         path.pop();
                     }
@@ -144,7 +146,7 @@ impl Table {
 fn visit_table(
     f: &mut dyn Write,
     table: &Table,
-    path: &[&str],
+    path: &[&Key],
     is_array_of_tables: bool,
 ) -> Result {
     if path.is_empty() {
@@ -155,7 +157,7 @@ fn visit_table(
             "{}[[",
             table.decor.prefix().unwrap_or(DEFAULT_TABLE_DECOR.0)
         )?;
-        write!(f, "{}", path.join("."))?;
+        write!(f, "{}", path.iter().join("."))?;
         writeln!(
             f,
             "]]{}",
@@ -167,7 +169,7 @@ fn visit_table(
             "{}[",
             table.decor.prefix().unwrap_or(DEFAULT_TABLE_DECOR.0)
         )?;
-        write!(f, "{}", path.join("."))?;
+        write!(f, "{}", path.iter().join("."))?;
         writeln!(
             f,
             "]{}",
@@ -180,7 +182,7 @@ fn visit_table(
             writeln!(
                 f,
                 "{}={}",
-                kv.key_decor.display(&kv.key_repr, DEFAULT_KEY_DECOR),
+                kv.key_decor.display(&kv.key, DEFAULT_KEY_DECOR),
                 value
             )?;
         }

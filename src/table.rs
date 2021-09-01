@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 use linked_hash_map::LinkedHashMap;
 
 use crate::key::Key;
-use crate::repr::{Decor, InternalString, Repr};
+use crate::repr::{Decor, InternalString};
 use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{Item, Value};
 
@@ -90,7 +90,7 @@ impl Table {
         &mut self
             .items
             .entry(key.get().to_owned())
-            .or_insert_with(|| TableKeyValue::new(key.repr().to_owned(), Item::None))
+            .or_insert_with(|| TableKeyValue::new(key, Item::None))
             .value
     }
 
@@ -104,7 +104,7 @@ impl Table {
         &mut self
             .items
             .entry(key.get().to_owned())
-            .or_insert_with(|| TableKeyValue::new(key.repr().to_owned(), Item::None))
+            .or_insert_with(|| TableKeyValue::new(key.to_owned(), Item::None))
             .value
     }
 
@@ -156,7 +156,7 @@ impl Table {
 
     /// Inserts a key-value pair into the map.
     pub fn insert_formatted(&mut self, key: &Key, item: Item) -> Option<Item> {
-        let kv = TableKeyValue::new(key.repr().to_owned(), item);
+        let kv = TableKeyValue::new(key.to_owned(), item);
         self.items
             .insert(key.get().to_owned(), kv)
             .map(|kv| kv.value)
@@ -229,8 +229,8 @@ impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for Table {
         for (key, value) in iter {
             let key = key.into();
             let value = Item::Value(value.into());
-            let value = TableKeyValue::new(key.repr().to_owned(), value);
-            self.items.insert(key.into(), value);
+            let value = TableKeyValue::new(key, value);
+            self.items.insert(value.key.get().to_owned(), value);
         }
     }
 }
@@ -297,15 +297,15 @@ pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
 
 #[derive(Debug, Clone)]
 pub(crate) struct TableKeyValue {
-    pub(crate) key_repr: Repr,
+    pub(crate) key: Key,
     pub(crate) key_decor: Decor,
     pub(crate) value: Item,
 }
 
 impl TableKeyValue {
-    pub(crate) fn new(key_repr: Repr, value: Item) -> Self {
+    pub(crate) fn new(key: Key, value: Item) -> Self {
         TableKeyValue {
-            key_repr,
+            key,
             key_decor: Default::default(),
             value,
         }

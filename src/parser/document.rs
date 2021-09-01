@@ -1,4 +1,5 @@
 use crate::document::Document;
+use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::inline_table::KEYVAL_SEP;
 use crate::parser::key::simple_key;
@@ -6,7 +7,7 @@ use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
-use crate::repr::{Decor, InternalString, Repr};
+use crate::repr::{Decor, Repr};
 use crate::table::TableKeyValue;
 use crate::Item;
 use combine::parser::char::char;
@@ -34,12 +35,12 @@ toml_parser!(parse_newline, parser, {
 });
 
 toml_parser!(keyval, parser, {
-    parse_keyval().and_then(|(k, kv)| parser.borrow_mut().deref_mut().on_keyval(k, kv))
+    parse_keyval().and_then(|kv| parser.borrow_mut().deref_mut().on_keyval(kv))
 });
 
 // keyval = key keyval-sep val
 parser! {
-    fn parse_keyval['a, I]()(I) -> (InternalString, TableKeyValue)
+    fn parse_keyval['a, I]()(I) -> TableKeyValue
     where
         [I: RangeStream<
          Range = &'a str,
@@ -56,17 +57,18 @@ parser! {
             char(KEYVAL_SEP),
             (ws(), value(), line_trailing())
         ).map(|(k, _, v)| {
+            let ((raw, key), suf) = k;
+            let key_repr = Repr::new_unchecked(raw);
+            let key = Key::new(key_repr, key);
+            let key_decor = Decor::new("", suf);
+
             let (pre, v, suf) = v;
             let v = v.decorated(pre, suf);
-            let ((raw, key), suf) = k;
-            (
+            TableKeyValue {
                 key,
-                TableKeyValue {
-                    key_repr: Repr::new_unchecked(raw),
-                    key_decor: Decor::new("", suf),
-                    value: Item::Value(v),
-                }
-            )
+                key_decor,
+                value: Item::Value(v),
+            }
         })
     }
 }
@@ -116,7 +118,7 @@ impl TomlParser {
         self.document.trailing.push_str(e);
     }
 
-    fn on_keyval(&mut self, key: InternalString, mut kv: TableKeyValue) -> Result<(), CustomError> {
+    fn on_keyval(&mut self, mut kv: TableKeyValue) -> Result<(), CustomError> {
         let prefix = mem::take(&mut self.document.trailing);
         kv.key_decor = Decor::new(
             prefix + kv.key_decor.prefix().unwrap_or_default(),
@@ -126,18 +128,14 @@ impl TomlParser {
         let root = self.document.as_table_mut();
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0)
             .expect("the table path is valid; qed");
-        if table.contains_key(&key) {
+        if table.contains_key(kv.key.get()) {
             Err(CustomError::DuplicateKey {
-                key,
+                key: kv.key.into(),
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
-            let tkv = TableKeyValue {
-                key_repr: kv.key_repr,
-                key_decor: kv.key_decor,
-                value: kv.value,
-            };
-            table.items.insert(key, tkv);
+            let key = kv.key.get().to_owned();
+            table.items.insert(key, kv);
             Ok(())
         }
     }
