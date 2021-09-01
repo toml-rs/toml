@@ -87,10 +87,7 @@ impl InlineTable {
         let key = Key::with_key(key);
         self.items
             .entry(key.get().to_owned())
-            .or_insert(TableKeyValue::new(
-                key.into_repr(),
-                Item::Value(value.into()),
-            ))
+            .or_insert(TableKeyValue::new(key, Item::Value(value.into())))
             .value
             .as_value_mut()
             .expect("non-value type in inline table")
@@ -98,7 +95,7 @@ impl InlineTable {
 
     /// Inserts a key-value pair into the map.
     pub fn insert_formatted(&mut self, key: &Key, value: Value) -> Option<Value> {
-        let kv = TableKeyValue::new(key.repr().to_owned(), Item::Value(value));
+        let kv = TableKeyValue::new(key.to_owned(), Item::Value(value));
         self.items
             .insert(key.get().to_owned(), kv)
             .filter(|kv| kv.value.is_value())
@@ -133,8 +130,8 @@ impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for InlineTable {
         for (key, value) in iter {
             let key = key.into();
             let value = Item::Value(value.into());
-            let value = TableKeyValue::new(key.repr().to_owned(), value);
-            self.items.insert(key.into(), value);
+            let value = TableKeyValue::new(key, value);
+            self.items.insert(value.key.get().to_owned(), value);
         }
     }
 }

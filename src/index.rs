@@ -61,7 +61,7 @@ impl Index for str {
             let mut t = InlineTable::default();
             t.items.insert(
                 key.get().to_owned(),
-                TableKeyValue::new(key.repr().to_owned(), Item::None),
+                TableKeyValue::new(key.clone(), Item::None),
             );
             *v = value(Value::InlineTable(t));
         }
@@ -73,10 +73,10 @@ impl Index for str {
                     .unwrap()
                     .items
                     .entry(key.get().to_owned())
-                    .or_insert(TableKeyValue::new(key.repr().to_owned(), Item::None))
+                    .or_insert(TableKeyValue::new(key, Item::None))
                     .value
             }
-            _ => panic!("cannot access key {}", key),
+            _ => panic!("cannot access key {}", self),
         }
     }
 }

@@ -1,3 +1,4 @@
+use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::simple_key;
 use crate::parser::trivia::ws;
@@ -17,23 +18,20 @@ parse!(inline_table() -> InlineTable, {
             inline_table_keyvals().and_then(|(p, v)| table_from_pairs(p, v)))
 });
 
-fn table_from_pairs(
-    preamble: &str,
-    v: Vec<(InternalString, TableKeyValue)>,
-) -> Result<InlineTable, CustomError> {
+fn table_from_pairs(preamble: &str, v: Vec<TableKeyValue>) -> Result<InlineTable, CustomError> {
     let mut table = InlineTable {
         preamble: InternalString::from(preamble),
         ..Default::default()
     };
 
-    for (k, kv) in v {
-        if table.contains_key(&k) {
+    for kv in v {
+        if table.contains_key(kv.key.get()) {
             return Err(CustomError::DuplicateKey {
-                key: k,
+                key: kv.key.into(),
                 table: "inline".into(),
             });
         }
-        table.items.insert(k, kv);
+        table.items.insert(kv.key.get().to_owned(), kv);
     }
     Ok(table)
 }
@@ -52,7 +50,7 @@ pub(crate) const KEYVAL_SEP: char = '=';
 // ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
 // ( key keyval-sep val )
 
-parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, TableKeyValue)>), {
+parse!(inline_table_keyvals() -> (&'a str, Vec<TableKeyValue>), {
     (
         sep_by(keyval(), char(INLINE_TABLE_SEP)),
         ws(),
@@ -61,22 +59,22 @@ parse!(inline_table_keyvals() -> (&'a str, Vec<(InternalString, TableKeyValue)>)
     })
 });
 
-parse!(keyval() -> (InternalString, TableKeyValue), {
+parse!(keyval() -> TableKeyValue, {
     (
         attempt((ws(), simple_key(), ws())),
         char(KEYVAL_SEP),
         (ws(), value(), ws()),
     ).map(|(k, _, v)| {
+        let (pre, (raw, key), suf) = k;
+        let key = Key::new(Repr::new_unchecked(raw), key);
+        let key_decor = Decor::new(pre, suf);
+
         let (pre, v, suf) = v;
         let v = v.decorated(pre, suf);
-        let (pre, (raw, key), suf) = k;
-        (
+        TableKeyValue {
             key,
-            TableKeyValue {
-                key_repr: Repr::new_unchecked(raw),
-                key_decor: Decor::new(pre, suf),
-                value: Item::Value(v),
-            }
-        )
+            key_decor,
+            value: Item::Value(v),
+        }
     })
 });
