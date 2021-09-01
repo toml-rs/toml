@@ -38,8 +38,8 @@ impl Key {
         Self { repr, key }
     }
 
-    pub(crate) fn with_key(key: &str) -> Self {
-        key_string_repr(key)
+    pub(crate) fn with_key(key: impl AsRef<str>) -> Self {
+        key_string_repr(key.as_ref())
     }
 
     /// Returns the parsed key value.
@@ -87,6 +87,12 @@ impl FromStr for Key {
 
 impl<'b> From<&'b str> for Key {
     fn from(s: &'b str) -> Self {
+        Key::with_key(s)
+    }
+}
+
+impl From<String> for Key {
+    fn from(s: String) -> Self {
         Key::with_key(s)
     }
 }

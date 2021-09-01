@@ -265,6 +265,12 @@ impl FromStr for Value {
     }
 }
 
+impl<'b> From<&'b Value> for Value {
+    fn from(s: &'b Value) -> Self {
+        s.clone()
+    }
+}
+
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
         let (value, raw) = parse_string_guess_delimiters(s);
@@ -274,7 +280,7 @@ impl<'b> From<&'b str> for Value {
 
 impl From<InternalString> for Value {
     fn from(s: InternalString) -> Self {
-        Value::from(s.as_ref())
+        Value::from(s.as_str())
     }
 }
 
@@ -384,7 +390,7 @@ impl<V: Into<Value>> FromIterator<V> for Value {
     }
 }
 
-impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
+impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = (K, V)>,

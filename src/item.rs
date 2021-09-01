@@ -71,6 +71,27 @@ impl Item {
             _ => None,
         }
     }
+    /// Casts `self` to value.
+    pub fn into_value(self) -> Result<Value, Self> {
+        match self {
+            Item::Value(v) => Ok(v),
+            _ => Err(self),
+        }
+    }
+    /// Casts `self` to table.
+    pub fn into_table(self) -> Result<Table, Self> {
+        match self {
+            Item::Table(t) => Ok(t),
+            _ => Err(self),
+        }
+    }
+    /// Casts `self` to array of tables.
+    pub fn into_array_of_tables(self) -> Result<ArrayOfTables, Self> {
+        match self {
+            Item::ArrayOfTables(a) => Ok(a),
+            _ => Err(self),
+        }
+    }
     /// Returns true iff `self` is a value.
     pub fn is_value(&self) -> bool {
         self.as_value().is_some()

@@ -2,7 +2,7 @@ macro_rules! parse_key {
     ($s:expr) => {{
         let key = $s.parse::<Key>();
         assert!(key.is_ok());
-        &key.unwrap()
+        key.unwrap()
     }};
 }
 
@@ -704,10 +704,10 @@ fn test_inline_table_append() {
     ]);
     let b = b.as_inline_table_mut().unwrap();
 
-    b.merge_into(a);
+    a.extend(b.iter());
     assert_eq!(a.len(), 5);
     assert!(a.contains_key("e"));
-    assert!(b.is_empty());
+    assert_eq!(b.len(), 3);
 }
 
 } // mod tests

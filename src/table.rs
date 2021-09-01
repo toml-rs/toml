@@ -246,6 +246,24 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Table {
     }
 }
 
+impl IntoIterator for Table {
+    type Item = (String, Item);
+    type IntoIter = IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Box::new(self.items.into_iter().map(|(k, kv)| (k, kv.value)))
+    }
+}
+
+impl<'s> IntoIterator for &'s Table {
+    type Item = (&'s str, &'s Item);
+    type IntoIter = Iter<'s>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
 
 pub(crate) fn sort_key_value_pairs(items: &mut LinkedHashMap<InternalString, TableKeyValue>) {
@@ -296,6 +314,8 @@ impl TableKeyValue {
     }
 }
 
+/// An owned iterator type over `Table`'s key/value pairs.
+pub type IntoIter = Box<dyn Iterator<Item = (String, Item)>>;
 /// An iterator type over `Table`'s key/value pairs.
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 /// A mutable iterator type over `Table`'s key/value pairs.

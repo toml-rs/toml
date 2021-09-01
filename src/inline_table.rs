@@ -1,5 +1,4 @@
 use std::iter::FromIterator;
-use std::mem;
 
 use crate::key::Key;
 use crate::repr::{Decor, InternalString};
@@ -18,20 +17,14 @@ pub struct InlineTable {
     pub(crate) decor: Decor,
 }
 
-/// An iterator type over key/value pairs of an inline table.
-pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
+impl InlineTable {
+    /// Creates an empty table.
+    pub fn new() -> Self {
+        Default::default()
+    }
+}
 
 impl InlineTable {
-    /// Returns the number of key/value pairs.
-    pub fn len(&self) -> usize {
-        self.iter().count()
-    }
-
-    /// Returns true iff the table is empty.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
     /// Returns an iterator over key/value pairs.
     pub fn iter(&self) -> InlineTableIter<'_> {
         Box::new(
@@ -42,9 +35,41 @@ impl InlineTable {
         )
     }
 
-    /// Sorts the key/value pairs by key.
-    pub fn sort(&mut self) {
-        sort_key_value_pairs(&mut self.items);
+    /// Returns an iterator over key/value pairs.
+    pub fn iter_mut(&mut self) -> InlineTableIterMut<'_> {
+        Box::new(
+            self.items
+                .iter_mut()
+                .filter(|(_, kv)| kv.value.is_value())
+                .map(|(k, kv)| (&k[..], kv.value.as_value_mut().unwrap())),
+        )
+    }
+
+    /// Returns the number of key/value pairs.
+    pub fn len(&self) -> usize {
+        self.iter().count()
+    }
+
+    /// Returns true iff the table is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Clears the table, removing all key-value pairs. Keeps the allocated memory for reuse.
+    pub fn clear(&mut self) {
+        self.items.clear()
+    }
+
+    /// Return an optional reference to the value at the given the key.
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        self.items.get(key).and_then(|kv| kv.value.as_value())
+    }
+
+    /// Return an optional mutable reference to the value at the given the key.
+    pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
+        self.items
+            .get_mut(key)
+            .and_then(|kv| kv.value.as_value_mut())
     }
 
     /// Returns true iff the table contains given key.
@@ -53,15 +78,6 @@ impl InlineTable {
             !kv.value.is_none()
         } else {
             false
-        }
-    }
-
-    /// Merges the key/value pairs into the `other` table leaving
-    /// `self` empty.
-    pub fn merge_into(&mut self, other: &mut InlineTable) {
-        let items = mem::replace(&mut self.items, KeyValuePairs::new());
-        for (k, kv) in items {
-            other.items.insert(k, kv);
         }
     }
 
@@ -80,28 +96,80 @@ impl InlineTable {
             .expect("non-value type in inline table")
     }
 
+    /// Inserts a key-value pair into the map.
+    pub fn insert_formatted(&mut self, key: &Key, value: Value) -> Option<Value> {
+        let kv = TableKeyValue::new(key.repr().to_owned(), Item::Value(value));
+        self.items
+            .insert(key.get().to_owned(), kv)
+            .filter(|kv| kv.value.is_value())
+            .map(|kv| kv.value.into_value().unwrap())
+    }
+
+    /// Removes an item given the key.
+    pub fn remove(&mut self, key: &str) -> Option<Item> {
+        self.items.remove(key).map(|kv| kv.value)
+    }
+}
+
+impl InlineTable {
+    /// Sorts the key/value pairs by key.
+    pub fn sort(&mut self) {
+        sort_key_value_pairs(&mut self.items);
+    }
+
     /// Auto formats the table.
     pub fn fmt(&mut self) {
         decorate_inline_table(self);
     }
 
-    /// Removes a key/value pair given the key.
-    pub fn remove(&mut self, key: &str) -> Option<Value> {
-        self.items
-            .remove(key)
-            .and_then(|kv| kv.value.as_value().cloned())
+    /// Returns the decor associated with a given key of the table.
+    pub fn decor(&self, key: &str) -> Option<&Decor> {
+        self.items.get(key).map(|kv| &kv.key_decor)
     }
+}
 
-    /// Return an optional reference to the value at the given the key.
-    pub fn get(&self, key: &str) -> Option<&Value> {
-        self.items.get(key).and_then(|kv| kv.value.as_value())
+impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for InlineTable {
+    fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
+        for (key, value) in iter {
+            let key = key.into();
+            let value = Item::Value(value.into());
+            let value = TableKeyValue::new(key.repr().to_owned(), value);
+            self.items.insert(key.into(), value);
+        }
     }
+}
 
-    /// Return an optional mutable reference to the value at the given the key.
-    pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
-        self.items
-            .get_mut(key)
-            .and_then(|kv| kv.value.as_value_mut())
+impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for InlineTable {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+    {
+        let mut table = InlineTable::new();
+        table.extend(iter);
+        table
+    }
+}
+
+impl IntoIterator for InlineTable {
+    type Item = (String, Value);
+    type IntoIter = InlineTableIntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Box::new(
+            self.items
+                .into_iter()
+                .filter(|(_, kv)| kv.value.is_value())
+                .map(|(k, kv)| (k, kv.value.into_value().unwrap())),
+        )
+    }
+}
+
+impl<'s> IntoIterator for &'s InlineTable {
+    type Item = (&'s str, &'s Value);
+    type IntoIter = InlineTableIter<'s>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 
@@ -127,6 +195,13 @@ fn decorate_inline_table(table: &mut InlineTable) {
     }
 }
 
+/// An owned iterator type over key/value pairs of an inline table.
+pub type InlineTableIntoIter = Box<dyn Iterator<Item = (String, Value)>>;
+/// An iterator type over key/value pairs of an inline table.
+pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
+/// A mutable iterator type over key/value pairs of an inline table.
+pub type InlineTableIterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Value)> + 'a>;
+
 impl TableLike for InlineTable {
     fn iter(&self) -> Iter<'_> {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
@@ -137,36 +212,6 @@ impl TableLike for InlineTable {
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.items.get_mut(key).map(|kv| &mut kv.value)
     }
-}
-
-impl<'k, K: Into<&'k Key>, V: Into<Value>> FromIterator<(K, V)> for InlineTable {
-    fn from_iter<I>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = (K, V)>,
-    {
-        let mut table = InlineTable {
-            items: to_key_value_pairs(iter),
-            ..Default::default()
-        };
-        table.fmt();
-        table
-    }
-}
-
-fn to_key_value_pairs<'k, K, V, I>(iter: I) -> KeyValuePairs
-where
-    K: Into<&'k Key>,
-    V: Into<Value>,
-    I: IntoIterator<Item = (K, V)>,
-{
-    let v = iter.into_iter().map(|(a, b)| {
-        let s: &Key = a.into();
-        (
-            s.get().into(),
-            TableKeyValue::new(s.repr().to_owned(), Item::Value(b.into())),
-        )
-    });
-    v.collect()
 }
 
 // `{ key1 = value1, ... }`
