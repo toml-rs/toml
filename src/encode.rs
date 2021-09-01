@@ -116,7 +116,7 @@ impl Table {
         callback: &mut F,
     ) -> Result
     where
-        F: FnMut(&Table, &Vec<&'t str>, bool) -> Result,
+        F: FnMut(&'t Table, &Vec<&'t str>, bool) -> Result,
     {
         callback(self, path, is_array_of_tables)?;
 
@@ -199,11 +199,8 @@ impl Display for Table {
     }
 }
 
-impl Document {
-    /// Returns a string representation of the TOML document, attempting to keep
-    /// the table headers in their original order.
-    fn to_string_in_original_order(&self) -> String {
-        let mut string = String::new();
+impl Display for Document {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut path = Vec::new();
         let mut last_position = 0;
         let mut tables = Vec::new();
@@ -212,26 +209,16 @@ impl Document {
                 if let Some(pos) = t.position {
                     last_position = pos;
                 }
-                let mut s = String::new();
-                visit_table(&mut s, t, p, is_array)?;
-                tables.push((last_position, s));
+                tables.push((last_position, t, p.clone(), is_array));
                 Ok(())
             })
             .unwrap();
 
-        tables.sort_by_key(|&(id, _)| id);
-        for (_, table) in tables {
-            string.push_str(&table);
+        tables.sort_by_key(|&(id, _, _, _)| id);
+        for (_, table, path, is_array) in tables {
+            visit_table(f, table, &path, is_array)?;
         }
-        string.push_str(&self.trailing);
-        string
-    }
-}
-
-impl Display for Document {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let s = self.to_string_in_original_order();
-        s.fmt(f)
+        self.trailing.fmt(f)
     }
 }
 
