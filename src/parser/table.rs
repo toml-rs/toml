@@ -51,7 +51,7 @@ toml_parser!(array_table, parser, {
 
 // table = std-table / array-table
 parser! {
-    pub fn table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
+    pub(crate) fn table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
     where
         [I: RangeStream<
          Range = &'a str,

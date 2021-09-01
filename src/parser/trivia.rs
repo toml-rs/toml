@@ -6,7 +6,7 @@ use combine::*;
 // wschar = ( %x20 /              ; Space
 //            %x09 )              ; Horizontal tab
 #[inline]
-pub fn is_wschar(c: char) -> bool {
+pub(crate) fn is_wschar(c: char) -> bool {
     matches!(c, ' ' | '\t')
 }
 
@@ -17,7 +17,7 @@ parse!(ws() -> &'a str, {
 
 // non-ascii = %x80-D7FF / %xE000-10FFFF
 #[inline]
-pub fn is_non_ascii(c: char) -> bool {
+pub(crate) fn is_non_ascii(c: char) -> bool {
     matches!(c, '\u{80}'..='\u{D7FF}' | '\u{E000}'..='\u{10FFFF}')
 }
 

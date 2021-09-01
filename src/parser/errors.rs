@@ -103,7 +103,7 @@ impl<'a> Display for FancyError<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub enum CustomError {
+pub(crate) enum CustomError {
     DuplicateKey { key: String, table: String },
     InvalidHexEscape(u32),
     UnparsedLine,

@@ -22,7 +22,7 @@ pub(crate) use self::value::value as value_parser;
 use crate::document::Document;
 use crate::key::Key;
 
-pub struct TomlParser {
+pub(crate) struct TomlParser {
     document: Box<Document>,
     current_table_path: Vec<Key>,
     current_table_position: usize,
@@ -50,7 +50,7 @@ mod tests {
     /// Used in different `assert*!` macros in combination with `pretty_assertions` crate to make
     /// test failures to show nice diffs.
     #[derive(PartialEq, Eq)]
-    struct PrettyString<'a>(pub &'a str);
+    struct PrettyString<'a>(pub(crate) &'a str);
     /// Make diff to display string as multi-line string
     impl<'a> fmt::Debug for PrettyString<'a> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

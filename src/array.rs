@@ -151,7 +151,7 @@ impl<V: Into<Value>> FromIterator<V> for Array {
     }
 }
 
-pub fn decorate_array(array: &mut Array) {
+pub(crate) fn decorate_array(array: &mut Array) {
     for (i, value) in array
         .values
         .iter_mut()

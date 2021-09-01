@@ -295,10 +295,8 @@ fn decorate_table(table: &mut Table) {
 pub(crate) const DEFAULT_KEY_DECOR: (&str, &str) = ("", " ");
 pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
 
-// TODO: make pub(crate)
-#[doc(hidden)]
 #[derive(Debug, Clone)]
-pub struct TableKeyValue {
+pub(crate) struct TableKeyValue {
     pub(crate) key_repr: Repr,
     pub(crate) key_decor: Decor,
     pub(crate) value: Item,

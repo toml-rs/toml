@@ -80,7 +80,7 @@ impl TomlParser {
     //                ( ws keyval ws [ comment ] ) /
     //                ( ws table ws [ comment ] ) /
     //                  ws )
-    pub fn parse(s: &str) -> Result<Document, TomlError> {
+    pub(crate) fn parse(s: &str) -> Result<Document, TomlError> {
         let parser = RefCell::new(Self::default());
         let input = Stream::new(s);
 
