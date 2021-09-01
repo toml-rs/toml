@@ -64,18 +64,6 @@ mod tests {
                 PrettyString(&self.doc.to_string()));
             self
         }
-
-        fn produces_in_original_order(&self, expected: &str) -> &Self {
-            assert_eq!(
-                PrettyString(expected),
-                PrettyString(&self.doc.to_string_in_original_order()));
-            self
-        }
-
-        fn produces(&self, expected: &str) -> &Self {
-            self.produces_display(expected).produces_in_original_order(expected);
-            self
-        }
     }
 
 // insertion
@@ -94,7 +82,7 @@ fn test_insert_leaf_table() {
         root["servers"]["beta"] = table();
         root["servers"]["beta"]["ip"] = value("10.0.0.2");
         root["servers"]["beta"]["dc"] = value("eqdc10");
-    }).produces(r#"
+    }).produces_display(r#"
         [servers]
 
         [servers.alpha]
@@ -123,14 +111,6 @@ fn test_inserted_leaf_table_goes_after_last_sibling() {
     }).produces_display(r#"
         [package]
         [dependencies]
-        [dependencies.opencl]
-
-[dependencies.newthing]
-        [[example]]
-        [dev-dependencies]
-"#).produces_in_original_order(r#"
-        [package]
-        [dependencies]
         [[example]]
         [dependencies.opencl]
 
@@ -146,7 +126,7 @@ fn test_inserting_tables_from_different_parsed_docs() {
     ).running(|root| {
         let other = "[b]".parse::<Document>().unwrap();
         root["b"] = other["b"].clone();
-    }).produces(
+    }).produces_display(
         "[a]\n[b]\n"
     );
 }
@@ -159,7 +139,7 @@ fn test_insert_nonleaf_table() {
         root["servers"]["alpha"] = table();
         root["servers"]["alpha"]["ip"] = value("10.0.0.1");
         root["servers"]["alpha"]["dc"] = value("eqdc10");
-    }).produces(r#"
+    }).produces_display(r#"
         [other.table]
 
 [servers]
@@ -185,7 +165,7 @@ fn test_insert_array() {
             first["hello"] = value("world");
         }
         array.append(Table::new());
-    }).produces(r#"
+    }).produces_display(r#"
         [package]
         title = "withoutarray"
 
@@ -206,7 +186,7 @@ fn test_insert_values() {
         root["tbl"]["key1"] = value("value1");
         root["tbl"]["key2"] = value(42);
         root["tbl"]["key3"] = value(8.1415926);
-    }).produces(r#"
+    }).produces_display(r#"
 [tbl]
 key1 = "value1"
 key2 = 42
@@ -236,7 +216,7 @@ fn test_remove_leaf_table() {
         let servers = root.entry("servers");
         let servers = as_table!(servers);
         assert!(servers.remove("alpha").is_some());
-    }).produces(r#"
+    }).produces_display(r#"
         [servers]
 
         [servers.beta]
@@ -283,7 +263,7 @@ fn test_remove_nonleaf_table() {
 
     "#).running(|root| {
         assert!(root.remove("a").is_some());
-    }).produces(r#"
+    }).produces_display(r#"
         title = "not relevant"
         # comment 2
         [b] # comment 2.1
@@ -320,7 +300,7 @@ fn test_remove_array_entry() {
         assert_eq!(dmp.len(), 2);
         dmp.remove(1);
         assert_eq!(dmp.len(), 1);
-    }).produces(r#"
+    }).produces_display(r#"
         [package]
         name = "hello"
         version = "1.0.0"
@@ -354,7 +334,7 @@ fn test_remove_array() {
         path = "src/bin/dmp/main.rs""#
     ).running(|root| {
         assert!(root.remove("bin").is_some());
-    }).produces(r#"
+    }).produces_display(r#"
         [package]
         name = "hello"
         version = "1.0.0"
@@ -382,7 +362,7 @@ fn test_remove_value() {
         assert!(value.is_str());
         let value = value.as_str().unwrap();
         assert_eq!(value, "1.0.0");
-    }).produces(r#"
+    }).produces_display(r#"
         name = "hello"
         documentation = "https://docs.rs/hello"
 "#
@@ -405,7 +385,7 @@ fn test_remove_last_value_from_implicit() {
         assert!(value.is_value());
         let value = value.as_value().unwrap();
         assert_eq!(value.as_integer(), Some(1));
-    }).produces(r#""#);
+    }).produces_display(r#""#);
 }
 
 // values
@@ -427,17 +407,6 @@ fn test_sort_values() {
         let a = as_table!(a);
         a.sort_values();
     }).produces_display(r#"
-        [a]
-        a = 1
-        # this comment is attached to b
-        b = 2 # as well as this
-        c = 3
-
-        [a.z]
-
-        [a.y]
-"#
-    ).produces_in_original_order(r#"
         [a.z]
 
         [a]
@@ -466,7 +435,7 @@ fn test_set_position() {
                 as_table!(segmented).set_position(5)
             }
         }
-    }).produces_in_original_order(r#"        [dependencies]
+    }).produces_display(r#"        [dependencies]
 
         [package]
         [dev-dependencies]
@@ -486,7 +455,7 @@ fn test_multiple_zero_positions() {
         for (_, table) in root.iter_mut() {
             as_table!(table).set_position(0)
         }
-    }).produces_in_original_order(r#"
+    }).produces_display(r#"
         [package]
         [dependencies]
         [dev-dependencies]
@@ -507,7 +476,7 @@ fn test_multiple_max_usize_positions() {
         for (_, table) in root.iter_mut() {
             as_table!(table).set_position(usize::MAX)
         }
-    }).produces_in_original_order(r#"        [dependencies.opencl]
+    }).produces_display(r#"        [dependencies.opencl]
         a=""
 
         [package]
@@ -559,7 +528,7 @@ fn test_insert_replace_into_array() {
         // This should replace formatting.
         assert_eq!(b.replace_formatted(4, Value::from("yikes").decorated("  ", "")).as_str(), Some("test"));
 
-    }).produces(r#"
+    }).produces_display(r#"
         a = [1, 2, 3, 4]
         b = ["hello", "beep",   "zoink"   ,
 "world"
@@ -586,7 +555,7 @@ fn test_remove_from_array() {
         assert_eq!(b.len(), 1);
         assert!(b.remove(0).is_str());
         assert!(b.is_empty());
-    }).produces(r#"
+    }).produces_display(r#"
         a = [1, 2, 3]
         b = []
 "#
@@ -625,7 +594,7 @@ fn test_insert_into_inline_table() {
         b.get_or_insert("hello", "world");
         assert_eq!(b.len(), 1);
         b.fmt()
-    }).produces(r#"
+    }).produces_display(r#"
         a = { a = 2, c = 3, b = 42 }
         b = { hello = "world" }
 "#
@@ -650,7 +619,7 @@ fn test_remove_from_inline_table() {
         assert_eq!(b.len(), 1);
         assert!(b.remove("hello").is_some());
         assert!(b.is_empty());
-    }).produces(r#"
+    }).produces_display(r#"
         a = {a=2, b = 42}
         b = {}
 "#

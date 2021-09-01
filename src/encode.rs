@@ -202,7 +202,7 @@ impl Display for Table {
 impl Document {
     /// Returns a string representation of the TOML document, attempting to keep
     /// the table headers in their original order.
-    pub fn to_string_in_original_order(&self) -> String {
+    fn to_string_in_original_order(&self) -> String {
         let mut string = String::new();
         let mut path = Vec::new();
         let mut last_position = 0;
@@ -230,8 +230,8 @@ impl Document {
 
 impl Display for Document {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.as_table())?;
-        write!(f, "{}", self.trailing)
+        let s = self.to_string_in_original_order();
+        s.fmt(f)
     }
 }
 
