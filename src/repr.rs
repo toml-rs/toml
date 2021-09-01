@@ -62,7 +62,7 @@ impl Repr {
 /// A prefix and suffix,
 ///
 /// Including comments, whitespaces and newlines.
-#[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Default, Debug, Hash)]
 pub struct Decor {
     prefix: Option<InternalString>,
     suffix: Option<InternalString>,

@@ -493,6 +493,9 @@ that
             r#"  "#,
             r#" hello = 'darkness' # my old friend
 "#,
+            r#"[parent . child]
+key = "value"
+"#,
         ];
         for document in &documents {
             let doc = TomlParser::parse(document);
@@ -500,6 +503,8 @@ that
             assert!(doc.is_ok());
             let doc = doc.unwrap();
 
+            dbg!(doc.to_string());
+            dbg!(document);
             assert_eq!(PrettyString(document), PrettyString(&doc.to_string()));
         }
 

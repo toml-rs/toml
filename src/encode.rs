@@ -6,7 +6,7 @@ use crate::document::Document;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{DecorDisplay, Formatted, Repr};
-use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_TABLE_DECOR};
+use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_TABLE_DECOR};
 use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{Array, InlineTable, Item, Table, Value};
 
@@ -36,6 +36,7 @@ impl<T> Display for Formatted<T> {
 
 impl Display for Key {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        // HACK: For now, leaving off decor since we don't know the defaults to use in this context
         self.repr().fmt(f)
     }
 }
@@ -91,7 +92,7 @@ impl Display for InlineTable {
             .filter(|&(_, kv)| kv.value.is_value())
             .map(|(_, kv)| {
                 (
-                    kv.key_decor.display(&kv.key, DEFAULT_INLINE_KEY_DECOR),
+                    kv.key.decor.display(&kv.key, DEFAULT_INLINE_KEY_DECOR),
                     kv.value.as_value().unwrap(),
                 )
             })
@@ -157,7 +158,13 @@ fn visit_table(
             "{}[[",
             table.decor.prefix().unwrap_or(DEFAULT_TABLE_DECOR.0)
         )?;
-        write!(f, "{}", path.iter().join("."))?;
+        write!(
+            f,
+            "{}",
+            path.iter()
+                .map(|k| k.decor.display(k, DEFAULT_KEY_PATH_DECOR))
+                .join(".")
+        )?;
         writeln!(
             f,
             "]]{}",
@@ -169,7 +176,13 @@ fn visit_table(
             "{}[",
             table.decor.prefix().unwrap_or(DEFAULT_TABLE_DECOR.0)
         )?;
-        write!(f, "{}", path.iter().join("."))?;
+        write!(
+            f,
+            "{}",
+            path.iter()
+                .map(|k| k.decor.display(k, DEFAULT_KEY_PATH_DECOR))
+                .join(".")
+        )?;
         writeln!(
             f,
             "]{}",
@@ -182,7 +195,7 @@ fn visit_table(
             writeln!(
                 f,
                 "{}={}",
-                kv.key_decor.display(&kv.key, DEFAULT_KEY_DECOR),
+                kv.key.decor.display(&kv.key, DEFAULT_KEY_DECOR),
                 value
             )?;
         }
