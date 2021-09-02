@@ -133,9 +133,9 @@ impl TomlParser {
         }
 
         let root = self.document.as_table_mut();
-        let table = Self::descend_path(root, self.current_table_path.as_slice(), 0)
+        let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)
             .expect("the table path is valid; qed");
-        let table = Self::descend_path(table, &path, 0)?;
+        let table = Self::descend_path(table, &path, 0, true)?;
         if table.contains_key(kv.key.get()) {
             Err(CustomError::DuplicateKey {
                 key: kv.key.into(),

@@ -86,23 +86,17 @@ impl Display for InlineTable {
             self.decor.prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
         )?;
         write!(f, "{}", self.preamble)?;
-        for (i, (key, value)) in self
-            .items
-            .iter()
-            .filter(|&(_, kv)| kv.value.is_value())
-            .map(|(_, kv)| {
-                (
-                    kv.key.decor.display(&kv.key, DEFAULT_INLINE_KEY_DECOR),
-                    kv.value.as_value().unwrap(),
-                )
-            })
-            .enumerate()
-        {
+
+        let mut children = Vec::new();
+        self.get_children(&mut children);
+        for (i, (key_path, value)) in children.into_iter().enumerate() {
+            let key = key_path_display(&key_path, DEFAULT_INLINE_KEY_DECOR);
             if i > 0 {
                 write!(f, ",")?;
             }
             write!(f, "{}={}", key, value)?;
         }
+
         write!(
             f,
             "}}{}",
@@ -125,7 +119,7 @@ impl Table {
 
         for kv in self.items.values() {
             match kv.value {
-                Item::Table(ref t) => {
+                Item::Table(ref t) if !t.is_dotted() => {
                     path.push(&kv.key);
                     t.visit_nested_tables(path, false, callback)?;
                     path.pop();
@@ -150,6 +144,9 @@ fn visit_table(
     path: &[&Key],
     is_array_of_tables: bool,
 ) -> Result {
+    let mut children = Vec::new();
+    table.get_children(&mut children);
+
     if path.is_empty() {
         // don't print header for the root node
     } else if is_array_of_tables {
@@ -170,7 +167,7 @@ fn visit_table(
             "]]{}",
             table.decor.suffix().unwrap_or(DEFAULT_TABLE_DECOR.1)
         )?;
-    } else if !(table.implicit && table.values_len() == 0) {
+    } else if !(table.implicit && children.is_empty()) {
         write!(
             f,
             "{}[",
@@ -190,17 +187,31 @@ fn visit_table(
         )?;
     }
     // print table body
-    for kv in table.items.values() {
-        if let Item::Value(ref value) = kv.value {
-            writeln!(
-                f,
-                "{}={}",
-                kv.key.decor.display(&kv.key, DEFAULT_KEY_DECOR),
-                value
-            )?;
-        }
+    for (key_path, value) in children {
+        let key = key_path_display(&key_path, DEFAULT_KEY_DECOR);
+        writeln!(f, "{}={}", key, value)?;
     }
     Ok(())
+}
+
+fn key_path_display(key_path: &[&Key], default: (&'static str, &'static str)) -> impl Display {
+    key_path
+        .iter()
+        .enumerate()
+        .map(|(ki, k)| {
+            let prefix = if ki == 0 {
+                default.0
+            } else {
+                DEFAULT_KEY_PATH_DECOR.0
+            };
+            let suffix = if ki + 1 == key_path.len() {
+                default.1
+            } else {
+                DEFAULT_KEY_PATH_DECOR.1
+            };
+            k.decor.display(k, (prefix, suffix))
+        })
+        .join(".")
 }
 
 impl Display for Table {

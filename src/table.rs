@@ -14,6 +14,8 @@ pub struct Table {
     pub(crate) decor: Decor,
     // whether to hide an empty table
     pub(crate) implicit: bool,
+    // whether this is a proxy for dotted keys
+    pub(crate) dotted: bool,
     // used for putting tables back in their original order when serialising.
     // Will be None when the Table wasn't parsed from a file.
     pub(crate) position: Option<usize>,
@@ -79,7 +81,9 @@ impl Table {
     }
 
     /// Returns the number of key/value pairs in the table.
-    pub fn values_len(&self) -> usize {
+    ///
+    /// NOTE: Not accurate for dotted keys, see `get_children`
+    pub(crate) fn values_len(&self) -> usize {
         self.items.iter().filter(|i| (i.1).value.is_value()).count()
     }
 
@@ -182,6 +186,34 @@ impl Table {
 }
 
 impl Table {
+    /// Get key/values for values that are visually children of this table
+    ///
+    /// For example, this will return dotted keys
+    pub fn get_children<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
+        let root = Vec::new();
+        self.get_children_internal(&root, children);
+    }
+
+    fn get_children_internal<'s, 'c>(
+        &'s self,
+        parent: &[&'s Key],
+        children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
+    ) {
+        for value in self.items.values() {
+            let mut path = parent.to_vec();
+            path.push(&value.key);
+            match &value.value {
+                Item::Table(table) if table.is_dotted() => {
+                    table.get_children_internal(&path, children);
+                }
+                Item::Value(value) => {
+                    children.push((path, value));
+                }
+                _ => {}
+            }
+        }
+    }
+
     /// If a table has no key/value pairs and implicit, it will not be displayed.
     ///
     /// # Examples
@@ -201,6 +233,16 @@ impl Table {
     /// ```
     pub fn set_implicit(&mut self, implicit: bool) {
         self.implicit = implicit;
+    }
+
+    /// Check if this is a wrapper for dotted keys, rather than a standard table
+    pub fn is_dotted(&self) -> bool {
+        self.dotted
+    }
+
+    /// Change this table's dotted status
+    pub fn set_dotted(&mut self, yes: bool) {
+        self.dotted = yes;
     }
 
     /// Sorts Key/Value Pairs of the table.

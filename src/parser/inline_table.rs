@@ -48,7 +48,8 @@ fn descend_path<'a>(
 ) -> Result<&'a mut InlineTable, CustomError> {
     if let Some(key) = path.get(i) {
         let entry = table.entry_format(key).or_insert_with(|| {
-            let new_table = InlineTable::new();
+            let mut new_table = InlineTable::new();
+            new_table.set_dotted(true);
 
             Value::InlineTable(new_table)
         });
