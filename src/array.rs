@@ -9,14 +9,14 @@ use crate::{Item, Value};
 /// payload of the `Value::Array` variant's value
 #[derive(Debug, Default, Clone)]
 pub struct Array {
-    // always Vec<Item::Value>
-    pub(crate) values: Vec<Item>,
     // `trailing` represents whitespaces, newlines
     // and comments in an empty array or after the trailing comma
     pub(crate) trailing: InternalString,
     pub(crate) trailing_comma: bool,
     // prefix before `[` and suffix after `]`
     pub(crate) decor: Decor,
+    // always Vec<Item::Value>
+    pub(crate) values: Vec<Item>,
 }
 
 /// An iterator type over `Array`'s values.
