@@ -74,8 +74,10 @@ impl Item {
     /// Casts `self` to value.
     pub fn into_value(self) -> Result<Value, Self> {
         match self {
+            Item::None => Err(self),
             Item::Value(v) => Ok(v),
-            _ => Err(self),
+            Item::Table(v) => Ok(Value::InlineTable(v.into_inline_table())),
+            Item::ArrayOfTables(v) => Ok(Value::Array(v.into_array())),
         }
     }
     /// Casts `self` to table.

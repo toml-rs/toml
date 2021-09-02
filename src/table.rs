@@ -5,9 +5,7 @@ use linked_hash_map::LinkedHashMap;
 use crate::key::Key;
 use crate::repr::{Decor, InternalString};
 use crate::value::DEFAULT_VALUE_DECOR;
-use crate::{Item, Value};
-
-// TODO: add method to convert a table into inline table
+use crate::{InlineTable, Item, Value};
 
 /// Type representing a TOML non-inline table
 #[derive(Clone, Debug, Default)]
@@ -41,6 +39,22 @@ impl Table {
             position,
             ..Default::default()
         }
+    }
+
+    /// Convert to an inline array
+    pub fn into_inline_table(self) -> InlineTable {
+        let table: InlineTable = self
+            .items
+            .into_iter()
+            .filter_map(|(_, kv)| {
+                let mut k = kv.key;
+                k.decor_mut().clear();
+                let v = kv.value;
+                let v = v.into_value().ok()?;
+                Some((k, v))
+            })
+            .collect();
+        table
     }
 }
 
