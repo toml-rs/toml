@@ -4,8 +4,6 @@ fn main() {
     harness
         .ignore([
             "valid/inline-table/key-dotted.toml",
-            "valid/key/dotted.toml",
-            "valid/key/numeric-dotted.toml",
             "valid/string/multiline-quotes.toml",
         ])
         .unwrap();
