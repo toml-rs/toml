@@ -2,10 +2,7 @@ fn main() {
     let decoder = Decoder;
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness
-        .ignore([
-            "valid/inline-table/key-dotted.toml",
-            "valid/string/multiline-quotes.toml",
-        ])
+        .ignore(["valid/string/multiline-quotes.toml"])
         .unwrap();
     harness.test();
 }
