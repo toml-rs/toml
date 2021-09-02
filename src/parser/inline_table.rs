@@ -28,7 +28,9 @@ fn table_from_pairs(
         ..Default::default()
     };
 
-    for (path, kv) in v {
+    for (position, (path, mut kv)) in v.into_iter().enumerate() {
+        kv.key.set_position(Some(position));
+
         let table = descend_path(&mut root, &path, 0)?;
         if table.contains_key(kv.key.get()) {
             return Err(CustomError::DuplicateKey {
