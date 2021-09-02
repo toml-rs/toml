@@ -63,6 +63,11 @@ impl Key {
         &self.decor
     }
 
+    /// Returns the key raw representation.
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        &mut self.decor
+    }
+
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
         use combine::EasyParser;
         let result = parser::key_parser().easy_parse(Stream::new(s));

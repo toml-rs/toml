@@ -77,6 +77,12 @@ impl Decor {
         }
     }
 
+    /// Go back to default decor
+    pub fn clear(&mut self) {
+        self.prefix = None;
+        self.suffix = None;
+    }
+
     /// Get the prefix.
     pub fn prefix(&self) -> Option<&str> {
         self.prefix.as_deref()

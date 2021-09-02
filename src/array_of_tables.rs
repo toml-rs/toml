@@ -1,9 +1,9 @@
-use crate::{Item, Table};
+use crate::{Array, Item, Table};
 
 /// Type representing a TOML array of tables
 #[derive(Clone, Debug, Default)]
 pub struct ArrayOfTables {
-    // always Vec<Item::Table>
+    // Always Vec<Item::Table>, just `Item` to make `Index` work
     pub(crate) values: Vec<Item>,
 }
 
@@ -54,6 +54,14 @@ impl ArrayOfTables {
     /// Returns true iff `self.len() == 0`.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Convert to an inline array
+    pub fn into_array(self) -> Array {
+        self.values
+            .into_iter()
+            .filter_map(|i| i.into_value().ok())
+            .collect()
     }
 }
 
