@@ -66,14 +66,13 @@ parse!(keyval() -> TableKeyValue, {
         (ws(), value(), ws()),
     ).map(|(k, _, v)| {
         let (pre, (raw, key), suf) = k;
-        let key = Key::new(Repr::new_unchecked(raw), key);
         let key_decor = Decor::new(pre, suf);
+        let key = Key::new_unchecked(Repr::new_unchecked(raw), key, key_decor);
 
         let (pre, v, suf) = v;
         let v = v.decorated(pre, suf);
         TableKeyValue {
             key,
-            key_decor,
             value: Item::Value(v),
         }
     })

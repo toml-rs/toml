@@ -3,7 +3,7 @@ use std::str::FromStr;
 use combine::stream::position::Stream;
 
 use crate::parser;
-use crate::repr::{InternalString, Repr};
+use crate::repr::{Decor, InternalString, Repr};
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -30,12 +30,13 @@ use crate::repr::{InternalString, Repr};
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
 pub struct Key {
     key: InternalString,
-    repr: Repr,
+    pub(crate) repr: Repr,
+    pub(crate) decor: Decor,
 }
 
 impl Key {
-    pub(crate) fn new(repr: Repr, key: InternalString) -> Self {
-        Self { repr, key }
+    pub(crate) fn new_unchecked(repr: Repr, key: InternalString, decor: Decor) -> Self {
+        Self { key, repr, decor }
     }
 
     pub(crate) fn with_key(key: impl AsRef<str>) -> Self {
@@ -57,6 +58,11 @@ impl Key {
         self.repr
     }
 
+    /// Returns the key raw representation.
+    pub fn decor(&self) -> &Decor {
+        &self.decor
+    }
+
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
         use combine::EasyParser;
         let result = parser::key_parser().easy_parse(Stream::new(s));
@@ -64,7 +70,11 @@ impl Key {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(parser::TomlError::from_unparsed(rest.positioner, s))
             }
-            Ok(((raw, key), _)) => Ok(Key::new(Repr::new_unchecked(raw), key)),
+            Ok(((raw, key), _)) => Ok(Key::new_unchecked(
+                Repr::new_unchecked(raw),
+                key,
+                Decor::default(),
+            )),
             Err(e) => Err(parser::TomlError::new(e, s)),
         }
     }

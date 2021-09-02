@@ -204,7 +204,7 @@ impl Table {
 
     /// Returns the decor associated with a given key of the table.
     pub fn decor(&self, key: &str) -> Option<&Decor> {
-        self.items.get(key).map(|kv| &kv.key_decor)
+        self.items.get(key).map(|kv| &kv.key.decor)
     }
 
     /// Sets the position of the `Table` within the `Document`.
@@ -283,7 +283,7 @@ fn decorate_table(table: &mut Table) {
         .items
         .iter_mut()
         .filter(|&(_, ref kv)| kv.value.is_value())
-        .map(|(_, kv)| (&mut kv.key_decor, kv.value.as_value_mut().unwrap()))
+        .map(|(_, kv)| (&mut kv.key.decor, kv.value.as_value_mut().unwrap()))
     {
         // `key1 = value1`
         *key_decor = Decor::new(DEFAULT_KEY_DECOR.0, DEFAULT_KEY_DECOR.1);
@@ -294,21 +294,17 @@ fn decorate_table(table: &mut Table) {
 // `key1 = value1`
 pub(crate) const DEFAULT_KEY_DECOR: (&str, &str) = ("", " ");
 pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
+pub(crate) const DEFAULT_KEY_PATH_DECOR: (&str, &str) = ("", "");
 
 #[derive(Debug, Clone)]
 pub(crate) struct TableKeyValue {
     pub(crate) key: Key,
-    pub(crate) key_decor: Decor,
     pub(crate) value: Item,
 }
 
 impl TableKeyValue {
     pub(crate) fn new(key: Key, value: Item) -> Self {
-        TableKeyValue {
-            key,
-            key_decor: Default::default(),
-            value,
-        }
+        TableKeyValue { key, value }
     }
 }
 

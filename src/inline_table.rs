@@ -121,7 +121,7 @@ impl InlineTable {
 
     /// Returns the decor associated with a given key of the table.
     pub fn decor(&self, key: &str) -> Option<&Decor> {
-        self.items.get(key).map(|kv| &kv.key_decor)
+        self.items.get(key).map(|kv| &kv.key.decor)
     }
 }
 
@@ -176,7 +176,7 @@ fn decorate_inline_table(table: &mut InlineTable) {
         .items
         .iter_mut()
         .filter(|&(_, ref kv)| kv.value.is_value())
-        .map(|(_, kv)| (&mut kv.key_decor, kv.value.as_value_mut().unwrap()))
+        .map(|(_, kv)| (&mut kv.key.decor, kv.value.as_value_mut().unwrap()))
         .enumerate()
     {
         // { key1 = value1, key2 = value2 }

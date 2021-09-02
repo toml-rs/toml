@@ -1,7 +1,7 @@
 use crate::key::Key;
 use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::ws;
-use crate::repr::{InternalString, Repr};
+use crate::repr::{Decor, InternalString, Repr};
 use combine::parser::char::char;
 use combine::parser::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
@@ -12,7 +12,13 @@ use vec1::Vec1;
 // dotted-key = simple-key 1*( dot-sep simple-key )
 parse!(key() -> Vec1<Key>, {
     sep_by1(
-        between(ws(), ws(), simple_key().map(|(raw, key)| Key::new(Repr::new_unchecked(raw), key))),
+        (
+            ws(),
+            simple_key(),
+            ws(),
+        ).map(|(pre, (raw, key), suffix)| {
+            Key::new_unchecked(Repr::new_unchecked(raw), key, Decor::new(pre, suffix))
+        }),
         char(DOT_SEP)
     ).map(|k| Vec1::try_from_vec(k).expect("parser should guarantee this"))
 });
