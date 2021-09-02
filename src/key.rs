@@ -35,12 +35,23 @@ pub struct Key {
 }
 
 impl Key {
-    pub(crate) fn new_unchecked(repr: Repr, key: InternalString, decor: Decor) -> Self {
-        Self { key, repr, decor }
+    /// Create a new table key
+    pub fn new(key: impl AsRef<str>) -> Self {
+        key_string_repr(key.as_ref())
     }
 
-    pub(crate) fn with_key(key: impl AsRef<str>) -> Self {
-        key_string_repr(key.as_ref())
+    pub(crate) fn new_unchecked(repr: Repr, key: InternalString) -> Self {
+        Self {
+            key,
+            repr,
+            decor: Default::default(),
+        }
+    }
+
+    /// While creating the `Key`, add `Decor` to it
+    pub fn with_decor(mut self, decor: Decor) -> Self {
+        self.decor = decor;
+        self
     }
 
     /// Returns the parsed key value.
@@ -51,11 +62,6 @@ impl Key {
     /// Returns the key raw representation.
     pub fn repr(&self) -> &Repr {
         &self.repr
-    }
-
-    /// Returns the key raw representation.
-    pub fn into_repr(self) -> Repr {
-        self.repr
     }
 
     /// Returns the key raw representation.
@@ -75,11 +81,7 @@ impl Key {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(parser::TomlError::from_unparsed(rest.positioner, s))
             }
-            Ok(((raw, key), _)) => Ok(Key::new_unchecked(
-                Repr::new_unchecked(raw),
-                key,
-                Decor::default(),
-            )),
+            Ok(((raw, key), _)) => Ok(Key::new_unchecked(Repr::new_unchecked(raw), key)),
             Err(e) => Err(parser::TomlError::new(e, s)),
         }
     }
@@ -102,13 +104,13 @@ impl FromStr for Key {
 
 impl<'b> From<&'b str> for Key {
     fn from(s: &'b str) -> Self {
-        Key::with_key(s)
+        Key::new(s)
     }
 }
 
 impl From<String> for Key {
     fn from(s: String) -> Self {
-        Key::with_key(s)
+        Key::new(s)
     }
 }
 

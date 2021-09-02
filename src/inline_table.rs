@@ -136,7 +136,7 @@ impl InlineTable {
     /// Inserts a key/value pair if the table does not contain the key.
     /// Returns a mutable reference to the corresponding value.
     pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
-        let key = Key::with_key(key);
+        let key = Key::new(key);
         self.items
             .entry(key.get().to_owned())
             .or_insert(TableKeyValue::new(key, Item::Value(value.into())))
@@ -440,10 +440,7 @@ impl<'a> InlineVacantEntry<'a> {
     /// Sets the value of the entry with the VacantEntry's key,
     /// and returns a mutable reference to it
     pub fn insert(self, value: Value) -> &'a mut Value {
-        let key = self
-            .key
-            .cloned()
-            .unwrap_or_else(|| Key::with_key(self.key()));
+        let key = self.key.cloned().unwrap_or_else(|| Key::new(self.key()));
         let value = Item::Value(value);
         self.entry
             .insert(TableKeyValue::new(key, value))
