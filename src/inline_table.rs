@@ -10,11 +10,11 @@ use crate::{Item, Value};
 /// payload of the `Value::InlineTable` variant
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
-    pub(crate) items: KeyValuePairs,
     // `preamble` represents whitespaces in an empty table
     pub(crate) preamble: InternalString,
     // prefix before `{` and suffix after `}`
     pub(crate) decor: Decor,
+    pub(crate) items: KeyValuePairs,
 }
 
 impl InlineTable {

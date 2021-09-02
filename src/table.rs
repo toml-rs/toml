@@ -10,7 +10,6 @@ use crate::{InlineTable, Item, Value};
 /// Type representing a TOML non-inline table
 #[derive(Clone, Debug, Default)]
 pub struct Table {
-    pub(crate) items: KeyValuePairs,
     // comments/spaces before and after the header
     pub(crate) decor: Decor,
     // whether to hide an empty table
@@ -18,6 +17,7 @@ pub struct Table {
     // used for putting tables back in their original order when serialising.
     // Will be None when the Table wasn't parsed from a file.
     pub(crate) position: Option<usize>,
+    pub(crate) items: KeyValuePairs,
 }
 
 impl Table {
