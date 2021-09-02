@@ -213,7 +213,7 @@ fn test_remove_leaf_table() {
         ip = "10.0.0.2"
         dc = "eqdc10""#
     ).running(|root| {
-        let servers = root.entry("servers");
+        let servers = root.get_mut("servers").unwrap();
         let servers = as_table!(servers);
         assert!(servers.remove("alpha").is_some());
     }).produces_display(r#"
@@ -294,7 +294,7 @@ fn test_remove_array_entry() {
         name = "delete me please"
         path = "src/bin/dmp/main.rs""#
     ).running(|root| {
-        let dmp = root.entry("bin");
+        let dmp = root.get_mut("bin").unwrap();
         assert!(dmp.is_array_of_tables());
         let dmp = dmp.as_array_of_tables_mut().unwrap();
         assert_eq!(dmp.len(), 2);
@@ -375,7 +375,7 @@ fn test_remove_last_value_from_implicit() {
         [a]
         b = 1"#
     ).running(|root| {
-        let a = root.entry("a");
+        let a = root.get_mut("a").unwrap();
         assert!(a.is_table());
         let a = as_table!(a);
         a.set_implicit(true);
@@ -403,7 +403,7 @@ fn test_sort_values() {
 
         [a.y]"#
     ).running(|root| {
-        let a = root.entry("a");
+        let a = root.get_mut("a").unwrap();
         let a = as_table!(a);
         a.sort_values();
     }).produces_display(r#"
@@ -503,7 +503,7 @@ fn test_insert_replace_into_array() {
         b = []"#
     ).running(|root| {
         {
-            let a = root.entry("a");
+            let a = root.get_mut("a").unwrap();
             let a = as_array!(a);
             assert_eq!(a.len(), 3);
             assert!(a.get(2).is_some());
@@ -511,7 +511,7 @@ fn test_insert_replace_into_array() {
             assert_eq!(a.len(), 4);
             a.fmt();
         }
-        let b = root.entry("b");
+        let b = root.get_mut("b").unwrap();
         let b = as_array!(b);
         assert!(b.is_empty());
         b.push("hello");
@@ -544,13 +544,13 @@ fn test_remove_from_array() {
         b = ["hello"]"#
     ).running(|root| {
         {
-            let a = root.entry("a");
+            let a = root.get_mut("a").unwrap();
             let a = as_array!(a);
             assert_eq!(a.len(), 4);
             assert!(a.remove(3).is_integer());
             assert_eq!(a.len(), 3);
         }
-        let b = root.entry("b");
+        let b = root.get_mut("b").unwrap();
         let b = as_array!(b);
         assert_eq!(b.len(), 1);
         assert!(b.remove(0).is_str());
@@ -580,7 +580,7 @@ fn test_insert_into_inline_table() {
         b = {}"#
     ).running(|root| {
         {
-            let a = root.entry("a");
+            let a = root.get_mut("a").unwrap();
             let a = as_inline_table!(a);
             assert_eq!(a.len(), 2);
             assert!(a.contains_key("a") && a.get("c").is_some() && a.get_mut("c").is_some());
@@ -588,7 +588,7 @@ fn test_insert_into_inline_table() {
             assert_eq!(a.len(), 3);
             a.fmt();
         }
-        let b = root.entry("b");
+        let b = root.get_mut("b").unwrap();
         let b = as_inline_table!(b);
         assert!(b.is_empty());
         b.get_or_insert("hello", "world");
@@ -608,13 +608,13 @@ fn test_remove_from_inline_table() {
         b = {'hello' = "world"}"#
     ).running(|root| {
         {
-            let a = root.entry("a");
+            let a = root.get_mut("a").unwrap();
             let a = as_inline_table!(a);
             assert_eq!(a.len(), 3);
             assert!(a.remove("c").is_some());
             assert_eq!(a.len(), 2);
         }
-        let b = root.entry("b");
+        let b = root.get_mut("b").unwrap();
         let b = as_inline_table!(b);
         assert_eq!(b.len(), 1);
         assert!(b.remove("hello").is_some());

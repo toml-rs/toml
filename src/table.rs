@@ -93,33 +93,27 @@ impl Table {
         self.items.clear()
     }
 
-    /// Given the `key`, return a mutable reference to the value.
-    /// If there is no entry associated with the given key in the table,
-    /// a `Item::None` value will be inserted.
-    ///
-    /// To insert to table, use `entry` to return a mutable reference
-    /// and set it to the appropriate value.
-    pub fn entry<'a>(&'a mut self, key: &str) -> &'a mut Item {
-        let key = Key::with_key(key);
-        &mut self
-            .items
-            .entry(key.get().to_owned())
-            .or_insert_with(|| TableKeyValue::new(key, Item::None))
-            .value
+    /// Gets the given key's corresponding entry in the Table for in-place manipulation.
+    pub fn entry<'a>(&'a mut self, key: &str) -> Entry<'a> {
+        // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
+        match self.items.entry(key.to_owned()) {
+            linked_hash_map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
+            linked_hash_map::Entry::Vacant(entry) => {
+                Entry::Vacant(VacantEntry { entry, key: None })
+            }
+        }
     }
 
-    /// Given the `key`, return a mutable reference to the value.
-    /// If there is no entry associated with the given key in the table,
-    /// a `Item::None` value will be inserted.
-    ///
-    /// To insert to table, use `entry` to return a mutable reference
-    /// and set it to the appropriate value.
-    pub fn entry_format<'a>(&'a mut self, key: &Key) -> &'a mut Item {
-        &mut self
-            .items
-            .entry(key.get().to_owned())
-            .or_insert_with(|| TableKeyValue::new(key.to_owned(), Item::None))
-            .value
+    /// Gets the given key's corresponding entry in the Table for in-place manipulation.
+    pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> Entry<'a> {
+        // Accept a `&Key` to be consistent with `entry`
+        match self.items.entry(key.get().to_owned()) {
+            linked_hash_map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
+            linked_hash_map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry {
+                entry,
+                key: Some(key),
+            }),
+        }
     }
 
     /// Returns an optional reference to an item given the key.
@@ -179,6 +173,11 @@ impl Table {
     /// Removes an item given the key.
     pub fn remove(&mut self, key: &str) -> Option<Item> {
         self.items.remove(key).map(|kv| kv.value)
+    }
+
+    /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
+    pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Item)> {
+        self.items.remove(key).map(|kv| (kv.key, kv.value))
     }
 }
 
@@ -357,5 +356,133 @@ impl TableLike for Table {
     }
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.get_mut(key)
+    }
+}
+
+/// A view into a single location in a map, which may be vacant or occupied.
+pub enum Entry<'a> {
+    /// An occupied Entry.
+    Occupied(OccupiedEntry<'a>),
+    /// A vacant Entry.
+    Vacant(VacantEntry<'a>),
+}
+
+impl<'a> Entry<'a> {
+    /// Returns the entry key
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use toml_edit::Table;
+    ///
+    /// let mut map = Table::new();
+    ///
+    /// assert_eq!("hello", map.entry("hello").key());
+    /// ```
+    pub fn key(&self) -> &str {
+        match self {
+            Entry::Occupied(e) => e.key(),
+            Entry::Vacant(e) => e.key(),
+        }
+    }
+
+    /// Ensures a value is in the entry by inserting the default if empty, and returns
+    /// a mutable reference to the value in the entry.
+    pub fn or_insert(self, default: Item) -> &'a mut Item {
+        match self {
+            Entry::Occupied(entry) => entry.into_mut(),
+            Entry::Vacant(entry) => entry.insert(default),
+        }
+    }
+
+    /// Ensures a value is in the entry by inserting the result of the default function if empty,
+    /// and returns a mutable reference to the value in the entry.
+    pub fn or_insert_with<F: FnOnce() -> Item>(self, default: F) -> &'a mut Item {
+        match self {
+            Entry::Occupied(entry) => entry.into_mut(),
+            Entry::Vacant(entry) => entry.insert(default()),
+        }
+    }
+}
+
+/// A view into a single occupied location in a `LinkedHashMap`.
+pub struct OccupiedEntry<'a> {
+    entry: linked_hash_map::OccupiedEntry<'a, InternalString, TableKeyValue>,
+}
+
+impl<'a> OccupiedEntry<'a> {
+    /// Gets a reference to the entry key
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use toml_edit::Table;
+    ///
+    /// let mut map = Table::new();
+    ///
+    /// assert_eq!("foo", map.entry("foo").key());
+    /// ```
+    pub fn key(&self) -> &str {
+        self.entry.key().as_str()
+    }
+
+    /// Gets a reference to the value in the entry.
+    pub fn get(&self) -> &Item {
+        &self.entry.get().value
+    }
+
+    /// Gets a mutable reference to the value in the entry.
+    pub fn get_mut(&mut self) -> &mut Item {
+        &mut self.entry.get_mut().value
+    }
+
+    /// Converts the OccupiedEntry into a mutable reference to the value in the entry
+    /// with a lifetime bound to the map itself
+    pub fn into_mut(self) -> &'a mut Item {
+        &mut self.entry.into_mut().value
+    }
+
+    /// Sets the value of the entry, and returns the entry's old value
+    pub fn insert(&mut self, mut value: Item) -> Item {
+        std::mem::swap(&mut value, &mut self.entry.get_mut().value);
+        value
+    }
+
+    /// Takes the value out of the entry, and returns it
+    pub fn remove(self) -> Item {
+        self.entry.remove().value
+    }
+}
+
+/// A view into a single empty location in a `LinkedHashMap`.
+pub struct VacantEntry<'a> {
+    entry: linked_hash_map::VacantEntry<'a, InternalString, TableKeyValue>,
+    key: Option<&'a Key>,
+}
+
+impl<'a> VacantEntry<'a> {
+    /// Gets a reference to the entry key
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use toml_edit::Table;
+    ///
+    /// let mut map = Table::new();
+    ///
+    /// assert_eq!("foo", map.entry("foo").key());
+    /// ```
+    pub fn key(&self) -> &str {
+        self.entry.key().as_str()
+    }
+
+    /// Sets the value of the entry with the VacantEntry's key,
+    /// and returns a mutable reference to it
+    pub fn insert(self, value: Item) -> &'a mut Item {
+        let key = self
+            .key
+            .cloned()
+            .unwrap_or_else(|| Key::with_key(self.key()));
+        &mut self.entry.insert(TableKeyValue::new(key, value)).value
     }
 }

@@ -86,11 +86,14 @@ pub use crate::array_of_tables::ArrayOfTables;
 pub use crate::datetime::*;
 pub use crate::document::Document;
 pub use crate::inline_table::{
-    InlineTable, InlineTableIntoIter, InlineTableIter, InlineTableIterMut,
+    InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,
+    InlineTableIterMut, InlineVacantEntry,
 };
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
 pub use crate::repr::{Decor, Repr};
-pub use crate::table::{IntoIter, Iter, IterMut, Table, TableLike};
+pub use crate::table::{
+    Entry, IntoIter, Iter, IterMut, OccupiedEntry, Table, TableLike, VacantEntry,
+};
 pub use crate::value::Value;

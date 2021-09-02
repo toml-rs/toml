@@ -60,6 +60,56 @@ impl InlineTable {
         self.items.clear()
     }
 
+    /// Gets the given key's corresponding entry in the Table for in-place manipulation.
+    pub fn entry<'a>(&'a mut self, key: &str) -> InlineEntry<'a> {
+        // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
+        match self.items.entry(key.to_owned()) {
+            linked_hash_map::Entry::Occupied(mut entry) => {
+                // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
+                let mut scratch = Item::None;
+                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
+                let mut scratch = Item::Value(
+                    scratch
+                        .into_value()
+                        // HACK: `Item::None` is a corner case of a corner case, let's just pick a
+                        // "safe" value
+                        .unwrap_or_else(|_| Value::InlineTable(Default::default())),
+                );
+                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
+
+                InlineEntry::Occupied(InlineOccupiedEntry { entry })
+            }
+            linked_hash_map::Entry::Vacant(entry) => {
+                InlineEntry::Vacant(InlineVacantEntry { entry, key: None })
+            }
+        }
+    }
+
+    /// Gets the given key's corresponding entry in the Table for in-place manipulation.
+    pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> InlineEntry<'a> {
+        // Accept a `&Key` to be consistent with `entry`
+        match self.items.entry(key.get().to_owned()) {
+            linked_hash_map::Entry::Occupied(mut entry) => {
+                // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
+                let mut scratch = Item::None;
+                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
+                let mut scratch = Item::Value(
+                    scratch
+                        .into_value()
+                        // HACK: `Item::None` is a corner case of a corner case, let's just pick a
+                        // "safe" value
+                        .unwrap_or_else(|_| Value::InlineTable(Default::default())),
+                );
+                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
+
+                InlineEntry::Occupied(InlineOccupiedEntry { entry })
+            }
+            linked_hash_map::Entry::Vacant(entry) => InlineEntry::Vacant(InlineVacantEntry {
+                entry,
+                key: Some(key),
+            }),
+        }
+    }
     /// Return an optional reference to the value at the given the key.
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.items.get(key).and_then(|kv| kv.value.as_value())
@@ -103,8 +153,18 @@ impl InlineTable {
     }
 
     /// Removes an item given the key.
-    pub fn remove(&mut self, key: &str) -> Option<Item> {
-        self.items.remove(key).map(|kv| kv.value)
+    pub fn remove(&mut self, key: &str) -> Option<Value> {
+        self.items
+            .remove(key)
+            .and_then(|kv| kv.value.into_value().ok())
+    }
+
+    /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
+    pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Value)> {
+        self.items.remove(key).and_then(|kv| {
+            let key = kv.key;
+            kv.value.into_value().ok().map(|value| (key, value))
+        })
     }
 }
 
@@ -213,3 +273,137 @@ impl TableLike for InlineTable {
 
 // `{ key1 = value1, ... }`
 pub(crate) const DEFAULT_INLINE_KEY_DECOR: (&str, &str) = (" ", " ");
+
+/// A view into a single location in a map, which may be vacant or occupied.
+pub enum InlineEntry<'a> {
+    /// An occupied Entry.
+    Occupied(InlineOccupiedEntry<'a>),
+    /// A vacant Entry.
+    Vacant(InlineVacantEntry<'a>),
+}
+
+impl<'a> InlineEntry<'a> {
+    /// Returns the entry key
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use toml_edit::Table;
+    ///
+    /// let mut map = Table::new();
+    ///
+    /// assert_eq!("hello", map.entry("hello").key());
+    /// ```
+    pub fn key(&self) -> &str {
+        match self {
+            InlineEntry::Occupied(e) => e.key(),
+            InlineEntry::Vacant(e) => e.key(),
+        }
+    }
+
+    /// Ensures a value is in the entry by inserting the default if empty, and returns
+    /// a mutable reference to the value in the entry.
+    pub fn or_insert(self, default: Value) -> &'a mut Value {
+        match self {
+            InlineEntry::Occupied(entry) => entry.into_mut(),
+            InlineEntry::Vacant(entry) => entry.insert(default),
+        }
+    }
+
+    /// Ensures a value is in the entry by inserting the result of the default function if empty,
+    /// and returns a mutable reference to the value in the entry.
+    pub fn or_insert_with<F: FnOnce() -> Value>(self, default: F) -> &'a mut Value {
+        match self {
+            InlineEntry::Occupied(entry) => entry.into_mut(),
+            InlineEntry::Vacant(entry) => entry.insert(default()),
+        }
+    }
+}
+
+/// A view into a single occupied location in a `LinkedHashMap`.
+pub struct InlineOccupiedEntry<'a> {
+    entry: linked_hash_map::OccupiedEntry<'a, InternalString, TableKeyValue>,
+}
+
+impl<'a> InlineOccupiedEntry<'a> {
+    /// Gets a reference to the entry key
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use toml_edit::Table;
+    ///
+    /// let mut map = Table::new();
+    ///
+    /// assert_eq!("foo", map.entry("foo").key());
+    /// ```
+    pub fn key(&self) -> &str {
+        self.entry.key().as_str()
+    }
+
+    /// Gets a reference to the value in the entry.
+    pub fn get(&self) -> &Value {
+        self.entry.get().value.as_value().unwrap()
+    }
+
+    /// Gets a mutable reference to the value in the entry.
+    pub fn get_mut(&mut self) -> &mut Value {
+        self.entry.get_mut().value.as_value_mut().unwrap()
+    }
+
+    /// Converts the OccupiedEntry into a mutable reference to the value in the entry
+    /// with a lifetime bound to the map itself
+    pub fn into_mut(self) -> &'a mut Value {
+        self.entry.into_mut().value.as_value_mut().unwrap()
+    }
+
+    /// Sets the value of the entry, and returns the entry's old value
+    pub fn insert(&mut self, value: Value) -> Value {
+        let mut value = Item::Value(value);
+        std::mem::swap(&mut value, &mut self.entry.get_mut().value);
+        value.into_value().unwrap()
+    }
+
+    /// Takes the value out of the entry, and returns it
+    pub fn remove(self) -> Value {
+        self.entry.remove().value.into_value().unwrap()
+    }
+}
+
+/// A view into a single empty location in a `LinkedHashMap`.
+pub struct InlineVacantEntry<'a> {
+    entry: linked_hash_map::VacantEntry<'a, InternalString, TableKeyValue>,
+    key: Option<&'a Key>,
+}
+
+impl<'a> InlineVacantEntry<'a> {
+    /// Gets a reference to the entry key
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use toml_edit::Table;
+    ///
+    /// let mut map = Table::new();
+    ///
+    /// assert_eq!("foo", map.entry("foo").key());
+    /// ```
+    pub fn key(&self) -> &str {
+        self.entry.key().as_str()
+    }
+
+    /// Sets the value of the entry with the VacantEntry's key,
+    /// and returns a mutable reference to it
+    pub fn insert(self, value: Value) -> &'a mut Value {
+        let key = self
+            .key
+            .cloned()
+            .unwrap_or_else(|| Key::with_key(self.key()));
+        let value = Item::Value(value);
+        self.entry
+            .insert(TableKeyValue::new(key, value))
+            .value
+            .as_value_mut()
+            .unwrap()
+    }
+}

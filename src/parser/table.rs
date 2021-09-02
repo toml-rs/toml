@@ -5,7 +5,7 @@ use crate::parser::key::key;
 use crate::parser::trivia::line_trailing;
 use crate::parser::TomlParser;
 use crate::repr::Decor;
-use crate::{Item, Table};
+use crate::{Entry, Item, Table};
 use combine::parser::char::char;
 use combine::parser::range::range;
 use combine::stream::RangeStream;
@@ -81,17 +81,16 @@ pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
 impl TomlParser {
     pub(crate) fn descend_path<'a>(
         table: &'a mut Table,
-        path: &[Key],
+        path: &'a [Key],
         i: usize,
     ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(i) {
-            let entry = table.entry_format(key);
-            if entry.is_none() {
+            let entry = table.entry_format(key).or_insert_with(|| {
                 let mut new_table = Table::new();
                 new_table.set_implicit(true);
 
-                *entry = Item::Table(new_table);
-            }
+                Item::Table(new_table)
+            });
             match *entry {
                 Item::Value(..) => Err(duplicate_key(path, i)),
                 Item::ArrayOfTables(ref mut array) => {
@@ -119,23 +118,15 @@ impl TomlParser {
         let table = self.document.as_table_mut();
         self.current_table_position += 1;
 
-        let table = Self::descend_path(table, &path[..path.len() - 1], 0);
+        let table = Self::descend_path(table, &path[..path.len() - 1], 0)?;
         let key = &path[path.len() - 1];
 
-        match table {
-            Ok(table) => {
-                let decor = Decor::new(leading, trailing);
+        let decor = Decor::new(leading, trailing);
 
-                let entry = table.entry_format(key);
-                if entry.is_none() {
-                    *entry = Item::Table(Table::with_decor_and_pos(
-                        decor,
-                        Some(self.current_table_position),
-                    ));
-                    self.current_table_path = path.to_vec();
-                    return Ok(());
-                }
-                match *entry {
+        let entry = table.entry_format(key);
+        match entry {
+            Entry::Occupied(entry) => {
+                match entry.into_mut() {
                     // if [a.b.c] header preceded [a.b]
                     Item::Table(ref mut t) if t.implicit => {
                         debug_assert!(t.values_len() == 0);
@@ -145,13 +136,20 @@ impl TomlParser {
                         t.set_implicit(false);
 
                         self.current_table_path = path.to_vec();
-                        return Ok(());
+                        Ok(())
                     }
-                    _ => {}
+                    _ => Err(duplicate_key(path, path.len() - 1)),
                 }
-                Err(duplicate_key(path, path.len() - 1))
             }
-            Err(e) => Err(e),
+            Entry::Vacant(entry) => {
+                let item = Item::Table(Table::with_decor_and_pos(
+                    decor,
+                    Some(self.current_table_position),
+                ));
+                entry.insert(item);
+                self.current_table_path = path.to_vec();
+                Ok(())
+            }
         }
     }
 
