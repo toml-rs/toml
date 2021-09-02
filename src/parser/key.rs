@@ -12,11 +12,11 @@ use vec1::Vec1;
 // dotted-key = simple-key 1*( dot-sep simple-key )
 parse!(key() -> Vec1<Key>, {
     sep_by1(
-        (
+        attempt((
             ws(),
             simple_key(),
             ws(),
-        ).map(|(pre, (raw, key), suffix)| {
+        )).map(|(pre, (raw, key), suffix)| {
             Key::new_unchecked(Repr::new_unchecked(raw), key, Decor::new(pre, suffix))
         }),
         char(DOT_SEP)
