@@ -83,11 +83,13 @@ impl TomlParser {
         table: &'a mut Table,
         path: &'a [Key],
         i: usize,
+        dotted: bool,
     ) -> Result<&'a mut Table, CustomError> {
         if let Some(key) = path.get(i) {
             let entry = table.entry_format(key).or_insert_with(|| {
                 let mut new_table = Table::new();
                 new_table.set_implicit(true);
+                new_table.set_dotted(dotted);
 
                 Item::Table(new_table)
             });
@@ -99,10 +101,10 @@ impl TomlParser {
                     let index = array.len() - 1;
                     let last_child = array.get_mut(index).unwrap();
 
-                    Self::descend_path(last_child, path, i + 1)
+                    Self::descend_path(last_child, path, i + 1, dotted)
                 }
                 Item::Table(ref mut sweet_child_of_mine) => {
-                    TomlParser::descend_path(sweet_child_of_mine, path, i + 1)
+                    TomlParser::descend_path(sweet_child_of_mine, path, i + 1, dotted)
                 }
                 _ => unreachable!(),
             }
@@ -118,7 +120,7 @@ impl TomlParser {
         let table = self.document.as_table_mut();
         self.current_table_position += 1;
 
-        let table = Self::descend_path(table, &path[..path.len() - 1], 0)?;
+        let table = Self::descend_path(table, &path[..path.len() - 1], 0, false)?;
         let key = &path[path.len() - 1];
 
         let decor = Decor::new(leading, trailing);
@@ -160,7 +162,7 @@ impl TomlParser {
         let table = self.document.as_table_mut();
 
         let key = &path[path.len() - 1];
-        let table = Self::descend_path(table, &path[..path.len() - 1], 0);
+        let table = Self::descend_path(table, &path[..path.len() - 1], 0, false);
 
         match table {
             Ok(table) => {

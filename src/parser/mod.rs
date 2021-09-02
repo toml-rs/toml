@@ -390,6 +390,7 @@ trimmed in raw strings.
             r#"{   }"#,
             r#"{a = 1e165}"#,
             r#"{ hello = "world", a = 1}"#,
+            r#"{ hello.world = "a" }"#,
         ];
         for input in &inputs {
             parsed_value_eq!(input);
@@ -495,6 +496,8 @@ that
 "#,
             r#"[parent . child]
 key = "value"
+"#,
+            r#"hello.world = "a"
 "#,
         ];
         for document in &documents {
