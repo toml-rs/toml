@@ -386,6 +386,11 @@ pub trait TableLike {
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
     /// Returns an optional mutable reference to an item given the key.
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item>;
+
+    /// Get key/values for values that are visually children of this table
+    ///
+    /// For example, this will return dotted keys
+    fn get_values<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>);
 }
 
 impl TableLike for Table {
@@ -398,6 +403,9 @@ impl TableLike for Table {
     }
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.get_mut(key)
+    }
+    fn get_values<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
+        self.get_values(children);
     }
 }
 
