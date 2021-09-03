@@ -37,7 +37,7 @@ parse!(unquoted_key() -> &'a str, {
 });
 
 #[inline]
-fn is_unquoted_char(c: char) -> bool {
+pub(crate) fn is_unquoted_char(c: char) -> bool {
     matches!(c, 'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_')
 }
 
