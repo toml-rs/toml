@@ -174,25 +174,27 @@ impl InlineTable {
     /// Get key/values for values that are visually children of this table
     ///
     /// For example, this will return dotted keys
-    pub fn get_values<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
+    pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
+        let mut values = Vec::new();
         let root = Vec::new();
-        self.get_values_internal(&root, children);
+        self.get_values_internal(&root, &mut values);
+        values
     }
 
     fn get_values_internal<'s, 'c>(
         &'s self,
         parent: &[&'s Key],
-        children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
+        values: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
     ) {
         for value in self.items.values() {
             let mut path = parent.to_vec();
             path.push(&value.key);
             match &value.value {
                 Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
-                    table.get_values_internal(&path, children);
+                    table.get_values_internal(&path, values);
                 }
                 Item::Value(value) => {
-                    children.push((path, value));
+                    values.push((path, value));
                 }
                 _ => {}
             }
@@ -309,8 +311,8 @@ impl TableLike for InlineTable {
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.items.get_mut(key).map(|kv| &mut kv.value)
     }
-    fn get_values<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
-        self.get_values(children);
+    fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
+        self.get_values()
     }
 }
 
