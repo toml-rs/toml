@@ -458,7 +458,14 @@ impl From<i64> for Value {
 
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
-        Value::Float(Formatted::new(f, Repr::new_unchecked(f.to_string())))
+        let repr = if f.is_nan() {
+            "nan".to_owned()
+        } else {
+            format!("{:e}", f)
+        };
+        let repr = Repr::new_unchecked(repr);
+
+        Value::Float(Formatted::new(f, repr))
     }
 }
 

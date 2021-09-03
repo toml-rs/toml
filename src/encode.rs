@@ -46,13 +46,7 @@ impl Display for Value {
         match *self {
             Value::String(ref repr) => write!(f, "{}", repr),
             Value::Integer(ref repr) => write!(f, "{}", repr),
-            Value::Float(ref repr) => {
-                if repr.value().is_nan() {
-                    write!(f, "{}", repr.decor.display(&"nan", DEFAULT_VALUE_DECOR))
-                } else {
-                    write!(f, "{}", repr)
-                }
-            }
+            Value::Float(ref repr) => write!(f, "{}", repr),
             Value::Boolean(ref repr) => write!(f, "{}", repr),
             Value::OffsetDateTime(ref repr) => write!(f, "{}", repr),
             Value::LocalDateTime(ref repr) => write!(f, "{}", repr),
