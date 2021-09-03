@@ -131,8 +131,6 @@ impl TomlParser {
                 match entry.into_mut() {
                     // if [a.b.c] header preceded [a.b]
                     Item::Table(ref mut t) if t.implicit => {
-                        debug_assert!(t.values_len() == 0);
-
                         t.decor = decor;
                         t.position = Some(self.current_table_position);
                         t.set_implicit(false);

@@ -56,6 +56,16 @@ t!(
     "fixtures/invalid/duplicate-tables.toml"
 );
 t!(
+    test_duplicate_key_std_into_dotted,
+    "Duplicate key",
+    "fixtures/invalid/duplicate-key-std-into-dotted.toml"
+);
+t!(
+    test_duplicate_key_dotted_into_std,
+    "Duplicate key",
+    "fixtures/invalid/duplicate-key-dotted-into-std.toml"
+);
+t!(
     test_empty_implicit_table,
     "While parsing a Table Header",
     "fixtures/invalid/empty-implicit-table.toml"

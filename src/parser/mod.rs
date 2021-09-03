@@ -502,9 +502,15 @@ key = "value"
         ];
         for document in &documents {
             let doc = TomlParser::parse(document);
-
-            assert!(doc.is_ok());
-            let doc = doc.unwrap();
+            let doc = match doc {
+                Ok(doc) => doc,
+                Err(err) => {
+                    panic!(
+                        "Parse error: {}\nFailed to parse:\n```\n{}\n```",
+                        err, document
+                    )
+                }
+            };
 
             dbg!(doc.to_string());
             dbg!(document);

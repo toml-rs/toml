@@ -80,13 +80,6 @@ impl Table {
         self.items.iter().filter(|i| !(i.1).value.is_none()).count()
     }
 
-    /// Returns the number of key/value pairs in the table.
-    ///
-    /// NOTE: Not accurate for dotted keys, see `get_values`
-    pub(crate) fn values_len(&self) -> usize {
-        self.items.iter().filter(|i| (i.1).value.is_value()).count()
-    }
-
     /// Returns true iff the table is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
