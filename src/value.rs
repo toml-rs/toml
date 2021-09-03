@@ -1,14 +1,12 @@
+use std::fmt::Write;
 use std::iter::FromIterator;
 use std::str::FromStr;
 
 use combine::stream::position::Stream;
-use combine::stream::position::Stream as PositionStream;
 
 use crate::datetime::*;
 use crate::key::Key;
 use crate::parser;
-use crate::parser::strings;
-use crate::parser::TomlError;
 use crate::repr::{Decor, Formatted, InternalString, Repr};
 use crate::{Array, InlineTable};
 
@@ -273,8 +271,9 @@ impl<'b> From<&'b Value> for Value {
 
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
-        let (value, raw) = parse_string_guess_delimiters(s);
-        Value::String(Formatted::new(value, Repr::new_unchecked(raw)))
+        let repr = to_string_repr(s, None, None);
+        let value = s.to_owned();
+        Value::String(Formatted::new(value, repr))
     }
 }
 
@@ -290,39 +289,165 @@ impl From<InternalString> for Value {
     }
 }
 
-macro_rules! try_parse {
-    ($s:expr, $p:expr) => {{
-        use combine::EasyParser;
-        let result = $p.easy_parse(PositionStream::new($s));
-        match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(TomlError::from_unparsed(rest.positioner, $s))
+pub(crate) fn to_string_repr(
+    value: &str,
+    style: Option<StringStyle>,
+    literal: Option<bool>,
+) -> Repr {
+    let (style, literal) = match (style, literal) {
+        (Some(style), Some(literal)) => (style, literal),
+        (_, Some(literal)) => (infer_style(value).0, literal),
+        (Some(style), _) => (style, infer_style(value).1),
+        (_, _) => infer_style(value),
+    };
+
+    let mut output = String::with_capacity(value.len() * 2);
+    if literal {
+        output.push_str(style.literal_start());
+        output.push_str(value);
+        output.push_str(style.literal_end());
+    } else {
+        output.push_str(style.standard_start());
+        for ch in value.chars() {
+            match ch {
+                '\u{8}' => output.push_str("\\b"),
+                '\u{9}' => output.push_str("\\t"),
+                '\u{a}' => match style {
+                    StringStyle::NewlineTripple => output.push('\n'),
+                    StringStyle::OnelineSingle => output.push_str("\\n"),
+                    _ => unreachable!(),
+                },
+                '\u{c}' => output.push_str("\\f"),
+                '\u{d}' => output.push_str("\\r"),
+                '\u{22}' => output.push_str("\\\""),
+                '\u{5c}' => output.push_str("\\\\"),
+                c if c <= '\u{1f}' || c == '\u{7f}' => {
+                    write!(output, "\\u{:04X}", ch as u32).unwrap();
+                }
+                ch => output.push(ch),
             }
-            Ok((s, _)) => Ok(s),
-            Err(e) => Err(TomlError::new(e.into(), $s)),
         }
-    }};
+        output.push_str(style.standard_end());
+    }
+
+    Repr::new_unchecked(output)
 }
 
-// TODO: clean this mess
-fn parse_string_guess_delimiters(s: &str) -> (InternalString, InternalString) {
-    let basic = format!("\"{}\"", s);
-    let literal = format!("'{}'", s);
-    let ml_basic = format!("\"\"\"{}\"\"\"", s);
-    let ml_literal = format!("'''{}'''", s);
-    if let Ok(r) = try_parse!(s, strings::string()) {
-        (r, s.into())
-    } else if let Ok(r) = try_parse!(&basic[..], strings::basic_string()) {
-        (r, basic)
-    } else if let Ok(r) = try_parse!(&literal[..], strings::literal_string()) {
-        (r.into(), literal.clone())
-    } else if let Ok(r) = try_parse!(&ml_basic[..], strings::ml_basic_string()) {
-        (r, ml_literal)
-    } else {
-        try_parse!(&ml_literal[..], strings::ml_literal_string())
-            .map(|r| (r, ml_literal))
-            .unwrap_or_else(|e| panic!("toml string parse error: {}, {}", e, s))
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub(crate) enum StringStyle {
+    NewlineTripple,
+    OnelineTripple,
+    OnelineSingle,
+}
+
+impl StringStyle {
+    fn literal_start(self) -> &'static str {
+        match self {
+            Self::NewlineTripple => "'''\n",
+            Self::OnelineTripple => "'''",
+            Self::OnelineSingle => "'",
+        }
     }
+    fn literal_end(self) -> &'static str {
+        match self {
+            Self::NewlineTripple => "'''",
+            Self::OnelineTripple => "'''",
+            Self::OnelineSingle => "'",
+        }
+    }
+
+    fn standard_start(self) -> &'static str {
+        match self {
+            Self::NewlineTripple => "\"\"\"\n",
+            // note: OnelineTripple can happen if do_pretty wants to do
+            // '''it's one line'''
+            // but literal == false
+            Self::OnelineTripple | Self::OnelineSingle => "\"",
+        }
+    }
+
+    fn standard_end(self) -> &'static str {
+        match self {
+            Self::NewlineTripple => "\"\"\"",
+            // note: OnelineTripple can happen if do_pretty wants to do
+            // '''it's one line'''
+            // but literal == false
+            Self::OnelineTripple | Self::OnelineSingle => "\"",
+        }
+    }
+}
+
+fn infer_style(value: &str) -> (StringStyle, bool) {
+    // For doing pretty prints we store in a new String
+    // because there are too many cases where pretty cannot
+    // work. We need to determine:
+    // - if we are a "multi-line" pretty (if there are \n)
+    // - if ['''] appears if multi or ['] if single
+    // - if there are any invalid control characters
+    //
+    // Doing it any other way would require multiple passes
+    // to determine if a pretty string works or not.
+    let mut out = String::with_capacity(value.len() * 2);
+    let mut ty = StringStyle::OnelineSingle;
+    // found consecutive single quotes
+    let mut max_found_singles = 0;
+    let mut found_singles = 0;
+    let mut prefer_literal = false;
+    let mut can_be_pretty = true;
+
+    for ch in value.chars() {
+        if can_be_pretty {
+            if ch == '\'' {
+                found_singles += 1;
+                if found_singles >= 3 {
+                    can_be_pretty = false;
+                }
+            } else {
+                if found_singles > max_found_singles {
+                    max_found_singles = found_singles;
+                }
+                found_singles = 0
+            }
+            match ch {
+                '\t' => {}
+                '\\' => {
+                    prefer_literal = true;
+                }
+                '\n' => ty = StringStyle::NewlineTripple,
+                // Escape codes are needed if any ascii control
+                // characters are present, including \b \f \r.
+                c if c <= '\u{1f}' || c == '\u{7f}' => can_be_pretty = false,
+                _ => {}
+            }
+            out.push(ch);
+        } else {
+            // the string cannot be represented as pretty,
+            // still check if it should be multiline
+            if ch == '\n' {
+                ty = StringStyle::NewlineTripple;
+            }
+        }
+    }
+    if found_singles > 0 && value.ends_with('\'') {
+        // We cannot escape the ending quote so we must use """
+        can_be_pretty = false;
+    }
+    if !prefer_literal {
+        can_be_pretty = false;
+    }
+    if !can_be_pretty {
+        debug_assert!(ty != StringStyle::OnelineTripple);
+        return (ty, false);
+    }
+    if found_singles > max_found_singles {
+        max_found_singles = found_singles;
+    }
+    debug_assert!(max_found_singles < 3);
+    if ty == StringStyle::OnelineSingle && max_found_singles >= 1 {
+        // no newlines, but must use ''' because it has ' in it
+        ty = StringStyle::OnelineTripple;
+    }
+    (ty, true)
 }
 
 impl From<i64> for Value {

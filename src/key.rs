@@ -3,7 +3,9 @@ use std::str::FromStr;
 use combine::stream::position::Stream;
 
 use crate::parser;
+use crate::parser::is_unquoted_char;
 use crate::repr::{Decor, InternalString, Repr};
+use crate::value::{to_string_repr, StringStyle};
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -37,7 +39,9 @@ pub struct Key {
 impl Key {
     /// Create a new table key
     pub fn new(key: impl AsRef<str>) -> Self {
-        key_string_repr(key.as_ref())
+        let key = key.as_ref();
+        let repr = to_key_repr(key);
+        Self::new_unchecked(repr, key.to_owned())
     }
 
     pub(crate) fn new_unchecked(repr: Repr, key: InternalString) -> Self {
@@ -102,6 +106,14 @@ impl FromStr for Key {
     }
 }
 
+fn to_key_repr(key: &str) -> Repr {
+    if key.chars().all(is_unquoted_char) && !key.is_empty() {
+        Repr::new_unchecked(key)
+    } else {
+        to_string_repr(key, Some(StringStyle::OnelineSingle), Some(false))
+    }
+}
+
 impl<'b> From<&'b str> for Key {
     fn from(s: &'b str) -> Self {
         Key::new(s)
@@ -125,29 +137,4 @@ impl From<Key> for InternalString {
     fn from(key: Key) -> InternalString {
         key.key
     }
-}
-
-// TODO: clean this mess
-pub(crate) fn key_string_repr(s: &str) -> Key {
-    if let Ok(k) = Key::try_parse(s) {
-        if k.get() == s {
-            return k;
-        }
-    }
-
-    let basic = format!("\"{}\"", s);
-    if let Ok(k) = Key::try_parse(&basic) {
-        if k.get() == s {
-            return k;
-        }
-    }
-
-    let literal = format!("'{}'", s);
-    if let Ok(k) = Key::try_parse(&literal) {
-        if k.get() == s {
-            return k;
-        }
-    }
-
-    panic!("toml key parse error: {}", s);
 }

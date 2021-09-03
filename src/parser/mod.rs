@@ -16,6 +16,7 @@ mod trivia;
 mod value;
 
 pub use self::errors::TomlError;
+pub(crate) use self::key::is_unquoted_char;
 pub(crate) use self::key::simple_key as key_parser;
 pub(crate) use self::value::value as value_parser;
 

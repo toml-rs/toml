@@ -6,18 +6,11 @@ fn main() {
     let mut harness = toml_test_harness::EncoderHarness::new(encoder, decoder);
     harness
         .ignore([
-            "valid/array/table-array-string-backslash.toml",
             "valid/comment/tricky.toml",
             "valid/float/exponent.toml",
             "valid/float/inf-and-nan.toml",
             "valid/float/underscore.toml",
             "valid/float/zero.toml",
-            "valid/key/escapes.toml",
-            "valid/string/double-quote-escape.toml",
-            "valid/string/escape-tricky.toml",
-            "valid/string/escapes.toml",
-            "valid/string/nl.toml",
-            "valid/string/raw.toml",
             // Can't verify until decoder is fixed
             "valid/string/multiline-quotes.toml",
         ])
