@@ -458,10 +458,18 @@ impl From<i64> for Value {
 
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
-        let repr = if f.is_nan() {
-            "nan".to_owned()
-        } else {
-            format!("{:e}", f)
+        let repr = match (f.is_sign_negative(), f.is_nan(), f == 0.0) {
+            (true, true, _) => "-nan".to_owned(),
+            (false, true, _) => "nan".to_owned(),
+            (true, false, true) => "-0.0".to_owned(),
+            (false, false, true) => "0.0".to_owned(),
+            (_, false, false) => {
+                if f % 1.0 == 0.0 {
+                    format!("{}.0", f)
+                } else {
+                    format!("{}", f)
+                }
+            }
         };
         let repr = Repr::new_unchecked(repr);
 

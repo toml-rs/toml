@@ -190,7 +190,7 @@ fn test_insert_values() {
 [tbl]
 key1 = "value1"
 key2 = 42
-key3 = 8.1415926e0
+key3 = 8.1415926
 
         [tbl.son]
 "#
