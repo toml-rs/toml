@@ -6,10 +6,6 @@ fn main() {
     let mut harness = toml_test_harness::EncoderHarness::new(encoder, decoder);
     harness
         .ignore([
-            "valid/comment/tricky.toml",
-            "valid/float/exponent.toml",
-            "valid/float/underscore.toml",
-            "valid/float/zero.toml",
             // Can't verify until decoder is fixed
             "valid/string/multiline-quotes.toml",
         ])
