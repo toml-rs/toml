@@ -65,7 +65,7 @@ impl Display for Array {
             "{}[",
             self.decor.prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
         )?;
-        join(f, self.iter(), ",")?;
+        write!(f, "{}", self.iter().join(","))?;
         if self.trailing_comma {
             write!(f, ",")?;
         }
@@ -244,18 +244,4 @@ impl Display for Document {
         }
         self.trailing.fmt(f)
     }
-}
-
-fn join<D, I>(f: &mut Formatter<'_>, iter: I, sep: &str) -> Result
-where
-    D: Display,
-    I: Iterator<Item = D>,
-{
-    for (i, v) in iter.enumerate() {
-        if i > 0 {
-            write!(f, "{}", sep)?;
-        }
-        write!(f, "{}", v)?;
-    }
-    Ok(())
 }
