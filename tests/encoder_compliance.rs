@@ -8,7 +8,6 @@ fn main() {
         .ignore([
             "valid/comment/tricky.toml",
             "valid/float/exponent.toml",
-            "valid/float/inf-and-nan.toml",
             "valid/float/underscore.toml",
             "valid/float/zero.toml",
             // Can't verify until decoder is fixed
