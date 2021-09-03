@@ -531,10 +531,7 @@ impl<'a> VacantEntry<'a> {
     /// Sets the value of the entry with the VacantEntry's key,
     /// and returns a mutable reference to it
     pub fn insert(self, value: Item) -> &'a mut Item {
-        let key = self
-            .key
-            .cloned()
-            .unwrap_or_else(|| Key::with_key(self.key()));
+        let key = self.key.cloned().unwrap_or_else(|| Key::new(self.key()));
         &mut self.entry.insert(TableKeyValue::new(key, value)).value
     }
 }

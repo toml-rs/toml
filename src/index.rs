@@ -56,7 +56,7 @@ impl Index for str {
         }
     }
     fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
-        let key = Key::with_key(self);
+        let key = Key::new(self);
         if let Item::None = *v {
             let mut t = InlineTable::default();
             t.items.insert(

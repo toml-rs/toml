@@ -17,7 +17,7 @@ parse!(key() -> Vec1<Key>, {
             simple_key(),
             ws(),
         )).map(|(pre, (raw, key), suffix)| {
-            Key::new_unchecked(Repr::new_unchecked(raw), key, Decor::new(pre, suffix))
+            Key::new_unchecked(Repr::new_unchecked(raw), key).with_decor(Decor::new(pre, suffix))
         }),
         char(DOT_SEP)
     ).map(|k| Vec1::try_from_vec(k).expect("parser should guarantee this"))
