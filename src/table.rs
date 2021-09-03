@@ -251,7 +251,23 @@ impl Table {
     ///
     /// Doesn't affect subtables or subarrays.
     pub fn sort_values(&mut self) {
-        sort_key_value_pairs(&mut self.items);
+        let mut keys: Vec<InternalString> = self
+            .items
+            .iter_mut()
+            .filter_map(|(key, kv)| match &mut kv.value {
+                Item::Table(table) if table.is_dotted() => {
+                    table.sort_values();
+                    Some(key)
+                }
+                Item::Value(_) => Some(key),
+                _ => None,
+            })
+            .cloned()
+            .collect();
+        keys.sort();
+        for key in keys {
+            self.items.get_refresh(&key);
+        }
     }
 
     /// Auto formats the table.
@@ -322,18 +338,6 @@ impl<'s> IntoIterator for &'s Table {
 }
 
 pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
-
-pub(crate) fn sort_key_value_pairs(items: &mut LinkedHashMap<InternalString, TableKeyValue>) {
-    let mut keys: Vec<InternalString> = items
-        .iter()
-        .filter_map(|i| (i.1).value.as_value().map(|_| i.0))
-        .cloned()
-        .collect();
-    keys.sort();
-    for key in keys {
-        items.get_refresh(&key);
-    }
-}
 
 fn decorate_table(table: &mut Table) {
     for (key_decor, value) in table

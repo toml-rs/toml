@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use crate::key::Key;
 use crate::repr::{Decor, InternalString};
-use crate::table::{sort_key_value_pairs, Iter, KeyValuePairs, TableKeyValue, TableLike};
+use crate::table::{Iter, KeyValuePairs, TableKeyValue, TableLike};
 use crate::value::{DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
 use crate::{Item, Value};
 
@@ -212,8 +212,24 @@ impl InlineTable {
     }
 
     /// Sorts the key/value pairs by key.
-    pub fn sort(&mut self) {
-        sort_key_value_pairs(&mut self.items);
+    pub fn sort_values(&mut self) {
+        let mut keys: Vec<InternalString> = self
+            .items
+            .iter_mut()
+            .filter_map(|(key, kv)| match &mut kv.value {
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    table.sort_values();
+                    Some(key)
+                }
+                Item::Value(_) => Some(key),
+                _ => None,
+            })
+            .cloned()
+            .collect();
+        keys.sort();
+        for key in keys {
+            self.items.get_refresh(&key);
+        }
     }
 
     /// Auto formats the table.
