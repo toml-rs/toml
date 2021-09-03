@@ -309,6 +309,9 @@ impl TableLike for InlineTable {
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.items.get_mut(key).map(|kv| &mut kv.value)
     }
+    fn get_values<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
+        self.get_values(children);
+    }
 }
 
 // `{ key1 = value1, ... }`
