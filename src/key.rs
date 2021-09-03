@@ -108,6 +108,12 @@ impl<'b> From<&'b str> for Key {
     }
 }
 
+impl<'b> From<&'b String> for Key {
+    fn from(s: &'b String) -> Self {
+        Key::new(s)
+    }
+}
+
 impl From<String> for Key {
     fn from(s: String) -> Self {
         Key::new(s)
