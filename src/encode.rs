@@ -88,7 +88,7 @@ impl Display for InlineTable {
         write!(f, "{}", self.preamble)?;
 
         let mut children = Vec::new();
-        self.get_children(&mut children);
+        self.get_values(&mut children);
         for (i, (key_path, value)) in children.into_iter().enumerate() {
             let key = key_path_display(&key_path, DEFAULT_INLINE_KEY_DECOR);
             if i > 0 {
@@ -145,7 +145,7 @@ fn visit_table(
     is_array_of_tables: bool,
 ) -> Result {
     let mut children = Vec::new();
-    table.get_children(&mut children);
+    table.get_values(&mut children);
 
     if path.is_empty() {
         // don't print header for the root node
