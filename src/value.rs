@@ -278,6 +278,12 @@ impl<'b> From<&'b str> for Value {
     }
 }
 
+impl<'b> From<&'b String> for Value {
+    fn from(s: &'b String) -> Self {
+        s.as_str().into()
+    }
+}
+
 impl From<InternalString> for Value {
     fn from(s: InternalString) -> Self {
         Value::from(s.as_str())
