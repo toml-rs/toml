@@ -82,7 +82,7 @@ impl Table {
 
     /// Returns the number of key/value pairs in the table.
     ///
-    /// NOTE: Not accurate for dotted keys, see `get_children`
+    /// NOTE: Not accurate for dotted keys, see `get_values`
     pub(crate) fn values_len(&self) -> usize {
         self.items.iter().filter(|i| (i.1).value.is_value()).count()
     }
@@ -189,12 +189,12 @@ impl Table {
     /// Get key/values for values that are visually children of this table
     ///
     /// For example, this will return dotted keys
-    pub fn get_children<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
+    pub fn get_values<'s, 'c>(&'s self, children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>) {
         let root = Vec::new();
-        self.get_children_internal(&root, children);
+        self.get_values_internal(&root, children);
     }
 
-    fn get_children_internal<'s, 'c>(
+    fn get_values_internal<'s, 'c>(
         &'s self,
         parent: &[&'s Key],
         children: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
@@ -204,7 +204,7 @@ impl Table {
             path.push(&value.key);
             match &value.value {
                 Item::Table(table) if table.is_dotted() => {
-                    table.get_children_internal(&path, children);
+                    table.get_values_internal(&path, children);
                 }
                 Item::Value(value) => {
                     children.push((path, value));
