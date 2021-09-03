@@ -136,7 +136,12 @@ impl TomlParser {
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)
             .expect("the table path is valid; qed");
         let table = Self::descend_path(table, &path, 0, true)?;
-        if table.contains_key(kv.key.get()) {
+
+        // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"
+        let duplicate_key = table.contains_key(kv.key.get());
+        // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
+        let mixed_table_types = table.is_dotted() == path.is_empty();
+        if duplicate_key || mixed_table_types {
             Err(CustomError::DuplicateKey {
                 key: kv.key.into(),
                 table: "<unknown>".into(), // TODO: get actual table name
