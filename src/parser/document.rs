@@ -131,6 +131,8 @@ impl TomlParser {
                 first_key.decor.suffix().unwrap_or_default(),
             );
         }
+        kv.key.set_position(Some(self.current_value_position));
+        self.current_value_position += 1;
 
         let root = self.document.as_table_mut();
         let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)

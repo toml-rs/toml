@@ -119,6 +119,7 @@ impl TomlParser {
         let leading = mem::take(&mut self.document.trailing);
         let table = self.document.as_table_mut();
         self.current_table_position += 1;
+        self.current_value_position = 0;
 
         let table = Self::descend_path(table, &path[..path.len() - 1], 0, false)?;
         let key = &path[path.len() - 1];
@@ -158,6 +159,7 @@ impl TomlParser {
 
         let leading = mem::take(&mut self.document.trailing);
         let table = self.document.as_table_mut();
+        self.current_value_position = 0;
 
         let key = &path[path.len() - 1];
         let table = Self::descend_path(table, &path[..path.len() - 1], 0, false);

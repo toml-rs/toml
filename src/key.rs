@@ -34,6 +34,7 @@ pub struct Key {
     key: InternalString,
     pub(crate) repr: Repr,
     pub(crate) decor: Decor,
+    pub(crate) position: Option<usize>,
 }
 
 impl Key {
@@ -49,12 +50,19 @@ impl Key {
             key,
             repr,
             decor: Default::default(),
+            position: Default::default(),
         }
     }
 
     /// While creating the `Key`, add `Decor` to it
     pub fn with_decor(mut self, decor: Decor) -> Self {
         self.decor = decor;
+        self
+    }
+
+    /// While creating the `Key`, add a table position to it
+    pub fn with_position(mut self, position: Option<usize>) -> Self {
+        self.position = position;
         self
     }
 
@@ -76,6 +84,16 @@ impl Key {
     /// Returns the key raw representation.
     pub fn decor_mut(&mut self) -> &mut Decor {
         &mut self.decor
+    }
+
+    /// Get the position relative to other keys in parent table
+    pub fn position(&self) -> Option<usize> {
+        return self.position;
+    }
+
+    /// Set the position relative to other keys in parent table
+    pub fn set_position(&mut self, position: Option<usize>) {
+        self.position = position;
     }
 
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {

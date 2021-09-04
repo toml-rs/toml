@@ -27,6 +27,8 @@ pub(crate) struct TomlParser {
     document: Box<Document>,
     current_table_path: Vec<Key>,
     current_table_position: usize,
+    // Current position within a table, to help order dotted keys
+    current_value_position: usize,
 }
 
 impl Default for TomlParser {
@@ -35,6 +37,7 @@ impl Default for TomlParser {
             document: Box::new(Document::new()),
             current_table_path: Vec::new(),
             current_table_position: 0,
+            current_value_position: 0,
         }
     }
 }
@@ -392,6 +395,7 @@ trimmed in raw strings.
             r#"{a = 1e165}"#,
             r#"{ hello = "world", a = 1}"#,
             r#"{ hello.world = "a" }"#,
+            r#"{ hello.world = "a", goodbye = "b", hello.moon = "c" }"#,
         ];
         for input in &inputs {
             parsed_value_eq!(input);
@@ -499,6 +503,10 @@ that
 key = "value"
 "#,
             r#"hello.world = "a"
+"#,
+            r#"hello.world = "a"
+goodbye = "b"
+hello.moon = "c"
 "#,
         ];
         for document in &documents {
