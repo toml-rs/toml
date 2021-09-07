@@ -191,18 +191,18 @@ impl Value {
     /// let v = toml_edit::Value::from(true);
     /// assert_eq!(v.decor().suffix(), None);
     ///```
-    pub fn decor(&self) -> &Decor {
-        match *self {
-            Value::String(ref f) => &f.decor,
-            Value::Integer(ref f) => &f.decor,
-            Value::Float(ref f) => &f.decor,
-            Value::Boolean(ref f) => &f.decor,
-            Value::OffsetDateTime(ref f) => &f.decor,
-            Value::LocalDateTime(ref f) => &f.decor,
-            Value::LocalDate(ref f) => &f.decor,
-            Value::LocalTime(ref f) => &f.decor,
-            Value::Array(ref a) => &a.decor,
-            Value::InlineTable(ref t) => &t.decor,
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        match self {
+            Value::String(f) => f.decor_mut(),
+            Value::Integer(f) => f.decor_mut(),
+            Value::Float(f) => f.decor_mut(),
+            Value::Boolean(f) => f.decor_mut(),
+            Value::OffsetDateTime(f) => f.decor_mut(),
+            Value::LocalDateTime(f) => f.decor_mut(),
+            Value::LocalDate(f) => f.decor_mut(),
+            Value::LocalTime(f) => f.decor_mut(),
+            Value::Array(a) => a.decor_mut(),
+            Value::InlineTable(t) => t.decor_mut(),
         }
     }
 
@@ -212,18 +212,18 @@ impl Value {
     /// let v = toml_edit::Value::from(true);
     /// assert_eq!(v.decor().suffix(), None);
     ///```
-    pub fn decor_mut(&mut self) -> &mut Decor {
-        match self {
-            Value::String(f) => &mut f.decor,
-            Value::Integer(f) => &mut f.decor,
-            Value::Float(f) => &mut f.decor,
-            Value::Boolean(f) => &mut f.decor,
-            Value::OffsetDateTime(f) => &mut f.decor,
-            Value::LocalDateTime(f) => &mut f.decor,
-            Value::LocalDate(f) => &mut f.decor,
-            Value::LocalTime(f) => &mut f.decor,
-            Value::Array(a) => &mut a.decor,
-            Value::InlineTable(t) => &mut t.decor,
+    pub fn decor(&self) -> &Decor {
+        match *self {
+            Value::String(ref f) => f.decor(),
+            Value::Integer(ref f) => f.decor(),
+            Value::Float(ref f) => f.decor(),
+            Value::Boolean(ref f) => f.decor(),
+            Value::OffsetDateTime(ref f) => f.decor(),
+            Value::LocalDateTime(ref f) => f.decor(),
+            Value::LocalDate(ref f) => f.decor(),
+            Value::LocalTime(ref f) => f.decor(),
+            Value::Array(ref a) => a.decor(),
+            Value::InlineTable(ref t) => t.decor(),
         }
     }
 
@@ -257,7 +257,11 @@ impl FromStr for Value {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(Self::Err::from_unparsed(rest.positioner, s))
             }
-            Ok((value, _)) => Ok(value),
+            Ok((mut value, _)) => {
+                // Only take the repr and not decor, as its probably not intended
+                value.decor_mut().clear();
+                Ok(value)
+            }
             Err(e) => Err(Self::Err::new(e, s)),
         }
     }

@@ -13,16 +13,108 @@ pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
     pub(crate) preamble: InternalString,
     // prefix before `{` and suffix after `}`
-    pub(crate) decor: Decor,
+    decor: Decor,
     // whether this is a proxy for dotted keys
-    pub(crate) dotted: bool,
+    dotted: bool,
     pub(crate) items: KeyValuePairs,
 }
 
+/// Constructors
+///
+/// See also `FromIterator`
 impl InlineTable {
     /// Creates an empty table.
     pub fn new() -> Self {
         Default::default()
+    }
+}
+
+/// Formatting
+impl InlineTable {
+    /// Get key/values for values that are visually children of this table
+    ///
+    /// For example, this will return dotted keys
+    pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
+        let mut values = Vec::new();
+        let root = Vec::new();
+        self.get_values_internal(&root, &mut values);
+        values
+    }
+
+    fn get_values_internal<'s, 'c>(
+        &'s self,
+        parent: &[&'s Key],
+        values: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
+    ) {
+        for value in self.items.values() {
+            let mut path = parent.to_vec();
+            path.push(&value.key);
+            match &value.value {
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    table.get_values_internal(&path, values);
+                }
+                Item::Value(value) => {
+                    values.push((path, value));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// Auto formats the table.
+    pub fn fmt(&mut self) {
+        decorate_inline_table(self);
+    }
+
+    /// Sorts the key/value pairs by key.
+    pub fn sort_values(&mut self) {
+        let mut keys: Vec<InternalString> = self
+            .items
+            .iter_mut()
+            .filter_map(|(key, kv)| match &mut kv.value {
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    table.sort_values();
+                    Some(key)
+                }
+                Item::Value(_) => Some(key),
+                _ => None,
+            })
+            .cloned()
+            .collect();
+        keys.sort();
+        for key in keys {
+            self.items.get_refresh(&key);
+        }
+    }
+
+    /// Change this table's dotted status
+    pub fn set_dotted(&mut self, yes: bool) {
+        self.dotted = yes;
+    }
+
+    /// Check if this is a wrapper for dotted keys, rather than a standard table
+    pub fn is_dotted(&self) -> bool {
+        self.dotted
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        &mut self.decor
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor(&self) -> &Decor {
+        &self.decor
+    }
+
+    /// Returns the decor associated with a given key of the table.
+    pub fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
+        self.items.get_mut(key).map(|kv| &mut kv.key.decor)
+    }
+
+    /// Returns the decor associated with a given key of the table.
+    pub fn key_decor(&self, key: &str) -> Option<&Decor> {
+        self.items.get(key).map(|kv| &kv.key.decor)
     }
 }
 
@@ -170,79 +262,6 @@ impl InlineTable {
     }
 }
 
-impl InlineTable {
-    /// Get key/values for values that are visually children of this table
-    ///
-    /// For example, this will return dotted keys
-    pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
-        let mut values = Vec::new();
-        let root = Vec::new();
-        self.get_values_internal(&root, &mut values);
-        values
-    }
-
-    fn get_values_internal<'s, 'c>(
-        &'s self,
-        parent: &[&'s Key],
-        values: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
-    ) {
-        for value in self.items.values() {
-            let mut path = parent.to_vec();
-            path.push(&value.key);
-            match &value.value {
-                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
-                    table.get_values_internal(&path, values);
-                }
-                Item::Value(value) => {
-                    values.push((path, value));
-                }
-                _ => {}
-            }
-        }
-    }
-
-    /// Check if this is a wrapper for dotted keys, rather than a standard table
-    pub fn is_dotted(&self) -> bool {
-        self.dotted
-    }
-
-    /// Change this table's dotted status
-    pub fn set_dotted(&mut self, yes: bool) {
-        self.dotted = yes;
-    }
-
-    /// Sorts the key/value pairs by key.
-    pub fn sort_values(&mut self) {
-        let mut keys: Vec<InternalString> = self
-            .items
-            .iter_mut()
-            .filter_map(|(key, kv)| match &mut kv.value {
-                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
-                    table.sort_values();
-                    Some(key)
-                }
-                Item::Value(_) => Some(key),
-                _ => None,
-            })
-            .cloned()
-            .collect();
-        keys.sort();
-        for key in keys {
-            self.items.get_refresh(&key);
-        }
-    }
-
-    /// Auto formats the table.
-    pub fn fmt(&mut self) {
-        decorate_inline_table(self);
-    }
-
-    /// Returns the decor associated with a given key of the table.
-    pub fn decor(&self, key: &str) -> Option<&Decor> {
-        self.items.get(key).map(|kv| &kv.key.decor)
-    }
-}
-
 impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for InlineTable {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
         for (key, value) in iter {
@@ -329,6 +348,18 @@ impl TableLike for InlineTable {
     }
     fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         self.get_values()
+    }
+    fn fmt(&mut self) {
+        self.fmt()
+    }
+    fn sort_values(&mut self) {
+        self.sort_values()
+    }
+    fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
+        self.key_decor_mut(key)
+    }
+    fn key_decor(&self, key: &str) -> Option<&Decor> {
+        self.key_decor(key)
     }
 }
 

@@ -6,24 +6,28 @@ pub(crate) type InternalString = String;
 pub struct Formatted<T> {
     value: T,
     pub(crate) repr: Repr,
-    pub(crate) decor: Decor,
+    decor: Decor,
 }
 
 impl<T> Formatted<T> {
-    pub fn raw(&self) -> &str {
-        &self.repr.raw_value
-    }
-
-    pub fn prefix(&self) -> Option<&str> {
-        self.decor.prefix()
-    }
-
-    pub fn suffix(&self) -> Option<&str> {
-        self.decor.suffix()
-    }
-
+    /// The wrapped value
     pub fn value(&self) -> &T {
         &self.value
+    }
+
+    /// The TOML representation of the value
+    pub fn repr(&self) -> &Repr {
+        &self.repr
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        &mut self.decor
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor(&self) -> &Decor {
+        &self.decor
     }
 
     pub(crate) fn new(v: T, repr: Repr) -> Self {

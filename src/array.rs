@@ -11,40 +11,145 @@ use crate::{Item, Value};
 pub struct Array {
     // `trailing` represents whitespaces, newlines
     // and comments in an empty array or after the trailing comma
-    pub(crate) trailing: InternalString,
-    pub(crate) trailing_comma: bool,
+    trailing: InternalString,
+    trailing_comma: bool,
     // prefix before `[` and suffix after `]`
-    pub(crate) decor: Decor,
+    decor: Decor,
     // always Vec<Item::Value>
     pub(crate) values: Vec<Item>,
 }
 
+/// An owned iterator type over `Table`'s key/value pairs.
+pub type ArrayIntoIter = Box<dyn Iterator<Item = Value>>;
 /// An iterator type over `Array`'s values.
 pub type ArrayIter<'a> = Box<dyn Iterator<Item = &'a Value> + 'a>;
+/// An iterator type over `Array`'s values.
+pub type ArrayIterMut<'a> = Box<dyn Iterator<Item = &'a mut Value> + 'a>;
 
+/// Constructors
+///
+/// See also `FromIterator`
 impl Array {
     /// Create an empty `Array`
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// ```
     pub fn new() -> Self {
         Default::default()
     }
+}
 
-    /// Returns the length of the underlying Vec.
-    /// To get the actual number of items use `a.iter().count()`.
-    pub fn len(&self) -> usize {
-        self.values.len()
+/// Formatting
+impl Array {
+    /// Auto formats the array.
+    pub fn fmt(&mut self) {
+        decorate_array(self);
     }
 
-    /// Return true iff `self.len() == 0`.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
+    /// Set whether the array will use a trailing comma
+    pub fn set_trailing_comma(&mut self, yes: bool) {
+        self.trailing_comma = yes;
     }
 
+    /// Whether the array will use a trailing comma
+    pub fn trailing_comma(&self) -> bool {
+        self.trailing_comma
+    }
+
+    /// Set whitespace after last element
+    pub fn set_trailing(&mut self, trailing: &str) {
+        self.trailing = trailing.to_owned();
+    }
+
+    /// Whitespace after last element
+    pub fn trailing(&self) -> &str {
+        self.trailing.as_str()
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        &mut self.decor
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor(&self) -> &Decor {
+        &self.decor
+    }
+}
+
+impl Array {
     /// Returns an iterator over all values.
     pub fn iter(&self) -> ArrayIter<'_> {
         Box::new(self.values.iter().filter_map(Item::as_value))
     }
 
+    /// Returns an iterator over all values.
+    pub fn iter_mut(&mut self) -> ArrayIterMut<'_> {
+        Box::new(self.values.iter_mut().filter_map(Item::as_value_mut))
+    }
+
+    /// Returns the length of the underlying Vec.
+    ///
+    /// In some rare cases, placeholder elements will exist.  For a more accurate count, call
+    /// `a.iter().count()`
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    /// assert_eq!(arr.len(), 2);
+    /// ```
+    pub fn len(&self) -> usize {
+        self.values.len()
+    }
+
+    /// Return true iff `self.len() == 0`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// assert!(arr.is_empty());
+    ///
+    /// arr.push(1);
+    /// arr.push("foo");
+    /// assert!(! arr.is_empty());
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Clears the array, removing all values. Keeps the allocated memory for reuse.
+    pub fn clear(&mut self) {
+        self.values.clear()
+    }
+
+    /// Returns a reference to the value at the given index, or `None` if the index is out of
+    /// bounds.
+    pub fn get(&self, index: usize) -> Option<&Value> {
+        self.values.get(index).and_then(Item::as_value)
+    }
+
+    /// Returns a reference to the value at the given index, or `None` if the index is out of
+    /// bounds.
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut Value> {
+        self.values.get_mut(index).and_then(Item::as_value_mut)
+    }
+
     /// Appends a new value to the end of the array, applying default formatting to it.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    /// ```
     pub fn push<V: Into<Value>>(&mut self, v: V) {
         self.value_op(v.into(), true, |items, value| {
             items.push(Item::Value(value))
@@ -52,14 +157,34 @@ impl Array {
     }
 
     /// Appends a new, already formatted value to the end of the array.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let formatted_value = "'literal'".parse::<toml_edit::Value>().unwrap();
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push_formatted(formatted_value);
+    /// ```
     pub fn push_formatted(&mut self, v: Value) {
-        self.value_op(v, false, |items, value| items.push(Item::Value(value)))
+        self.values.push(Item::Value(v));
     }
 
     /// Inserts an element at the given position within the array, applying default formatting to
     /// it and shifting all values after it to the right.
     ///
+    /// # Panics
+    ///
     /// Panics if `index > len`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    ///
+    /// arr.insert(0, "start");
+    /// ```
     pub fn insert<V: Into<Value>>(&mut self, index: usize, v: V) {
         self.value_op(v.into(), true, |items, value| {
             items.insert(index, Item::Value(value))
@@ -69,16 +194,39 @@ impl Array {
     /// Inserts an already formatted value at the given position within the array, shifting all
     /// values after it to the right.
     ///
+    /// # Panics
+    ///
     /// Panics if `index > len`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    ///
+    /// let formatted_value = "'start'".parse::<toml_edit::Value>().unwrap();
+    /// arr.insert_formatted(0, formatted_value);
+    /// ```
     pub fn insert_formatted(&mut self, index: usize, v: Value) {
-        self.value_op(v, false, |items, value| {
-            items.insert(index, Item::Value(value))
-        })
+        self.values.insert(index, Item::Value(v))
     }
 
     /// Replaces the element at the given position within the array, preserving existing formatting.
     ///
+    /// # Panics
+    ///
     /// Panics if `index >= len`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    ///
+    /// arr.replace(0, "start");
+    /// ```
     pub fn replace<V: Into<Value>>(&mut self, index: usize, v: V) -> Value {
         // Read the existing value's decor and preserve it.
         let existing_decor = self
@@ -92,37 +240,45 @@ impl Array {
 
     /// Replaces the element at the given position within the array with an already formatted value.
     ///
+    /// # Panics
+    ///
     /// Panics if `index >= len`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    ///
+    /// let formatted_value = "'start'".parse::<toml_edit::Value>().unwrap();
+    /// arr.replace_formatted(0, formatted_value);
+    /// ```
     pub fn replace_formatted(&mut self, index: usize, v: Value) -> Value {
-        self.value_op(v, false, |items, value| {
-            match mem::replace(&mut items[index], Item::Value(value)) {
-                Item::Value(old_value) => old_value,
-                x => panic!("non-value item {:?} in an array", x),
-            }
-        })
-    }
-
-    /// Returns a reference to the value at the given index, or `None` if the index is out of
-    /// bounds.
-    pub fn get(&self, index: usize) -> Option<&Value> {
-        self.values.get(index).and_then(Item::as_value)
-    }
-
-    /// Removes the value at the given index.
-    pub fn remove(&mut self, index: usize) -> Value {
-        let removed = self.values.remove(index);
-        if self.is_empty() {
-            self.trailing_comma = false;
-        }
-        match removed {
-            Item::Value(v) => v,
+        match mem::replace(&mut self.values[index], Item::Value(v)) {
+            Item::Value(old_value) => old_value,
             x => panic!("non-value item {:?} in an array", x),
         }
     }
 
-    /// Auto formats the array.
-    pub fn fmt(&mut self) {
-        decorate_array(self);
+    /// Removes the value at the given index.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let mut arr = toml_edit::Array::new();
+    /// arr.push(1);
+    /// arr.push("foo");
+    ///
+    /// arr.remove(0);
+    /// assert_eq!(arr.len(), 1);
+    /// ```
+    pub fn remove(&mut self, index: usize) -> Value {
+        let removed = self.values.remove(index);
+        match removed {
+            Item::Value(v) => v,
+            x => panic!("non-value item {:?} in an array", x),
+        }
     }
 
     fn value_op<T>(
@@ -141,6 +297,14 @@ impl Array {
     }
 }
 
+impl<V: Into<Value>> Extend<V> for Array {
+    fn extend<T: IntoIterator<Item = V>>(&mut self, iter: T) {
+        for value in iter {
+            self.push(value.into());
+        }
+    }
+}
+
 impl<V: Into<Value>> FromIterator<V> for Array {
     fn from_iter<I>(iter: I) -> Self
     where
@@ -156,7 +320,30 @@ impl<V: Into<Value>> FromIterator<V> for Array {
     }
 }
 
-pub(crate) fn decorate_array(array: &mut Array) {
+impl IntoIterator for Array {
+    type Item = Value;
+    type IntoIter = ArrayIntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Box::new(
+            self.values
+                .into_iter()
+                .filter(|v| v.is_value())
+                .map(|v| v.into_value().unwrap()),
+        )
+    }
+}
+
+impl<'s> IntoIterator for &'s Array {
+    type Item = &'s Value;
+    type IntoIter = ArrayIter<'s>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+fn decorate_array(array: &mut Array) {
     for (i, value) in array
         .values
         .iter_mut()
