@@ -1,14 +1,14 @@
 pub use serde::de::{Deserialize, IntoDeserializer};
 
-use crate::value::{Array, Table, Value};
+use crate::easy::value::{Array, Table, Value};
 
-/// Construct a [`toml::Value`] from TOML syntax.
+/// Construct a [`toml_edit::easy::Value`] from TOML syntax.
 ///
-/// [`toml::Value`]: value/enum.Value.html
+/// [`toml_edit::easy::Value`]: value/enum.Value.html
 ///
 /// ```rust
 /// fn main() {
-///     let cargo_toml = toml::toml! {
+///     let cargo_toml = toml_edit::easy::toml! {
 ///         [package]
 ///         name = "toml"
 ///         version = "0.4.5"
@@ -31,14 +31,14 @@ use crate::value::{Array, Table, Value};
 #[macro_export]
 macro_rules! toml {
     ($($toml:tt)+) => {{
-        let table = $crate::value::Table::new();
-        let mut root = $crate::Value::Table(table);
-        $crate::toml_internal!(@toplevel root [] $($toml)+);
+        let table = $crate::easy::value::Table::new();
+        let mut root = $crate::easy::Value::Table(table);
+        $crate::easy::toml_internal!(@toplevel root [] $($toml)+);
         root
     }};
 }
 
-// TT-muncher to parse TOML syntax into a toml::Value.
+// TT-muncher to parse TOML syntax into a toml_edit::easy::Value.
 //
 //    @toplevel -- Parse tokens outside of an inline table or inline array. In
 //                 this state, `[table headers]` and `[[array headers]]` are
@@ -55,13 +55,13 @@ macro_rules! toml {
 //                 primitive or inline table or inline array.
 //
 //    @table -- Parse the contents of an inline table, returning them as a
-//                 toml::Value::Table.
+//                 toml_edit::easy::Value::Table.
 //
 //    @tabledatetime -- Helper to parse a Datetime from string and insert it
 //                 into a table, continuing in the @table state.
 //
 //    @array -- Parse the contents of an inline array, returning them as a
-//                 toml::Value::Array.
+//                 toml_edit::easy::Value::Array.
 //
 //    @arraydatetime -- Helper to parse a Datetime from string and push it into
 //                 an array, continuing in the @array state.
@@ -78,99 +78,99 @@ macro_rules! toml_internal {
 
     // Parse negative number `key = -value`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = - $v:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@toplevel $root [$($path)*] $($($k)-+).+ = (-$v) $($rest)*);
+        $crate::easy::toml_internal!(@toplevel $root [$($path)*] $($($k)-+).+ = (-$v) $($rest)*);
     };
 
     // Parse positive number `key = +value`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = + $v:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@toplevel $root [$($path)*] $($($k)-+).+ = ($v) $($rest)*);
+        $crate::easy::toml_internal!(@toplevel $root [$($path)*] $($($k)-+).+ = ($v) $($rest)*);
     };
 
     // Parse offset datetime `key = 1979-05-27T00:32:00.999999-07:00`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt . $frac:tt - $tzh:tt : $tzm:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
     };
     // Space instead of T.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt . $frac:tt - $tzh:tt : $tzm:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
     };
 
     // Parse offset datetime `key = 1979-05-27T00:32:00-07:00`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt - $tzh:tt : $tzm:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec - $tzh : $tzm) $($rest)*);
     };
     // Space instead of T.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt - $tzh:tt : $tzm:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec - $tzh : $tzm) $($rest)*);
     };
 
     // Parse local datetime `key = 1979-05-27T00:32:00.999999`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt . $frac:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac) $($rest)*);
     };
     // Space instead of T.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt . $frac:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac) $($rest)*);
     };
 
     // Parse offset datetime `key = 1979-05-27T07:32:00Z` and local datetime `key = 1979-05-27T07:32:00`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec) $($rest)*);
     };
     // Space instead of T.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec) $($rest)*);
     };
 
     // Parse local date `key = 1979-05-27`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($yr - $mo - $day) $($rest)*);
     };
 
     // Parse local time `key = 00:32:00.999999`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $hr:tt : $min:tt : $sec:tt . $frac:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($hr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($hr : $min : $sec . $frac) $($rest)*);
     };
 
     // Parse local time `key = 07:32:00`.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $hr:tt : $min:tt : $sec:tt $($rest:tt)*) => {
-        $crate::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($hr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@topleveldatetime $root [$($path)*] $($($k)-+).+ = ($hr : $min : $sec) $($rest)*);
     };
 
     // Parse any other `key = value` including string, inline array, inline
     // table, number, and boolean.
     (@toplevel $root:ident [$($path:tt)*] $($($k:tt)-+).+ = $v:tt $($rest:tt)*) => {{
-        $crate::macros::insert_toml(
+        $crate::easy::macros::insert_toml(
             &mut $root,
-            &[$($path)* $(&concat!($("-", $crate::toml_internal!(@path $k),)+)[1..], )+],
-            $crate::toml_internal!(@value $v));
-        $crate::toml_internal!(@toplevel $root [$($path)*] $($rest)*);
+            &[$($path)* $(&concat!($("-", $crate::easy::toml_internal!(@path $k),)+)[1..], )+],
+            $crate::easy::toml_internal!(@value $v));
+        $crate::easy::toml_internal!(@toplevel $root [$($path)*] $($rest)*);
     }};
 
     // Parse array header `[[bin]]`.
     (@toplevel $root:ident $oldpath:tt [[$($($path:tt)-+).+]] $($rest:tt)*) => {
-        $crate::macros::push_toml(
+        $crate::easy::macros::push_toml(
             &mut $root,
-            &[$(&concat!($("-", $crate::toml_internal!(@path $path),)+)[1..],)+]);
-        $crate::toml_internal!(@toplevel $root [$(&concat!($("-", $crate::toml_internal!(@path $path),)+)[1..],)+] $($rest)*);
+            &[$(&concat!($("-", $crate::easy::toml_internal!(@path $path),)+)[1..],)+]);
+        $crate::easy::toml_internal!(@toplevel $root [$(&concat!($("-", $crate::easy::toml_internal!(@path $path),)+)[1..],)+] $($rest)*);
     };
 
     // Parse table header `[patch.crates-io]`.
     (@toplevel $root:ident $oldpath:tt [$($($path:tt)-+).+] $($rest:tt)*) => {
-        $crate::macros::insert_toml(
+        $crate::easy::macros::insert_toml(
             &mut $root,
-            &[$(&concat!($("-", $crate::toml_internal!(@path $path),)+)[1..],)+],
-            $crate::Value::Table($crate::value::Table::new()));
-        $crate::toml_internal!(@toplevel $root [$(&concat!($("-", $crate::toml_internal!(@path $path),)+)[1..],)+] $($rest)*);
+            &[$(&concat!($("-", $crate::easy::toml_internal!(@path $path),)+)[1..],)+],
+            $crate::easy::Value::Table($crate::easy::value::Table::new()));
+        $crate::easy::toml_internal!(@toplevel $root [$(&concat!($("-", $crate::easy::toml_internal!(@path $path),)+)[1..],)+] $($rest)*);
     };
 
     // Parse datetime from string and insert into table.
     (@topleveldatetime $root:ident [$($path:tt)*] $($($k:tt)-+).+ = ($($datetime:tt)+) $($rest:tt)*) => {
-        $crate::macros::insert_toml(
+        $crate::easy::macros::insert_toml(
             &mut $root,
-            &[$($path)* $(&concat!($("-", $crate::toml_internal!(@path $k),)+)[1..], )+],
-            $crate::Value::Datetime(concat!($(stringify!($datetime)),+).parse().unwrap()));
-        $crate::toml_internal!(@toplevel $root [$($path)*] $($rest)*);
+            &[$($path)* $(&concat!($("-", $crate::easy::toml_internal!(@path $k),)+)[1..], )+],
+            $crate::easy::Value::Datetime(concat!($(stringify!($datetime)),+).parse().unwrap()));
+        $crate::easy::toml_internal!(@toplevel $root [$($path)*] $($rest)*);
     };
 
     // Turn a path segment into a string.
@@ -186,47 +186,47 @@ macro_rules! toml_internal {
 
     // Construct a Value from an inline table.
     (@value { $($inline:tt)* }) => {{
-        let mut table = $crate::Value::Table($crate::value::Table::new());
-        $crate::toml_internal!(@trailingcomma (@table table) $($inline)*);
+        let mut table = $crate::easy::Value::Table($crate::easy::value::Table::new());
+        $crate::easy::toml_internal!(@trailingcomma (@table table) $($inline)*);
         table
     }};
 
     // Construct a Value from an inline array.
     (@value [ $($inline:tt)* ]) => {{
-        let mut array = $crate::value::Array::new();
-        $crate::toml_internal!(@trailingcomma (@array array) $($inline)*);
-        $crate::Value::Array(array)
+        let mut array = $crate::easy::value::Array::new();
+        $crate::easy::toml_internal!(@trailingcomma (@array array) $($inline)*);
+        $crate::easy::Value::Array(array)
     }};
 
     (@value (-nan)) => {
-        $crate::Value::Float(-::std::f64::NAN)
+        $crate::easy::Value::Float(-::std::f64::NAN)
     };
 
     (@value (nan)) => {
-        $crate::Value::Float(::std::f64::NAN)
+        $crate::easy::Value::Float(::std::f64::NAN)
     };
 
     (@value nan) => {
-        $crate::Value::Float(::std::f64::NAN)
+        $crate::easy::Value::Float(::std::f64::NAN)
     };
 
     (@value (-inf)) => {
-        $crate::Value::Float(::std::f64::NEG_INFINITY)
+        $crate::easy::Value::Float(::std::f64::NEG_INFINITY)
     };
 
     (@value (inf)) => {
-        $crate::Value::Float(::std::f64::INFINITY)
+        $crate::easy::Value::Float(::std::f64::INFINITY)
     };
 
     (@value inf) => {
-        $crate::Value::Float(::std::f64::INFINITY)
+        $crate::easy::Value::Float(::std::f64::INFINITY)
     };
 
     // Construct a Value from any other type, probably string or boolean or number.
     (@value $v:tt) => {{
         // TODO: Implement this with something like serde_json::to_value instead.
-        let de = $crate::macros::IntoDeserializer::<$crate::de::Error>::into_deserializer($v);
-        <$crate::Value as $crate::macros::Deserialize>::deserialize(de).unwrap()
+        let de = $crate::easy::macros::IntoDeserializer::<$crate::easy::de::Error>::into_deserializer($v);
+        <$crate::easy::Value as $crate::easy::macros::Deserialize>::deserialize(de).unwrap()
     }};
 
     // Base case of inline table.
@@ -234,81 +234,81 @@ macro_rules! toml_internal {
 
     // Parse negative number `key = -value`.
     (@table $root:ident $($($k:tt)-+).+ = - $v:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@table $root $($($k)-+).+ = (-$v) , $($rest)*);
+        $crate::easy::toml_internal!(@table $root $($($k)-+).+ = (-$v) , $($rest)*);
     };
 
     // Parse positive number `key = +value`.
     (@table $root:ident $($($k:tt)-+).+ = + $v:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@table $root $($($k)-+).+ = ($v) , $($rest)*);
+        $crate::easy::toml_internal!(@table $root $($($k)-+).+ = ($v) , $($rest)*);
     };
 
     // Parse offset datetime `key = 1979-05-27T00:32:00.999999-07:00`.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt . $frac:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
     };
     // Space instead of T.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt . $frac:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
     };
 
     // Parse offset datetime `key = 1979-05-27T00:32:00-07:00`.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec - $tzh : $tzm) $($rest)*);
     };
     // Space instead of T.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec - $tzh : $tzm) $($rest)*);
     };
 
     // Parse local datetime `key = 1979-05-27T00:32:00.999999`.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt . $frac:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec . $frac) $($rest)*);
     };
     // Space instead of T.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt . $frac:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec . $frac) $($rest)*);
     };
 
     // Parse offset datetime `key = 1979-05-27T07:32:00Z` and local datetime `key = 1979-05-27T07:32:00`.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $dhr : $min : $sec) $($rest)*);
     };
     // Space instead of T.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day T $hr : $min : $sec) $($rest)*);
     };
 
     // Parse local date `key = 1979-05-27`.
     (@table $root:ident $($($k:tt)-+).+ = $yr:tt - $mo:tt - $day:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($yr - $mo - $day) $($rest)*);
     };
 
     // Parse local time `key = 00:32:00.999999`.
     (@table $root:ident $($($k:tt)-+).+ = $hr:tt : $min:tt : $sec:tt . $frac:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($hr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($hr : $min : $sec . $frac) $($rest)*);
     };
 
     // Parse local time `key = 07:32:00`.
     (@table $root:ident $($($k:tt)-+).+ = $hr:tt : $min:tt : $sec:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($hr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@tabledatetime $root $($($k)-+).+ = ($hr : $min : $sec) $($rest)*);
     };
 
     // Parse any other type, probably string or boolean or number.
     (@table $root:ident $($($k:tt)-+).+ = $v:tt , $($rest:tt)*) => {
-        $crate::macros::insert_toml(
+        $crate::easy::macros::insert_toml(
             &mut $root,
-            &[$(&concat!($("-", $crate::toml_internal!(@path $k),)+)[1..], )+],
-            $crate::toml_internal!(@value $v));
-        $crate::toml_internal!(@table $root $($rest)*);
+            &[$(&concat!($("-", $crate::easy::toml_internal!(@path $k),)+)[1..], )+],
+            $crate::easy::toml_internal!(@value $v));
+        $crate::easy::toml_internal!(@table $root $($rest)*);
     };
 
     // Parse a Datetime from string and continue in @table state.
     (@tabledatetime $root:ident $($($k:tt)-+).+ = ($($datetime:tt)*) $($rest:tt)*) => {
-        $crate::macros::insert_toml(
+        $crate::easy::macros::insert_toml(
             &mut $root,
-            &[$(&concat!($("-", $crate::toml_internal!(@path $k),)+)[1..], )+],
-            $crate::Value::Datetime(concat!($(stringify!($datetime)),+).parse().unwrap()));
-        $crate::toml_internal!(@table $root $($rest)*);
+            &[$(&concat!($("-", $crate::easy::toml_internal!(@path $k),)+)[1..], )+],
+            $crate::easy::Value::Datetime(concat!($(stringify!($datetime)),+).parse().unwrap()));
+        $crate::easy::toml_internal!(@table $root $($rest)*);
     };
 
     // Base case of inline array.
@@ -316,95 +316,95 @@ macro_rules! toml_internal {
 
     // Parse negative number `-value`.
     (@array $root:ident - $v:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@array $root (-$v) , $($rest)*);
+        $crate::easy::toml_internal!(@array $root (-$v) , $($rest)*);
     };
 
     // Parse positive number `+value`.
     (@array $root:ident + $v:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@array $root ($v) , $($rest)*);
+        $crate::easy::toml_internal!(@array $root ($v) , $($rest)*);
     };
 
     // Parse offset datetime `1979-05-27T00:32:00.999999-07:00`.
     (@array $root:ident $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt . $frac:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
     };
     // Space instead of T.
     (@array $root:ident $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt . $frac:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec . $frac - $tzh : $tzm) $($rest)*);
     };
 
     // Parse offset datetime `1979-05-27T00:32:00-07:00`.
     (@array $root:ident $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec - $tzh : $tzm) $($rest)*);
     };
     // Space instead of T.
     (@array $root:ident $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt - $tzh:tt : $tzm:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec - $tzh : $tzm) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec - $tzh : $tzm) $($rest)*);
     };
 
     // Parse local datetime `1979-05-27T00:32:00.999999`.
     (@array $root:ident $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt . $frac:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec . $frac) $($rest)*);
     };
     // Space instead of T.
     (@array $root:ident $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt . $frac:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec . $frac) $($rest)*);
     };
 
     // Parse offset datetime `1979-05-27T07:32:00Z` and local datetime `1979-05-27T07:32:00`.
     (@array $root:ident $yr:tt - $mo:tt - $dhr:tt : $min:tt : $sec:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $dhr : $min : $sec) $($rest)*);
     };
     // Space instead of T.
     (@array $root:ident $yr:tt - $mo:tt - $day:tt $hr:tt : $min:tt : $sec:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $day T $hr : $min : $sec) $($rest)*);
     };
 
     // Parse local date `1979-05-27`.
     (@array $root:ident $yr:tt - $mo:tt - $day:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($yr - $mo - $day) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($yr - $mo - $day) $($rest)*);
     };
 
     // Parse local time `00:32:00.999999`.
     (@array $root:ident $hr:tt : $min:tt : $sec:tt . $frac:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($hr : $min : $sec . $frac) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($hr : $min : $sec . $frac) $($rest)*);
     };
 
     // Parse local time `07:32:00`.
     (@array $root:ident $hr:tt : $min:tt : $sec:tt , $($rest:tt)*) => {
-        $crate::toml_internal!(@arraydatetime $root ($hr : $min : $sec) $($rest)*);
+        $crate::easy::toml_internal!(@arraydatetime $root ($hr : $min : $sec) $($rest)*);
     };
 
     // Parse any other type, probably string or boolean or number.
     (@array $root:ident $v:tt , $($rest:tt)*) => {
-        $root.push($crate::toml_internal!(@value $v));
-        $crate::toml_internal!(@array $root $($rest)*);
+        $root.push($crate::easy::toml_internal!(@value $v));
+        $crate::easy::toml_internal!(@array $root $($rest)*);
     };
 
     // Parse a Datetime from string and continue in @array state.
     (@arraydatetime $root:ident ($($datetime:tt)*) $($rest:tt)*) => {
-        $root.push($crate::Value::Datetime(concat!($(stringify!($datetime)),+).parse().unwrap()));
-        $crate::toml_internal!(@array $root $($rest)*);
+        $root.push($crate::easy::Value::Datetime(concat!($(stringify!($datetime)),+).parse().unwrap()));
+        $crate::easy::toml_internal!(@array $root $($rest)*);
     };
 
     // No trailing comma required if the tokens are empty.
     (@trailingcomma ($($args:tt)*)) => {
-        $crate::toml_internal!($($args)*);
+        $crate::easy::toml_internal!($($args)*);
     };
 
     // Tokens end with a trailing comma, do not append another one.
     (@trailingcomma ($($args:tt)*) ,) => {
-        $crate::toml_internal!($($args)* ,);
+        $crate::easy::toml_internal!($($args)* ,);
     };
 
     // Tokens end with something other than comma, append a trailing comma.
     (@trailingcomma ($($args:tt)*) $last:tt) => {
-        $crate::toml_internal!($($args)* $last ,);
+        $crate::easy::toml_internal!($($args)* $last ,);
     };
 
     // Not yet at the last token.
     (@trailingcomma ($($args:tt)*) $first:tt $($rest:tt)+) => {
-        $crate::toml_internal!(@trailingcomma ($($args)* $first) $($rest)+);
+        $crate::easy::toml_internal!(@trailingcomma ($($args)* $first) $($rest)+);
     };
 }
 
