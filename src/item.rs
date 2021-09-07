@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::array_of_tables::ArrayOfTables;
 use crate::datetime::*;
 use crate::table::TableLike;
@@ -239,6 +241,16 @@ impl Item {
 impl Default for Item {
     fn default() -> Self {
         Item::None
+    }
+}
+
+impl FromStr for Item {
+    type Err = crate::TomlError;
+
+    /// Parses a value from a &str
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let value = s.parse::<Value>()?;
+        Ok(Item::Value(value))
     }
 }
 

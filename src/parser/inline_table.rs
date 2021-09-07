@@ -23,10 +23,8 @@ fn table_from_pairs(
     v: Vec<(Vec<Key>, TableKeyValue)>,
     preamble: &str,
 ) -> Result<InlineTable, CustomError> {
-    let mut root = InlineTable {
-        preamble: InternalString::from(preamble),
-        ..Default::default()
-    };
+    let mut root = InlineTable::new();
+    root.preamble = InternalString::from(preamble);
 
     for (path, kv) in v {
         let table = descend_path(&mut root, &path, 0)?;

@@ -161,10 +161,11 @@ fn test_insert_array() {
         assert!(root["bin"].is_array_of_tables());
         let array = root["bin"].as_array_of_tables_mut().unwrap();
         {
-            let first = array.append(Table::new());
-            first["hello"] = value("world");
+            let mut table = Table::new();
+            table["hello"] = value("world");
+            array.push(table);
         }
-        array.append(Table::new());
+        array.push(Table::new());
     }).produces_display(r#"
         [package]
         title = "withoutarray"
@@ -527,6 +528,7 @@ fn test_insert_replace_into_array() {
         assert_eq!(b.replace(2, "zoink").as_str(), Some("boop"));
         // This should replace formatting.
         assert_eq!(b.replace_formatted(4, Value::from("yikes").decorated("  ", "")).as_str(), Some("test"));
+        dbg!(root);
 
     }).produces_display(r#"
         a = [1, 2, 3, 4]

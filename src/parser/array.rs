@@ -1,7 +1,6 @@
 use crate::parser::errors::CustomError;
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::repr::InternalString;
 use crate::{Array, Value};
 use combine::parser::char::char;
 use combine::parser::range::recognize_with_value;
@@ -17,11 +16,9 @@ parse!(array() -> Array, {
 });
 
 fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, CustomError> {
-    let mut array = Array {
-        trailing_comma: comma,
-        trailing: InternalString::from(trailing),
-        ..Default::default()
-    };
+    let mut array = Array::new();
+    array.set_trailing_comma(comma);
+    array.set_trailing(trailing);
     for val in v {
         array.push_formatted(val)
     }

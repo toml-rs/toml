@@ -68,14 +68,14 @@ impl Key {
         &self.repr
     }
 
-    /// Returns the key raw representation.
-    pub fn decor(&self) -> &Decor {
-        &self.decor
-    }
-
-    /// Returns the key raw representation.
+    /// Returns the surrounding whitespace
     pub fn decor_mut(&mut self) -> &mut Decor {
         &mut self.decor
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor(&self) -> &Decor {
+        &self.decor
     }
 
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {

@@ -33,37 +33,31 @@
 //! assert_eq!(doc.to_string(), expected);
 //! ```
 //!
+//! ## Controlling formatting
+//!
+//! By default, values are created with default formatting
+//! ```rust
+//! let mut doc = toml_edit::Document::new();
+//! doc["foo"] = toml_edit::value("bar");
+//! let expected = r#"foo = "bar"
+//! "#;
+//! assert_eq!(doc.to_string(), expected);
+//! ```
+//!
+//! You can choose a custom TOML representation by parsing the value.
+//! ```rust
+//! let mut doc = toml_edit::Document::new();
+//! doc["foo"] = "'bar'".parse::<toml_edit::Item>().unwrap();
+//! let expected = r#"foo = 'bar'
+//! "#;
+//! assert_eq!(doc.to_string(), expected);
+//! ```
+//!
 //! ## Limitations
 //!
 //! Things it does not preserve:
 //!
-//! * Different quotes and spaces around the same table key, e.g.
-//!
-//! ```text
-//! [ 'a'. b]
-//! [ "a"  .c]
-//! [a.d]
-//! ```
-//!
-//! will be represented as (spaces are removed, the first encountered quote type is used)
-//!
-//! ```text
-//! ['a'.b]
-//! ['a'.c]
-//! ['a'.d]
-//! ```
-//!
-//! * Children tables before parent table (tables are reordered by default, see [test]).
 //! * Scattered array of tables (tables are reordered by default, see [test]).
-//!
-//! The reason behind the first limitation is that `Table` does not store its header,
-//! allowing us to safely swap two tables
-//! (we store a mapping in each table: child key -> child table).
-//!
-//! This last two limitations allow us to represent a toml document as a tree-like data structure,
-//! which enables easier implementation of editing operations
-//! and an easy to use and type-safe API. If you care about the above two cases,
-//! you can use `Document::to_string_in_original_order()` to reconstruct tables in their original order.
 //!
 //! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
 
@@ -81,8 +75,10 @@ mod repr;
 mod table;
 mod value;
 
-pub use crate::array::{Array, ArrayIter};
-pub use crate::array_of_tables::ArrayOfTables;
+pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
+pub use crate::array_of_tables::{
+    ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
+};
 pub use crate::datetime::*;
 pub use crate::document::Document;
 pub use crate::inline_table::{
@@ -92,7 +88,7 @@ pub use crate::inline_table::{
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::Key;
 pub use crate::parser::TomlError;
-pub use crate::repr::{Decor, Repr};
+pub use crate::repr::{Decor, Formatted, Repr};
 pub use crate::table::{
     Entry, IntoIter, Iter, IterMut, OccupiedEntry, Table, TableLike, VacantEntry,
 };

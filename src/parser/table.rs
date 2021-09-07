@@ -173,7 +173,7 @@ impl TomlParser {
                     let array = entry.as_array_of_tables_mut().unwrap();
 
                     self.current_table_position += 1;
-                    array.append(Table::with_decor_and_pos(
+                    array.push(Table::with_decor_and_pos(
                         decor,
                         Some(self.current_table_position),
                     ));

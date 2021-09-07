@@ -39,6 +39,16 @@ impl Document {
             .expect("root should always be a table")
             .iter()
     }
+
+    /// Set whitespace after last element
+    pub fn set_trailing(&mut self, trailing: &str) {
+        self.trailing = trailing.to_owned();
+    }
+
+    /// Whitespace after last element
+    pub fn trailing(&self) -> &str {
+        self.trailing.as_str()
+    }
 }
 
 impl Default for Document {

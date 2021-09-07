@@ -30,7 +30,11 @@ impl Display for Repr {
 
 impl<T> Display for Formatted<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.decor.display(&self.repr, DEFAULT_VALUE_DECOR))
+        write!(
+            f,
+            "{}",
+            self.decor().display(self.repr(), DEFAULT_VALUE_DECOR)
+        )
     }
 }
 
@@ -63,17 +67,17 @@ impl Display for Array {
         write!(
             f,
             "{}[",
-            self.decor.prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
+            self.decor().prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
         )?;
         write!(f, "{}", self.iter().join(","))?;
-        if self.trailing_comma {
+        if self.trailing_comma() && !self.is_empty() {
             write!(f, ",")?;
         }
-        write!(f, "{}", self.trailing)?;
+        write!(f, "{}", self.trailing())?;
         write!(
             f,
             "]{}",
-            self.decor.suffix().unwrap_or(DEFAULT_VALUE_DECOR.1)
+            self.decor().suffix().unwrap_or(DEFAULT_VALUE_DECOR.1)
         )
     }
 }
@@ -83,7 +87,7 @@ impl Display for InlineTable {
         write!(
             f,
             "{}{{",
-            self.decor.prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
+            self.decor().prefix().unwrap_or(DEFAULT_VALUE_DECOR.0)
         )?;
         write!(f, "{}", self.preamble)?;
 
@@ -99,7 +103,7 @@ impl Display for InlineTable {
         write!(
             f,
             "}}{}",
-            self.decor.suffix().unwrap_or(DEFAULT_VALUE_DECOR.1)
+            self.decor().suffix().unwrap_or(DEFAULT_VALUE_DECOR.1)
         )
     }
 }
