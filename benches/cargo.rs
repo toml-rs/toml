@@ -5,6 +5,7 @@ fn cargo_manifest(c: &mut Criterion) {
     for (name, sample) in MANIFESTS {
         let len = sample.len();
         group.throughput(Throughput::Bytes(len as u64));
+
         group.bench_with_input(BenchmarkId::new("toml_edit", name), &len, |b, _| {
             sample.parse::<toml_edit::Document>().unwrap();
             b.iter(|| sample.parse::<toml_edit::Document>());

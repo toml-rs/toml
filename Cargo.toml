@@ -42,5 +42,9 @@ harness = false
 name = "cargo"
 harness = false
 
+[[bench]]
+name = "linear"
+harness = false
+
 [profile.dev]
 opt-level = 1
