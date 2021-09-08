@@ -39,8 +39,30 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         match self.value.take() {
             Some(v) => seed.deserialize(crate::easy::de::ItemDeserializer::new(v)),
             None => {
-                panic!("no more values in next_value_seed, internal error in ValueDeserializer")
+                panic!("no more values in next_value_seed, internal error in ItemDeserializer")
             }
         }
+    }
+}
+
+impl<'de> serde::de::EnumAccess<'de> for TableMapAccess {
+    type Error = Error;
+    type Variant = super::TableEnumDeserializer;
+
+    fn variant_seed<V>(mut self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
+    where
+        V: serde::de::DeserializeSeed<'de>,
+    {
+        let (key, value) = match self.iter.next() {
+            Some(pair) => pair,
+            None => {
+                return Err(Error::custom(
+                    "expected table with exactly 1 entry, found empty table",
+                ));
+            }
+        };
+
+        seed.deserialize(key.into_deserializer())
+            .map(|val| (val, super::TableEnumDeserializer::new(value.value)))
     }
 }

@@ -44,3 +44,25 @@ impl<'de> serde::de::MapAccess<'de> for InlineTableMapAccess {
         }
     }
 }
+
+impl<'de> serde::de::EnumAccess<'de> for InlineTableMapAccess {
+    type Error = Error;
+    type Variant = super::TableEnumDeserializer;
+
+    fn variant_seed<V>(mut self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
+    where
+        V: serde::de::DeserializeSeed<'de>,
+    {
+        let (key, value) = match self.iter.next() {
+            Some(pair) => pair,
+            None => {
+                return Err(Error::custom(
+                    "expected table with exactly 1 entry, found empty table",
+                ));
+            }
+        };
+
+        seed.deserialize(key.into_deserializer())
+            .map(|val| (val, super::TableEnumDeserializer::new(value.value)))
+    }
+}
