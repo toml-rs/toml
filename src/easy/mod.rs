@@ -76,8 +76,8 @@
 //!
 //! An example of deserializing with TOML is:
 //!
-//! ```rust
-//! use serde_derive::Deserialize;
+//! ```rust,ignore
+//! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
 //! struct Config {
@@ -92,26 +92,24 @@
 //!     travis: Option<String>,
 //! }
 //!
-//! fn main() {
-//!     let config: Config = toml_edit::easy::from_str(r#"
-//!         ip = '127.0.0.1'
+//! let config: Config = toml_edit::easy::from_str(r#"
+//!     ip = '127.0.0.1'
 //!
-//!         [keys]
-//!         github = 'xxxxxxxxxxxxxxxxx'
-//!         travis = 'yyyyyyyyyyyyyyyyy'
-//!     "#).unwrap();
+//!     [keys]
+//!     github = 'xxxxxxxxxxxxxxxxx'
+//!     travis = 'yyyyyyyyyyyyyyyyy'
+//! "#).unwrap();
 //!
-//!     assert_eq!(config.ip, "127.0.0.1");
-//!     assert_eq!(config.port, None);
-//!     assert_eq!(config.keys.github, "xxxxxxxxxxxxxxxxx");
-//!     assert_eq!(config.keys.travis.as_ref().unwrap(), "yyyyyyyyyyyyyyyyy");
-//! }
+//! assert_eq!(config.ip, "127.0.0.1");
+//! assert_eq!(config.port, None);
+//! assert_eq!(config.keys.github, "xxxxxxxxxxxxxxxxx");
+//! assert_eq!(config.keys.travis.as_ref().unwrap(), "yyyyyyyyyyyyyyyyy");
 //! ```
 //!
 //! You can serialize types in a similar fashion:
 //!
-//! ```rust
-//! use serde_derive::Serialize;
+//! ```rust,ignore
+//! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
 //! struct Config {
@@ -126,18 +124,16 @@
 //!     travis: Option<String>,
 //! }
 //!
-//! fn main() {
-//!     let config = Config {
-//!         ip: "127.0.0.1".to_string(),
-//!         port: None,
-//!         keys: Keys {
-//!             github: "xxxxxxxxxxxxxxxxx".to_string(),
-//!             travis: Some("yyyyyyyyyyyyyyyyy".to_string()),
-//!         },
-//!     };
+//! let config = Config {
+//!     ip: "127.0.0.1".to_string(),
+//!     port: None,
+//!     keys: Keys {
+//!         github: "xxxxxxxxxxxxxxxxx".to_string(),
+//!         travis: Some("yyyyyyyyyyyyyyyyy".to_string()),
+//!     },
+//! };
 //!
-//!     let toml = toml_edit::easy::to_string(&config).unwrap();
-//! }
+//! let toml = toml_edit::easy::to_string(&config).unwrap();
 //! ```
 //!
 //! [TOML]: https://github.com/toml-lang/toml
@@ -147,13 +143,14 @@
 mod datetime;
 
 pub mod de;
+#[doc(hidden)]
+pub mod macros;
 pub mod map;
 pub mod value;
 
-#[doc(no_inline)]
-pub use crate::easy::value::Value;
+pub use crate::toml;
 pub use datetime::*;
+#[doc(no_inline)]
 pub use de::{from_document, from_slice, from_str, Deserializer};
-
-#[doc(hidden)]
-pub mod macros;
+#[doc(no_inline)]
+pub use value::Value;

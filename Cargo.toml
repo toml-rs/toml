@@ -11,6 +11,9 @@ repository = "https://github.com/ordian/toml_edit"
 documentation = "https://docs.rs/toml_edit"
 edition = "2018"
 
+[package.metadata.docs.rs]
+features = ["easy"]
+
 [features]
 default = []
 easy = ["serde"]
