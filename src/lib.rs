@@ -75,6 +75,9 @@ mod repr;
 mod table;
 mod value;
 
+#[cfg(feature = "easy")]
+pub mod easy;
+
 pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
