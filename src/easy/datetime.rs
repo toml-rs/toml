@@ -18,6 +18,17 @@ pub enum Datetime {
     LocalTime(LocalTime),
 }
 
+impl std::fmt::Display for Datetime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Datetime::OffsetDateTime(v) => v.fmt(f),
+            Datetime::LocalDateTime(v) => v.fmt(f),
+            Datetime::LocalDate(v) => v.fmt(f),
+            Datetime::LocalTime(v) => v.fmt(f),
+        }
+    }
+}
+
 mod string {
     use std::fmt::Display;
     use std::str::FromStr;
