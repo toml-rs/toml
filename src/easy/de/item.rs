@@ -31,9 +31,18 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut ItemDeserializer {
         }
     }
 
+    // `None` is interpreted as a missing field so be sure to implement `Some`
+    // as a present field.
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_some(self)
+    }
+
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map option unit newtype_struct
+        bytes byte_buf map unit newtype_struct
         ignored_any unit_struct tuple_struct tuple enum identifier struct
     }
 }
