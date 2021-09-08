@@ -12,7 +12,7 @@ use crate::parser;
 /// let backagain = toml.to_string();
 /// assert_eq!(raw, backagain);
 /// ```
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
 pub struct OffsetDateTime {
     pub(crate) inner: chrono::DateTime<chrono::FixedOffset>,
 }
@@ -45,7 +45,7 @@ impl std::fmt::Display for OffsetDateTime {
 /// let backagain = toml.to_string();
 /// assert_eq!(raw, backagain);
 /// ```
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
 pub struct LocalDateTime {
     pub(crate) inner: chrono::NaiveDateTime,
 }
@@ -78,7 +78,7 @@ impl std::fmt::Display for LocalDateTime {
 /// let backagain = toml.to_string();
 /// assert_eq!(raw, backagain);
 /// ```
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
 pub struct LocalDate {
     pub(crate) inner: chrono::NaiveDate,
 }
@@ -111,7 +111,7 @@ impl std::fmt::Display for LocalDate {
 /// let backagain = toml.to_string();
 /// assert_eq!(raw, backagain);
 /// ```
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
 pub struct LocalTime {
     pub(crate) inner: chrono::NaiveTime,
 }

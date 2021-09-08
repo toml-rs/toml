@@ -15,6 +15,11 @@ impl<T> Formatted<T> {
         &self.value
     }
 
+    /// The wrapped value
+    pub fn into_value(self) -> T {
+        self.value
+    }
+
     /// The TOML representation of the value
     pub fn repr(&self) -> &Repr {
         &self.repr
