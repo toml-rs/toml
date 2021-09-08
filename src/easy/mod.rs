@@ -21,19 +21,7 @@
 //!
 //! ## TOML values
 //!
-//! A value in TOML is represented with the [`Value`] enum in this crate:
-//!
-//! ```rust,ignore
-//! pub enum Value {
-//!     String(String),
-//!     Integer(i64),
-//!     Float(f64),
-//!     Boolean(bool),
-//!     Datetime(Datetime),
-//!     Array(Array),
-//!     Table(Table),
-//! }
-//! ```
+//! A value in TOML is represented with the [`Value`] enum in this crate.
 //!
 //! TOML is similar to JSON with the notable addition of a [`Datetime`]
 //! type. In general, TOML and JSON are interchangeable in terms of
@@ -76,7 +64,7 @@
 //!
 //! An example of deserializing with TOML is:
 //!
-//! ```rust,ignore
+//! ```rust
 //! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
