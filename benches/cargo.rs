@@ -10,6 +10,11 @@ fn cargo_manifest(c: &mut Criterion) {
             sample.parse::<toml_edit::Document>().unwrap();
             b.iter(|| sample.parse::<toml_edit::Document>());
         });
+        #[cfg(feature = "easy")]
+        group.bench_with_input(BenchmarkId::new("toml_edit::easy", name), &len, |b, _| {
+            sample.parse::<toml_edit::easy::Value>().unwrap();
+            b.iter(|| sample.parse::<toml_edit::easy::Value>());
+        });
         group.bench_with_input(BenchmarkId::new("toml", name), &len, |b, _| {
             sample.parse::<toml::Value>().unwrap();
             b.iter(|| sample.parse::<toml::Value>());

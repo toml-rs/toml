@@ -144,6 +144,16 @@
 //! [Cargo]: https://crates.io/
 //! [`serde`]: https://serde.rs/
 
-pub mod de;
+mod datetime;
 
+pub mod de;
+pub mod map;
+pub mod value;
+
+#[doc(no_inline)]
+pub use crate::easy::value::Value;
+pub use datetime::*;
 pub use de::{from_document, from_slice, from_str, Deserializer};
+
+#[doc(hidden)]
+pub mod macros;
