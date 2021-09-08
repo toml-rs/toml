@@ -4,15 +4,15 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::mem::discriminant;
 use std::ops;
+use std::str::FromStr;
 
 pub use crate::easy::map::Map;
 use crate::easy::Datetime;
 
 /// Representation of a TOML value.
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
 pub enum Value {
-    /// Represents a TOML string
-    String(String),
     /// Represents a TOML integer
     Integer(i64),
     /// Represents a TOML float
@@ -21,6 +21,8 @@ pub enum Value {
     Boolean(bool),
     /// Represents a TOML datetime
     Datetime(Datetime),
+    /// Represents a TOML string
+    String(String),
     /// Represents a TOML array
     Array(Array),
     /// Represents a TOML table
@@ -340,5 +342,12 @@ where
 
     fn index_mut<'a>(&self, val: &'a mut Value) -> Option<&'a mut Value> {
         (**self).index_mut(val)
+    }
+}
+
+impl FromStr for Value {
+    type Err = crate::easy::de::Error;
+    fn from_str(s: &str) -> Result<Value, Self::Err> {
+        crate::easy::from_str(s)
     }
 }

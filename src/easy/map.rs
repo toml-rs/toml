@@ -14,9 +14,10 @@ use std::hash::Hash;
 use std::iter::FromIterator;
 use std::ops;
 
-use crate::easy::value::Value;
-
 use linked_hash_map::{self, LinkedHashMap};
+use serde::{de, ser};
+
+use crate::easy::value::Value;
 
 /// Represents a TOML key/value type.
 pub struct Map<K, V> {
@@ -227,6 +228,64 @@ impl Debug for Map<String, Value> {
     #[inline]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         self.map.fmt(formatter)
+    }
+}
+
+impl ser::Serialize for Map<String, Value> {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+        let mut map = serializer.serialize_map(Some(self.len()))?;
+        for (k, v) in self {
+            map.serialize_key(k)?;
+            map.serialize_value(v)?;
+        }
+        map.end()
+    }
+}
+
+impl<'de> de::Deserialize<'de> for Map<String, Value> {
+    #[inline]
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        struct Visitor;
+
+        impl<'de> de::Visitor<'de> for Visitor {
+            type Value = Map<String, Value>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("a map")
+            }
+
+            #[inline]
+            fn visit_unit<E>(self) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(Map::new())
+            }
+
+            #[inline]
+            fn visit_map<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
+            where
+                V: de::MapAccess<'de>,
+            {
+                let mut values = Map::new();
+
+                while let Some((key, value)) = visitor.next_entry()? {
+                    values.insert(key, value);
+                }
+
+                Ok(values)
+            }
+        }
+
+        deserializer.deserialize_map(Visitor)
     }
 }
 

@@ -20,6 +20,19 @@ fn map(c: &mut Criterion) {
                 black_box(s.parse::<toml_edit::Document>().unwrap());
             })
         });
+        #[cfg(feature = "easy")]
+        group.bench_with_input(
+            BenchmarkId::new("toml_edit::easy", sample),
+            &sample,
+            |b, _| {
+                let s = s.clone();
+                s.parse::<toml_edit::easy::Value>().unwrap();
+                let s = black_box(s);
+                b.iter(|| {
+                    black_box(s.parse::<toml_edit::easy::Value>().unwrap());
+                })
+            },
+        );
         group.bench_with_input(BenchmarkId::new("toml", sample), &sample, |b, _| {
             let s = s.clone();
             s.parse::<toml::Value>().unwrap();
