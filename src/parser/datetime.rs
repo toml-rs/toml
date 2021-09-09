@@ -1,10 +1,7 @@
 use crate::datetime::*;
 use crate::parser::errors::CustomError;
-use crate::repr::{Formatted, Repr};
-use crate::Value;
-use chrono::TimeZone;
-use combine::parser::char::{char, digit};
-use combine::parser::range::{recognize, take};
+use combine::parser::char::char;
+use combine::parser::range::{take, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
 
@@ -16,7 +13,7 @@ use combine::*;
 // local-date = full-date
 // local-time = partial-time
 // full-time = partial-time time-offset
-parse!(date_time() -> Value, {
+parse!(date_time() -> Datetime, {
     choice!(
         (
             full_date(),
@@ -26,66 +23,43 @@ parse!(date_time() -> Value, {
                 optional(time_offset()),
             ))
         )
-            .map(|(d, opt)| {
+            .map(|(date, opt)| {
                 match opt {
                     // Offset Date-Time
-                    Some((_, t, Some(o))) => {
-                        let dt = chrono::NaiveDateTime::new(d, t);
-                        let dt = OffsetDateTime { inner: o.from_local_datetime(&dt).unwrap() };
-                        let repr = Repr::new_unchecked(dt.to_string());
-                        Value::OffsetDateTime(
-                            Formatted::new(dt, repr)
-                        )
-                    }
-                    // Local Date-Time
-                    Some((_, t, None)) => {
-                        let dt = LocalDateTime { inner: chrono::NaiveDateTime::new(d, t)};
-                        let repr = Repr::new_unchecked(dt.to_string());
-                        Value::LocalDateTime(
-                            Formatted::new(dt, repr)
-                        )
+                    Some((_, time, offset)) => {
+                        Datetime { date: Some(date), time: Some(time), offset }
                     }
                     // Local Date
                     None => {
-                        let dt = LocalDate { inner: d};
-                        let repr = Repr::new_unchecked(dt.to_string());
-                        Value::LocalDate(
-                            Formatted::new(dt, repr)
-                        )
-                    }
+                        Datetime { date: Some(date), time: None, offset: None}
+                    },
                 }
-
             }),
         // Local Time
         partial_time()
             .message("While parsing a Time")
             .map(|t| {
-                let dt = LocalTime { inner: t};
-                let repr = Repr::new_unchecked(dt.to_string());
-                Value::LocalTime(
-                    Formatted::new(dt, repr)
-                )
+                t.into()
             })
     )
         .message("While parsing a Date-Time")
 });
 
 // full-date      = date-fullyear "-" date-month "-" date-mday
-parse!(full_date() -> chrono::NaiveDate, {
+parse!(full_date() -> Date, {
     (
         attempt((date_fullyear(), char('-'))),
         date_month(),
         char('-'),
         date_mday(),
-    ).and_then(|((year, _), month, _, day)| {
-        chrono::NaiveDate::from_ymd_opt(year, month, day).ok_or(CustomError::DateOutOfRange { year, month, day })
+    ).map(|((year, _), month, _, day)| {
+        Date { year, month, day }
     })
 });
 
 // partial-time   = time-hour ":" time-minute ":" time-second [time-secfrac]
-// time-secfrac   = "." 1*DIGIT
-parse!(partial_time() -> chrono::NaiveTime, {
-    recognize((
+parse!(partial_time() -> Time, {
+    (
         attempt((
             time_hour(),
             char(':'),
@@ -93,47 +67,59 @@ parse!(partial_time() -> chrono::NaiveTime, {
         time_minute(),
         char(':'),
         time_second(),
-        optional(attempt(char('.')).and(skip_many1(digit()))),
-    )).and_then(|s: &str| s.parse::<chrono::NaiveTime>())
+        optional(attempt(time_secfrac())),
+    ).map(|((hour, _), minute, _, second, nanosecond)| {
+        Time { hour, minute, second, nanosecond: nanosecond.unwrap_or_default() }
+    })
 });
 
 // time-offset    = "Z" / time-numoffset
 // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
-parse!(time_offset() -> chrono::FixedOffset, {
-    attempt(satisfy(|c| c == 'Z' || c == 'z')).map(|_| chrono::FixedOffset::east(0))
+parse!(time_offset() -> Offset, {
+    attempt(satisfy(|c| c == 'Z' || c == 'z')).map(|_| Offset::Z)
         .or(
             (
                 attempt(choice([char('+'), char('-')])),
                 time_hour(),
                 char(':'),
                 time_minute(),
-            ).and_then(|(sign, hour, _, minute)| {
-                const SEC: i32 = 1;
-                const MIN: i32 = 60 * SEC;
-                const HOUR: i32 = 60 * MIN;
-                let secs = (hour as i32) * HOUR + (minute as i32) * MIN;
-                match sign {
-                    '+' => chrono::FixedOffset::east_opt(secs),
-                    '-' => chrono::FixedOffset::west_opt(secs),
+            ).map(|(sign, hours, _, minutes)| {
+                let hours = hours as i8;
+                let hours = match sign {
+                    '+' => hours,
+                    '-' => -hours,
                     _ => unreachable!("Parser prevents this"),
-                }.ok_or(CustomError::OffsetOutOfRange { sign, hour, minute})
+                };
+                Offset::Custom { hours, minutes }
             })
         ).message("While parsing a Time Offset")
 });
 
 // date-fullyear  = 4DIGIT
-parse!(date_fullyear() -> i32, {
-    signed_digits(4)
+parse!(date_fullyear() -> u16, {
+    signed_digits(4).map(|d| d as u16)
 });
 
 // date-month     = 2DIGIT  ; 01-12
-parse!(date_month() -> u32, {
-    unsigned_digits(2)
+parse!(date_month() -> u8, {
+    unsigned_digits(2).map(|d| d as u8).and_then(|v| {
+        if (1..=12).contains(&v) {
+            Ok(v)
+        } else {
+            Err(CustomError::OutOfRange)
+        }
+    })
 });
 
 // date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
-parse!(date_mday() -> u32, {
-    unsigned_digits(2)
+parse!(date_mday() -> u8, {
+    unsigned_digits(2).map(|d| d as u8).and_then(|v| {
+        if (1..=31).contains(&v) {
+            Ok(v)
+        } else {
+            Err(CustomError::OutOfRange)
+        }
+    })
 });
 
 // time-delim     = "T" / %x20 ; T, t, or space
@@ -142,18 +128,51 @@ fn is_time_delim(c: char) -> bool {
 }
 
 // time-hour      = 2DIGIT  ; 00-23
-parse!(time_hour() -> u32, {
-    unsigned_digits(2)
+parse!(time_hour() -> u8, {
+    unsigned_digits(2).map(|d| d as u8).and_then(|v| {
+        if (0..=23).contains(&v) {
+            Ok(v)
+        } else {
+            Err(CustomError::OutOfRange)
+        }
+    })
 });
 
 // time-minute    = 2DIGIT  ; 00-59
-parse!(time_minute() -> u32, {
-    unsigned_digits(2)
+parse!(time_minute() -> u8, {
+    unsigned_digits(2).map(|d| d as u8).and_then(|v| {
+        if (0..=59).contains(&v) {
+            Ok(v)
+        } else {
+            Err(CustomError::OutOfRange)
+        }
+    })
 });
 
 // time-second    = 2DIGIT  ; 00-58, 00-59, 00-60 based on leap second rules
-parse!(time_second() -> u32, {
-    unsigned_digits(2)
+parse!(time_second() -> u8, {
+    unsigned_digits(2).map(|d| d as u8).and_then(|v| {
+        if (0..=60).contains(&v) {
+            Ok(v)
+        } else {
+            Err(CustomError::OutOfRange)
+        }
+    })
+});
+
+// time-secfrac   = "." 1*DIGIT
+parse!(time_secfrac() -> u32, {
+    char('.').and(take_while1(|c: char| c.is_digit(10))).and_then::<_, _, CustomError>(|(_, repr): (char, &str)| {
+        let v = repr.parse::<u32>().map_err(|_| CustomError::OutOfRange)?;
+        let consumed = repr.len();
+
+        // scale the number accordingly.
+        static SCALE: [u32; 10] =
+            [0, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100, 10, 1];
+        let scale = SCALE.get(consumed).ok_or(CustomError::OutOfRange)?;
+        let v = v.checked_mul(*scale).ok_or(CustomError::OutOfRange)?;
+        Ok(v)
+    })
 });
 
 parse!(signed_digits(count: usize) -> i32, {

@@ -49,7 +49,6 @@ parser! {
          <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
          From<std::num::ParseIntError> +
          From<std::num::ParseFloatError> +
-         From<chrono::ParseError> +
          From<crate::parser::errors::CustomError>
     ] {
         (

@@ -22,13 +22,7 @@ pub enum Value {
     /// A boolean value.
     Boolean(Formatted<bool>),
     /// An RFC 3339 formatted date-time with offset.
-    OffsetDateTime(Formatted<OffsetDateTime>),
-    /// An RFC 3339 formatted date-time without offset.
-    LocalDateTime(Formatted<LocalDateTime>),
-    /// Date portion of an RFC 3339 formatted date-time.
-    LocalDate(Formatted<LocalDate>),
-    /// Time portion of an RFC 3339 formatted date-time.
-    LocalTime(Formatted<LocalTime>),
+    Datetime(Formatted<Datetime>),
     /// An inline array of values.
     Array(Array),
     /// An inline table of key/value pairs.
@@ -44,10 +38,7 @@ impl Value {
             Value::Integer(..) => "integer",
             Value::Float(..) => "float",
             Value::Boolean(..) => "boolean",
-            Value::OffsetDateTime(..) => "offset datetime",
-            Value::LocalDateTime(..) => "local datetime",
-            Value::LocalDate(..) => "local date",
-            Value::LocalTime(..) => "local time",
+            Value::Datetime(..) => "datetime",
             Value::Array(..) => "array",
             Value::InlineTable(..) => "inline table",
         }
@@ -106,55 +97,16 @@ impl Value {
     }
 
     /// Casts `self` to date-time.
-    pub fn as_offset_datetime(&self) -> Option<&OffsetDateTime> {
+    pub fn as_datetime(&self) -> Option<&Datetime> {
         match *self {
-            Value::OffsetDateTime(ref value) => Some(value.value()),
+            Value::Datetime(ref value) => Some(value.value()),
             _ => None,
         }
     }
 
     /// Returns true iff `self` is a date-time.
-    pub fn is_offset_datetime(&self) -> bool {
-        self.as_offset_datetime().is_some()
-    }
-
-    /// Casts `self` to date-time.
-    pub fn as_local_datetime(&self) -> Option<&LocalDateTime> {
-        match *self {
-            Value::LocalDateTime(ref value) => Some(value.value()),
-            _ => None,
-        }
-    }
-
-    /// Returns true iff `self` is a date-time.
-    pub fn is_local_datetime(&self) -> bool {
-        self.as_local_datetime().is_some()
-    }
-
-    /// Casts `self` to date-time.
-    pub fn as_local_date(&self) -> Option<&LocalDate> {
-        match *self {
-            Value::LocalDate(ref value) => Some(value.value()),
-            _ => None,
-        }
-    }
-
-    /// Returns true iff `self` is a date-time.
-    pub fn is_local_date(&self) -> bool {
-        self.as_local_date().is_some()
-    }
-
-    /// Casts `self` to date-time.
-    pub fn as_local_time(&self) -> Option<&LocalTime> {
-        match *self {
-            Value::LocalTime(ref value) => Some(value.value()),
-            _ => None,
-        }
-    }
-
-    /// Returns true iff `self` is a date-time.
-    pub fn is_local_time(&self) -> bool {
-        self.as_local_time().is_some()
+    pub fn is_datetime(&self) -> bool {
+        self.as_datetime().is_some()
     }
 
     /// Casts `self` to array.
@@ -213,10 +165,7 @@ impl Value {
             Value::Integer(f) => f.decor_mut(),
             Value::Float(f) => f.decor_mut(),
             Value::Boolean(f) => f.decor_mut(),
-            Value::OffsetDateTime(f) => f.decor_mut(),
-            Value::LocalDateTime(f) => f.decor_mut(),
-            Value::LocalDate(f) => f.decor_mut(),
-            Value::LocalTime(f) => f.decor_mut(),
+            Value::Datetime(f) => f.decor_mut(),
             Value::Array(a) => a.decor_mut(),
             Value::InlineTable(t) => t.decor_mut(),
         }
@@ -234,10 +183,7 @@ impl Value {
             Value::Integer(ref f) => f.decor(),
             Value::Float(ref f) => f.decor(),
             Value::Boolean(ref f) => f.decor(),
-            Value::OffsetDateTime(ref f) => f.decor(),
-            Value::LocalDateTime(ref f) => f.decor(),
-            Value::LocalDate(ref f) => f.decor(),
-            Value::LocalTime(ref f) => f.decor(),
+            Value::Datetime(ref f) => f.decor(),
             Value::Array(ref a) => a.decor(),
             Value::InlineTable(ref t) => t.decor(),
         }
@@ -506,31 +452,24 @@ impl From<bool> for Value {
     }
 }
 
-impl From<OffsetDateTime> for Value {
-    fn from(d: OffsetDateTime) -> Self {
+impl From<Datetime> for Value {
+    fn from(d: Datetime) -> Self {
         let s = d.to_string();
-        Value::OffsetDateTime(Formatted::new(d, Repr::new_unchecked(s)))
+        Value::Datetime(Formatted::new(d, Repr::new_unchecked(s)))
     }
 }
 
-impl From<LocalDateTime> for Value {
-    fn from(d: LocalDateTime) -> Self {
-        let s = d.to_string();
-        Value::LocalDateTime(Formatted::new(d, Repr::new_unchecked(s)))
+impl From<Date> for Value {
+    fn from(d: Date) -> Self {
+        let d: Datetime = d.into();
+        d.into()
     }
 }
 
-impl From<LocalDate> for Value {
-    fn from(d: LocalDate) -> Self {
-        let s = d.to_string();
-        Value::LocalDate(Formatted::new(d, Repr::new_unchecked(s)))
-    }
-}
-
-impl From<LocalTime> for Value {
-    fn from(d: LocalTime) -> Self {
-        let s = d.to_string();
-        Value::LocalTime(Formatted::new(d, Repr::new_unchecked(s)))
+impl From<Time> for Value {
+    fn from(d: Time) -> Self {
+        let d: Datetime = d.into();
+        d.into()
     }
 }
 

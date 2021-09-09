@@ -26,7 +26,8 @@ parse!(value() -> v::Value, {
             .map(v::Value::Array),
         inline_table()
             .map(v::Value::InlineTable),
-        date_time(),
+        date_time()
+            .map(v::Value::from),
         float()
             .map(v::Value::from),
         integer()
@@ -48,16 +49,7 @@ fn apply_raw(mut val: Value, raw: &str) -> Value {
         Value::Boolean(ref mut f) => {
             f.repr = Repr::new_unchecked(raw);
         }
-        Value::OffsetDateTime(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
-        }
-        Value::LocalDateTime(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
-        }
-        Value::LocalDate(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
-        }
-        Value::LocalTime(ref mut f) => {
+        Value::Datetime(ref mut f) => {
             f.repr = Repr::new_unchecked(raw);
         }
         Value::Array(_) | Value::InlineTable(_) => {}

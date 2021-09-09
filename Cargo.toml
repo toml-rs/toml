@@ -19,7 +19,6 @@ default = []
 easy = ["serde"]
 
 [dependencies]
-chrono = "0.4.10"
 linked-hash-map = "0.5.2"
 combine = "4.5.2"
 vec1 = "1"
