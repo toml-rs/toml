@@ -2,18 +2,21 @@
 //!
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
+use itertools::Itertools;
 use serde::Deserialize;
 
 mod array;
 mod inline_table;
 mod item;
 mod table;
+mod table_enum;
 mod value;
 
 use array::*;
 use inline_table::*;
 use item::*;
 use table::*;
+use table_enum::*;
 use value::*;
 
 /// Errors that can occur when deserializing a type.
@@ -122,9 +125,63 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
         visitor.visit_some(self)
     }
 
+    // Called when the type to deserialize is an enum, as opposed to a field in the type.
+    fn deserialize_enum<V>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        match self.input.root {
+            crate::Item::Table(v) => {
+                if v.is_empty() {
+                    Err(crate::easy::de::Error::custom(
+                        "wanted exactly 1 element, found 0 elements",
+                    ))
+                } else if v.len() != 1 {
+                    Err(crate::easy::de::Error::custom(
+                        "wanted exactly 1 element, more than 1 element",
+                    ))
+                } else {
+                    visitor.visit_enum(crate::easy::de::TableMapAccess::new(v))
+                }
+            }
+            _ => Err(crate::easy::de::Error::custom("wanted table")),
+        }
+    }
+
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit newtype_struct
-        ignored_any unit_struct tuple_struct tuple enum identifier struct
+        ignored_any unit_struct tuple_struct tuple identifier struct
+    }
+}
+
+pub(crate) fn validate_struct_keys(
+    table: &crate::table::KeyValuePairs,
+    fields: &'static [&'static str],
+) -> Result<(), Error> {
+    let extra_fields = table
+        .iter()
+        .filter_map(|(key, _val)| {
+            if !fields.contains(&key.as_str()) {
+                Some(key.clone())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    if extra_fields.is_empty() {
+        Ok(())
+    } else {
+        Err(Error::custom(format!(
+            "unexpected keys in table: {}, available keys: {}",
+            extra_fields.iter().join(", "),
+            fields.iter().join(", "),
+        )))
     }
 }
