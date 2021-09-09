@@ -1,14 +1,22 @@
 use crate::easy::de::Error;
 
 pub(crate) struct ArraySeqAccess {
-    iter: crate::ArrayIntoIter,
+    iter: std::vec::IntoIter<crate::Item>,
 }
 
 impl ArraySeqAccess {
-    pub(crate) fn new(input: crate::Array) -> Self {
+    pub(crate) fn new(input: Vec<crate::Item>) -> Self {
         Self {
             iter: input.into_iter(),
         }
+    }
+
+    pub(crate) fn with_array(input: crate::Array) -> Self {
+        Self::new(input.values)
+    }
+
+    pub(crate) fn with_array_of_tables(input: crate::ArrayOfTables) -> Self {
+        Self::new(input.values)
     }
 }
 
@@ -21,7 +29,7 @@ impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess {
     {
         match self.iter.next() {
             Some(v) => seed
-                .deserialize(&mut crate::easy::de::ValueDeserializer::new(v))
+                .deserialize(&mut crate::easy::de::ItemDeserializer::new(v))
                 .map(Some),
             None => Ok(None),
         }

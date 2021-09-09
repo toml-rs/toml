@@ -2,34 +2,6 @@ use serde::de::IntoDeserializer;
 
 use crate::easy::de::Error;
 
-pub(crate) struct TableDeserializer {
-    input: crate::Table,
-}
-
-impl TableDeserializer {
-    pub(crate) fn new(input: crate::Table) -> Self {
-        Self { input }
-    }
-}
-
-impl<'de, 'a> serde::Deserializer<'de> for &'a mut TableDeserializer {
-    type Error = Error;
-
-    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        let mut input = crate::Table::new();
-        std::mem::swap(&mut input, &mut self.input);
-        visitor.visit_map(TableMapAccess::new(input))
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map option unit newtype_struct
-        ignored_any unit_struct tuple_struct tuple enum identifier struct
-    }
-}
 pub(crate) struct TableMapAccess {
     iter: linked_hash_map::IntoIter<crate::repr::InternalString, crate::table::TableKeyValue>,
     value: Option<crate::Item>,
