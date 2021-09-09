@@ -87,8 +87,8 @@ pub fn from_document<T>(d: crate::Document) -> Result<T, Error>
 where
     T: Deserialize<'static>,
 {
-    let mut deserializer = Deserializer::new(d);
-    T::deserialize(&mut deserializer)
+    let deserializer = Deserializer::new(d);
+    T::deserialize(deserializer)
 }
 
 /// Deserialization implementation for TOML.
@@ -103,16 +103,14 @@ impl Deserializer {
     }
 }
 
-impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
+impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let mut input = Default::default();
-        std::mem::swap(&mut input, &mut self.input.root);
-        ItemDeserializer::new(input).deserialize_any(visitor)
+        ItemDeserializer::new(self.input.root).deserialize_any(visitor)
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`

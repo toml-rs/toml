@@ -10,16 +10,14 @@ impl ItemDeserializer {
     }
 }
 
-impl<'de, 'a> serde::Deserializer<'de> for &'a mut ItemDeserializer {
+impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let mut input = Default::default();
-        std::mem::swap(&mut input, &mut self.input);
-        match input {
+        match self.input {
             crate::Item::None => visitor.visit_none(),
             crate::Item::Value(v) => {
                 crate::easy::de::ValueDeserializer::new(v).deserialize_any(visitor)

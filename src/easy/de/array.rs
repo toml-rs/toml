@@ -29,7 +29,7 @@ impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess {
     {
         match self.iter.next() {
             Some(v) => seed
-                .deserialize(&mut crate::easy::de::ItemDeserializer::new(v))
+                .deserialize(crate::easy::de::ItemDeserializer::new(v))
                 .map(Some),
             None => Ok(None),
         }

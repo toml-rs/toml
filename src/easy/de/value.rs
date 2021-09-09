@@ -10,16 +10,14 @@ impl ValueDeserializer {
     }
 }
 
-impl<'de, 'a> serde::Deserializer<'de> for &'a mut ValueDeserializer {
+impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let mut input: crate::Value = 0.into();
-        std::mem::swap(&mut input, &mut self.input);
-        match input {
+        match self.input {
             crate::Value::String(v) => visitor.visit_string(v.into_value()),
             crate::Value::Integer(v) => visitor.visit_i64(v.into_value()),
             crate::Value::Float(v) => visitor.visit_f64(v.into_value()),
