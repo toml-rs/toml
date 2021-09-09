@@ -37,6 +37,22 @@ pub enum Value {
 
 /// Downcasting
 impl Value {
+    /// Text description of value type
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            Value::String(..) => "string",
+            Value::Integer(..) => "integer",
+            Value::Float(..) => "float",
+            Value::Boolean(..) => "boolean",
+            Value::OffsetDateTime(..) => "offset datetime",
+            Value::LocalDateTime(..) => "local datetime",
+            Value::LocalDate(..) => "local date",
+            Value::LocalTime(..) => "local time",
+            Value::Array(..) => "array",
+            Value::InlineTable(..) => "inline table",
+        }
+    }
+
     /// Casts `self` to str.
     pub fn as_str(&self) -> Option<&str> {
         match *self {
