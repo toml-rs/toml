@@ -5,14 +5,12 @@
 use serde::Deserialize;
 
 mod array;
-mod array_of_tables;
 mod inline_table;
 mod item;
 mod table;
 mod value;
 
 use array::*;
-use array_of_tables::*;
 use inline_table::*;
 use item::*;
 use table::*;

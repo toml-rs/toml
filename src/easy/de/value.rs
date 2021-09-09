@@ -28,7 +28,9 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut ValueDeserializer {
             crate::Value::LocalDateTime(v) => visitor.visit_string(v.into_value().to_string()),
             crate::Value::LocalDate(v) => visitor.visit_string(v.into_value().to_string()),
             crate::Value::LocalTime(v) => visitor.visit_string(v.into_value().to_string()),
-            crate::Value::Array(v) => visitor.visit_seq(crate::easy::de::ArraySeqAccess::new(v)),
+            crate::Value::Array(v) => {
+                visitor.visit_seq(crate::easy::de::ArraySeqAccess::with_array(v))
+            }
             crate::Value::InlineTable(v) => {
                 visitor.visit_map(crate::easy::de::InlineTableMapAccess::new(v))
             }

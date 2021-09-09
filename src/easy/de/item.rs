@@ -26,7 +26,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut ItemDeserializer {
             }
             crate::Item::Table(v) => visitor.visit_map(crate::easy::de::TableMapAccess::new(v)),
             crate::Item::ArrayOfTables(v) => {
-                visitor.visit_seq(crate::easy::de::ArrayOfTablesSeqAccess::new(v))
+                visitor.visit_seq(crate::easy::de::ArraySeqAccess::with_array_of_tables(v))
             }
         }
     }
