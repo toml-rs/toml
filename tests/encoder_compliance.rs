@@ -87,19 +87,19 @@ fn from_decoded_value(
             .map_err(toml_test_harness::Error::new)?
             .into(),
         toml_test_harness::DecodedValue::Datetime(value) => value
-            .parse::<toml_edit::OffsetDateTime>()
+            .parse::<toml_edit::Datetime>()
             .map_err(toml_test_harness::Error::new)?
             .into(),
         toml_test_harness::DecodedValue::DatetimeLocal(value) => value
-            .parse::<toml_edit::LocalDateTime>()
+            .parse::<toml_edit::Datetime>()
             .map_err(toml_test_harness::Error::new)?
             .into(),
         toml_test_harness::DecodedValue::DateLocal(value) => value
-            .parse::<toml_edit::LocalDate>()
+            .parse::<toml_edit::Datetime>()
             .map_err(toml_test_harness::Error::new)?
             .into(),
         toml_test_harness::DecodedValue::TimeLocal(value) => value
-            .parse::<toml_edit::LocalTime>()
+            .parse::<toml_edit::Datetime>()
             .map_err(toml_test_harness::Error::new)?
             .into(),
     };

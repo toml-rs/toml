@@ -24,10 +24,7 @@ impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
             crate::Value::Integer(v) => visitor.visit_i64(v.into_value()),
             crate::Value::Float(v) => visitor.visit_f64(v.into_value()),
             crate::Value::Boolean(v) => visitor.visit_bool(v.into_value()),
-            crate::Value::OffsetDateTime(v) => visitor.visit_string(v.into_value().to_string()),
-            crate::Value::LocalDateTime(v) => visitor.visit_string(v.into_value().to_string()),
-            crate::Value::LocalDate(v) => visitor.visit_string(v.into_value().to_string()),
-            crate::Value::LocalTime(v) => visitor.visit_string(v.into_value().to_string()),
+            crate::Value::Datetime(v) => visitor.visit_string(v.into_value().to_string()),
             crate::Value::Array(v) => {
                 visitor.visit_seq(crate::easy::de::ArraySeqAccess::with_array(v))
             }

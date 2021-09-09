@@ -24,6 +24,7 @@ impl TomlError {
         )
     }
 
+    #[cfg(feature = "easy")]
     pub(crate) fn custom(message: String) -> Self {
         Self { message }
     }
@@ -107,8 +108,7 @@ pub(crate) enum CustomError {
     DuplicateKey { key: String, table: String },
     InvalidHexEscape(u32),
     UnparsedLine,
-    DateOutOfRange { year: i32, month: u32, day: u32 },
-    OffsetOutOfRange { sign: char, hour: u32, minute: u32 },
+    OutOfRange,
 }
 
 impl StdError for CustomError {
@@ -127,20 +127,7 @@ impl Display for CustomError {
                 writeln!(f, "Invalid hex escape code: {:x} ", h)
             }
             CustomError::UnparsedLine => writeln!(f, "Could not parse the line"),
-            CustomError::DateOutOfRange {
-                ref year,
-                ref month,
-                ref day,
-            } => {
-                writeln!(f, "Date out-of-range: `{}-{}-{}`", year, month, day)
-            }
-            CustomError::OffsetOutOfRange {
-                ref sign,
-                ref hour,
-                ref minute,
-            } => {
-                writeln!(f, "Offset out-of-range: `{}{}:{}`", sign, hour, minute)
-            }
+            CustomError::OutOfRange => writeln!(f, "Value is out of range"),
         }
     }
 }

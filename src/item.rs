@@ -166,43 +166,13 @@ impl Item {
     }
 
     /// Casts `self` to date-time.
-    pub fn as_offset_datetime(&self) -> Option<&OffsetDateTime> {
-        self.as_value().and_then(Value::as_offset_datetime)
+    pub fn as_datetime(&self) -> Option<&Datetime> {
+        self.as_value().and_then(Value::as_datetime)
     }
 
     /// Returns true iff `self` is a date-time.
-    pub fn is_offset_datetime(&self) -> bool {
-        self.as_offset_datetime().is_some()
-    }
-
-    /// Casts `self` to date-time.
-    pub fn as_local_datetime(&self) -> Option<&LocalDateTime> {
-        self.as_value().and_then(Value::as_local_datetime)
-    }
-
-    /// Returns true iff `self` is a date-time.
-    pub fn is_local_datetime(&self) -> bool {
-        self.as_local_datetime().is_some()
-    }
-
-    /// Casts `self` to date-time.
-    pub fn as_local_date(&self) -> Option<&LocalDate> {
-        self.as_value().and_then(Value::as_local_date)
-    }
-
-    /// Returns true iff `self` is a date-time.
-    pub fn is_local_date(&self) -> bool {
-        self.as_local_date().is_some()
-    }
-
-    /// Casts `self` to date-time.
-    pub fn as_local_time(&self) -> Option<&LocalTime> {
-        self.as_value().and_then(Value::as_local_time)
-    }
-
-    /// Returns true iff `self` is a date-time.
-    pub fn is_local_time(&self) -> bool {
-        self.as_local_time().is_some()
+    pub fn is_datetime(&self) -> bool {
+        self.as_datetime().is_some()
     }
 
     /// Casts `self` to array.

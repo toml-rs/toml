@@ -52,10 +52,7 @@ impl Display for Value {
             Value::Integer(ref repr) => write!(f, "{}", repr),
             Value::Float(ref repr) => write!(f, "{}", repr),
             Value::Boolean(ref repr) => write!(f, "{}", repr),
-            Value::OffsetDateTime(ref repr) => write!(f, "{}", repr),
-            Value::LocalDateTime(ref repr) => write!(f, "{}", repr),
-            Value::LocalDate(ref repr) => write!(f, "{}", repr),
-            Value::LocalTime(ref repr) => write!(f, "{}", repr),
+            Value::Datetime(ref repr) => write!(f, "{}", repr),
             Value::Array(ref array) => write!(f, "{}", array),
             Value::InlineTable(ref table) => write!(f, "{}", table),
         }

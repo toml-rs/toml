@@ -17,16 +17,7 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
             Value::Integer(ref i) => typed_json("integer", Json::String(format!("{}", i.value()))),
             Value::Float(ref f) => typed_json("float", Json::String(format!("{}", f.value()))),
             Value::Boolean(ref b) => typed_json("bool", Json::String(b.repr().as_raw().into())),
-            Value::OffsetDateTime(ref d) => {
-                typed_json("datetime", Json::String(d.repr().as_raw().into()))
-            }
-            Value::LocalDateTime(ref d) => {
-                typed_json("datetime", Json::String(d.repr().as_raw().into()))
-            }
-            Value::LocalDate(ref d) => {
-                typed_json("datetime", Json::String(d.repr().as_raw().into()))
-            }
-            Value::LocalTime(ref d) => {
+            Value::Datetime(ref d) => {
                 typed_json("datetime", Json::String(d.repr().as_raw().into()))
             }
             Value::Array(ref a) => {
