@@ -40,6 +40,14 @@ impl Array {
     pub fn new() -> Self {
         Default::default()
     }
+
+    #[cfg(feature = "easy")]
+    pub(crate) fn with_vec(values: Vec<Item>) -> Self {
+        Self {
+            values,
+            ..Default::default()
+        }
+    }
 }
 
 /// Formatting

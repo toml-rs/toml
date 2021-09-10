@@ -27,6 +27,14 @@ impl InlineTable {
     pub fn new() -> Self {
         Default::default()
     }
+
+    #[cfg(feature = "easy")]
+    pub(crate) fn with_pairs(items: KeyValuePairs) -> Self {
+        Self {
+            items,
+            ..Default::default()
+        }
+    }
 }
 
 /// Formatting
@@ -235,6 +243,12 @@ impl InlineTable {
             .value
             .as_value_mut()
             .expect("non-value type in inline table")
+    }
+
+    /// Inserts a key-value pair into the map.
+    pub fn insert(&mut self, key: &str, value: Value) -> Option<Item> {
+        let kv = TableKeyValue::new(Key::new(key), Item::Value(value));
+        self.items.insert(key.to_owned(), kv).map(|kv| kv.value)
     }
 
     /// Inserts a key-value pair into the map.
