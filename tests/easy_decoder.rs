@@ -29,9 +29,17 @@ fn value_to_decoded(
         toml_edit::easy::Value::Float(v) => Ok(toml_test_harness::Decoded::Value(
             toml_test_harness::DecodedValue::from(*v),
         )),
-        toml_edit::easy::Value::Datetime(v) => Ok(toml_test_harness::Decoded::Value(
-            toml_test_harness::DecodedValue::Datetime(v.to_string()),
-        )),
+        toml_edit::easy::Value::Datetime(v) => {
+            let value = v.to_string();
+            let value = match (v.date.is_some(), v.time.is_some(), v.offset.is_some()) {
+                (true, true, true) => toml_test_harness::DecodedValue::Datetime(value),
+                (true, true, false) => toml_test_harness::DecodedValue::DatetimeLocal(value),
+                (true, false, false) => toml_test_harness::DecodedValue::DateLocal(value),
+                (false, true, false) => toml_test_harness::DecodedValue::TimeLocal(value),
+                _ => unreachable!("Unsupported case"),
+            };
+            Ok(toml_test_harness::Decoded::Value(value))
+        }
         toml_edit::easy::Value::Boolean(v) => Ok(toml_test_harness::Decoded::Value(
             toml_test_harness::DecodedValue::from(*v),
         )),
