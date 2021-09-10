@@ -6,8 +6,8 @@ use std::mem::discriminant;
 use std::ops;
 use std::str::FromStr;
 
+pub use crate::easy::datetime::*;
 pub use crate::easy::map::Map;
-use crate::easy::Datetime;
 
 /// Representation of a TOML value.
 #[derive(PartialEq, Clone, Debug, serde::Serialize, serde::Deserialize)]

@@ -137,7 +137,6 @@ pub mod map;
 pub mod value;
 
 pub use crate::toml;
-pub use datetime::*;
 #[doc(no_inline)]
 pub use de::{from_document, from_slice, from_str, Deserializer};
 #[doc(no_inline)]
