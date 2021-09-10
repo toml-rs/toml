@@ -38,6 +38,38 @@ pub type Array = Vec<Value>;
 pub type Table = Map<String, Value>;
 
 impl Value {
+    /// Convert a `T` into `toml::Value` which is an enum that can represent
+    /// any valid TOML data.
+    ///
+    /// This conversion can fail if `T`'s implementation of `Serialize` decides to
+    /// fail, or if `T` contains a map with non-string keys.
+    pub fn try_from<T>(value: T) -> Result<Value, crate::TomlError>
+    where
+        T: serde::ser::Serialize,
+    {
+        let doc = super::to_document(&value)?;
+        let value = super::from_document(doc)?;
+        Ok(value)
+    }
+
+    /// Interpret a `toml::Value` as an instance of type `T`.
+    ///
+    /// This conversion can fail if the structure of the `Value` does not match the
+    /// structure expected by `T`, for example if `T` is a struct type but the
+    /// `Value` contains something other than a TOML table. It can also fail if the
+    /// structure is correct but `T`'s implementation of `Deserialize` decides that
+    /// something is wrong with the data, for example required struct fields are
+    /// missing from the TOML map or some number is too big to fit in the expected
+    /// primitive type.
+    pub fn try_into<T>(self) -> Result<T, crate::TomlError>
+    where
+        T: serde::de::Deserialize<'static>,
+    {
+        let doc = super::to_document(&self)?;
+        let value = super::from_document(doc)?;
+        Ok(value)
+    }
+
     /// Index into a TOML array or map. A string index can be used to access a
     /// value in a map, and a usize index can be used to access an element of an
     /// array.
@@ -192,6 +224,14 @@ impl Value {
             Value::Array(..) => "array",
             Value::Table(..) => "table",
         }
+    }
+}
+
+impl std::fmt::Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        super::to_string_pretty(self)
+            .map_err(|_| std::fmt::Error)?
+            .fmt(f)
     }
 }
 
