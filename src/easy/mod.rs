@@ -96,7 +96,7 @@
 //!
 //! You can serialize types in a similar fashion:
 //!
-//! ```rust,ignore
+//! ```rust
 //! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
@@ -134,10 +134,13 @@ pub mod de;
 #[doc(hidden)]
 pub mod macros;
 pub mod map;
+pub mod ser;
 pub mod value;
 
 pub use crate::toml;
 #[doc(no_inline)]
 pub use de::{from_document, from_slice, from_str, Deserializer};
+#[doc(no_inline)]
+pub use ser::{to_document, to_string, to_string_pretty, to_vec, Serializer};
 #[doc(no_inline)]
 pub use value::Value;

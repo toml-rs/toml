@@ -4,7 +4,7 @@ pub struct Decoder;
 
 impl toml_test_harness::Decoder for Decoder {
     fn name(&self) -> &str {
-        "toml_edit"
+        "toml_edit::easy"
     }
 
     fn decode(&self, data: &[u8]) -> Result<toml_test_harness::Decoded, toml_test_harness::Error> {
