@@ -212,6 +212,15 @@ impl Item {
             .or_else(|| self.as_inline_table().map(|t| t as &dyn TableLike))
     }
 
+    /// Casts `self` to either a table or an inline table.
+    pub fn as_table_like_mut(&mut self) -> Option<&mut dyn TableLike> {
+        match self {
+            Item::Table(t) => Some(t as &mut dyn TableLike),
+            Item::Value(Value::InlineTable(t)) => Some(t as &mut dyn TableLike),
+            _ => None,
+        }
+    }
+
     /// Returns true iff `self` is either a table, or an inline table.
     pub fn is_table_like(&self) -> bool {
         self.as_table_like().is_some()

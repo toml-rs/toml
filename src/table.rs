@@ -394,6 +394,8 @@ pub type IterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Item)> + 'a>;
 pub trait TableLike {
     /// Returns an iterator over key/value pairs.
     fn iter(&self) -> Iter<'_>;
+    /// Returns an mutable iterator over all key/value pairs, including empty.
+    fn iter_mut(&mut self) -> IterMut<'_>;
     /// Returns the number of nonempty items.
     fn len(&self) -> usize {
         self.iter().filter(|&(_, v)| !v.is_none()).count()
@@ -406,6 +408,12 @@ pub trait TableLike {
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
     /// Returns an optional mutable reference to an item given the key.
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item>;
+    /// Returns true iff the table contains an item with the given key.
+    fn contains_key(&self, key: &str) -> bool;
+    /// Inserts a key-value pair into the map.
+    fn insert(&mut self, key: &str, value: Item) -> Option<Item>;
+    /// Removes an item given the key.
+    fn remove(&mut self, key: &str) -> Option<Item>;
 
     /// Get key/values for values that are visually children of this table
     ///
@@ -426,9 +434,11 @@ pub trait TableLike {
 }
 
 impl TableLike for Table {
-    /// Returns an iterator over all subitems, including `Item::None`.
     fn iter(&self) -> Iter<'_> {
         self.iter()
+    }
+    fn iter_mut(&mut self) -> IterMut<'_> {
+        self.iter_mut()
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.get(key)
@@ -436,6 +446,16 @@ impl TableLike for Table {
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.get_mut(key)
     }
+    fn contains_key(&self, key: &str) -> bool {
+        self.contains_key(key)
+    }
+    fn insert(&mut self, key: &str, value: Item) -> Option<Item> {
+        self.insert(key, value)
+    }
+    fn remove(&mut self, key: &str) -> Option<Item> {
+        self.remove(key)
+    }
+
     fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         self.get_values()
     }
