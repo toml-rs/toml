@@ -1,7 +1,7 @@
 #![cfg(feature = "easy")]
 
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 
 use toml_edit::easy::map::Map;
 use toml_edit::easy::Value;
@@ -177,39 +177,6 @@ fn inner_structs_with_options() {
 }
 
 #[test]
-#[should_panic] // Our equality is broken, see https://github.com/ordian/toml_edit/issues/194
-fn hashmap() {
-    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-    struct Foo {
-        set: HashSet<char>,
-        map: BTreeMap<String, isize>,
-    }
-
-    equivalent! {
-        Foo {
-            map: {
-                let mut m = BTreeMap::new();
-                m.insert("foo".to_string(), 10);
-                m.insert("bar".to_string(), 4);
-                m
-            },
-            set: {
-                let mut s = HashSet::new();
-                s.insert('a');
-                s
-            },
-        },
-        Table(map! {
-            map: Table(map! {
-                foo: Integer(10),
-                bar: Integer(4)
-            }),
-            set: Array(vec![Value::String("a".to_string())])
-        }),
-    }
-}
-
-#[test]
 fn table_array() {
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
@@ -334,131 +301,6 @@ fn parse_enum_string() {
         Table(map! { a: Value::String("desc".to_string()) }),
     }
 }
-
-// #[test]
-// fn unused_fields() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: isize }
-//
-//     let v = Foo { a: 2 };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Integer(2),
-//         b, Integer(5)
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, Some(Table(map! {
-//         b, Integer(5)
-//     })));
-// }
-//
-// #[test]
-// fn unused_fields2() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: Bar }
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Bar { a: isize }
-//
-//     let v = Foo { a: Bar { a: 2 } };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Table(map! {
-//             a, Integer(2),
-//             b, Integer(5)
-//         })
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, Some(Table(map! {
-//         a, Table(map! {
-//             b, Integer(5)
-//         })
-//     })));
-// }
-//
-// #[test]
-// fn unused_fields3() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: Bar }
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Bar { a: isize }
-//
-//     let v = Foo { a: Bar { a: 2 } };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Table(map! {
-//             a, Integer(2)
-//         })
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, None);
-// }
-//
-// #[test]
-// fn unused_fields4() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: BTreeMap<String, String> }
-//
-//     let v = Foo { a: map! { a, "foo".to_string() } };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Table(map! {
-//             a, Value::String("foo".to_string())
-//         })
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, None);
-// }
-//
-// #[test]
-// fn unused_fields5() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: Vec<String> }
-//
-//     let v = Foo { a: vec!["a".to_string()] };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Array(vec![Value::String("a".to_string())])
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, None);
-// }
-//
-// #[test]
-// fn unused_fields6() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: Option<Vec<String>> }
-//
-//     let v = Foo { a: Some(vec![]) };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Array(vec![])
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, None);
-// }
-//
-// #[test]
-// fn unused_fields7() {
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Foo { a: Vec<Bar> }
-//     #[derive(Serialize, Deserialize, PartialEq, Debug)]
-//     struct Bar { a: isize }
-//
-//     let v = Foo { a: vec![Bar { a: 1 }] };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Array(vec![Table(map! {
-//             a, Integer(1),
-//             b, Integer(2)
-//         })])
-//     }));
-//     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
-//
-//     assert_eq!(d.toml, Some(Table(map! {
-//         a, Array(vec![Table(map! {
-//             b, Integer(2)
-//         })])
-//     })));
-// }
 
 #[test]
 fn empty_arrays() {

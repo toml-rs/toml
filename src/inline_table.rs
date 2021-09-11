@@ -76,22 +76,15 @@ impl InlineTable {
 
     /// Sorts the key/value pairs by key.
     pub fn sort_values(&mut self) {
-        let mut keys: Vec<InternalString> = self
-            .items
-            .iter_mut()
-            .filter_map(|(key, kv)| match &mut kv.value {
+        // Assuming standard tables have their position set and this won't negatively impact them
+        self.items.sort_keys();
+        for kv in self.items.values_mut() {
+            match &mut kv.value {
                 Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
                     table.sort_values();
-                    Some(key)
                 }
-                Item::Value(_) => Some(key),
-                _ => None,
-            })
-            .cloned()
-            .collect();
-        keys.sort();
-        for key in keys {
-            self.items.get_refresh(&key);
+                _ => {}
+            }
         }
     }
 
@@ -166,7 +159,7 @@ impl InlineTable {
     pub fn entry<'a>(&'a mut self, key: &str) -> InlineEntry<'a> {
         // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
         match self.items.entry(key.to_owned()) {
-            linked_hash_map::Entry::Occupied(mut entry) => {
+            indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
                 let mut scratch = Item::None;
                 std::mem::swap(&mut scratch, &mut entry.get_mut().value);
@@ -181,7 +174,7 @@ impl InlineTable {
 
                 InlineEntry::Occupied(InlineOccupiedEntry { entry })
             }
-            linked_hash_map::Entry::Vacant(entry) => {
+            indexmap::map::Entry::Vacant(entry) => {
                 InlineEntry::Vacant(InlineVacantEntry { entry, key: None })
             }
         }
@@ -191,7 +184,7 @@ impl InlineTable {
     pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> InlineEntry<'a> {
         // Accept a `&Key` to be consistent with `entry`
         match self.items.entry(key.get().to_owned()) {
-            linked_hash_map::Entry::Occupied(mut entry) => {
+            indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
                 let mut scratch = Item::None;
                 std::mem::swap(&mut scratch, &mut entry.get_mut().value);
@@ -206,7 +199,7 @@ impl InlineTable {
 
                 InlineEntry::Occupied(InlineOccupiedEntry { entry })
             }
-            linked_hash_map::Entry::Vacant(entry) => InlineEntry::Vacant(InlineVacantEntry {
+            indexmap::map::Entry::Vacant(entry) => InlineEntry::Vacant(InlineVacantEntry {
                 entry,
                 key: Some(key),
             }),
@@ -263,13 +256,13 @@ impl InlineTable {
     /// Removes an item given the key.
     pub fn remove(&mut self, key: &str) -> Option<Value> {
         self.items
-            .remove(key)
+            .shift_remove(key)
             .and_then(|kv| kv.value.into_value().ok())
     }
 
     /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
     pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Value)> {
-        self.items.remove(key).and_then(|kv| {
+        self.items.shift_remove(key).and_then(|kv| {
             let key = kv.key;
             kv.value.into_value().ok().map(|value| (key, value))
         })
@@ -426,9 +419,9 @@ impl<'a> InlineEntry<'a> {
     }
 }
 
-/// A view into a single occupied location in a `LinkedHashMap`.
+/// A view into a single occupied location in a `IndexMap`.
 pub struct InlineOccupiedEntry<'a> {
-    entry: linked_hash_map::OccupiedEntry<'a, InternalString, TableKeyValue>,
+    entry: indexmap::map::OccupiedEntry<'a, InternalString, TableKeyValue>,
 }
 
 impl<'a> InlineOccupiedEntry<'a> {
@@ -472,13 +465,13 @@ impl<'a> InlineOccupiedEntry<'a> {
 
     /// Takes the value out of the entry, and returns it
     pub fn remove(self) -> Value {
-        self.entry.remove().value.into_value().unwrap()
+        self.entry.shift_remove().value.into_value().unwrap()
     }
 }
 
-/// A view into a single empty location in a `LinkedHashMap`.
+/// A view into a single empty location in a `IndexMap`.
 pub struct InlineVacantEntry<'a> {
-    entry: linked_hash_map::VacantEntry<'a, InternalString, TableKeyValue>,
+    entry: indexmap::map::VacantEntry<'a, InternalString, TableKeyValue>,
     key: Option<&'a Key>,
 }
 

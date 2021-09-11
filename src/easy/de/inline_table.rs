@@ -3,7 +3,7 @@ use serde::de::IntoDeserializer;
 use crate::easy::de::Error;
 
 pub(crate) struct InlineTableMapAccess {
-    iter: linked_hash_map::IntoIter<crate::repr::InternalString, crate::table::TableKeyValue>,
+    iter: indexmap::map::IntoIter<crate::repr::InternalString, crate::table::TableKeyValue>,
     value: Option<crate::Item>,
 }
 

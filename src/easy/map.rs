@@ -14,7 +14,7 @@ use std::hash::Hash;
 use std::iter::FromIterator;
 use std::ops;
 
-use linked_hash_map::{self, LinkedHashMap};
+use indexmap::map::IndexMap;
 use serde::{de, ser};
 
 use crate::easy::value::Value;
@@ -24,7 +24,7 @@ pub struct Map<K, V> {
     map: MapImpl<K, V>,
 }
 
-type MapImpl<K, V> = LinkedHashMap<K, V>;
+type MapImpl<K, V> = IndexMap<K, V>;
 
 impl Map<String, Value> {
     /// Makes a new empty Map.
@@ -39,7 +39,7 @@ impl Map<String, Value> {
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
         Map {
-            map: LinkedHashMap::with_capacity(capacity),
+            map: IndexMap::with_capacity(capacity),
         }
     }
 
@@ -120,7 +120,7 @@ impl Map<String, Value> {
     where
         S: Into<String>,
     {
-        use linked_hash_map::Entry as EntryImpl;
+        use indexmap::map::Entry as EntryImpl;
 
         match self.map.entry(key.into()) {
             EntryImpl::Vacant(vacant) => Entry::Vacant(VacantEntry { vacant }),
@@ -367,9 +367,9 @@ pub struct OccupiedEntry<'a> {
     occupied: OccupiedEntryImpl<'a>,
 }
 
-type VacantEntryImpl<'a> = linked_hash_map::VacantEntry<'a, String, Value>;
+type VacantEntryImpl<'a> = indexmap::map::VacantEntry<'a, String, Value>;
 
-type OccupiedEntryImpl<'a> = linked_hash_map::OccupiedEntry<'a, String, Value>;
+type OccupiedEntryImpl<'a> = indexmap::map::OccupiedEntry<'a, String, Value>;
 
 impl<'a> Entry<'a> {
     /// Returns a reference to this entry's key.
@@ -476,7 +476,7 @@ pub struct Iter<'a> {
     iter: IterImpl<'a>,
 }
 
-type IterImpl<'a> = linked_hash_map::Iter<'a, String, Value>;
+type IterImpl<'a> = indexmap::map::Iter<'a, String, Value>;
 
 delegate_iterator!((Iter<'a>) => (&'a String, &'a Value));
 
@@ -498,7 +498,7 @@ pub struct IterMut<'a> {
     iter: IterMutImpl<'a>,
 }
 
-type IterMutImpl<'a> = linked_hash_map::IterMut<'a, String, Value>;
+type IterMutImpl<'a> = indexmap::map::IterMut<'a, String, Value>;
 
 delegate_iterator!((IterMut<'a>) => (&'a String, &'a mut Value));
 
@@ -520,7 +520,7 @@ pub struct IntoIter {
     iter: IntoIterImpl,
 }
 
-type IntoIterImpl = linked_hash_map::IntoIter<String, Value>;
+type IntoIterImpl = indexmap::map::IntoIter<String, Value>;
 
 delegate_iterator!((IntoIter) => (String, Value));
 
@@ -531,7 +531,7 @@ pub struct Keys<'a> {
     iter: KeysImpl<'a>,
 }
 
-type KeysImpl<'a> = linked_hash_map::Keys<'a, String, Value>;
+type KeysImpl<'a> = indexmap::map::Keys<'a, String, Value>;
 
 delegate_iterator!((Keys<'a>) => &'a String);
 
@@ -542,6 +542,6 @@ pub struct Values<'a> {
     iter: ValuesImpl<'a>,
 }
 
-type ValuesImpl<'a> = linked_hash_map::Values<'a, String, Value>;
+type ValuesImpl<'a> = indexmap::map::Values<'a, String, Value>;
 
 delegate_iterator!((Values<'a>) => &'a Value);

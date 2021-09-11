@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 
-use linked_hash_map::LinkedHashMap;
+use indexmap::map::IndexMap;
 
 use crate::key::Key;
 use crate::repr::{Decor, InternalString};
@@ -104,22 +104,15 @@ impl Table {
     ///
     /// Doesn't affect subtables or subarrays.
     pub fn sort_values(&mut self) {
-        let mut keys: Vec<InternalString> = self
-            .items
-            .iter_mut()
-            .filter_map(|(key, kv)| match &mut kv.value {
+        // Assuming standard tables have their position set and this won't negatively impact them
+        self.items.sort_keys();
+        for kv in self.items.values_mut() {
+            match &mut kv.value {
                 Item::Table(table) if table.is_dotted() => {
                     table.sort_values();
-                    Some(key)
                 }
-                Item::Value(_) => Some(key),
-                _ => None,
-            })
-            .cloned()
-            .collect();
-        keys.sort();
-        for key in keys {
-            self.items.get_refresh(&key);
+                _ => {}
+            }
         }
     }
 
@@ -230,10 +223,8 @@ impl Table {
     pub fn entry<'a>(&'a mut self, key: &str) -> Entry<'a> {
         // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
         match self.items.entry(key.to_owned()) {
-            linked_hash_map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
-            linked_hash_map::Entry::Vacant(entry) => {
-                Entry::Vacant(VacantEntry { entry, key: None })
-            }
+            indexmap::map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
+            indexmap::map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry { entry, key: None }),
         }
     }
 
@@ -241,8 +232,8 @@ impl Table {
     pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> Entry<'a> {
         // Accept a `&Key` to be consistent with `entry`
         match self.items.entry(key.get().to_owned()) {
-            linked_hash_map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
-            linked_hash_map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry {
+            indexmap::map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
+            indexmap::map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry {
                 entry,
                 key: Some(key),
             }),
@@ -311,12 +302,12 @@ impl Table {
 
     /// Removes an item given the key.
     pub fn remove(&mut self, key: &str) -> Option<Item> {
-        self.items.remove(key).map(|kv| kv.value)
+        self.items.shift_remove(key).map(|kv| kv.value)
     }
 
     /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
     pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Item)> {
-        self.items.remove(key).map(|kv| (kv.key, kv.value))
+        self.items.shift_remove(key).map(|kv| (kv.key, kv.value))
     }
 }
 
@@ -360,7 +351,7 @@ impl<'s> IntoIterator for &'s Table {
     }
 }
 
-pub(crate) type KeyValuePairs = LinkedHashMap<InternalString, TableKeyValue>;
+pub(crate) type KeyValuePairs = IndexMap<InternalString, TableKeyValue>;
 
 fn decorate_table(table: &mut Table) {
     for (key_decor, value) in table
@@ -508,9 +499,9 @@ impl<'a> Entry<'a> {
     }
 }
 
-/// A view into a single occupied location in a `LinkedHashMap`.
+/// A view into a single occupied location in a `IndexMap`.
 pub struct OccupiedEntry<'a> {
-    entry: linked_hash_map::OccupiedEntry<'a, InternalString, TableKeyValue>,
+    entry: indexmap::map::OccupiedEntry<'a, InternalString, TableKeyValue>,
 }
 
 impl<'a> OccupiedEntry<'a> {
@@ -553,13 +544,13 @@ impl<'a> OccupiedEntry<'a> {
 
     /// Takes the value out of the entry, and returns it
     pub fn remove(self) -> Item {
-        self.entry.remove().value
+        self.entry.shift_remove().value
     }
 }
 
-/// A view into a single empty location in a `LinkedHashMap`.
+/// A view into a single empty location in a `IndexMap`.
 pub struct VacantEntry<'a> {
-    entry: linked_hash_map::VacantEntry<'a, InternalString, TableKeyValue>,
+    entry: indexmap::map::VacantEntry<'a, InternalString, TableKeyValue>,
     key: Option<&'a Key>,
 }
 
