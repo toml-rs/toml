@@ -19,7 +19,7 @@ default = []
 easy = ["serde"]
 
 [dependencies]
-linked-hash-map = "0.5.2"
+indexmap = "1.7"
 combine = "4.5.2"
 vec1 = "1"
 itertools = "0.10"
