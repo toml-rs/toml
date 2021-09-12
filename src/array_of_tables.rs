@@ -22,11 +22,11 @@ impl ArrayOfTables {
 /// Formatting
 impl ArrayOfTables {
     /// Convert to an inline array
-    pub fn into_array(self) -> Array {
-        self.values
-            .into_iter()
-            .filter_map(|i| i.into_value().ok())
-            .collect()
+    pub fn into_array(mut self) -> Array {
+        for value in self.values.iter_mut() {
+            value.make_value();
+        }
+        Array::with_vec(self.values)
     }
 }
 
