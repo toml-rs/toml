@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use crate::key::Key;
 use crate::repr::{Decor, InternalString};
-use crate::table::{Iter, KeyValuePairs, TableKeyValue, TableLike};
+use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
 use crate::value::{DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
 use crate::{Item, Value};
 
@@ -239,9 +239,11 @@ impl InlineTable {
     }
 
     /// Inserts a key-value pair into the map.
-    pub fn insert(&mut self, key: &str, value: Value) -> Option<Item> {
+    pub fn insert(&mut self, key: &str, value: Value) -> Option<Value> {
         let kv = TableKeyValue::new(Key::new(key), Item::Value(value));
-        self.items.insert(key.to_owned(), kv).map(|kv| kv.value)
+        self.items
+            .insert(key.to_owned(), kv)
+            .and_then(|kv| kv.value.into_value().ok())
     }
 
     /// Inserts a key-value pair into the map.
@@ -347,12 +349,30 @@ impl TableLike for InlineTable {
     fn iter(&self) -> Iter<'_> {
         Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
+    fn iter_mut(&mut self) -> IterMut<'_> {
+        Box::new(
+            self.items
+                .iter_mut()
+                .map(|(key, kv)| (&key[..], &mut kv.value)),
+        )
+    }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.items.get(key).map(|kv| &kv.value)
     }
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.items.get_mut(key).map(|kv| &mut kv.value)
     }
+    fn contains_key(&self, key: &str) -> bool {
+        self.contains_key(key)
+    }
+    fn insert(&mut self, key: &str, value: Item) -> Option<Item> {
+        self.insert(key, value.into_value().unwrap())
+            .map(Item::Value)
+    }
+    fn remove(&mut self, key: &str) -> Option<Item> {
+        self.remove(key).map(Item::Value)
+    }
+
     fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         self.get_values()
     }
