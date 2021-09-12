@@ -92,6 +92,13 @@ impl Item {
             Item::ArrayOfTables(v) => Ok(Value::Array(v.into_array())),
         }
     }
+    /// In-place convert to a value
+    pub fn make_value(&mut self) {
+        let mut other = Item::None;
+        std::mem::swap(self, &mut other);
+        let mut other = other.into_value().map(Item::Value).unwrap_or(Item::None);
+        std::mem::swap(self, &mut other);
+    }
     /// Casts `self` to table.
     pub fn into_table(self) -> Result<Table, Self> {
         match self {

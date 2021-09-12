@@ -28,7 +28,6 @@ impl InlineTable {
         Default::default()
     }
 
-    #[cfg(feature = "easy")]
     pub(crate) fn with_pairs(items: KeyValuePairs) -> Self {
         Self {
             items,

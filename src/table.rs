@@ -47,19 +47,11 @@ impl Table {
     }
 
     /// Convert to an inline array
-    pub fn into_inline_table(self) -> InlineTable {
-        let table: InlineTable = self
-            .items
-            .into_iter()
-            .filter_map(|(_, kv)| {
-                let mut k = kv.key;
-                k.decor_mut().clear();
-                let v = kv.value;
-                let v = v.into_value().ok()?;
-                Some((k, v))
-            })
-            .collect();
-        table
+    pub fn into_inline_table(mut self) -> InlineTable {
+        for (_, kv) in self.items.iter_mut() {
+            kv.value.make_value();
+        }
+        InlineTable::with_pairs(self.items)
     }
 }
 
