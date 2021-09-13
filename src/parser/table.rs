@@ -1,11 +1,10 @@
-use crate::array_of_tables::ArrayOfTables;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
 use crate::parser::trivia::line_trailing;
 use crate::parser::TomlParser;
 use crate::repr::Decor;
-use crate::{Entry, Item, Table};
+use crate::{Item, Table};
 use combine::parser::char::char;
 use combine::parser::range::range;
 use combine::stream::RangeStream;
@@ -120,75 +119,20 @@ impl TomlParser {
     fn on_std_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
+        self.finalize_table()?;
         let leading = mem::take(&mut self.document.trailing);
-        let table = self.document.as_table_mut();
-        self.current_table_position += 1;
+        self.start_table(path, Decor::new(leading, trailing))?;
 
-        let table = Self::descend_path(table, &path[..path.len() - 1], 0, false)?;
-        let key = &path[path.len() - 1];
-
-        let decor = Decor::new(leading, trailing);
-
-        let entry = table.entry_format(key);
-        match entry {
-            Entry::Occupied(entry) => {
-                match entry.into_mut() {
-                    // if [a.b.c] header preceded [a.b]
-                    Item::Table(ref mut t) if t.implicit => {
-                        t.decor = decor;
-                        t.position = Some(self.current_table_position);
-                        t.set_implicit(false);
-
-                        self.current_table_path = path.into_vec();
-                        Ok(())
-                    }
-                    _ => Err(duplicate_key(&path, path.len() - 1)),
-                }
-            }
-            Entry::Vacant(entry) => {
-                let item = Item::Table(Table::with_decor_and_pos(
-                    decor,
-                    Some(self.current_table_position),
-                ));
-                entry.insert(item);
-                self.current_table_path = path.to_vec();
-                Ok(())
-            }
-        }
+        Ok(())
     }
 
     fn on_array_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
+        self.finalize_table()?;
         let leading = mem::take(&mut self.document.trailing);
-        let table = self.document.as_table_mut();
+        self.start_aray_table(path, Decor::new(leading, trailing))?;
 
-        let key = &path[path.len() - 1];
-        let table = Self::descend_path(table, &path[..path.len() - 1], 0, false);
-
-        match table {
-            Ok(table) => {
-                if !table.contains_table(key.get()) && !table.contains_value(key.get()) {
-                    let decor = Decor::new(leading, trailing);
-
-                    let entry = table
-                        .entry_format(key)
-                        .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
-                    let array = entry.as_array_of_tables_mut().unwrap();
-
-                    self.current_table_position += 1;
-                    array.push(Table::with_decor_and_pos(
-                        decor,
-                        Some(self.current_table_position),
-                    ));
-                    self.current_table_path = path.into_vec();
-
-                    Ok(())
-                } else {
-                    Err(duplicate_key(&path, path.len() - 1))
-                }
-            }
-            Err(e) => Err(e),
-        }
+        Ok(())
     }
 }

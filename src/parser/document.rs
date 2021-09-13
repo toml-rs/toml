@@ -82,7 +82,7 @@ impl TomlParser {
     //                ( ws table ws [ comment ] ) /
     //                  ws )
     pub(crate) fn parse(s: &str) -> Result<Document, TomlError> {
-        let parser = RefCell::new(Self::default());
+        let mut parser = RefCell::new(Self::default());
         let input = Stream::new(s);
 
         let parsed = parse_ws(&parser)
@@ -103,7 +103,13 @@ impl TomlParser {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(TomlError::from_unparsed(rest.positioner, s))
             }
-            Ok(..) => Ok(*parser.into_inner().document),
+            Ok(..) => {
+                parser
+                    .get_mut()
+                    .finalize_table()
+                    .map_err(|e| TomlError::custom(e.to_string()))?;
+                Ok(*parser.into_inner().document)
+            }
             Err(e) => Err(TomlError::new(e, s)),
         }
     }
@@ -131,9 +137,7 @@ impl TomlParser {
             );
         }
 
-        let root = self.document.as_table_mut();
-        let table = Self::descend_path(root, self.current_table_path.as_slice(), 0, false)
-            .expect("the table path is valid; qed");
+        let table = &mut self.current_table;
         let table = Self::descend_path(table, &path, 0, true)?;
 
         // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"

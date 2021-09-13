@@ -20,21 +20,130 @@ pub(crate) use self::key::is_unquoted_char;
 pub(crate) use self::key::simple_key as key_parser;
 pub(crate) use self::value::value as value_parser;
 
-use crate::document::Document;
+use self::table::duplicate_key;
 use crate::key::Key;
+use crate::parser::errors::CustomError;
+use crate::repr::Decor;
+use crate::{ArrayOfTables, Document, Entry, Item, Table};
+use vec1::Vec1;
 
 pub(crate) struct TomlParser {
     document: Box<Document>,
-    current_table_path: Vec<Key>,
     current_table_position: usize,
+    current_table: Table,
+    current_is_array: bool,
+    current_table_path: Vec<Key>,
+}
+
+impl TomlParser {
+    pub(crate) fn start_aray_table(
+        &mut self,
+        path: Vec1<Key>,
+        decor: Decor,
+    ) -> Result<(), CustomError> {
+        debug_assert!(self.current_table.is_empty());
+        debug_assert!(self.current_table_path.is_empty());
+
+        // Look up the table on start to ensure the duplicate_key error points to the right line
+        let root = self.document.as_table_mut();
+        let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+        let key = &path[path.len() - 1];
+        let entry = parent_table
+            .entry_format(key)
+            .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
+        entry
+            .as_array_of_tables()
+            .ok_or_else(|| duplicate_key(&path, path.len() - 1))?;
+
+        self.current_table_position += 1;
+        self.current_table.decor = decor;
+        self.current_table.set_position(self.current_table_position);
+        self.current_is_array = true;
+        self.current_table_path = path.into_vec();
+
+        Ok(())
+    }
+
+    pub(crate) fn start_table(&mut self, path: Vec1<Key>, decor: Decor) -> Result<(), CustomError> {
+        debug_assert!(self.current_table.is_empty());
+        debug_assert!(self.current_table_path.is_empty());
+
+        // 1. Look up the table on start to ensure the duplicate_key error points to the right line
+        // 2. Ensure any child tables from an implicit table are preserved
+        let root = self.document.as_table_mut();
+        let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+        let key = &path[path.len() - 1];
+        if let Some(entry) = parent_table.remove(key.get()) {
+            match entry {
+                Item::Table(t) if t.implicit => {
+                    self.current_table = t;
+                }
+                _ => return Err(duplicate_key(&path, path.len() - 1)),
+            }
+        }
+
+        self.current_table_position += 1;
+        self.current_table.decor = decor;
+        self.current_table.set_position(self.current_table_position);
+        self.current_is_array = false;
+        self.current_table_path = path.into_vec();
+
+        Ok(())
+    }
+
+    pub(crate) fn finalize_table(&mut self) -> Result<(), CustomError> {
+        let mut table = std::mem::take(&mut self.current_table);
+        let path = std::mem::take(&mut self.current_table_path);
+
+        let root = self.document.as_table_mut();
+        if path.is_empty() {
+            assert!(root.is_empty());
+            std::mem::swap(&mut table, root);
+        } else if self.current_is_array {
+            let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+            let key = &path[path.len() - 1];
+
+            let entry = parent_table
+                .entry_format(key)
+                .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
+            let array = entry
+                .as_array_of_tables_mut()
+                .ok_or_else(|| duplicate_key(&path, path.len() - 1))?;
+            array.push(table);
+        } else {
+            let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+            let key = &path[path.len() - 1];
+
+            let entry = parent_table.entry_format(key);
+            match entry {
+                Entry::Occupied(entry) => {
+                    match entry.into_mut() {
+                        // if [a.b.c] header preceded [a.b]
+                        Item::Table(ref mut t) if t.implicit => {
+                            std::mem::swap(t, &mut table);
+                        }
+                        _ => return Err(duplicate_key(&path, path.len() - 1)),
+                    }
+                }
+                Entry::Vacant(entry) => {
+                    let item = Item::Table(table);
+                    entry.insert(item);
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl Default for TomlParser {
     fn default() -> Self {
         Self {
             document: Box::new(Document::new()),
-            current_table_path: Vec::new(),
             current_table_position: 0,
+            current_table: Table::new(),
+            current_is_array: false,
+            current_table_path: Vec::new(),
         }
     }
 }
