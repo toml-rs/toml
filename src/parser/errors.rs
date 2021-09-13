@@ -24,7 +24,6 @@ impl TomlError {
         )
     }
 
-    #[cfg(feature = "easy")]
     pub(crate) fn custom(message: String) -> Self {
         Self { message }
     }

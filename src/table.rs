@@ -38,14 +38,6 @@ impl Table {
         }
     }
 
-    pub(crate) fn with_decor_and_pos(decor: Decor, position: Option<usize>) -> Self {
-        Self {
-            decor,
-            position,
-            ..Default::default()
-        }
-    }
-
     /// Convert to an inline array
     pub fn into_inline_table(mut self) -> InlineTable {
         for (_, kv) in self.items.iter_mut() {
