@@ -1,4 +1,3 @@
-use crate::parser::errors::CustomError;
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
 use crate::{Array, Value};
@@ -12,18 +11,8 @@ use combine::*;
 // array = array-open array-values array-close
 parse!(array() -> Array, {
     between(char(ARRAY_OPEN), char(ARRAY_CLOSE),
-            array_values().and_then(|(v, c, t)| array_from_vec(v, c, t)))
+            array_values())
 });
-
-fn array_from_vec(v: Vec<Value>, comma: bool, trailing: &str) -> Result<Array, CustomError> {
-    let mut array = Array::new();
-    array.set_trailing_comma(comma);
-    array.set_trailing(trailing);
-    for val in v {
-        array.push_formatted(val)
-    }
-    Ok(array)
-}
 
 // note: we're omitting ws and newlines here, because
 // they should be part of the formatted values
@@ -37,17 +26,19 @@ const ARRAY_SEP: char = ',';
 // note: this rule is modified
 // array-values = [ ( array-value array-sep array-values ) /
 //                  array-value / ws-comment-newline ]
-parse!(array_values() -> (Vec<Value>, bool, &'a str), {
+parse!(array_values() -> Array, {
     (
         optional(
             recognize_with_value(
                 sep_end_by1(array_value(), char(ARRAY_SEP))
-            ).map(|(r, v): (&'a str, _)| (v, r.ends_with(',')))
+            ).map(|(r, v): (&'a str, Array)| (v, r.ends_with(',')))
         ),
         ws_comment_newline(),
-    ).map(|(v, t)| {
-        let (v, c) = v.unwrap_or_default();
-        (v, c, t)
+    ).map(|(array, trailing)| {
+        let (mut array, comma) = array.unwrap_or_default();
+        array.set_trailing_comma(comma);
+        array.set_trailing(trailing);
+        array
     })
 });
 
