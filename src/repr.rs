@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 pub(crate) type InternalString = String;
 
 /// A value together with its `to_string` representation,
@@ -5,11 +7,27 @@ pub(crate) type InternalString = String;
 #[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub struct Formatted<T> {
     value: T,
-    pub(crate) repr: Repr,
+    repr: Option<Repr>,
     decor: Decor,
 }
 
-impl<T> Formatted<T> {
+impl<T> Formatted<T>
+where
+    T: ValueRepr,
+{
+    /// Default-formatted value
+    pub fn new(value: T) -> Self {
+        Self {
+            value,
+            repr: None,
+            decor: Default::default(),
+        }
+    }
+
+    pub(crate) fn set_repr_unchecked(&mut self, repr: Repr) {
+        self.repr = Some(repr);
+    }
+
     /// The wrapped value
     pub fn value(&self) -> &T {
         &self.value
@@ -20,9 +38,12 @@ impl<T> Formatted<T> {
         self.value
     }
 
-    /// The TOML representation of the value
-    pub fn repr(&self) -> &Repr {
-        &self.repr
+    /// Returns the key raw representation.
+    pub fn to_repr(&self) -> Cow<Repr> {
+        self.repr
+            .as_ref()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(self.value.to_repr()))
     }
 
     /// Returns the surrounding whitespace
@@ -35,13 +56,15 @@ impl<T> Formatted<T> {
         &self.decor
     }
 
-    pub(crate) fn new(v: T, repr: Repr) -> Self {
-        Self {
-            value: v,
-            repr,
-            decor: Default::default(),
-        }
+    /// Auto formats the value.
+    pub fn fmt(&mut self) {
+        self.repr = Some(self.value.to_repr());
     }
+}
+
+pub trait ValueRepr: crate::private::Sealed {
+    /// The TOML representation of the value
+    fn to_repr(&self) -> Repr;
 }
 
 /// TOML-encoded value

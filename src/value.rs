@@ -1,4 +1,3 @@
-use std::fmt::Write;
 use std::iter::FromIterator;
 use std::str::FromStr;
 
@@ -7,7 +6,7 @@ use combine::stream::position::Stream;
 use crate::datetime::*;
 use crate::key::Key;
 use crate::parser;
-use crate::repr::{Decor, Formatted, InternalString, Repr};
+use crate::repr::{Decor, Formatted, InternalString};
 use crate::{Array, InlineTable};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
@@ -237,9 +236,8 @@ impl<'b> From<&'b Value> for Value {
 
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
-        let repr = to_string_repr(s, None, None);
         let value = s.to_owned();
-        Value::String(Formatted::new(value, repr))
+        Value::String(Formatted::new(value))
     }
 }
 
@@ -255,207 +253,27 @@ impl From<InternalString> for Value {
     }
 }
 
-pub(crate) fn to_string_repr(
-    value: &str,
-    style: Option<StringStyle>,
-    literal: Option<bool>,
-) -> Repr {
-    let (style, literal) = match (style, literal) {
-        (Some(style), Some(literal)) => (style, literal),
-        (_, Some(literal)) => (infer_style(value).0, literal),
-        (Some(style), _) => (style, infer_style(value).1),
-        (_, _) => infer_style(value),
-    };
-
-    let mut output = String::with_capacity(value.len() * 2);
-    if literal {
-        output.push_str(style.literal_start());
-        output.push_str(value);
-        output.push_str(style.literal_end());
-    } else {
-        output.push_str(style.standard_start());
-        for ch in value.chars() {
-            match ch {
-                '\u{8}' => output.push_str("\\b"),
-                '\u{9}' => output.push_str("\\t"),
-                '\u{a}' => match style {
-                    StringStyle::NewlineTripple => output.push('\n'),
-                    StringStyle::OnelineSingle => output.push_str("\\n"),
-                    _ => unreachable!(),
-                },
-                '\u{c}' => output.push_str("\\f"),
-                '\u{d}' => output.push_str("\\r"),
-                '\u{22}' => output.push_str("\\\""),
-                '\u{5c}' => output.push_str("\\\\"),
-                c if c <= '\u{1f}' || c == '\u{7f}' => {
-                    write!(output, "\\u{:04X}", ch as u32).unwrap();
-                }
-                ch => output.push(ch),
-            }
-        }
-        output.push_str(style.standard_end());
-    }
-
-    Repr::new_unchecked(output)
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum StringStyle {
-    NewlineTripple,
-    OnelineTripple,
-    OnelineSingle,
-}
-
-impl StringStyle {
-    fn literal_start(self) -> &'static str {
-        match self {
-            Self::NewlineTripple => "'''\n",
-            Self::OnelineTripple => "'''",
-            Self::OnelineSingle => "'",
-        }
-    }
-    fn literal_end(self) -> &'static str {
-        match self {
-            Self::NewlineTripple => "'''",
-            Self::OnelineTripple => "'''",
-            Self::OnelineSingle => "'",
-        }
-    }
-
-    fn standard_start(self) -> &'static str {
-        match self {
-            Self::NewlineTripple => "\"\"\"\n",
-            // note: OnelineTripple can happen if do_pretty wants to do
-            // '''it's one line'''
-            // but literal == false
-            Self::OnelineTripple | Self::OnelineSingle => "\"",
-        }
-    }
-
-    fn standard_end(self) -> &'static str {
-        match self {
-            Self::NewlineTripple => "\"\"\"",
-            // note: OnelineTripple can happen if do_pretty wants to do
-            // '''it's one line'''
-            // but literal == false
-            Self::OnelineTripple | Self::OnelineSingle => "\"",
-        }
-    }
-}
-
-fn infer_style(value: &str) -> (StringStyle, bool) {
-    // For doing pretty prints we store in a new String
-    // because there are too many cases where pretty cannot
-    // work. We need to determine:
-    // - if we are a "multi-line" pretty (if there are \n)
-    // - if ['''] appears if multi or ['] if single
-    // - if there are any invalid control characters
-    //
-    // Doing it any other way would require multiple passes
-    // to determine if a pretty string works or not.
-    let mut out = String::with_capacity(value.len() * 2);
-    let mut ty = StringStyle::OnelineSingle;
-    // found consecutive single quotes
-    let mut max_found_singles = 0;
-    let mut found_singles = 0;
-    let mut prefer_literal = false;
-    let mut can_be_pretty = true;
-
-    for ch in value.chars() {
-        if can_be_pretty {
-            if ch == '\'' {
-                found_singles += 1;
-                if found_singles >= 3 {
-                    can_be_pretty = false;
-                }
-            } else {
-                if found_singles > max_found_singles {
-                    max_found_singles = found_singles;
-                }
-                found_singles = 0
-            }
-            match ch {
-                '\t' => {}
-                '\\' => {
-                    prefer_literal = true;
-                }
-                '\n' => ty = StringStyle::NewlineTripple,
-                // Escape codes are needed if any ascii control
-                // characters are present, including \b \f \r.
-                c if c <= '\u{1f}' || c == '\u{7f}' => can_be_pretty = false,
-                _ => {}
-            }
-            out.push(ch);
-        } else {
-            // the string cannot be represented as pretty,
-            // still check if it should be multiline
-            if ch == '\n' {
-                ty = StringStyle::NewlineTripple;
-            }
-        }
-    }
-    if found_singles > 0 && value.ends_with('\'') {
-        // We cannot escape the ending quote so we must use """
-        can_be_pretty = false;
-    }
-    if !prefer_literal {
-        can_be_pretty = false;
-    }
-    if !can_be_pretty {
-        debug_assert!(ty != StringStyle::OnelineTripple);
-        return (ty, false);
-    }
-    if found_singles > max_found_singles {
-        max_found_singles = found_singles;
-    }
-    debug_assert!(max_found_singles < 3);
-    if ty == StringStyle::OnelineSingle && max_found_singles >= 1 {
-        // no newlines, but must use ''' because it has ' in it
-        ty = StringStyle::OnelineTripple;
-    }
-    (ty, true)
-}
-
 impl From<i64> for Value {
     fn from(i: i64) -> Self {
-        Value::Integer(Formatted::new(i, Repr::new_unchecked(i.to_string())))
+        Value::Integer(Formatted::new(i))
     }
 }
 
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
-        let repr = match (f.is_sign_negative(), f.is_nan(), f == 0.0) {
-            (true, true, _) => "-nan".to_owned(),
-            (false, true, _) => "nan".to_owned(),
-            (true, false, true) => "-0.0".to_owned(),
-            (false, false, true) => "0.0".to_owned(),
-            (_, false, false) => {
-                if f % 1.0 == 0.0 {
-                    format!("{}.0", f)
-                } else {
-                    format!("{}", f)
-                }
-            }
-        };
-        let repr = Repr::new_unchecked(repr);
-
-        Value::Float(Formatted::new(f, repr))
+        Value::Float(Formatted::new(f))
     }
 }
 
 impl From<bool> for Value {
     fn from(b: bool) -> Self {
-        Value::Boolean(Formatted::new(
-            b,
-            Repr::new_unchecked(if b { "true" } else { "false" }),
-        ))
+        Value::Boolean(Formatted::new(b))
     }
 }
 
 impl From<Datetime> for Value {
     fn from(d: Datetime) -> Self {
-        let s = d.to_string();
-        Value::Datetime(Formatted::new(d, Repr::new_unchecked(s)))
+        Value::Datetime(Formatted::new(d))
     }
 }
 

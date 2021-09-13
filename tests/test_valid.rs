@@ -16,9 +16,9 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
             Value::String(ref s) => typed_json("string", Json::String(s.value().clone())),
             Value::Integer(ref i) => typed_json("integer", Json::String(format!("{}", i.value()))),
             Value::Float(ref f) => typed_json("float", Json::String(format!("{}", f.value()))),
-            Value::Boolean(ref b) => typed_json("bool", Json::String(b.repr().as_raw().into())),
+            Value::Boolean(ref b) => typed_json("bool", Json::String(b.to_repr().as_raw().into())),
             Value::Datetime(ref d) => {
-                typed_json("datetime", Json::String(d.repr().as_raw().into()))
+                typed_json("datetime", Json::String(d.to_repr().as_raw().into()))
             }
             Value::Array(ref a) => {
                 let json = Json::Array(a.iter().map(value_to_json).collect::<Vec<_>>());

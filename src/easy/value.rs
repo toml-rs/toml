@@ -314,21 +314,12 @@ impl_into_value!(Table: Table);
 ///
 /// This trait is sealed and not intended for implementation outside of the
 /// `toml` crate.
-pub trait Index: Sealed {
+pub trait Index: crate::private::Sealed {
     #[doc(hidden)]
     fn index<'a>(&self, val: &'a Value) -> Option<&'a Value>;
     #[doc(hidden)]
     fn index_mut<'a>(&self, val: &'a mut Value) -> Option<&'a mut Value>;
 }
-
-/// An implementation detail that should not be implemented, this will change in
-/// the future and break code otherwise.
-#[doc(hidden)]
-pub trait Sealed {}
-impl Sealed for usize {}
-impl Sealed for str {}
-impl Sealed for String {}
-impl<'a, T: Sealed + ?Sized> Sealed for &'a T {}
 
 impl Index for usize {
     fn index<'a>(&self, val: &'a Value) -> Option<&'a Value> {

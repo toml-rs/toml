@@ -96,3 +96,16 @@ pub use crate::table::{
     Entry, IntoIter, Iter, IterMut, OccupiedEntry, Table, TableLike, VacantEntry,
 };
 pub use crate::value::Value;
+
+// Prevent users from some traits.
+pub(crate) mod private {
+    pub trait Sealed {}
+    impl Sealed for usize {}
+    impl Sealed for str {}
+    impl Sealed for String {}
+    impl Sealed for i64 {}
+    impl Sealed for f64 {}
+    impl Sealed for bool {}
+    impl Sealed for crate::Datetime {}
+    impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
+}
