@@ -3,7 +3,7 @@ use crate::parser::datetime::date_time;
 use crate::parser::inline_table::inline_table;
 use crate::parser::numbers::{boolean, float, integer};
 use crate::parser::strings::string;
-use crate::repr::{Decor, Formatted, Repr};
+use crate::repr::{Formatted, Repr};
 use crate::value as v;
 use crate::Value;
 use combine::parser::range::recognize_with_value;
@@ -17,8 +17,8 @@ parse!(value() -> v::Value, {
             .map(|s|
                 v::Value::String(Formatted::new(
                     s,
-                    Repr::new_unchecked("who cares?"),
-                ).set_decor(Decor::new("", "")))
+                    Repr::new_unchecked(""),
+                ))
             ),
         boolean()
             .map(v::Value::from),

@@ -42,11 +42,6 @@ impl<T> Formatted<T> {
             decor: Default::default(),
         }
     }
-
-    pub(crate) fn set_decor(mut self, decor: Decor) -> Self {
-        self.decor = decor;
-        self
-    }
 }
 
 /// TOML-encoded value

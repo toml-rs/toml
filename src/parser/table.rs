@@ -15,6 +15,7 @@ use std::mem;
 // https://github.com/rust-lang/rust/issues/41358
 #[allow(unused_imports)]
 use std::ops::DerefMut;
+use vec1::Vec1;
 
 // std-table-open  = %x5B ws     ; [ Left square bracket
 const STD_TABLE_OPEN: char = '[';
@@ -33,7 +34,7 @@ toml_parser!(std_table, parser, {
         between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key()),
         line_trailing(),
     )
-        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(&h, t))
+        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(h, t))
 });
 
 // ;; Array Table
@@ -44,7 +45,7 @@ toml_parser!(array_table, parser, {
         between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE), key()),
         line_trailing(),
     )
-        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(&h, t))
+        .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(h, t))
 });
 
 // ;; Table
@@ -112,7 +113,7 @@ impl TomlParser {
         }
     }
 
-    fn on_std_header(&mut self, path: &[Key], trailing: &str) -> Result<(), CustomError> {
+    fn on_std_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         let leading = mem::take(&mut self.document.trailing);
@@ -134,10 +135,10 @@ impl TomlParser {
                         t.position = Some(self.current_table_position);
                         t.set_implicit(false);
 
-                        self.current_table_path = path.to_vec();
+                        self.current_table_path = path.into_vec();
                         Ok(())
                     }
-                    _ => Err(duplicate_key(path, path.len() - 1)),
+                    _ => Err(duplicate_key(&path, path.len() - 1)),
                 }
             }
             Entry::Vacant(entry) => {
@@ -152,7 +153,7 @@ impl TomlParser {
         }
     }
 
-    fn on_array_header(&mut self, path: &[Key], trailing: &str) -> Result<(), CustomError> {
+    fn on_array_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         let leading = mem::take(&mut self.document.trailing);
@@ -176,11 +177,11 @@ impl TomlParser {
                         decor,
                         Some(self.current_table_position),
                     ));
-                    self.current_table_path = path.to_vec();
+                    self.current_table_path = path.into_vec();
 
                     Ok(())
                 } else {
-                    Err(duplicate_key(path, path.len() - 1))
+                    Err(duplicate_key(&path, path.len() - 1))
                 }
             }
             Err(e) => Err(e),
