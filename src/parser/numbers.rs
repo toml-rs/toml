@@ -15,10 +15,21 @@ parse!(boolean() -> bool, {
 
 // ;; Integer
 
-// integer = [ "-" / "+" ] int
-// int = [1-9] 1*( DIGIT / _ DIGIT ) / DIGIT
-// modified: int = 0 / [1-9] *( DIGIT / _ DIGIT )
-parse!(parse_integer() -> &'a str, {
+// integer = dec-int / hex-int / oct-int / bin-int
+parse!(integer() -> i64, {
+    choice!(
+        attempt(hex_int()),
+        attempt(oct_int()),
+        attempt(bin_int()),
+        dec_int()
+            .and_then(|s| s.replace("_", "").parse())
+            .message("While parsing an Integer")
+    )
+});
+
+// dec-int = [ minus / plus ] unsigned-dec-int
+// unsigned-dec-int = DIGIT / digit1-9 1*( DIGIT / underscore DIGIT )
+parse!(dec_int() -> &'a str, {
     recognize((
         optional(choice([char('-'), char('+')])),
         choice((
@@ -34,19 +45,9 @@ parse!(parse_integer() -> &'a str, {
     ))
 });
 
-parse!(integer() -> i64, {
-    choice!(
-        attempt(parse_hex_integer()),
-        attempt(parse_octal_integer()),
-        attempt(parse_binary_integer()),
-        parse_integer()
-            .and_then(|s| s.replace("_", "").parse())
-            .message("While parsing an Integer")
-    )
-});
-
-// hex-int = "0x" HEXDIGIT *( HEXDIGIT / _ HEXDIGIT )
-parse!(parse_hex_integer() -> i64, {
+// hex-prefix = %x30.78               ; 0x
+// hex-int = hex-prefix HEXDIG *( HEXDIG / underscore HEXDIG )
+parse!(hex_int() -> i64, {
     string("0x").with(
         recognize((
             hex_digit(),
@@ -59,8 +60,9 @@ parse!(parse_hex_integer() -> i64, {
        .message("While parsing a hexadecimal Integer")
 });
 
-// oct-int = "0o" digit0-7 *( digit0-7 / _ digit0-7 )
-parse!(parse_octal_integer() -> i64, {
+// oct-prefix = %x30.6F               ; 0o
+// oct-int = oct-prefix digit0-7 *( digit0-7 / underscore digit0-7 )
+parse!(oct_int() -> i64, {
     string("0o").with(
         recognize((
             oct_digit(),
@@ -73,8 +75,9 @@ parse!(parse_octal_integer() -> i64, {
        .message("While parsing an octal Integer")
 });
 
-// bin-int = "0b" digit0-1 *( digit0-1 / _ digit0-1 )
-parse!(parse_binary_integer() -> i64, {
+// bin-prefix = %x30.62               ; 0b
+// bin-int = bin-prefix digit0-1 *( digit0-1 / underscore digit0-1 )
+parse!(bin_int() -> i64, {
     string("0b").with(
         recognize((
             satisfy(|c: char| c.is_digit(0x2)),
@@ -88,6 +91,30 @@ parse!(parse_binary_integer() -> i64, {
 });
 
 // ;; Float
+
+// float = float-int-part ( exp / frac [ exp ] )
+// float =/ special-float
+// float-int-part = dec-int
+parse!(float() -> f64, {
+    choice((
+        parse_float()
+            .and_then(|s| s.replace("_", "").parse()),
+        special_float(),
+    )).message("While parsing a Float")
+});
+
+parse!(parse_float() -> &'a str, {
+    recognize((
+        attempt((dec_int(), look_ahead(one_of("eE.".chars())))),
+        choice((
+            exp(),
+            (
+                frac(),
+                optional(exp()),
+            ).map(|_| "")
+        )),
+    ))
+});
 
 // frac = decimal-point zero-prefixable-int
 // decimal-point = %x2E               ; .
@@ -117,28 +144,6 @@ parse!(exp() -> &'a str, {
         optional(one_of("+-".chars())),
         parse_zero_prefixable_int(),
     ))
-});
-
-// float = integer ( frac / ( frac exp ) / exp )
-parse!(parse_float() -> &'a str, {
-    recognize((
-        attempt((parse_integer(), look_ahead(one_of("eE.".chars())))),
-        choice((
-            exp(),
-            (
-                frac(),
-                optional(exp()),
-            ).map(|_| "")
-        )),
-    ))
-});
-
-parse!(float() -> f64, {
-    choice((
-        parse_float()
-            .and_then(|s| s.replace("_", "").parse()),
-        special_float(),
-    )).message("While parsing a Float")
 });
 
 // special-float = [ minus / plus ] ( inf / nan )
