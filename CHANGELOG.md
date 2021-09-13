@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 
-## [0.3.0] - 2021-09-??
+## [0.3.0] - 2021-09-13
 
 - Added support for TOML 1.0, with [one functional caveat](https://github.com/ordian/toml_edit/issues/128) and [one format-preserving caveat](https://github.com/ordian/toml_edit/issues/163)
 - Added `Item::into_value`
@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 - Fixed it so we preserve formatting on dotted keys in standard table headers
 - Dropped `chrono` dependency
 
+This release was sponsored by Futurewei
 
 ## [0.2.1] - 2021-06-07
 - Added `Table::decor`. [#97](https://github.com/ordian/toml_edit/pull/97)
