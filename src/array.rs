@@ -307,7 +307,7 @@ impl Array {
 impl<V: Into<Value>> Extend<V> for Array {
     fn extend<T: IntoIterator<Item = V>>(&mut self, iter: T) {
         for value in iter {
-            self.push(value.into());
+            self.push_formatted(value.into());
         }
     }
 }
@@ -318,12 +318,10 @@ impl<V: Into<Value>> FromIterator<V> for Array {
         I: IntoIterator<Item = V>,
     {
         let v = iter.into_iter().map(|a| Item::Value(a.into()));
-        let mut array = Array {
+        Array {
             values: v.collect(),
             ..Default::default()
-        };
-        array.fmt();
-        array
+        }
     }
 }
 
