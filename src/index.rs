@@ -8,7 +8,7 @@ use crate::{value, InlineTable, Item, Table, Value};
 // copied from
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs
 
-pub trait Index: private::Sealed {
+pub trait Index: crate::private::Sealed {
     /// Return `Option::None` if the key is not already in the array or table.
     #[doc(hidden)]
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item>;
@@ -150,13 +150,4 @@ impl<'s> ops::IndexMut<&'s str> for Document {
     fn index_mut(&mut self, key: &'s str) -> &mut Item {
         self.root.index_mut(key)
     }
-}
-
-// Prevent users from implementing the Index trait.
-mod private {
-    pub trait Sealed {}
-    impl Sealed for usize {}
-    impl Sealed for str {}
-    impl Sealed for String {}
-    impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
 }

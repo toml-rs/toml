@@ -1,11 +1,12 @@
+use std::borrow::Cow;
 use std::str::FromStr;
 
 use combine::stream::position::Stream;
 
+use crate::encode::{to_string_repr, StringStyle};
 use crate::parser;
 use crate::parser::is_unquoted_char;
 use crate::repr::{Decor, InternalString, Repr};
-use crate::value::{to_string_repr, StringStyle};
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -32,24 +33,23 @@ use crate::value::{to_string_repr, StringStyle};
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
 pub struct Key {
     key: InternalString,
-    pub(crate) repr: Repr,
+    pub(crate) repr: Option<Repr>,
     pub(crate) decor: Decor,
 }
 
 impl Key {
     /// Create a new table key
     pub fn new(key: impl AsRef<str>) -> Self {
-        let key = key.as_ref();
-        let repr = to_key_repr(key);
-        Self::new_unchecked(repr, key.to_owned())
-    }
-
-    pub(crate) fn new_unchecked(repr: Repr, key: InternalString) -> Self {
         Self {
-            key,
-            repr,
+            key: key.as_ref().into(),
+            repr: None,
             decor: Default::default(),
         }
+    }
+
+    pub(crate) fn with_repr_unchecked(mut self, repr: Repr) -> Self {
+        self.repr = Some(repr);
+        self
     }
 
     /// While creating the `Key`, add `Decor` to it
@@ -64,8 +64,11 @@ impl Key {
     }
 
     /// Returns the key raw representation.
-    pub fn repr(&self) -> &Repr {
-        &self.repr
+    pub fn to_repr(&self) -> Cow<Repr> {
+        self.repr
+            .as_ref()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(to_key_repr(&self.key)))
     }
 
     /// Returns the surrounding whitespace
@@ -78,6 +81,11 @@ impl Key {
         &self.decor
     }
 
+    /// Auto formats the key.
+    pub fn fmt(&mut self) {
+        self.repr = Some(to_key_repr(&self.key));
+    }
+
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
         use combine::EasyParser;
         let result = parser::key_parser().easy_parse(Stream::new(s));
@@ -85,7 +93,7 @@ impl Key {
             Ok((_, ref rest)) if !rest.input.is_empty() => {
                 Err(parser::TomlError::from_unparsed(rest.positioner, s))
             }
-            Ok(((raw, key), _)) => Ok(Key::new_unchecked(Repr::new_unchecked(raw), key)),
+            Ok(((raw, key), _)) => Ok(Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw))),
             Err(e) => Err(parser::TomlError::new(e, s)),
         }
     }

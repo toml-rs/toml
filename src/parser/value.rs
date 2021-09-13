@@ -17,7 +17,6 @@ parse!(value() -> v::Value, {
             .map(|s|
                 v::Value::String(Formatted::new(
                     s,
-                    Repr::new_unchecked(""),
                 ))
             ),
         boolean()
@@ -38,19 +37,19 @@ parse!(value() -> v::Value, {
 fn apply_raw(mut val: Value, raw: &str) -> Value {
     match val {
         Value::String(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
+            f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Integer(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
+            f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Float(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
+            f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Boolean(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
+            f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Datetime(ref mut f) => {
-            f.repr = Repr::new_unchecked(raw);
+            f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Array(_) | Value::InlineTable(_) => {}
     };
