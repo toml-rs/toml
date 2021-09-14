@@ -192,7 +192,7 @@ impl Value {
     /// # Example
     /// ```rust
     /// let mut v = toml_edit::Value::from(42);
-    /// assert_eq!(&v.to_string(), " 42");
+    /// assert_eq!(&v.to_string(), "42");
     /// let d = v.decorated(" ", " ");
     /// assert_eq!(&d.to_string(), " 42 ");
     /// ```
@@ -323,9 +323,27 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
     }
 }
 
+impl std::fmt::Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::encode::Encode::encode(self, f, ("", ""))
+    }
+}
+
 // `key1 = value1`
 pub(crate) const DEFAULT_VALUE_DECOR: (&str, &str) = (" ", "");
 // `{ key = value }`
 pub(crate) const DEFAULT_TRAILING_VALUE_DECOR: (&str, &str) = (" ", " ");
 // `[value1, value2]`
 pub(crate) const DEFAULT_LEADING_VALUE_DECOR: (&str, &str) = ("", "");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_iter_formatting() {
+        let features = vec!["node".to_owned(), "mouth".to_owned()];
+        let features: Value = features.iter().cloned().collect();
+        assert_eq!(features.to_string(), r#"["node", "mouth"]"#);
+    }
+}

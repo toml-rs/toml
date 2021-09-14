@@ -62,6 +62,15 @@ where
     }
 }
 
+impl<T> std::fmt::Display for Formatted<T>
+where
+    T: ValueRepr,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::encode::Encode::encode(self, f, ("", ""))
+    }
+}
+
 pub trait ValueRepr: crate::private::Sealed {
     /// The TOML representation of the value
     fn to_repr(&self) -> Repr;
@@ -83,6 +92,12 @@ impl Repr {
     /// Access the underlying value
     pub fn as_raw(&self) -> &str {
         &self.raw_value
+    }
+}
+
+impl std::fmt::Display for Repr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.as_raw().fmt(f)
     }
 }
 
@@ -119,27 +134,4 @@ impl Decor {
     pub fn suffix(&self) -> Option<&str> {
         self.suffix.as_deref()
     }
-
-    /// Render a value with its decor
-    pub(crate) fn display<'d, D: std::fmt::Display + std::fmt::Debug>(
-        &'d self,
-        inner: &'d D,
-        default: (&'static str, &'static str),
-    ) -> DecorDisplay<'d, D> {
-        DecorDisplay {
-            inner,
-            decor: self,
-            default,
-        }
-    }
-}
-
-/// Render a prefix and suffix,
-///
-/// Including comments, whitespaces and newlines.
-#[derive(Debug)]
-pub(crate) struct DecorDisplay<'d, D> {
-    pub(crate) inner: &'d D,
-    pub(crate) decor: &'d Decor,
-    pub(crate) default: (&'static str, &'static str),
 }
