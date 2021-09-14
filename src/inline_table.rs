@@ -270,6 +270,12 @@ impl InlineTable {
     }
 }
 
+impl std::fmt::Display for InlineTable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::encode::Encode::encode(self, f, ("", ""))
+    }
+}
+
 impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for InlineTable {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
         for (key, value) in iter {

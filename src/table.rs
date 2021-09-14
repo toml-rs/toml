@@ -295,6 +295,21 @@ impl Table {
     }
 }
 
+impl std::fmt::Display for Table {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use crate::encode::Encode;
+        let children = self.get_values();
+        // print table body
+        for (key_path, value) in children {
+            key_path.as_slice().encode(f, DEFAULT_KEY_DECOR)?;
+            write!(f, "=")?;
+            value.encode(f, DEFAULT_VALUE_DECOR)?;
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
 impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for Table {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
         for (key, value) in iter {

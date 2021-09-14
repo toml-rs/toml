@@ -99,6 +99,12 @@ impl Key {
     }
 }
 
+impl std::fmt::Display for Key {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::encode::Encode::encode(self, f, ("", ""))
+    }
+}
+
 impl FromStr for Key {
     type Err = parser::TomlError;
 

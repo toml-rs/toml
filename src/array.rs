@@ -304,6 +304,12 @@ impl Array {
     }
 }
 
+impl std::fmt::Display for Array {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::encode::Encode::encode(self, f, ("", ""))
+    }
+}
+
 impl<V: Into<Value>> Extend<V> for Array {
     fn extend<T: IntoIterator<Item = V>>(&mut self, iter: T) {
         for value in iter {
