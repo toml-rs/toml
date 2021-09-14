@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+#### Fixes
+
+- Sane default formatting for arrays
+
 ## [0.3.0] - 2021-09-13
 
 - Added support for TOML 1.0, with [one functional caveat](https://github.com/ordian/toml_edit/issues/128) and [one format-preserving caveat](https://github.com/ordian/toml_edit/issues/163)
