@@ -120,7 +120,7 @@ impl TomlParser {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
-        let leading = mem::take(&mut self.document.trailing);
+        let leading = mem::take(&mut self.trailing);
         self.start_table(path, Decor::new(leading, trailing))?;
 
         Ok(())
@@ -130,7 +130,7 @@ impl TomlParser {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
-        let leading = mem::take(&mut self.document.trailing);
+        let leading = mem::take(&mut self.trailing);
         self.start_aray_table(path, Decor::new(leading, trailing))?;
 
         Ok(())

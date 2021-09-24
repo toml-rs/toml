@@ -1,10 +1,10 @@
 use std::iter::FromIterator;
 
 use crate::key::Key;
-use crate::repr::{Decor, InternalString};
+use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
 use crate::value::{DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
-use crate::{Item, Value};
+use crate::{InternalString, Item, Value};
 
 /// Type representing a TOML inline table,
 /// payload of the `Value::InlineTable` variant
@@ -157,7 +157,7 @@ impl InlineTable {
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
     pub fn entry<'a>(&'a mut self, key: &str) -> InlineEntry<'a> {
         // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
-        match self.items.entry(key.to_owned()) {
+        match self.items.entry(key.into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
                 let mut scratch = Item::None;
@@ -182,7 +182,7 @@ impl InlineTable {
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
     pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> InlineEntry<'a> {
         // Accept a `&Key` to be consistent with `entry`
-        match self.items.entry(key.get().to_owned()) {
+        match self.items.entry(key.get().into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
                 let mut scratch = Item::None;
@@ -230,7 +230,7 @@ impl InlineTable {
     pub fn get_or_insert<V: Into<Value>>(&mut self, key: &str, value: V) -> &mut Value {
         let key = Key::new(key);
         self.items
-            .entry(key.get().to_owned())
+            .entry(InternalString::from(key.get()))
             .or_insert(TableKeyValue::new(key, Item::Value(value.into())))
             .value
             .as_value_mut()
@@ -241,7 +241,7 @@ impl InlineTable {
     pub fn insert(&mut self, key: &str, value: Value) -> Option<Value> {
         let kv = TableKeyValue::new(Key::new(key), Item::Value(value));
         self.items
-            .insert(key.to_owned(), kv)
+            .insert(InternalString::from(key), kv)
             .and_then(|kv| kv.value.into_value().ok())
     }
 
@@ -249,7 +249,7 @@ impl InlineTable {
     pub fn insert_formatted(&mut self, key: &Key, value: Value) -> Option<Value> {
         let kv = TableKeyValue::new(key.to_owned(), Item::Value(value));
         self.items
-            .insert(key.get().to_owned(), kv)
+            .insert(InternalString::from(key.get()), kv)
             .filter(|kv| kv.value.is_value())
             .map(|kv| kv.value.into_value().unwrap())
     }
@@ -282,7 +282,8 @@ impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for InlineTable {
             let key = key.into();
             let value = Item::Value(value.into());
             let value = TableKeyValue::new(key, value);
-            self.items.insert(value.key.get().to_owned(), value);
+            self.items
+                .insert(InternalString::from(value.key.get()), value);
         }
     }
 }
@@ -299,7 +300,7 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for InlineTable {
 }
 
 impl IntoIterator for InlineTable {
-    type Item = (String, Value);
+    type Item = (InternalString, Value);
     type IntoIter = InlineTableIntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -344,7 +345,7 @@ fn decorate_inline_table(table: &mut InlineTable) {
 }
 
 /// An owned iterator type over key/value pairs of an inline table.
-pub type InlineTableIntoIter = Box<dyn Iterator<Item = (String, Value)>>;
+pub type InlineTableIntoIter = Box<dyn Iterator<Item = (InternalString, Value)>>;
 /// An iterator type over key/value pairs of an inline table.
 pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
 /// A mutable iterator type over key/value pairs of an inline table.

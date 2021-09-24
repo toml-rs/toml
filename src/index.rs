@@ -3,7 +3,7 @@ use std::ops;
 use crate::document::Document;
 use crate::key::Key;
 use crate::table::TableKeyValue;
-use crate::{value, InlineTable, Item, Table, Value};
+use crate::{value, InlineTable, InternalString, Item, Table, Value};
 
 // copied from
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs
@@ -60,7 +60,7 @@ impl Index for str {
         if let Item::None = *v {
             let mut t = InlineTable::default();
             t.items.insert(
-                key.get().to_owned(),
+                InternalString::from(key.get()),
                 TableKeyValue::new(key.clone(), Item::None),
             );
             *v = value(Value::InlineTable(t));
@@ -72,7 +72,7 @@ impl Index for str {
                     .as_inline_table_mut()
                     .unwrap()
                     .items
-                    .entry(key.get().to_owned())
+                    .entry(InternalString::from(key.get()))
                     .or_insert(TableKeyValue::new(key, Item::None))
                     .value
             }

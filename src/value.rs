@@ -6,8 +6,8 @@ use combine::stream::position::Stream;
 use crate::datetime::*;
 use crate::key::Key;
 use crate::parser;
-use crate::repr::{Decor, Formatted, InternalString};
-use crate::{Array, InlineTable};
+use crate::repr::{Decor, Formatted};
+use crate::{Array, InlineTable, InternalString};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
@@ -236,20 +236,31 @@ impl<'b> From<&'b Value> for Value {
 
 impl<'b> From<&'b str> for Value {
     fn from(s: &'b str) -> Self {
-        let value = s.to_owned();
-        Value::String(Formatted::new(value))
+        s.to_owned().into()
     }
 }
 
 impl<'b> From<&'b String> for Value {
     fn from(s: &'b String) -> Self {
+        s.to_owned().into()
+    }
+}
+
+impl From<String> for Value {
+    fn from(s: String) -> Self {
+        Value::String(Formatted::new(s))
+    }
+}
+
+impl<'b> From<&'b InternalString> for Value {
+    fn from(s: &'b InternalString) -> Self {
         s.as_str().into()
     }
 }
 
 impl From<InternalString> for Value {
     fn from(s: InternalString) -> Self {
-        Value::from(s.as_str())
+        s.as_str().into()
     }
 }
 

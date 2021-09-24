@@ -108,6 +108,8 @@ impl TomlParser {
                     .get_mut()
                     .finalize_table()
                     .map_err(|e| TomlError::custom(e.to_string()))?;
+                let trailing = parser.borrow().trailing.as_str().into();
+                parser.get_mut().document.trailing = trailing;
                 Ok(*parser.into_inner().document)
             }
             Err(e) => Err(TomlError::new(e, s)),
@@ -115,17 +117,17 @@ impl TomlParser {
     }
 
     fn on_ws(&mut self, w: &str) {
-        self.document.trailing.push_str(w);
+        self.trailing.push_str(w);
     }
 
     fn on_comment(&mut self, c: &str, e: &str) {
-        self.document.trailing.push_str(c);
-        self.document.trailing.push_str(e);
+        self.trailing.push_str(c);
+        self.trailing.push_str(e);
     }
 
     fn on_keyval(&mut self, mut path: Vec<Key>, mut kv: TableKeyValue) -> Result<(), CustomError> {
         {
-            let prefix = mem::take(&mut self.document.trailing);
+            let prefix = mem::take(&mut self.trailing);
             let first_key = if path.is_empty() {
                 &mut kv.key
             } else {
@@ -146,12 +148,12 @@ impl TomlParser {
         let mixed_table_types = table.is_dotted() == path.is_empty();
         if duplicate_key || mixed_table_types {
             Err(CustomError::DuplicateKey {
-                key: kv.key.into(),
+                key: kv.key.get().into(),
                 table: "<unknown>".into(), // TODO: get actual table name
             })
         } else {
-            let key = kv.key.get().to_owned();
-            table.items.insert(key, kv);
+            let key = kv.key.clone();
+            table.items.insert(key.into(), kv);
             Ok(())
         }
     }

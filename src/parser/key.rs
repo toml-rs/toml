@@ -1,7 +1,8 @@
 use crate::key::Key;
 use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::ws;
-use crate::repr::{Decor, InternalString, Repr};
+use crate::repr::{Decor, Repr};
+use crate::InternalString;
 use combine::parser::char::char;
 use combine::parser::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
@@ -44,7 +45,7 @@ pub(crate) fn is_unquoted_char(c: char) -> bool {
 // quoted-key = basic-string / literal-string
 parse!(quoted_key() -> InternalString, {
     choice((
-        basic_string(),
+        basic_string().map(|s: String| s.into()),
         literal_string().map(|s: &'a str| s.into()),
     ))
 });

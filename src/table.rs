@@ -3,9 +3,9 @@ use std::iter::FromIterator;
 use indexmap::map::IndexMap;
 
 use crate::key::Key;
-use crate::repr::{Decor, InternalString};
+use crate::repr::Decor;
 use crate::value::DEFAULT_VALUE_DECOR;
-use crate::{InlineTable, Item, Value};
+use crate::{InlineTable, InternalString, Item, Value};
 
 /// Type representing a TOML non-inline table
 #[derive(Clone, Debug, Default)]
@@ -206,7 +206,7 @@ impl Table {
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
     pub fn entry<'a>(&'a mut self, key: &str) -> Entry<'a> {
         // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
-        match self.items.entry(key.to_owned()) {
+        match self.items.entry(key.into()) {
             indexmap::map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
             indexmap::map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry { entry, key: None }),
         }
@@ -215,7 +215,7 @@ impl Table {
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
     pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> Entry<'a> {
         // Accept a `&Key` to be consistent with `entry`
-        match self.items.entry(key.get().to_owned()) {
+        match self.items.entry(key.get().into()) {
             indexmap::map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
             indexmap::map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry {
                 entry,
@@ -273,15 +273,13 @@ impl Table {
     /// Inserts a key-value pair into the map.
     pub fn insert(&mut self, key: &str, item: Item) -> Option<Item> {
         let kv = TableKeyValue::new(Key::new(key), item);
-        self.items.insert(key.to_owned(), kv).map(|kv| kv.value)
+        self.items.insert(key.into(), kv).map(|kv| kv.value)
     }
 
     /// Inserts a key-value pair into the map.
     pub fn insert_formatted(&mut self, key: &Key, item: Item) -> Option<Item> {
         let kv = TableKeyValue::new(key.to_owned(), item);
-        self.items
-            .insert(key.get().to_owned(), kv)
-            .map(|kv| kv.value)
+        self.items.insert(key.get().into(), kv).map(|kv| kv.value)
     }
 
     /// Removes an item given the key.
@@ -316,7 +314,7 @@ impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for Table {
             let key = key.into();
             let value = Item::Value(value.into());
             let value = TableKeyValue::new(key, value);
-            self.items.insert(value.key.get().to_owned(), value);
+            self.items.insert(value.key.get().into(), value);
         }
     }
 }
@@ -333,7 +331,7 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Table {
 }
 
 impl IntoIterator for Table {
-    type Item = (String, Item);
+    type Item = (InternalString, Item);
     type IntoIter = IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -383,7 +381,7 @@ impl TableKeyValue {
 }
 
 /// An owned iterator type over `Table`'s key/value pairs.
-pub type IntoIter = Box<dyn Iterator<Item = (String, Item)>>;
+pub type IntoIter = Box<dyn Iterator<Item = (InternalString, Item)>>;
 /// An iterator type over `Table`'s key/value pairs.
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 /// A mutable iterator type over `Table`'s key/value pairs.

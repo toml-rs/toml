@@ -206,7 +206,7 @@ impl serde::ser::SerializeStruct for SerializeItemTable {
 
 struct SerializeKeyValuePairs {
     items: crate::table::KeyValuePairs,
-    key: Option<String>,
+    key: Option<crate::InternalString>,
 }
 
 impl SerializeKeyValuePairs {
@@ -288,7 +288,7 @@ impl serde::ser::SerializeStruct for SerializeKeyValuePairs {
         };
         if !item.is_none() {
             let kv = crate::table::TableKeyValue::new(crate::Key::new(key), item);
-            self.items.insert(key.to_owned(), kv);
+            self.items.insert(crate::InternalString::from(key), kv);
         }
         Ok(())
     }

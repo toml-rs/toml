@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-pub(crate) type InternalString = String;
+use crate::InternalString;
 
 /// A value together with its `to_string` representation,
 /// including surrounding it whitespaces and comments.
@@ -112,7 +112,7 @@ pub struct Decor {
 
 impl Decor {
     /// Creates a new decor from the given prefix and suffix.
-    pub fn new(prefix: impl Into<String>, suffix: impl Into<String>) -> Self {
+    pub fn new(prefix: impl Into<InternalString>, suffix: impl Into<InternalString>) -> Self {
         Self {
             prefix: Some(prefix.into()),
             suffix: Some(suffix.into()),
