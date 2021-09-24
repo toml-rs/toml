@@ -180,7 +180,7 @@ impl InlineTable {
     }
 
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
-    pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> InlineEntry<'a> {
+    pub fn entry_format<'a>(&'a mut self, key: &Key) -> InlineEntry<'a> {
         // Accept a `&Key` to be consistent with `entry`
         match self.items.entry(key.get().into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
@@ -200,7 +200,7 @@ impl InlineTable {
             }
             indexmap::map::Entry::Vacant(entry) => InlineEntry::Vacant(InlineVacantEntry {
                 entry,
-                key: Some(key),
+                key: Some(key.clone()),
             }),
         }
     }
@@ -498,7 +498,7 @@ impl<'a> InlineOccupiedEntry<'a> {
 /// A view into a single empty location in a `IndexMap`.
 pub struct InlineVacantEntry<'a> {
     entry: indexmap::map::VacantEntry<'a, InternalString, TableKeyValue>,
-    key: Option<&'a Key>,
+    key: Option<Key>,
 }
 
 impl<'a> InlineVacantEntry<'a> {
@@ -520,9 +520,10 @@ impl<'a> InlineVacantEntry<'a> {
     /// Sets the value of the entry with the VacantEntry's key,
     /// and returns a mutable reference to it
     pub fn insert(self, value: Value) -> &'a mut Value {
-        let key = self.key.cloned().unwrap_or_else(|| Key::new(self.key()));
+        let entry = self.entry;
+        let key = self.key.unwrap_or_else(|| Key::new(entry.key().as_str()));
         let value = Item::Value(value);
-        self.entry
+        entry
             .insert(TableKeyValue::new(key, value))
             .value
             .as_value_mut()

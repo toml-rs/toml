@@ -47,7 +47,7 @@ impl TomlParser {
 
         // Look up the table on start to ensure the duplicate_key error points to the right line
         let root = self.document.as_table_mut();
-        let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+        let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
         let key = &path[path.len() - 1];
         let entry = parent_table
             .entry_format(key)
@@ -72,7 +72,7 @@ impl TomlParser {
         // 1. Look up the table on start to ensure the duplicate_key error points to the right line
         // 2. Ensure any child tables from an implicit table are preserved
         let root = self.document.as_table_mut();
-        let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+        let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
         let key = &path[path.len() - 1];
         if let Some(entry) = parent_table.remove(key.get()) {
             match entry {
@@ -101,7 +101,7 @@ impl TomlParser {
             assert!(root.is_empty());
             std::mem::swap(&mut table, root);
         } else if self.current_is_array {
-            let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+            let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
             let key = &path[path.len() - 1];
 
             let entry = parent_table
@@ -112,7 +112,7 @@ impl TomlParser {
                 .ok_or_else(|| duplicate_key(&path, path.len() - 1))?;
             array.push(table);
         } else {
-            let parent_table = Self::descend_path(root, &path[..path.len() - 1], 0, false)?;
+            let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
             let key = &path[path.len() - 1];
 
             let entry = parent_table.entry_format(key);

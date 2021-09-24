@@ -140,7 +140,7 @@ impl TomlParser {
         }
 
         let table = &mut self.current_table;
-        let table = Self::descend_path(table, &path, 0, true)?;
+        let table = Self::descend_path(table, &path, true)?;
 
         // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"
         let duplicate_key = table.contains_key(kv.key.get());
