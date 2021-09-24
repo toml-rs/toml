@@ -28,7 +28,7 @@ fn table_from_pairs(
     root.items.reserve(v.len());
 
     for (path, kv) in v {
-        let table = descend_path(&mut root, &path, 0)?;
+        let table = descend_path(&mut root, &path)?;
         if table.contains_key(kv.key.get()) {
             return Err(CustomError::DuplicateKey {
                 key: kv.key.get().into(),
@@ -41,11 +41,10 @@ fn table_from_pairs(
 }
 
 fn descend_path<'a>(
-    table: &'a mut InlineTable,
+    mut table: &'a mut InlineTable,
     path: &'a [Key],
-    i: usize,
 ) -> Result<&'a mut InlineTable, CustomError> {
-    if let Some(key) = path.get(i) {
+    for (i, key) in path.iter().enumerate() {
         let entry = table.entry_format(key).or_insert_with(|| {
             let mut new_table = InlineTable::new();
             new_table.set_dotted(true);
@@ -54,13 +53,14 @@ fn descend_path<'a>(
         });
         match *entry {
             Value::InlineTable(ref mut sweet_child_of_mine) => {
-                descend_path(sweet_child_of_mine, path, i + 1)
+                table = sweet_child_of_mine;
             }
-            _ => Err(duplicate_key(path, i)),
+            _ => {
+                return Err(duplicate_key(path, i));
+            }
         }
-    } else {
-        Ok(table)
     }
+    Ok(table)
 }
 
 // inline-table-open  = %x7B ws     ; {

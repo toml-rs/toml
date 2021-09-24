@@ -213,13 +213,13 @@ impl Table {
     }
 
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
-    pub fn entry_format<'a>(&'a mut self, key: &'a Key) -> Entry<'a> {
+    pub fn entry_format<'a>(&'a mut self, key: &Key) -> Entry<'a> {
         // Accept a `&Key` to be consistent with `entry`
         match self.items.entry(key.get().into()) {
             indexmap::map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
             indexmap::map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry {
                 entry,
-                key: Some(key),
+                key: Some(key.to_owned()),
             }),
         }
     }
@@ -568,7 +568,7 @@ impl<'a> OccupiedEntry<'a> {
 /// A view into a single empty location in a `IndexMap`.
 pub struct VacantEntry<'a> {
     entry: indexmap::map::VacantEntry<'a, InternalString, TableKeyValue>,
-    key: Option<&'a Key>,
+    key: Option<Key>,
 }
 
 impl<'a> VacantEntry<'a> {
@@ -590,7 +590,8 @@ impl<'a> VacantEntry<'a> {
     /// Sets the value of the entry with the VacantEntry's key,
     /// and returns a mutable reference to it
     pub fn insert(self, value: Item) -> &'a mut Item {
-        let key = self.key.cloned().unwrap_or_else(|| Key::new(self.key()));
-        &mut self.entry.insert(TableKeyValue::new(key, value)).value
+        let entry = self.entry;
+        let key = self.key.unwrap_or_else(|| Key::new(entry.key().as_str()));
+        &mut entry.insert(TableKeyValue::new(key, value)).value
     }
 }

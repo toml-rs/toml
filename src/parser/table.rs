@@ -82,13 +82,12 @@ pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
 }
 
 impl TomlParser {
-    pub(crate) fn descend_path<'a>(
-        table: &'a mut Table,
-        path: &'a [Key],
-        i: usize,
+    pub(crate) fn descend_path<'t, 'k>(
+        mut table: &'t mut Table,
+        path: &'k [Key],
         dotted: bool,
-    ) -> Result<&'a mut Table, CustomError> {
-        if let Some(key) = path.get(i) {
+    ) -> Result<&'t mut Table, CustomError> {
+        for (i, key) in path.iter().enumerate() {
             let entry = table.entry_format(key).or_insert_with(|| {
                 let mut new_table = Table::new();
                 new_table.set_implicit(true);
@@ -97,23 +96,24 @@ impl TomlParser {
                 Item::Table(new_table)
             });
             match *entry {
-                Item::Value(..) => Err(duplicate_key(path, i)),
+                Item::Value(..) => {
+                    return Err(duplicate_key(path, i));
+                }
                 Item::ArrayOfTables(ref mut array) => {
                     debug_assert!(!array.is_empty());
 
                     let index = array.len() - 1;
                     let last_child = array.get_mut(index).unwrap();
 
-                    Self::descend_path(last_child, path, i + 1, dotted)
+                    table = last_child;
                 }
                 Item::Table(ref mut sweet_child_of_mine) => {
-                    TomlParser::descend_path(sweet_child_of_mine, path, i + 1, dotted)
+                    table = sweet_child_of_mine;
                 }
                 _ => unreachable!(),
             }
-        } else {
-            Ok(table)
         }
+        Ok(table)
     }
 
     fn on_std_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
