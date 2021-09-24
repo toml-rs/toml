@@ -56,24 +56,23 @@ impl Index for str {
         }
     }
     fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
-        let key = Key::new(self);
         if let Item::None = *v {
             let mut t = InlineTable::default();
             t.items.insert(
-                InternalString::from(key.get()),
-                TableKeyValue::new(key.clone(), Item::None),
+                InternalString::from(self),
+                TableKeyValue::new(Key::new(self), Item::None),
             );
             *v = value(Value::InlineTable(t));
         }
         match *v {
-            Item::Table(ref mut t) => t.entry(key.get()).or_insert(Item::None),
+            Item::Table(ref mut t) => t.entry(self).or_insert(Item::None),
             Item::Value(ref mut v) if v.is_inline_table() => {
                 &mut v
                     .as_inline_table_mut()
                     .unwrap()
                     .items
-                    .entry(InternalString::from(key.get()))
-                    .or_insert(TableKeyValue::new(key, Item::None))
+                    .entry(InternalString::from(self))
+                    .or_insert_with(|| TableKeyValue::new(Key::new(self), Item::None))
                     .value
             }
             _ => panic!("cannot access key {}", self),
