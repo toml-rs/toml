@@ -25,7 +25,6 @@ use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::repr::Decor;
 use crate::{ArrayOfTables, Document, Entry, Item, Table};
-use vec1::Vec1;
 
 pub(crate) struct TomlParser {
     document: Box<Document>,
@@ -39,9 +38,10 @@ pub(crate) struct TomlParser {
 impl TomlParser {
     pub(crate) fn start_aray_table(
         &mut self,
-        path: Vec1<Key>,
+        path: Vec<Key>,
         decor: Decor,
     ) -> Result<(), CustomError> {
+        debug_assert!(!path.is_empty());
         debug_assert!(self.current_table.is_empty());
         debug_assert!(self.current_table_path.is_empty());
 
@@ -60,12 +60,13 @@ impl TomlParser {
         self.current_table.decor = decor;
         self.current_table.set_position(self.current_table_position);
         self.current_is_array = true;
-        self.current_table_path = path.into_vec();
+        self.current_table_path = path;
 
         Ok(())
     }
 
-    pub(crate) fn start_table(&mut self, path: Vec1<Key>, decor: Decor) -> Result<(), CustomError> {
+    pub(crate) fn start_table(&mut self, path: Vec<Key>, decor: Decor) -> Result<(), CustomError> {
+        debug_assert!(!path.is_empty());
         debug_assert!(self.current_table.is_empty());
         debug_assert!(self.current_table_path.is_empty());
 
@@ -87,7 +88,7 @@ impl TomlParser {
         self.current_table.decor = decor;
         self.current_table.set_position(self.current_table_position);
         self.current_is_array = false;
-        self.current_table_path = path.into_vec();
+        self.current_table_path = path;
 
         Ok(())
     }
