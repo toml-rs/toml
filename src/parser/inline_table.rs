@@ -90,8 +90,8 @@ parse!(keyval() -> (Vec<Key>, TableKeyValue), {
         char(KEYVAL_SEP),
         (ws(), value(), ws()),
     ).map(|(key, _, v)| {
-        let mut path = key.into_vec();
-        let key = path.pop().expect("Was vec1, so at least one exists");
+        let mut path = key;
+        let key = path.pop().expect("grammar ensures at least 1");
 
         let (pre, v, suf) = v;
         let v = v.decorated(pre, suf);

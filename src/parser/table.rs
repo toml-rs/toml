@@ -15,7 +15,6 @@ use std::mem;
 // https://github.com/rust-lang/rust/issues/41358
 #[allow(unused_imports)]
 use std::ops::DerefMut;
-use vec1::Vec1;
 
 // std-table-open  = %x5B ws     ; [ Left square bracket
 const STD_TABLE_OPEN: char = '[';
@@ -116,7 +115,7 @@ impl TomlParser {
         Ok(table)
     }
 
-    fn on_std_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
+    fn on_std_header(&mut self, path: Vec<Key>, trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
@@ -126,7 +125,7 @@ impl TomlParser {
         Ok(())
     }
 
-    fn on_array_header(&mut self, path: Vec1<Key>, trailing: &str) -> Result<(), CustomError> {
+    fn on_array_header(&mut self, path: Vec<Key>, trailing: &str) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;

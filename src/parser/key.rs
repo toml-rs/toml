@@ -7,11 +7,10 @@ use combine::parser::char::char;
 use combine::parser::range::{recognize_with_value, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
-use vec1::Vec1;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
-parse!(key() -> Vec1<Key>, {
+parse!(key() -> Vec<Key>, {
     sep_by1(
         attempt((
             ws(),
@@ -21,7 +20,7 @@ parse!(key() -> Vec1<Key>, {
             Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw)).with_decor(Decor::new(pre, suffix))
         }),
         char(DOT_SEP)
-    ).map(|k| Vec1::try_from_vec(k).expect("parser should guarantee this"))
+    )
 });
 
 // simple-key = quoted-key / unquoted-key
