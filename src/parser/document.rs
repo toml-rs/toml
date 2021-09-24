@@ -2,7 +2,7 @@ use crate::document::Document;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::inline_table::KEYVAL_SEP;
-use crate::parser::key::key;
+use crate::parser::key::key_path;
 use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
@@ -52,13 +52,10 @@ parser! {
          From<crate::parser::errors::CustomError>
     ] {
         (
-            key(),
+            key_path(),
             char(KEYVAL_SEP),
             (ws(), value(), line_trailing())
-        ).map(|(key, _, v)| {
-            let mut path = key;
-            let key = path.pop().expect("grammar ensures at least 1");
-
+        ).map(|((path, key), _, v)| {
             let (pre, v, suf) = v;
             let v = v.decorated(pre, suf);
             (

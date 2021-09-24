@@ -1,6 +1,6 @@
 use crate::key::Key;
 use crate::parser::errors::CustomError;
-use crate::parser::key::key;
+use crate::parser::key::key_path;
 use crate::parser::table::duplicate_key;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
@@ -86,13 +86,10 @@ parse!(inline_table_keyvals() -> (Vec<(Vec<Key>, TableKeyValue)>, &'a str), {
 
 parse!(keyval() -> (Vec<Key>, TableKeyValue), {
     (
-        key(),
+        key_path(),
         char(KEYVAL_SEP),
         (ws(), value(), ws()),
-    ).map(|(key, _, v)| {
-        let mut path = key;
-        let key = path.pop().expect("grammar ensures at least 1");
-
+    ).map(|((path, key), _, v)| {
         let (pre, v, suf) = v;
         let v = v.decorated(pre, suf);
         (
