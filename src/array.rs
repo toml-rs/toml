@@ -1,9 +1,9 @@
 use std::iter::FromIterator;
 use std::mem;
 
-use crate::repr::{Decor, InternalString};
+use crate::repr::Decor;
 use crate::value::{DEFAULT_LEADING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
-use crate::{Item, Value};
+use crate::{InternalString, Item, Value};
 
 /// Type representing a TOML array,
 /// payload of the `Value::Array` variant's value
@@ -68,7 +68,7 @@ impl Array {
 
     /// Set whitespace after last element
     pub fn set_trailing(&mut self, trailing: &str) {
-        self.trailing = trailing.to_owned();
+        self.trailing = InternalString::from(trailing);
     }
 
     /// Whitespace after last element

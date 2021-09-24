@@ -1,6 +1,5 @@
 use crate::parser::errors::CustomError;
 use crate::parser::trivia::{is_non_ascii, is_wschar, newline, ws, ws_newlines};
-use crate::repr::InternalString;
 use combine::error::{Commit, Info};
 use combine::parser::char::char;
 use combine::parser::range::{range, take, take_while, take_while1};
@@ -12,7 +11,7 @@ use std::char;
 // ;; String
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
-parse!(string() -> InternalString, {
+parse!(string() -> String, {
     choice((
         ml_basic_string(),
         basic_string(),
@@ -24,7 +23,7 @@ parse!(string() -> InternalString, {
 // ;; Basic String
 
 // basic-string = quotation-mark *basic-char quotation-mark
-parse!(basic_string() -> InternalString, {
+parse!(basic_string() -> String, {
     between(
         char(QUOTATION_MARK), char(QUOTATION_MARK),
         many(basic_chars())
@@ -102,7 +101,7 @@ parse!(hexescape(n: usize) -> char, {
 // ;; Multiline Basic String
 
 // ml-basic-string = ml-basic-string-delim ml-basic-body ml-basic-string-delim
-parse!(ml_basic_string() -> InternalString, {
+parse!(ml_basic_string() -> String, {
     between(range(ML_BASIC_STRING_DELIM),
             range(ML_BASIC_STRING_DELIM),
             ml_basic_body())
@@ -113,7 +112,7 @@ parse!(ml_basic_string() -> InternalString, {
 const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
 
 // ml-basic-body = *( ( escape ws-newline ) / ml-basic-char / newline )
-parse!(ml_basic_body() -> InternalString, {
+parse!(ml_basic_body() -> String, {
     //  A newline immediately following the opening delimiter will be trimmed.
     optional(newline())
         .skip(try_eat_escaped_newline())
@@ -187,7 +186,7 @@ fn is_literal_char(c: char) -> bool {
 // ;; Multiline Literal String
 
 // ml-literal-string = ml-literal-string-delim ml-literal-body ml-literal-string-delim
-parse!(ml_literal_string() -> InternalString, {
+parse!(ml_literal_string() -> String, {
     between(range(ML_LITERAL_STRING_DELIM),
             range(ML_LITERAL_STRING_DELIM),
             ml_literal_body())
@@ -198,7 +197,7 @@ parse!(ml_literal_string() -> InternalString, {
 const ML_LITERAL_STRING_DELIM: &str = "'''";
 
 // ml-literal-body = *( ml-literal-char / newline )
-parse!(ml_literal_body() -> InternalString, {
+parse!(ml_literal_body() -> String, {
     //  A newline immediately following the opening delimiter will be trimmed.
     optional(newline())
         .with(

@@ -4,9 +4,8 @@ use crate::parser::key::key;
 use crate::parser::table::duplicate_key;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
-use crate::repr::InternalString;
 use crate::table::TableKeyValue;
-use crate::{InlineTable, Item, Value};
+use crate::{InlineTable, InternalString, Item, Value};
 use combine::parser::char::char;
 use combine::stream::RangeStream;
 use combine::*;
@@ -30,11 +29,11 @@ fn table_from_pairs(
         let table = descend_path(&mut root, &path, 0)?;
         if table.contains_key(kv.key.get()) {
             return Err(CustomError::DuplicateKey {
-                key: kv.key.into(),
+                key: kv.key.get().into(),
                 table: "inline".into(),
             });
         }
-        table.items.insert(kv.key.get().to_owned(), kv);
+        table.items.insert(kv.key.clone().into(), kv);
     }
     Ok(root)
 }

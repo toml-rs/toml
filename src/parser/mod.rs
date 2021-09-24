@@ -29,6 +29,7 @@ use vec1::Vec1;
 
 pub(crate) struct TomlParser {
     document: Box<Document>,
+    trailing: String,
     current_table_position: usize,
     current_table: Table,
     current_is_array: bool,
@@ -140,6 +141,7 @@ impl Default for TomlParser {
     fn default() -> Self {
         Self {
             document: Box::new(Document::new()),
+            trailing: String::new(),
             current_table_position: 0,
             current_table: Table::new(),
             current_is_array: false,
@@ -524,7 +526,7 @@ trimmed in raw strings.
             let parsed = key::simple_key().easy_parse(Stream::new(input));
             assert!(parsed.is_ok());
             let ((.., k), rest) = parsed.unwrap();
-            assert_eq!(k, expected);
+            assert_eq!(k.as_str(), expected);
             assert_eq!(rest.input.len(), 0);
         }
     }

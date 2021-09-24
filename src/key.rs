@@ -6,7 +6,8 @@ use combine::stream::position::Stream;
 use crate::encode::{to_string_repr, StringStyle};
 use crate::parser;
 use crate::parser::is_unquoted_char;
-use crate::repr::{Decor, InternalString, Repr};
+use crate::repr::{Decor, Repr};
+use crate::InternalString;
 
 /// Key as part of a Key/Value Pair or a table header.
 ///
@@ -39,9 +40,9 @@ pub struct Key {
 
 impl Key {
     /// Create a new table key
-    pub fn new(key: impl AsRef<str>) -> Self {
+    pub fn new(key: impl Into<InternalString>) -> Self {
         Self {
-            key: key.as_ref().into(),
+            key: key.into(),
             repr: None,
             decor: Default::default(),
         }
@@ -142,6 +143,12 @@ impl<'b> From<&'b String> for Key {
 
 impl From<String> for Key {
     fn from(s: String) -> Self {
+        Key::new(s)
+    }
+}
+
+impl From<InternalString> for Key {
+    fn from(s: InternalString) -> Self {
         Key::new(s)
     }
 }

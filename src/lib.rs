@@ -69,6 +69,7 @@ mod document;
 mod encode;
 mod index;
 mod inline_table;
+mod internal_string;
 mod item;
 mod key;
 mod parser;
@@ -89,6 +90,7 @@ pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,
     InlineTableIterMut, InlineVacantEntry,
 };
+pub use crate::internal_string::InternalString;
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::Key;
 pub use crate::parser::TomlError;

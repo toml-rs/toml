@@ -1,9 +1,8 @@
 use std::str::FromStr;
 
 use crate::parser;
-use crate::repr::InternalString;
 use crate::table::Iter;
-use crate::{Item, Table};
+use crate::{InternalString, Item, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
@@ -42,7 +41,7 @@ impl Document {
 
     /// Set whitespace after last element
     pub fn set_trailing(&mut self, trailing: &str) {
-        self.trailing = trailing.to_owned();
+        self.trailing = InternalString::from(trailing);
     }
 
     /// Whitespace after last element
