@@ -7,9 +7,8 @@ use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
-use crate::repr::Decor;
 use crate::table::TableKeyValue;
-use crate::Item;
+use crate::{InternalString, Item};
 use combine::parser::char::char;
 use combine::parser::range::recognize;
 use combine::stream::position::Stream;
@@ -110,7 +109,7 @@ impl TomlParser {
                     .map_err(|e| TomlError::custom(e.to_string()))?;
                 let trailing = parser.borrow().trailing.as_str().into();
                 parser.get_mut().document.trailing = trailing;
-                Ok(*parser.into_inner().document)
+                Ok(parser.into_inner().document)
             }
             Err(e) => Err(TomlError::new(e, s)),
         }
@@ -133,28 +132,34 @@ impl TomlParser {
             } else {
                 &mut path[0]
             };
-            first_key.decor = Decor::new(
-                prefix + first_key.decor.prefix().unwrap_or_default(),
-                first_key.decor.suffix().unwrap_or_default(),
-            );
+            first_key
+                .decor
+                .set_prefix(prefix + first_key.decor.prefix().unwrap_or_default());
         }
 
         let table = &mut self.current_table;
         let table = Self::descend_path(table, &path, true)?;
 
-        // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"
-        let duplicate_key = table.contains_key(kv.key.get());
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
         let mixed_table_types = table.is_dotted() == path.is_empty();
-        if duplicate_key || mixed_table_types {
-            Err(CustomError::DuplicateKey {
+        if mixed_table_types {
+            return Err(CustomError::DuplicateKey {
                 key: kv.key.get().into(),
                 table: "<unknown>".into(), // TODO: get actual table name
-            })
-        } else {
-            let key = kv.key.clone();
-            table.items.insert(key.into(), kv);
-            Ok(())
+            });
         }
+
+        let key: InternalString = kv.key.get_internal().into();
+        let old = table.items.insert(key.clone(), kv);
+        let duplicate_key = old.is_some();
+        // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"
+        if duplicate_key {
+            return Err(CustomError::DuplicateKey {
+                key: key.as_str().into(),
+                table: "<unknown>".into(), // TODO: get actual table name
+            });
+        }
+
+        Ok(())
     }
 }
