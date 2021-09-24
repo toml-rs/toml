@@ -24,6 +24,8 @@ fn table_from_pairs(
 ) -> Result<InlineTable, CustomError> {
     let mut root = InlineTable::new();
     root.preamble = InternalString::from(preamble);
+    // Assuming almost all pairs will be directly in `root`
+    root.items.reserve(v.len());
 
     for (path, kv) in v {
         let table = descend_path(&mut root, &path, 0)?;
@@ -33,7 +35,7 @@ fn table_from_pairs(
                 table: "inline".into(),
             });
         }
-        table.items.insert(kv.key.clone().into(), kv);
+        table.items.insert(kv.key.get().into(), kv);
     }
     Ok(root)
 }
@@ -88,8 +90,8 @@ parse!(keyval() -> (Vec<Key>, TableKeyValue), {
         char(KEYVAL_SEP),
         (ws(), value(), ws()),
     ).map(|(key, _, v)| {
-            let mut path = key.into_vec();
-            let key = path.pop().expect("Was vec1, so at least one exists");
+        let mut path = key.into_vec();
+        let key = path.pop().expect("Was vec1, so at least one exists");
 
         let (pre, v, suf) = v;
         let v = v.decorated(pre, suf);
