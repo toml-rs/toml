@@ -27,7 +27,7 @@ use crate::repr::Decor;
 use crate::{ArrayOfTables, Document, Entry, Item, Table};
 
 pub(crate) struct TomlParser {
-    document: Box<Document>,
+    document: Document,
     trailing: String,
     current_table_position: usize,
     current_table: Table,
@@ -141,7 +141,7 @@ impl TomlParser {
 impl Default for TomlParser {
     fn default() -> Self {
         Self {
-            document: Box::new(Document::new()),
+            document: Document::new(),
             trailing: String::new(),
             current_table_position: 0,
             current_table: Table::new(),

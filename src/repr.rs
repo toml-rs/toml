@@ -130,8 +130,18 @@ impl Decor {
         self.prefix.as_deref()
     }
 
+    /// Set the prefix.
+    pub fn set_prefix(&mut self, prefix: impl Into<InternalString>) {
+        self.prefix = Some(prefix.into());
+    }
+
     /// Get the suffix.
     pub fn suffix(&self) -> Option<&str> {
         self.suffix.as_deref()
+    }
+
+    /// Set the suffix.
+    pub fn set_suffix(&mut self, suffix: impl Into<InternalString>) {
+        self.suffix = Some(suffix.into());
     }
 }

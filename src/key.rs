@@ -64,6 +64,10 @@ impl Key {
         &self.key
     }
 
+    pub(crate) fn get_internal(&self) -> &InternalString {
+        &self.key
+    }
+
     /// Returns the key raw representation.
     pub fn to_repr(&self) -> Cow<Repr> {
         self.repr

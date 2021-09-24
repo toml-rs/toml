@@ -29,13 +29,15 @@ fn table_from_pairs(
 
     for (path, kv) in v {
         let table = descend_path(&mut root, &path)?;
-        if table.contains_key(kv.key.get()) {
+        let key: InternalString = kv.key.get_internal().into();
+        let old = table.items.insert(key.clone(), kv);
+        let duplicate_key = old.is_some();
+        if duplicate_key {
             return Err(CustomError::DuplicateKey {
-                key: kv.key.get().into(),
+                key: key.as_str().into(),
                 table: "inline".into(),
             });
         }
-        table.items.insert(kv.key.get().into(), kv);
     }
     Ok(root)
 }
