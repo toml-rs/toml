@@ -3,9 +3,10 @@ use crate::parser::trivia::{is_non_ascii, is_wschar, newline, ws, ws_newlines};
 use crate::repr::InternalString;
 use combine::error::{Commit, Info};
 use combine::parser::char::char;
-use combine::parser::range::{range, take, take_while};
+use combine::parser::range::{range, take, take_while, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
+use std::borrow::Cow;
 use std::char;
 
 // ;; String
@@ -24,23 +25,27 @@ parse!(string() -> InternalString, {
 
 // basic-string = quotation-mark *basic-char quotation-mark
 parse!(basic_string() -> InternalString, {
-    between(char(QUOTATION_MARK), char(QUOTATION_MARK),
-            many(basic_char()))
-        .message("While parsing a Basic String")
+    between(
+        char(QUOTATION_MARK), char(QUOTATION_MARK),
+        many(basic_chars())
+    )
+    .message("While parsing a Basic String")
 });
 
 // quotation-mark = %x22            ; "
 const QUOTATION_MARK: char = '"';
 
 // basic-char = basic-unescaped / escaped
-parse!(basic_char() -> char, {
-    satisfy(|c| is_basic_unescaped(c) || c == ESCAPE)
-        .then(|c| parser(move |input| {
-            match c {
-                ESCAPE => escape().parse_stream(input).into_result(),
-                _      => Ok((c, Commit::Peek(()))),
-            }
-        }))
+parse!(basic_chars() -> Cow<'a, str>, {
+    choice((
+        // Deviate from the official grammar by batching the unescaped chars so we build a string a
+        // chunk at a time, rather than a `char` at a time.
+        take_while1(is_basic_unescaped).map(Cow::Borrowed),
+        satisfy(|c| c == ESCAPE)
+            .then(|_| parser(move |input| {
+                escape().parse_stream(input).into_result().map(|(c, e)| (Cow::Owned(String::from(c)), e))
+            }))
+    ))
 });
 
 // basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
