@@ -65,5 +65,8 @@ harness = false
 name = "linear"
 harness = false
 
+[profile.release]
+debug = 1
+
 [profile.dev]
 opt-level = 1
