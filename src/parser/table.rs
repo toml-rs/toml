@@ -5,7 +5,7 @@ use crate::parser::trivia::line_trailing;
 use crate::parser::TomlParser;
 use crate::repr::Decor;
 use crate::{Item, Table};
-use combine::parser::char::char;
+use combine::parser::byte::byte;
 use combine::parser::range::range;
 use combine::stream::RangeStream;
 use combine::*;
@@ -17,21 +17,21 @@ use std::mem;
 use std::ops::DerefMut;
 
 // std-table-open  = %x5B ws     ; [ Left square bracket
-const STD_TABLE_OPEN: char = '[';
+const STD_TABLE_OPEN: u8 = b'[';
 // std-table-close = ws %x5D     ; ] Right square bracket
-const STD_TABLE_CLOSE: char = ']';
+const STD_TABLE_CLOSE: u8 = b']';
 // array-table-open  = %x5B.5B ws  ; [[ Double left square bracket
-const ARRAY_TABLE_OPEN: &str = "[[";
+const ARRAY_TABLE_OPEN: &[u8] = b"[[";
 // array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
-const ARRAY_TABLE_CLOSE: &str = "]]";
+const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
 toml_parser!(std_table, parser, {
     (
-        between(char(STD_TABLE_OPEN), char(STD_TABLE_CLOSE), key()),
-        line_trailing(),
+        between(byte(STD_TABLE_OPEN), byte(STD_TABLE_CLOSE), key()),
+        line_trailing().and_then(|t| std::str::from_utf8(t)),
     )
         .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(h, t))
 });
@@ -42,7 +42,7 @@ toml_parser!(std_table, parser, {
 toml_parser!(array_table, parser, {
     (
         between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE), key()),
-        line_trailing(),
+        line_trailing().and_then(|t| std::str::from_utf8(t)),
     )
         .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(h, t))
 });
@@ -54,12 +54,13 @@ parser! {
     pub(crate) fn table['a, 'b, I](parser: &'b RefCell<TomlParser>)(I) -> ()
     where
         [I: RangeStream<
-         Range = &'a str,
-         Token = char>,
-         I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
-         <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+         Range = &'a [u8],
+         Token = u8>,
+         I::Error: ParseError<u8, &'a [u8], <I as StreamOnce>::Position>,
+         <I::Error as ParseError<u8, &'a [u8], <I as StreamOnce>::Position>>::StreamError:
          From<std::num::ParseIntError> +
          From<std::num::ParseFloatError> +
+         From<std::str::Utf8Error> +
          From<crate::parser::errors::CustomError>
     ]    {
         array_table(parser)

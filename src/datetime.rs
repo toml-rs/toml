@@ -130,14 +130,20 @@ impl FromStr for Datetime {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use combine::stream::position::{IndexPositioner, Positioner};
         use combine::EasyParser;
-        let result = parser::datetime::date_time().easy_parse(Stream::new(s));
+
+        let b = s.as_bytes();
+        let result = parser::datetime::date_time().easy_parse(Stream::new(b));
         match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(parser::TomlError::from_unparsed(rest.positioner, s))
-            }
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                b,
+            )),
             Ok((dt, _)) => Ok(dt),
-            Err(e) => Err(parser::TomlError::new(e, s)),
+            Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }
 }
@@ -205,14 +211,20 @@ impl FromStr for Date {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use combine::stream::position::{IndexPositioner, Positioner};
         use combine::EasyParser;
-        let result = parser::datetime::full_date().easy_parse(Stream::new(s));
+
+        let b = s.as_bytes();
+        let result = parser::datetime::full_date().easy_parse(Stream::new(b));
         match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(parser::TomlError::from_unparsed(rest.positioner, s))
-            }
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                b,
+            )),
             Ok((dt, _)) => Ok(dt),
-            Err(e) => Err(parser::TomlError::new(e, s)),
+            Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }
 }
@@ -276,14 +288,20 @@ impl FromStr for Time {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use combine::stream::position::{IndexPositioner, Positioner};
         use combine::EasyParser;
-        let result = parser::datetime::partial_time().easy_parse(Stream::new(s));
+
+        let b = s.as_bytes();
+        let result = parser::datetime::partial_time().easy_parse(Stream::new(b));
         match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(parser::TomlError::from_unparsed(rest.positioner, s))
-            }
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                b,
+            )),
             Ok((dt, _)) => Ok(dt),
-            Err(e) => Err(parser::TomlError::new(e, s)),
+            Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }
 }

@@ -9,9 +9,8 @@ use crate::parser::value::value;
 use crate::parser::{TomlError, TomlParser};
 use crate::table::TableKeyValue;
 use crate::{InternalString, Item};
-use combine::parser::char::char;
-use combine::parser::range::recognize;
-use combine::stream::position::Stream;
+use combine::parser::byte::byte;
+use combine::stream::position::{IndexPositioner, Positioner, Stream};
 use combine::stream::RangeStream;
 use combine::Parser;
 use combine::*;
@@ -20,7 +19,11 @@ use std::mem;
 use std::ops::DerefMut;
 
 toml_parser!(parse_comment, parser, {
-    (comment(), line_ending()).map(|(c, e)| parser.borrow_mut().deref_mut().on_comment(c, e))
+    (comment(), line_ending()).and_then::<_, _, std::str::Utf8Error>(|(c, e)| {
+        let c = std::str::from_utf8(c)?;
+        parser.borrow_mut().deref_mut().on_comment(c, e);
+        Ok(())
+    })
 });
 
 toml_parser!(
@@ -30,7 +33,7 @@ toml_parser!(
 );
 
 toml_parser!(parse_newline, parser, {
-    recognize(newline()).map(|w| parser.borrow_mut().deref_mut().on_ws(w))
+    newline().map(|_| parser.borrow_mut().deref_mut().on_ws("\n"))
 });
 
 toml_parser!(keyval, parser, {
@@ -42,31 +45,33 @@ parser! {
     fn parse_keyval['a, I]()(I) -> (Vec<Key>, TableKeyValue)
     where
         [I: RangeStream<
-         Range = &'a str,
-         Token = char>,
-         I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
-         <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+         Range = &'a [u8],
+         Token = u8>,
+         I::Error: ParseError<u8, &'a [u8], <I as StreamOnce>::Position>,
+         <I::Error as ParseError<u8, &'a [u8], <I as StreamOnce>::Position>>::StreamError:
          From<std::num::ParseIntError> +
          From<std::num::ParseFloatError> +
+         From<std::str::Utf8Error> +
          From<crate::parser::errors::CustomError>
     ] {
         (
             key(),
-            char(KEYVAL_SEP),
+            byte(KEYVAL_SEP),
             (ws(), value(), line_trailing())
-        ).map(|(key, _, v)| {
+        ).and_then::<_, _, std::str::Utf8Error>(|(key, _, v)| {
             let mut path = key;
             let key = path.pop().expect("grammar ensures at least 1");
 
             let (pre, v, suf) = v;
+            let suf = std::str::from_utf8(suf)?;
             let v = v.decorated(pre, suf);
-            (
+            Ok((
                 path,
                 TableKeyValue {
                     key,
                     value: Item::Value(v),
                 }
-            )
+            ))
         })
     }
 }
@@ -80,7 +85,7 @@ impl TomlParser {
     //                ( ws keyval ws [ comment ] ) /
     //                ( ws table ws [ comment ] ) /
     //                  ws )
-    pub(crate) fn parse(s: &str) -> Result<Document, TomlError> {
+    pub(crate) fn parse(s: &[u8]) -> Result<Document, TomlError> {
         let mut parser = RefCell::new(Self::default());
         let input = Stream::new(s);
 
@@ -99,9 +104,12 @@ impl TomlParser {
             )))
             .easy_parse(input);
         match parsed {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(TomlError::from_unparsed(rest.positioner, s))
-            }
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(TomlError::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                s,
+            )),
             Ok(..) => {
                 parser
                     .get_mut()

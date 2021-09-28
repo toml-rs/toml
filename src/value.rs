@@ -212,18 +212,24 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use combine::stream::position::{IndexPositioner, Positioner};
         use combine::EasyParser;
-        let parsed = parser::value_parser().easy_parse(Stream::new(s));
+
+        let b = s.as_bytes();
+        let parsed = parser::value_parser().easy_parse(Stream::new(b));
         match parsed {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(Self::Err::from_unparsed(rest.positioner, s))
-            }
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(Self::Err::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                b,
+            )),
             Ok((mut value, _)) => {
                 // Only take the repr and not decor, as its probably not intended
                 value.decor_mut().clear();
                 Ok(value)
             }
-            Err(e) => Err(Self::Err::new(e, s)),
+            Err(e) => Err(Self::Err::new(e, b)),
         }
     }
 }
