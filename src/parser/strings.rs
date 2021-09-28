@@ -1,8 +1,8 @@
 use crate::parser::errors::CustomError;
 use crate::parser::trivia::{is_non_ascii, is_wschar, newline, ws, ws_newlines};
-use combine::error::{Commit, Info};
+use combine::error::Commit;
 use combine::parser::char::char;
-use combine::parser::range::{range, take, take_while, take_while1};
+use combine::parser::range::{range, recognize, take, take_while, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
 use std::borrow::Cow;
@@ -40,10 +40,7 @@ parse!(basic_chars() -> Cow<'a, str>, {
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
         take_while1(is_basic_unescaped).map(Cow::Borrowed),
-        satisfy(|c| c == ESCAPE)
-            .then(|_| parser(move |input| {
-                escape().parse_stream(input).into_result().map(|(c, e)| (Cow::Owned(String::from(c)), e))
-            }))
+        escaped().map(|c| Cow::Owned(String::from(c))),
     ))
 });
 
@@ -55,10 +52,27 @@ fn is_basic_unescaped(c: char) -> bool {
         | is_non_ascii(c)
 }
 
+// escaped = escape escape-seq-char
+parse!(escaped() -> char, {
+    satisfy(|c| c == ESCAPE)
+        .then(|_| parser(move |input| {
+            escale_seq_char().parse_stream(input).into_result()
+        }))
+});
+
 // escape = %x5C                    ; \
 const ESCAPE: char = '\\';
 
-parse!(escape() -> char, {
+// escape-seq-char =  %x22         ; "    quotation mark  U+0022
+// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
+// escape-seq-char =/ %x62         ; b    backspace       U+0008
+// escape-seq-char =/ %x66         ; f    form feed       U+000C
+// escape-seq-char =/ %x6E         ; n    line feed       U+000A
+// escape-seq-char =/ %x72         ; r    carriage return U+000D
+// escape-seq-char =/ %x74         ; t    tab             U+0009
+// escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
+// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
+parse!(escale_seq_char() -> char, {
     satisfy(is_escape_seq_char)
         .message("While parsing escape sequence")
         .then(|c| {
@@ -78,15 +92,6 @@ parse!(escape() -> char, {
         })
 });
 
-// escape-seq-char =  %x22         ; "    quotation mark  U+0022
-// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
-// escape-seq-char =/ %x62         ; b    backspace       U+0008
-// escape-seq-char =/ %x66         ; f    form feed       U+000C
-// escape-seq-char =/ %x6E         ; n    line feed       U+000A
-// escape-seq-char =/ %x72         ; r    carriage return U+000D
-// escape-seq-char =/ %x74         ; t    tab             U+0009
-// escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
-// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
 #[inline]
 fn is_escape_seq_char(c: char) -> bool {
     matches!(c, '"' | '\\' | 'b' | 'f' | 'n' | 'r' | 't' | 'u' | 'U')
@@ -100,47 +105,61 @@ parse!(hexescape(n: usize) -> char, {
 
 // ;; Multiline Basic String
 
-// ml-basic-string = ml-basic-string-delim ml-basic-body ml-basic-string-delim
+// ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
+//                   ml-basic-string-delim
 parse!(ml_basic_string() -> String, {
-    between(range(ML_BASIC_STRING_DELIM),
-            range(ML_BASIC_STRING_DELIM),
-            ml_basic_body())
-        .message("While parsing a Multiline Basic String")
+    between(
+        range(ML_BASIC_STRING_DELIM),
+        range(ML_BASIC_STRING_DELIM),
+        (
+            optional(newline()),
+            ml_basic_body(),
+        ).map(|t| t.1),
+    ).message("While parsing a Multiline Basic String")
 });
 
 // ml-basic-string-delim = 3quotation-mark
 const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
 
-// ml-basic-body = *( ( escape ws-newline ) / ml-basic-char / newline )
+// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 parse!(ml_basic_body() -> String, {
-    //  A newline immediately following the opening delimiter will be trimmed.
-    optional(newline())
-        .skip(try_eat_escaped_newline())
-        .with(
-            many(
-                not_followed_by(range(ML_BASIC_STRING_DELIM).map(Info::Range))
-                    .with(
-                        choice((
-                            // `TOML parsers should feel free to normalize newline
-                            //  to whatever makes sense for their platform.`
-                            newline(),
-                            mlb_char(),
-                        ))
-                    )
-                    .skip(try_eat_escaped_newline())
-            )
-        )
+    (
+        many(mlb_content()),
+        many(attempt((
+            mlb_quotes(),
+            many1(mlb_content()),
+        ).map(|(q, c): (&str, String)| {
+            let mut total = q.to_owned();
+            total.push_str(&c);
+            total
+        }))),
+        // BUG: See #128
+        //optional(mll_quotes()),
+    ).map(|(mut c, qc): (String, String)| {
+        c.push_str(&qc);
+        c
+    })
 });
 
+// mlb-content = mlb-char / newline / mlb-escaped-nl
 // mlb-char = mlb-unescaped / escaped
-parse!(mlb_char() -> char, {
-    satisfy(|c| is_mlb_unescaped(c) || c == ESCAPE)
-        .then(|c| parser(move |input| {
-            match c {
-                ESCAPE => escape().parse_stream(input).into_result(),
-                _      => Ok((c, Commit::Peek(()))),
-            }
-        }))
+parse!(mlb_content() -> Cow<'a, str>, {
+    choice((
+        // Deviate from the official grammar by batching the unescaped chars so we build a string a
+        // chunk at a time, rather than a `char` at a time.
+        take_while1(is_mlb_unescaped).map(Cow::Borrowed),
+        attempt(escaped().map(|c| Cow::Owned(String::from(c)))),
+        newline().map(|_| Cow::Borrowed("\n")),
+        mlb_escaped_nl().map(|_| Cow::Borrowed("")),
+    ))
+});
+
+// mlb-quotes = 1*2quotation-mark
+parse!(mlb_quotes() -> &'a str, {
+    choice((
+        attempt(combine::parser::char::string("\"\"")),
+        attempt(combine::parser::char::string("\"")),
+    ))
 });
 
 // mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
@@ -149,16 +168,15 @@ fn is_mlb_unescaped(c: char) -> bool {
     is_wschar(c)
         | matches!(c, '\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{7E}')
         | is_non_ascii(c)
-        // Unlike the official grammar, we can handle quotes just fine
-        | (c == '\u{22}')
 }
 
+// mlb-escaped-nl = escape ws newline *( wschar / newline
 // When the last non-whitespace character on a line is a \,
 // it will be trimmed along with all whitespace
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
-parse!(try_eat_escaped_newline() -> (), {
-    skip_many(attempt((
+parse!(mlb_escaped_nl() -> (), {
+    skip_many1(attempt((
         char(ESCAPE),
         ws(),
         ws_newlines(),
@@ -185,40 +203,50 @@ fn is_literal_char(c: char) -> bool {
 
 // ;; Multiline Literal String
 
-// ml-literal-string = ml-literal-string-delim ml-literal-body ml-literal-string-delim
+// ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
+//                     ml-literal-string-delim
 parse!(ml_literal_string() -> String, {
-    between(range(ML_LITERAL_STRING_DELIM),
-            range(ML_LITERAL_STRING_DELIM),
-            ml_literal_body())
-        .message("While parsing a Multiline Literal String")
+    between(
+        range(ML_LITERAL_STRING_DELIM),
+        range(ML_LITERAL_STRING_DELIM),
+        (
+            optional(newline()),
+            ml_literal_body(),
+        ).map(|t| t.1.replace("\r\n", "\n")),
+    ).message("While parsing a Multiline Literal String")
 });
 
 // ml-literal-string-delim = 3apostrophe
 const ML_LITERAL_STRING_DELIM: &str = "'''";
 
-// ml-literal-body = *( ml-literal-char / newline )
-parse!(ml_literal_body() -> String, {
-    //  A newline immediately following the opening delimiter will be trimmed.
-    optional(newline())
-        .with(
-            many(
-                not_followed_by(range(ML_LITERAL_STRING_DELIM).map(Info::Range))
-                    .with(
-                        choice((
-                            // `TOML parsers should feel free to normalize newline
-                            //  to whatever makes sense for their platform.`
-                            newline(),
-                            satisfy(is_mll_char),
-                        ))
-                    )
-            )
-        )
+// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
+parse!(ml_literal_body() -> &'a str, {
+    recognize((
+        skip_many(mll_content()),
+        skip_many(attempt((mll_quotes(), skip_many1(mll_content())))),
+        // BUG: See #128
+        //optional(mll_quotes()),
+    ))
+});
+
+// mll-content = mll-char / newline
+parse!(mll_content() -> char, {
+    choice((
+        satisfy(is_mll_char),
+        newline()
+    ))
 });
 
 // mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
 #[inline]
 fn is_mll_char(c: char) -> bool {
     matches!(c, '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{7E}') | is_non_ascii(c)
-        // Unlike the official grammar, we can handle quotes just fine
-        | (c == '\u{27}')
 }
+
+// mll-quotes = 1*2apostrophe
+parse!(mll_quotes() -> &'a str, {
+    choice((
+        attempt(combine::parser::char::string("''")),
+        attempt(combine::parser::char::string("'")),
+    ))
+});
