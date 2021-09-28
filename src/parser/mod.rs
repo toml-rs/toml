@@ -173,7 +173,7 @@ mod tests {
 
     macro_rules! parsed_eq {
         ($parsed:ident, $expected:expr) => {{
-            assert!($parsed.is_ok());
+            assert!($parsed.is_ok(), "{}", $parsed.err().unwrap());
             let (v, rest) = $parsed.unwrap();
             assert_eq!(v, $expected);
             assert!(rest.input.is_empty());
@@ -306,6 +306,7 @@ Violets are blue"#,
         ];
 
         for &(input, expected) in &cases {
+            dbg!(input);
             let parsed = strings::string().easy_parse(Stream::new(input));
             parsed_eq!(parsed, expected);
         }
@@ -334,6 +335,7 @@ The quick brown \
        """"#,
         ];
         for input in &inputs {
+            dbg!(input);
             let parsed = strings::string().easy_parse(Stream::new(*input));
             parsed_eq!(parsed, "The quick brown fox jumps over the lazy dog.");
         }
