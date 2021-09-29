@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.0] - 2021-09-29
+
 #### Breaking Changes
 
 - Changed some strings callers generally don't interact with (e.g.
@@ -74,7 +76,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/ordian/toml_edit/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/ordian/toml_edit/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/ordian/toml_edit/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/ordian/toml_edit/compare/v0.2.0...v0.2.1
