@@ -7,6 +7,42 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+#### Breaking Changes
+
+- Changed some strings callers generally don't interact with (e.g.
+  `Into<String>`) to an opaque type, allowing us to change how we allocate most
+  strings without requiring breaking changes in the future.
+  - This impacts `Key`, `Repr`, and `Decor`
+  - This does not impact `Value`, assuming people want a familiar type over performance
+
+#### Fixes
+
+- Support trailing quotes in strings
+
+#### Performance
+
+| toml_edit | `cargo init` Cargo.toml | Cargo's Cargo.toml |
+|-----------|-------------------------|--------------------|
+| v0.3.1    | 8.7 us                  | 271 us             |
+| HEAD      | 4.1 us                  | 150 us             |
+
+| toml_edit::easy | `cargo init` Cargo.toml | Cargo's Cargo.toml |
+|-----------------|-------------------------|--------------------|
+| v0.3.1          | 21.2 us                 | 661 us             |
+| HEAD            | 18.6 us                 | 630 us             |
+
+| toml    | `cargo init` Cargo.toml | Cargo's Cargo.toml |
+|---------|-------------------------|--------------------|
+| v0.5.8  | 4.8 us                  | 125 us             |
+
+Changes include:
+- Batch create strings
+- Small-string optimization
+- Removed superfluous allocations
+- Switched from recursion to looping
+- Avoid decoding bytes to `char`
+- Optimized grammar selection rules which also reduced allocations further
+
 ## [0.3.1] - 2021-09-14
 
 #### Fixes
