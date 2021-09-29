@@ -116,14 +116,29 @@ parse!(hexescape(n: usize) -> char, {
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
 parse!(ml_basic_string() -> String, {
-    between(
-        range(ML_BASIC_STRING_DELIM),
+    (
         range(ML_BASIC_STRING_DELIM),
         (
             optional(newline()),
             ml_basic_body(),
         ).map(|t| t.1),
-    ).message("While parsing a Multiline Basic String")
+        // Deviate from grammar by pulling mll_quotes into here so we can handle the confusion with
+        // it and the closing delim
+        choice((
+            attempt((
+                bytes(b"\"\""), range(ML_BASIC_STRING_DELIM)
+            )).map(|_| Some("\"\"")),
+            attempt((
+                bytes(b"\""), range(ML_BASIC_STRING_DELIM)
+            )).map(|_| Some("\"")),
+            range(ML_BASIC_STRING_DELIM).map(|_| None),
+        )),
+    ).map(|(_, mut b, q)| {
+        if let Some(q) = q {
+            b.push_str(q);
+        }
+        b
+    }).message("While parsing a Multiline Basic String")
 });
 
 // ml-basic-string-delim = 3quotation-mark
@@ -141,7 +156,7 @@ parse!(ml_basic_body() -> String, {
             total.push_str(&c);
             total
         }))),
-        // BUG: See #128
+        // Deviate: see `ml_basic_string`
         //optional(mll_quotes()),
     ).map(|(mut c, qc): (String, String)| {
         c.push_str(&qc);
@@ -216,14 +231,29 @@ fn is_literal_char(c: u8) -> bool {
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
 parse!(ml_literal_string() -> String, {
-    between(
-        range(ML_LITERAL_STRING_DELIM),
+    (
         range(ML_LITERAL_STRING_DELIM),
         (
             optional(newline()),
             ml_literal_body(),
         ).map(|t| t.1.replace("\r\n", "\n")),
-    ).message("While parsing a Multiline Literal String")
+        // Deviate from grammar by pulling mll_quotes into here so we can handle the confusion with
+        // it and the closing delim
+        choice((
+            attempt((
+                bytes(b"''"), range(ML_LITERAL_STRING_DELIM)
+            )).map(|_| Some("''")),
+            attempt((
+                bytes(b"'"), range(ML_LITERAL_STRING_DELIM)
+            )).map(|_| Some("'")),
+            range(ML_LITERAL_STRING_DELIM).map(|_| None),
+        ))
+    ).map(|(_, mut b, q)| {
+        if let Some(q) = q {
+            b.push_str(q);
+        }
+        b
+    }).message("While parsing a Multiline Literal String")
 });
 
 // ml-literal-string-delim = 3apostrophe
@@ -234,7 +264,7 @@ parse!(ml_literal_body() -> &'a str, {
     recognize((
         skip_many(mll_content()),
         skip_many(attempt((mll_quotes(), skip_many1(mll_content())))),
-        // BUG: See #128
+        // Deviate: see ml_literal_string
         //optional(mll_quotes()),
     )).and_then(std::str::from_utf8)
 });
