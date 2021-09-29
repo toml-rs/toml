@@ -34,7 +34,7 @@ parse!(basic_string() -> String, {
 });
 
 // quotation-mark = %x22            ; "
-const QUOTATION_MARK: u8 = b'"';
+pub(crate) const QUOTATION_MARK: u8 = b'"';
 
 // basic-char = basic-unescaped / escaped
 parse!(basic_chars() -> Cow<'a, str>, {
@@ -218,7 +218,7 @@ parse!(literal_string() -> &'a str, {
 });
 
 // apostrophe = %x27 ; ' apostrophe
-const APOSTROPHE: u8 = b'\'';
+pub(crate) const APOSTROPHE: u8 = b'\'';
 
 // literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
 #[inline]

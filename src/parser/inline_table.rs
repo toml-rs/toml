@@ -66,7 +66,7 @@ fn descend_path<'a>(
 }
 
 // inline-table-open  = %x7B ws     ; {
-const INLINE_TABLE_OPEN: u8 = b'{';
+pub(crate) const INLINE_TABLE_OPEN: u8 = b'{';
 // inline-table-close = ws %x7D     ; }
 const INLINE_TABLE_CLOSE: u8 = b'}';
 // inline-table-sep   = ws %x2C ws  ; , Comma
