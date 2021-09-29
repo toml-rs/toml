@@ -1,4 +1,5 @@
-use combine::parser::char::{char, digit, hex_digit, oct_digit, string};
+use crate::parser::trivia::from_utf8_unchecked;
+use combine::parser::byte::{byte, bytes, digit, hex_digit, oct_digit};
 use combine::parser::range::{range, recognize};
 use combine::stream::RangeStream;
 use combine::*;
@@ -8,9 +9,9 @@ use combine::*;
 // boolean = true / false
 parse!(boolean() -> bool, {
     choice((
-        (char('t'), range("rue"),),
-        (char('f'), range("alse"),),
-    )).map(|p| p.0 == 't')
+        (byte(b't'), range(&b"rue"[..]),),
+        (byte(b'f'), range(&b"alse"[..]),),
+    )).map(|p| p.0 == b't')
 });
 
 // ;; Integer
@@ -31,63 +32,71 @@ parse!(integer() -> i64, {
 // unsigned-dec-int = DIGIT / digit1-9 1*( DIGIT / underscore DIGIT )
 parse!(dec_int() -> &'a str, {
     recognize((
-        optional(choice([char('-'), char('+')])),
+        optional(choice([byte(b'-'), byte(b'+')])),
         choice((
-            char('0'),
+            byte(b'0'),
             (
-                satisfy(|c| ('1'..='9').contains(&c)),
+                satisfy(|c| (b'1'..=b'9').contains(&c)),
                 skip_many((
-                    optional(char('_')),
+                    optional(byte(b'_')),
                     skip_many1(digit()),
                 )),
             ).map(|t| t.0),
         )),
-    ))
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out npn-ASCII") }
+    })
 });
 
 // hex-prefix = %x30.78               ; 0x
 // hex-int = hex-prefix HEXDIG *( HEXDIG / underscore HEXDIG )
 parse!(hex_int() -> i64, {
-    string("0x").with(
+    bytes(b"0x").with(
         recognize((
             hex_digit(),
             skip_many((
-                optional(char('_')),
+                optional(byte(b'_')),
                 skip_many1(hex_digit()),
             )),
         ).map(|t| t.0)
-    )).and_then(|s: &str| i64::from_str_radix(&s.replace("_", ""), 16))
-       .message("While parsing a hexadecimal Integer")
+    )).and_then(|b: &[u8]| {
+        let s = unsafe { from_utf8_unchecked(b, "`hex_digit` and `_` filter out npn-ASCII") };
+        i64::from_str_radix(&s.replace("_", ""), 16)
+    }).message("While parsing a hexadecimal Integer")
 });
 
 // oct-prefix = %x30.6F               ; 0o
 // oct-int = oct-prefix digit0-7 *( digit0-7 / underscore digit0-7 )
 parse!(oct_int() -> i64, {
-    string("0o").with(
+    bytes(b"0o").with(
         recognize((
             oct_digit(),
             skip_many((
-                optional(char('_')),
+                optional(byte(b'_')),
                 skip_many1(oct_digit()),
             )),
         ).map(|t| t.0)
-    )).and_then(|s: &str| i64::from_str_radix(&s.replace("_", ""), 8))
-       .message("While parsing an octal Integer")
+    )).and_then(|b: &[u8]| {
+        let s = unsafe { from_utf8_unchecked(b, "`oct_digit` and `_` filter out npn-ASCII") };
+        i64::from_str_radix(&s.replace("_", ""), 8)
+    }).message("While parsing a octal Integer")
 });
 
 // bin-prefix = %x30.62               ; 0b
 // bin-int = bin-prefix digit0-1 *( digit0-1 / underscore digit0-1 )
 parse!(bin_int() -> i64, {
-    string("0b").with(
+    bytes(b"0b").with(
         recognize((
-            satisfy(|c: char| c.is_digit(0x2)),
+            satisfy(|c: u8| c == b'0' || c == b'1'),
             skip_many((
-                optional(char('_')),
-                skip_many1(satisfy(|c: char| c.is_digit(0x2))),
+                optional(byte(b'_')),
+                skip_many1(satisfy(|c: u8| c == b'0' || c == b'1')),
             )),
         ).map(|t| t.0)
-    )).and_then(|s: &str| i64::from_str_radix(&s.replace("_", ""), 2))
-       .message("While parsing a binary Integer")
+    )).and_then(|b: &[u8]| {
+        let s = unsafe { from_utf8_unchecked(b, "`is_digit` and `_` filter out npn-ASCII") };
+        i64::from_str_radix(&s.replace("_", ""), 2)
+    }).message("While parsing a binary Integer")
 });
 
 // ;; Float
@@ -105,7 +114,7 @@ parse!(float() -> f64, {
 
 parse!(parse_float() -> &'a str, {
     recognize((
-        attempt((dec_int(), look_ahead(one_of("eE.".chars())))),
+        attempt((dec_int(), look_ahead(one_of([b'e', b'E', b'.'])))),
         choice((
             exp(),
             (
@@ -113,16 +122,20 @@ parse!(parse_float() -> &'a str, {
                 optional(exp()),
             ).map(|_| "")
         )),
-    ))
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`dec_int`, `one_of`, `exp`, and `frac` filter out npn-ASCII") }
+    })
 });
 
 // frac = decimal-point zero-prefixable-int
 // decimal-point = %x2E               ; .
 parse!(frac() -> &'a str, {
     recognize((
-        char('.'),
+        byte(b'.'),
         parse_zero_prefixable_int(),
-    ))
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`.` and `parse_zero_prefixable_int` filter out npn-ASCII") }
+    })
 });
 
 // zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
@@ -130,28 +143,32 @@ parse!(parse_zero_prefixable_int() -> &'a str, {
     recognize((
         skip_many1(digit()),
         skip_many((
-            optional(char('_')),
+            optional(byte(b'_')),
             skip_many1(digit()),
         )),
-    ))
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out npn-ASCII") }
+    })
 });
 
 // exp = "e" float-exp-part
 // float-exp-part = [ minus / plus ] zero-prefixable-int
 parse!(exp() -> &'a str, {
     recognize((
-        one_of("eE".chars()),
-        optional(one_of("+-".chars())),
+        one_of([b'e', b'E']),
+        optional(one_of([b'+', b'-'])),
         parse_zero_prefixable_int(),
-    ))
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`one_of` and `parse_zero_prefixable_int` filter out npn-ASCII") }
+    })
 });
 
 // special-float = [ minus / plus ] ( inf / nan )
 parse!(special_float() -> f64, {
-    attempt(optional(one_of("+-".chars())).and(choice((inf(), nan()))).map(|(s, f)| {
+    attempt(optional(one_of([b'+', b'-'])).and(choice((inf(), nan()))).map(|(s, f)| {
         match s {
-            Some('+') | None => f,
-            Some('-') => -f,
+            Some(b'+') | None => f,
+            Some(b'-') => -f,
             _ => unreachable!("one_of should prevent this"),
         }
     }))
@@ -159,10 +176,10 @@ parse!(special_float() -> f64, {
 
 // inf = %x69.6e.66  ; inf
 parse!(inf() -> f64, {
-    range("inf").map(|_| f64::INFINITY)
+    range(&b"inf"[..]).map(|_| f64::INFINITY)
 });
 
 // nan = %x6e.61.6e  ; nan
 parse!(nan() -> f64, {
-    range("nan").map(|_| f64::NAN)
+    range(&b"nan"[..]).map(|_| f64::NAN)
 });

@@ -6,12 +6,13 @@ macro_rules! parse (
             pub(crate) fn $name['a, I]($($arg : $arg_type),*)(I) -> $ret
                 where
                 [I: RangeStream<
-                 Range = &'a str,
-                 Token = char>,
-                 I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
-                 <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+                 Range = &'a [u8],
+                 Token = u8>,
+                 I::Error: ParseError<u8, &'a [u8], <I as StreamOnce>::Position>,
+                 <I::Error as ParseError<u8, &'a [u8], <I as StreamOnce>::Position>>::StreamError:
                  From<std::num::ParseIntError> +
                  From<std::num::ParseFloatError> +
+                 From<std::str::Utf8Error> +
                  From<crate::parser::errors::CustomError>
                 ]
             {
@@ -29,12 +30,13 @@ macro_rules! toml_parser (
             fn $name['a, 'b, I]($argh: &'b RefCell<TomlParser>)(I) -> ()
             where
                 [I: RangeStream<
-                 Range = &'a str,
-                 Token = char>,
-                 I::Error: ParseError<char, &'a str, <I as StreamOnce>::Position>,
-                 <I::Error as ParseError<char, &'a str, <I as StreamOnce>::Position>>::StreamError:
+                 Range = &'a [u8],
+                 Token = u8>,
+                 I::Error: ParseError<u8, &'a [u8], <I as StreamOnce>::Position>,
+                 <I::Error as ParseError<u8, &'a [u8], <I as StreamOnce>::Position>>::StreamError:
                  From<std::num::ParseIntError> +
                  From<std::num::ParseFloatError> +
+                 From<std::str::Utf8Error> +
                  From<crate::parser::errors::CustomError>
                 ]
             {

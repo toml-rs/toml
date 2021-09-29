@@ -6,7 +6,7 @@ use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
 use crate::{InlineTable, InternalString, Item, Value};
-use combine::parser::char::char;
+use combine::parser::byte::byte;
 use combine::stream::RangeStream;
 use combine::*;
 
@@ -14,7 +14,7 @@ use combine::*;
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
 parse!(inline_table() -> InlineTable, {
-    between(char(INLINE_TABLE_OPEN), char(INLINE_TABLE_CLOSE),
+    between(byte(INLINE_TABLE_OPEN), byte(INLINE_TABLE_CLOSE),
             inline_table_keyvals().and_then(|(kv, p)| table_from_pairs(kv, p)))
 });
 
@@ -66,13 +66,13 @@ fn descend_path<'a>(
 }
 
 // inline-table-open  = %x7B ws     ; {
-const INLINE_TABLE_OPEN: char = '{';
+const INLINE_TABLE_OPEN: u8 = b'{';
 // inline-table-close = ws %x7D     ; }
-const INLINE_TABLE_CLOSE: char = '}';
+const INLINE_TABLE_CLOSE: u8 = b'}';
 // inline-table-sep   = ws %x2C ws  ; , Comma
-const INLINE_TABLE_SEP: char = ',';
+const INLINE_TABLE_SEP: u8 = b',';
 // keyval-sep = ws %x3D ws ; =
-pub(crate) const KEYVAL_SEP: char = '=';
+pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 // inline-table-keyvals = [ inline-table-keyvals-non-empty ]
 // inline-table-keyvals-non-empty =
@@ -81,7 +81,7 @@ pub(crate) const KEYVAL_SEP: char = '=';
 
 parse!(inline_table_keyvals() -> (Vec<(Vec<Key>, TableKeyValue)>, &'a str), {
     (
-        sep_by(keyval(), char(INLINE_TABLE_SEP)),
+        sep_by(keyval(), byte(INLINE_TABLE_SEP)),
         ws(),
     )
 });
@@ -89,7 +89,7 @@ parse!(inline_table_keyvals() -> (Vec<(Vec<Key>, TableKeyValue)>, &'a str), {
 parse!(keyval() -> (Vec<Key>, TableKeyValue), {
     (
         key(),
-        char(KEYVAL_SEP),
+        byte(KEYVAL_SEP),
         (ws(), value(), ws()),
     ).map(|(key, _, v)| {
         let mut path = key;

@@ -64,6 +64,6 @@ impl FromStr for Document {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::TomlParser::parse(s)
+        parser::TomlParser::parse(s.as_bytes())
     }
 }

@@ -1,8 +1,10 @@
 use crate::parser::errors::CustomError;
-use crate::parser::trivia::{is_non_ascii, is_wschar, newline, ws, ws_newlines};
+use crate::parser::trivia::{
+    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
+};
 use combine::error::Commit;
-use combine::parser::char::char;
-use combine::parser::range::{range, recognize, take, take_while, take_while1};
+use combine::parser::byte::{byte, bytes, hex_digit};
+use combine::parser::range::{range, recognize, take_while, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
 use std::borrow::Cow;
@@ -25,31 +27,29 @@ parse!(string() -> String, {
 // basic-string = quotation-mark *basic-char quotation-mark
 parse!(basic_string() -> String, {
     between(
-        char(QUOTATION_MARK), char(QUOTATION_MARK),
+        byte(QUOTATION_MARK), byte(QUOTATION_MARK),
         many(basic_chars())
     )
     .message("While parsing a Basic String")
 });
 
 // quotation-mark = %x22            ; "
-const QUOTATION_MARK: char = '"';
+const QUOTATION_MARK: u8 = b'"';
 
 // basic-char = basic-unescaped / escaped
 parse!(basic_chars() -> Cow<'a, str>, {
     choice((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
-        take_while1(is_basic_unescaped).map(Cow::Borrowed),
+        take_while1(is_basic_unescaped).and_then(std::str::from_utf8).map(Cow::Borrowed),
         escaped().map(|c| Cow::Owned(String::from(c))),
     ))
 });
 
 // basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
 #[inline]
-fn is_basic_unescaped(c: char) -> bool {
-    is_wschar(c)
-        | matches!(c, '\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{7E}')
-        | is_non_ascii(c)
+fn is_basic_unescaped(c: u8) -> bool {
+    is_wschar(c) | matches!(c, 0x21 | 0x23..=0x5B | 0x5D..=0x7E) | is_non_ascii(c)
 }
 
 // escaped = escape escape-seq-char
@@ -61,7 +61,7 @@ parse!(escaped() -> char, {
 });
 
 // escape = %x5C                    ; \
-const ESCAPE: char = '\\';
+const ESCAPE: u8 = b'\\';
 
 // escape-seq-char =  %x22         ; "    quotation mark  U+0022
 // escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
@@ -78,27 +78,35 @@ parse!(escale_seq_char() -> char, {
         .then(|c| {
             parser(move |input| {
                 match c {
-                    'b'  => Ok(('\u{8}', Commit::Peek(()))),
-                    'f'  => Ok(('\u{c}', Commit::Peek(()))),
-                    'n'  => Ok(('\n',    Commit::Peek(()))),
-                    'r'  => Ok(('\r',    Commit::Peek(()))),
-                    't'  => Ok(('\t',    Commit::Peek(()))),
-                    'u'  => hexescape(4).parse_stream(input).into_result(),
-                    'U'  => hexescape(8).parse_stream(input).into_result(),
-                    // ['\\', '"',]
-                    _    => Ok((c,       Commit::Peek(()))),
+                    b'b'  => Ok(('\u{8}', Commit::Peek(()))),
+                    b'f'  => Ok(('\u{c}', Commit::Peek(()))),
+                    b'n'  => Ok(('\n',    Commit::Peek(()))),
+                    b'r'  => Ok(('\r',    Commit::Peek(()))),
+                    b't'  => Ok(('\t',    Commit::Peek(()))),
+                    b'u'  => hexescape(4).parse_stream(input).into_result(),
+                    b'U'  => hexescape(8).parse_stream(input).into_result(),
+                    b'\\' => Ok(('\\',    Commit::Peek(()))),
+                    b'"'  => Ok(('"',     Commit::Peek(()))),
+                    _ => unreachable!("{:?} filtered out by is_escape_seq_char", c),
                 }
             })
         })
 });
 
 #[inline]
-fn is_escape_seq_char(c: char) -> bool {
-    matches!(c, '"' | '\\' | 'b' | 'f' | 'n' | 'r' | 't' | 'u' | 'U')
+fn is_escape_seq_char(c: u8) -> bool {
+    matches!(
+        c,
+        b'"' | b'\\' | b'b' | b'f' | b'n' | b'r' | b't' | b'u' | b'U'
+    )
 }
 
 parse!(hexescape(n: usize) -> char, {
-    take(*n)
+    recognize(skip_count_min_max(
+        *n, *n,
+        hex_digit(),
+    ))
+        .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
         .and_then(|s| u32::from_str_radix(s, 16))
         .and_then(|h| char::from_u32(h).ok_or(CustomError::InvalidHexEscape(h)))
 });
@@ -119,7 +127,7 @@ parse!(ml_basic_string() -> String, {
 });
 
 // ml-basic-string-delim = 3quotation-mark
-const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
+const ML_BASIC_STRING_DELIM: &[u8] = b"\"\"\"";
 
 // ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 parse!(ml_basic_body() -> String, {
@@ -147,7 +155,7 @@ parse!(mlb_content() -> Cow<'a, str>, {
     choice((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
-        take_while1(is_mlb_unescaped).map(Cow::Borrowed),
+        take_while1(is_mlb_unescaped).and_then(std::str::from_utf8).map(Cow::Borrowed),
         attempt(escaped().map(|c| Cow::Owned(String::from(c)))),
         newline().map(|_| Cow::Borrowed("\n")),
         mlb_escaped_nl().map(|_| Cow::Borrowed("")),
@@ -157,17 +165,17 @@ parse!(mlb_content() -> Cow<'a, str>, {
 // mlb-quotes = 1*2quotation-mark
 parse!(mlb_quotes() -> &'a str, {
     choice((
-        attempt(combine::parser::char::string("\"\"")),
-        attempt(combine::parser::char::string("\"")),
-    ))
+        attempt(bytes(b"\"\"")),
+        attempt(bytes(b"\"")),
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`bytes` out npn-ASCII") }
+    })
 });
 
 // mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
 #[inline]
-fn is_mlb_unescaped(c: char) -> bool {
-    is_wschar(c)
-        | matches!(c, '\u{21}' | '\u{23}'..='\u{5B}' | '\u{5D}'..='\u{7E}')
-        | is_non_ascii(c)
+fn is_mlb_unescaped(c: u8) -> bool {
+    is_wschar(c) | matches!(c, 0x21 | 0x23..=0x5B | 0x5D..=0x7E) | is_non_ascii(c)
 }
 
 // mlb-escaped-nl = escape ws newline *( wschar / newline
@@ -177,7 +185,7 @@ fn is_mlb_unescaped(c: char) -> bool {
 // character or closing delimiter.
 parse!(mlb_escaped_nl() -> (), {
     skip_many1(attempt((
-        char(ESCAPE),
+        byte(ESCAPE),
         ws(),
         ws_newlines(),
     )))
@@ -187,18 +195,20 @@ parse!(mlb_escaped_nl() -> (), {
 
 // literal-string = apostrophe *literal-char apostrophe
 parse!(literal_string() -> &'a str, {
-    between(char(APOSTROPHE), char(APOSTROPHE),
-            take_while(is_literal_char))
+    between(
+        byte(APOSTROPHE), byte(APOSTROPHE),
+        take_while(is_literal_char)
+    ).and_then(std::str::from_utf8)
         .message("While parsing a Literal String")
 });
 
 // apostrophe = %x27 ; ' apostrophe
-const APOSTROPHE: char = '\'';
+const APOSTROPHE: u8 = b'\'';
 
 // literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
 #[inline]
-fn is_literal_char(c: char) -> bool {
-    matches!(c, '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{7E}') | is_non_ascii(c)
+fn is_literal_char(c: u8) -> bool {
+    matches!(c, 0x09 | 0x20..=0x26 | 0x28..=0x7E) | is_non_ascii(c)
 }
 
 // ;; Multiline Literal String
@@ -217,7 +227,7 @@ parse!(ml_literal_string() -> String, {
 });
 
 // ml-literal-string-delim = 3apostrophe
-const ML_LITERAL_STRING_DELIM: &str = "'''";
+const ML_LITERAL_STRING_DELIM: &[u8] = b"'''";
 
 // ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
 parse!(ml_literal_body() -> &'a str, {
@@ -226,27 +236,29 @@ parse!(ml_literal_body() -> &'a str, {
         skip_many(attempt((mll_quotes(), skip_many1(mll_content())))),
         // BUG: See #128
         //optional(mll_quotes()),
-    ))
+    )).and_then(std::str::from_utf8)
 });
 
 // mll-content = mll-char / newline
-parse!(mll_content() -> char, {
+parse!(mll_content() -> u8, {
     choice((
         satisfy(is_mll_char),
-        newline()
+        newline().map(|_| b'\n')
     ))
 });
 
 // mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
 #[inline]
-fn is_mll_char(c: char) -> bool {
-    matches!(c, '\u{09}' | '\u{20}'..='\u{26}' | '\u{28}'..='\u{7E}') | is_non_ascii(c)
+fn is_mll_char(c: u8) -> bool {
+    matches!(c, 0x09 | 0x20..=0x26 | 0x28..=0x7E) | is_non_ascii(c)
 }
 
 // mll-quotes = 1*2apostrophe
 parse!(mll_quotes() -> &'a str, {
     choice((
-        attempt(combine::parser::char::string("''")),
-        attempt(combine::parser::char::string("'")),
-    ))
+        attempt(bytes(b"''")),
+        attempt(bytes(b"'")),
+    )).map(|b: &[u8]| {
+        unsafe { from_utf8_unchecked(b, "`bytes` out npn-ASCII") }
+    })
 });

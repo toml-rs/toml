@@ -1,7 +1,8 @@
 use crate::datetime::*;
 use crate::parser::errors::CustomError;
-use combine::parser::char::char;
-use combine::parser::range::{take, take_while1};
+use crate::parser::trivia::from_utf8_unchecked;
+use combine::parser::byte::byte;
+use combine::parser::range::{recognize, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
 
@@ -48,9 +49,9 @@ parse!(date_time() -> Datetime, {
 // full-date      = date-fullyear "-" date-month "-" date-mday
 parse!(full_date() -> Date, {
     (
-        attempt((date_fullyear(), char('-'))),
+        attempt((date_fullyear(), byte(b'-'))),
         date_month(),
-        char('-'),
+        byte(b'-'),
         date_mday(),
     ).map(|((year, _), month, _, day)| {
         Date { year, month, day }
@@ -62,10 +63,10 @@ parse!(partial_time() -> Time, {
     (
         attempt((
             time_hour(),
-            char(':'),
+            byte(b':'),
         )),
         time_minute(),
-        char(':'),
+        byte(b':'),
         time_second(),
         optional(attempt(time_secfrac())),
     ).map(|((hour, _), minute, _, second, nanosecond)| {
@@ -76,18 +77,18 @@ parse!(partial_time() -> Time, {
 // time-offset    = "Z" / time-numoffset
 // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
 parse!(time_offset() -> Offset, {
-    attempt(satisfy(|c| c == 'Z' || c == 'z')).map(|_| Offset::Z)
+    attempt(satisfy(|c| c == b'Z' || c == b'z')).map(|_| Offset::Z)
         .or(
             (
-                attempt(choice([char('+'), char('-')])),
+                attempt(choice([byte(b'+'), byte(b'-')])),
                 time_hour(),
-                char(':'),
+                byte(b':'),
                 time_minute(),
             ).map(|(sign, hours, _, minutes)| {
                 let hours = hours as i8;
                 let hours = match sign {
-                    '+' => hours,
-                    '-' => -hours,
+                    b'+' => hours,
+                    b'-' => -hours,
                     _ => unreachable!("Parser prevents this"),
                 };
                 Offset::Custom { hours, minutes }
@@ -123,8 +124,8 @@ parse!(date_mday() -> u8, {
 });
 
 // time-delim     = "T" / %x20 ; T, t, or space
-fn is_time_delim(c: char) -> bool {
-    matches!(c, 'T' | 't' | ' ')
+fn is_time_delim(c: u8) -> bool {
+    matches!(c, b'T' | b't' | b' ')
 }
 
 // time-hour      = 2DIGIT  ; 00-23
@@ -162,7 +163,9 @@ parse!(time_second() -> u8, {
 
 // time-secfrac   = "." 1*DIGIT
 parse!(time_secfrac() -> u32, {
-    char('.').and(take_while1(|c: char| c.is_digit(10))).and_then::<_, _, CustomError>(|(_, repr): (char, &str)| {
+    byte(b'.').and(take_while1(|c: u8| c.is_ascii_digit())).and_then::<_, _, CustomError>(|(_, repr): (u8, &[u8])| {
+        let repr = unsafe { from_utf8_unchecked(repr, "`is_ascii_digit` filters out on-ASCII") };
+
         let v = repr.parse::<u32>().map_err(|_| CustomError::OutOfRange)?;
         let consumed = repr.len();
 
@@ -176,9 +179,21 @@ parse!(time_secfrac() -> u32, {
 });
 
 parse!(signed_digits(count: usize) -> i32, {
-    take(*count).and_then(|s: &str| s.parse::<i32>())
+    recognize(skip_count_min_max(
+        *count, *count,
+        satisfy(|c: u8| c.is_ascii_digit()),
+    )).and_then(|b: &[u8]| {
+        let s = unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") };
+        s.parse::<i32>()
+    })
 });
 
 parse!(unsigned_digits(count: usize) -> u32, {
-    take(*count).and_then(|s: &str| s.parse::<u32>())
+    recognize(skip_count_min_max(
+        *count, *count,
+        satisfy(|c: u8| c.is_ascii_digit()),
+    )).and_then(|b: &[u8]| {
+        let s = unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") };
+        s.parse::<u32>()
+    })
 });

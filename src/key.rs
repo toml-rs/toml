@@ -92,14 +92,20 @@ impl Key {
     }
 
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
+        use combine::stream::position::{IndexPositioner, Positioner};
         use combine::EasyParser;
-        let result = parser::key_parser().easy_parse(Stream::new(s));
+
+        let b = s.as_bytes();
+        let result = parser::key_parser().easy_parse(Stream::new(b));
         match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => {
-                Err(parser::TomlError::from_unparsed(rest.positioner, s))
-            }
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                b,
+            )),
             Ok(((raw, key), _)) => Ok(Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw))),
-            Err(e) => Err(parser::TomlError::new(e, s)),
+            Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }
 }
@@ -126,7 +132,7 @@ impl FromStr for Key {
 }
 
 fn to_key_repr(key: &str) -> Repr {
-    if key.chars().all(is_unquoted_char) && !key.is_empty() {
+    if key.as_bytes().iter().copied().all(is_unquoted_char) && !key.is_empty() {
         Repr::new_unchecked(key)
     } else {
         to_string_repr(key, Some(StringStyle::OnelineSingle), Some(false))
