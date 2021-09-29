@@ -93,12 +93,15 @@ impl TomlParser {
             .with(choice((
                 eof(),
                 skip_many1(
-                    choice((
-                        parse_comment(&parser),
-                        keyval(&parser),
-                        table(&parser),
-                        parse_newline(&parser),
-                    ))
+                    look_ahead(any()).then(|e| {
+                        dispatch!(e;
+                            crate::parser::trivia::COMMENT_START_SYMBOL => parse_comment(&parser),
+                            crate::parser::table::STD_TABLE_OPEN => table(&parser),
+                            crate::parser::trivia::LF |
+                            crate::parser::trivia::CR => parse_newline(&parser),
+                            _ => keyval(&parser),
+                        )
+                    })
                     .skip(parse_ws(&parser)),
                 ),
             )))

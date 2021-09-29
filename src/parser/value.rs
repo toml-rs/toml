@@ -13,26 +13,29 @@ use combine::*;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
 parse!(value() -> v::Value, {
-    recognize_with_value(choice((
-        string()
-            .map(|s|
+    recognize_with_value(look_ahead(any()).then(|e| {
+        dispatch!(e;
+            crate::parser::strings::QUOTATION_MARK |
+            crate::parser::strings::APOSTROPHE => string().map(|s| {
                 v::Value::String(Formatted::new(
                     s,
                 ))
-            ),
-        boolean()
-            .map(v::Value::from),
-        array()
-            .map(v::Value::Array),
-        inline_table()
-            .map(v::Value::InlineTable),
-        date_time()
-            .map(v::Value::from),
-        float()
-            .map(v::Value::from),
-        integer()
-            .map(v::Value::from),
-    ))).and_then(|(raw, value)| apply_raw(value, raw))
+            }),
+            crate::parser::array::ARRAY_OPEN => array().map(v::Value::Array),
+            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table().map(v::Value::InlineTable),
+            // Uncommon enough not to be worth optimizing at this time
+            _ => choice((
+                boolean()
+                    .map(v::Value::from),
+                date_time()
+                    .map(v::Value::from),
+                float()
+                    .map(v::Value::from),
+                integer()
+                    .map(v::Value::from),
+            )),
+        )
+    })).and_then(|(raw, value)| apply_raw(value, raw))
 });
 
 fn apply_raw(mut val: Value, raw: &[u8]) -> Result<Value, std::str::Utf8Error> {

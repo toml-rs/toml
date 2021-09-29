@@ -45,7 +45,7 @@ fn is_non_eol(c: u8) -> bool {
 }
 
 // comment-start-symbol = %x23 ; #
-const COMMENT_START_SYMBOL: u8 = b'#';
+pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 // comment = comment-start-symbol *non-eol
 parse!(comment() -> &'a [u8], {
@@ -57,6 +57,8 @@ parse!(comment() -> &'a [u8], {
 
 // newline = ( %x0A /              ; LF
 //             %x0D.0A )           ; CRLF
+pub(crate) const LF: u8 = b'\n';
+pub(crate) const CR: u8 = b'\r';
 parse!(newline() -> char, {
     choice((lf(), crlf()))
         .map(|_| '\n')

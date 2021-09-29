@@ -24,11 +24,17 @@ parse!(key() -> Vec<Key>, {
 });
 
 // simple-key = quoted-key / unquoted-key
+// quoted-key = basic-string / literal-string
 parse!(simple_key() -> (&'a str, InternalString), {
-    recognize_with_value(choice((
-        quoted_key(),
-        unquoted_key().map(|s: &'a str| s.into()),
-    ))).map(|(b, k)| {
+    recognize_with_value(
+        look_ahead(any()).then(|e| {
+            dispatch!(e;
+                crate::parser::strings::QUOTATION_MARK => basic_string().map(|s: String| s.into()),
+                crate::parser::strings::APOSTROPHE => literal_string().map(|s: &'a str| s.into()),
+                _ => unquoted_key().map(|s: &'a str| s.into()),
+            )
+        })
+    ).map(|(b, k)| {
         let s = unsafe { from_utf8_unchecked(b, "If `quoted_key` or `unquoted_key` are valid, then their `recognize`d value is valid") };
         (s, k)
     })
@@ -45,14 +51,6 @@ parse!(unquoted_key() -> &'a str, {
 pub(crate) fn is_unquoted_char(c: u8) -> bool {
     matches!(c, b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_')
 }
-
-// quoted-key = basic-string / literal-string
-parse!(quoted_key() -> InternalString, {
-    choice((
-        basic_string().map(|s: String| s.into()),
-        literal_string().map(|s: &'a str| s.into()),
-    ))
-});
 
 // dot-sep   = ws %x2E ws  ; . Period
 const DOT_SEP: u8 = b'.';

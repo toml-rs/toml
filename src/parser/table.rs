@@ -17,7 +17,7 @@ use std::mem;
 use std::ops::DerefMut;
 
 // std-table-open  = %x5B ws     ; [ Left square bracket
-const STD_TABLE_OPEN: u8 = b'[';
+pub(crate) const STD_TABLE_OPEN: u8 = b'[';
 // std-table-close = ws %x5D     ; ] Right square bracket
 const STD_TABLE_CLOSE: u8 = b']';
 // array-table-open  = %x5B.5B ws  ; [[ Double left square bracket

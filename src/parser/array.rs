@@ -17,7 +17,7 @@ parse!(array() -> Array, {
 // note: we're omitting ws and newlines here, because
 // they should be part of the formatted values
 // array-open  = %x5B ws-newline  ; [
-const ARRAY_OPEN: u8 = b'[';
+pub(crate) const ARRAY_OPEN: u8 = b'[';
 // array-close = ws-newline %x5D  ; ]
 const ARRAY_CLOSE: u8 = b']';
 // array-sep = ws %x2C ws  ; , Comma
