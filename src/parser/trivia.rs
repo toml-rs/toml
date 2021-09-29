@@ -50,7 +50,7 @@ const COMMENT_START_SYMBOL: u8 = b'#';
 // comment = comment-start-symbol *non-eol
 parse!(comment() -> &'a [u8], {
     recognize((
-        attempt(byte(COMMENT_START_SYMBOL)),
+        byte(COMMENT_START_SYMBOL),
         take_while(is_non_eol),
     ))
 });
