@@ -7,6 +7,28 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+#### Performance
+
+| toml_edit | `cargo init` Cargo.toml | Cargo's Cargo.toml |
+|-----------|-------------------------|--------------------|
+| HEAD      | 4.0 us                  | 149 us             |
+
+| toml_edit::easy | `cargo init` Cargo.toml | Cargo's Cargo.toml |
+|-----------------|-------------------------|--------------------|
+| v0.4.0          | 16.9 us                 | 602 us             |
+| HEAD            | 5.0 us                  | 179 us             |
+
+| toml    | `cargo init` Cargo.toml | Cargo's Cargo.toml |
+|---------|-------------------------|--------------------|
+| v0.5.8  | 4.7 us                  | 121 us             |
+
+- Removed ambiguity between `String` and `Datetime` when deserializing
+- Hand implemented `Deserialize` for `toml_edit::easy::Value` to dispatch on type, rather than trying every variant.
+
+#### Breaking Changes
+
+- `Datetime` is no longer a string in `serde`s data model but a proprietary type.
+
 ## [0.4.0] - 2021-09-29
 
 #### Breaking Changes
