@@ -79,8 +79,9 @@ use crate::parser;
 /// [Local Date]: https://toml.io/en/v1.0.0#local-date
 /// [Local Time]: https://toml.io/en/v1.0.0#local-time
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(try_from = "String"))]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "dt_serde::DatetimeSerde"))]
+#[cfg_attr(feature = "serde", serde(into = "dt_serde::DatetimeSerde"))]
 pub struct Datetime {
     /// Optional date.
     /// Required for: *Offset Date-Time*, *Local Date-Time*, *Local Date*.
@@ -96,12 +97,43 @@ pub struct Datetime {
 }
 
 #[cfg(feature = "serde")]
-impl serde::Serialize for Datetime {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
+pub(crate) mod dt_serde {
+    use std::convert::TryFrom;
+
+    use super::Datetime;
+    use crate::parser;
+
+    // Currently serde itself doesn't have a datetime type, so we map our `Datetime`
+    // to a special valid in the serde data model. Namely one with these special
+    // fields/struct names.
+    //
+    // In general the TOML encoder/decoder will catch this and not literally emit
+    // these strings but rather emit datetimes as they're intended.
+    pub(crate) const NAME: &str = "$__toml_private_Datetime";
+    pub(crate) const FIELD: &str = "$__toml_private_datetime";
+    #[derive(
+        PartialEq, Eq, PartialOrd, Ord, Clone, Debug, serde::Deserialize, serde::Serialize,
+    )]
+    #[serde(rename = "$__toml_private_Datetime")]
+    pub(crate) struct DatetimeSerde {
+        #[serde(rename = "$__toml_private_datetime")]
+        field: String,
+    }
+
+    impl From<Datetime> for DatetimeSerde {
+        fn from(d: Datetime) -> Self {
+            Self {
+                field: d.to_string(),
+            }
+        }
+    }
+
+    impl TryFrom<DatetimeSerde> for Datetime {
+        type Error = parser::TomlError;
+
+        fn try_from(s: DatetimeSerde) -> Result<Self, Self::Error> {
+            s.field.parse()
+        }
     }
 }
 
