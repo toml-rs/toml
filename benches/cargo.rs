@@ -11,10 +11,23 @@ fn cargo_manifest(c: &mut Criterion) {
             b.iter(|| sample.parse::<toml_edit::Document>());
         });
         #[cfg(feature = "easy")]
-        group.bench_with_input(BenchmarkId::new("toml_edit::easy", name), &len, |b, _| {
-            sample.parse::<toml_edit::easy::Value>().unwrap();
-            b.iter(|| sample.parse::<toml_edit::easy::Value>());
-        });
+        group.bench_with_input(
+            BenchmarkId::new("toml_edit::easy::de", name),
+            &len,
+            |b, _| {
+                toml_edit::easy::from_str::<manifest::Manifest>(sample).unwrap();
+                b.iter(|| toml_edit::easy::from_str::<manifest::Manifest>(sample).unwrap())
+            },
+        );
+        #[cfg(feature = "easy")]
+        group.bench_with_input(
+            BenchmarkId::new("toml_edit::easy::Value", name),
+            &len,
+            |b, _| {
+                sample.parse::<toml_edit::easy::Value>().unwrap();
+                b.iter(|| sample.parse::<toml_edit::easy::Value>());
+            },
+        );
         group.bench_with_input(BenchmarkId::new("toml", name), &len, |b, _| {
             sample.parse::<toml::Value>().unwrap();
             b.iter(|| sample.parse::<toml::Value>());
@@ -158,3 +171,103 @@ deny-warnings = []
 vendored-openssl = ["openssl/vendored"]
 pretty-env-logger = ["pretty_env_logger"]
 "#;
+
+#[cfg(feature = "easy")]
+mod manifest {
+    use std::collections::HashMap;
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub struct Manifest {
+        package: Package,
+        #[serde(default)]
+        lib: Option<Lib>,
+        #[serde(default)]
+        bin: Vec<Bin>,
+        #[serde(default)]
+        features: HashMap<String, Vec<String>>,
+        #[serde(default)]
+        dependencies: HashMap<String, Dependency>,
+        #[serde(default)]
+        build_dependencies: HashMap<String, Dependency>,
+        #[serde(default)]
+        dev_dependencies: HashMap<String, Dependency>,
+        #[serde(default)]
+        target: HashMap<String, Target>,
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub struct Package {
+        name: String,
+        version: String,
+        #[serde(default)]
+        edition: Option<String>,
+        #[serde(default)]
+        authors: Vec<String>,
+        #[serde(default)]
+        license: Option<String>,
+        #[serde(default)]
+        homepage: Option<String>,
+        #[serde(default)]
+        repository: Option<String>,
+        #[serde(default)]
+        documentation: Option<String>,
+        #[serde(default)]
+        readme: Option<String>,
+        #[serde(default)]
+        description: Option<String>,
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub struct Lib {
+        name: String,
+        #[serde(default)]
+        path: Option<String>,
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub struct Bin {
+        name: String,
+        #[serde(default)]
+        test: bool,
+        #[serde(default)]
+        doc: bool,
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    #[serde(untagged)]
+    pub enum Dependency {
+        Version(String),
+        Full(DependencyFull),
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub struct DependencyFull {
+        #[serde(default)]
+        version: Option<String>,
+        #[serde(default)]
+        path: Option<String>,
+        #[serde(default)]
+        default_features: bool,
+        #[serde(default)]
+        optional: bool,
+        #[serde(default)]
+        features: Vec<String>,
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub struct Target {
+        #[serde(default)]
+        dependencies: HashMap<String, Dependency>,
+        #[serde(default)]
+        build_dependencies: HashMap<String, Dependency>,
+        #[serde(default)]
+        dev_dependencies: HashMap<String, Dependency>,
+    }
+}
