@@ -7,10 +7,11 @@ use std::ops;
 use std::str::FromStr;
 
 pub use crate::easy::datetime::*;
+use crate::easy::map::Entry;
 pub use crate::easy::map::Map;
 
 /// Representation of a TOML value.
-#[derive(PartialEq, Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(PartialEq, Clone, Debug, serde::Serialize)]
 #[serde(untagged)]
 pub enum Value {
     /// Represents a TOML integer
@@ -380,5 +381,153 @@ impl FromStr for Value {
     type Err = crate::easy::de::Error;
     fn from_str(s: &str) -> Result<Value, Self::Err> {
         crate::easy::from_str(s)
+    }
+}
+
+impl<'de> serde::de::Deserialize<'de> for Value {
+    fn deserialize<D>(deserializer: D) -> Result<Value, D::Error>
+    where
+        D: serde::de::Deserializer<'de>,
+    {
+        struct ValueVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for ValueVisitor {
+            type Value = Value;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("any valid TOML value")
+            }
+
+            fn visit_bool<E>(self, value: bool) -> Result<Value, E> {
+                Ok(Value::Boolean(value))
+            }
+
+            fn visit_i64<E>(self, value: i64) -> Result<Value, E> {
+                Ok(Value::Integer(value))
+            }
+
+            fn visit_u64<E: serde::de::Error>(self, value: u64) -> Result<Value, E> {
+                if value <= i64::max_value() as u64 {
+                    Ok(Value::Integer(value as i64))
+                } else {
+                    Err(serde::de::Error::custom("u64 value was too large"))
+                }
+            }
+
+            fn visit_u32<E>(self, value: u32) -> Result<Value, E> {
+                Ok(Value::Integer(value.into()))
+            }
+
+            fn visit_i32<E>(self, value: i32) -> Result<Value, E> {
+                Ok(Value::Integer(value.into()))
+            }
+
+            fn visit_f64<E>(self, value: f64) -> Result<Value, E> {
+                Ok(Value::Float(value))
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Value, E> {
+                Ok(Value::String(value.into()))
+            }
+
+            fn visit_string<E>(self, value: String) -> Result<Value, E> {
+                Ok(Value::String(value))
+            }
+
+            fn visit_some<D>(self, deserializer: D) -> Result<Value, D::Error>
+            where
+                D: serde::de::Deserializer<'de>,
+            {
+                serde::de::Deserialize::deserialize(deserializer)
+            }
+
+            fn visit_seq<V>(self, mut visitor: V) -> Result<Value, V::Error>
+            where
+                V: serde::de::SeqAccess<'de>,
+            {
+                let mut vec = Vec::new();
+                while let Some(elem) = visitor.next_element()? {
+                    vec.push(elem);
+                }
+                Ok(Value::Array(vec))
+            }
+
+            fn visit_map<V>(self, mut visitor: V) -> Result<Value, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut key = String::new();
+                let datetime = visitor.next_key_seed(DatetimeOrTable { key: &mut key })?;
+                match datetime {
+                    Some(true) => {
+                        let date: String = visitor.next_value()?;
+                        let date = date.parse::<Datetime>().map_err(serde::de::Error::custom)?;
+                        return Ok(Value::Datetime(date));
+                    }
+                    None => return Ok(Value::Table(Map::new())),
+                    Some(false) => {}
+                }
+                let mut map = Map::new();
+                map.insert(key, visitor.next_value()?);
+                while let Some(key) = visitor.next_key::<String>()? {
+                    if let Entry::Vacant(vacant) = map.entry(&key) {
+                        vacant.insert(visitor.next_value()?);
+                    } else {
+                        let msg = format!("duplicate key: `{}`", key);
+                        return Err(serde::de::Error::custom(msg));
+                    }
+                }
+                Ok(Value::Table(map))
+            }
+        }
+
+        deserializer.deserialize_any(ValueVisitor)
+    }
+}
+
+struct DatetimeOrTable<'a> {
+    key: &'a mut String,
+}
+
+impl<'a, 'de> serde::de::DeserializeSeed<'de> for DatetimeOrTable<'a> {
+    type Value = bool;
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::de::Deserializer<'de>,
+    {
+        deserializer.deserialize_any(self)
+    }
+}
+
+impl<'a, 'de> serde::de::Visitor<'de> for DatetimeOrTable<'a> {
+    type Value = bool;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a string key")
+    }
+
+    fn visit_str<E>(self, s: &str) -> Result<bool, E>
+    where
+        E: serde::de::Error,
+    {
+        if s == crate::datetime::dt_serde::FIELD {
+            Ok(true)
+        } else {
+            self.key.push_str(s);
+            Ok(false)
+        }
+    }
+
+    fn visit_string<E>(self, s: String) -> Result<bool, E>
+    where
+        E: serde::de::Error,
+    {
+        if s == crate::datetime::dt_serde::FIELD {
+            Ok(true)
+        } else {
+            *self.key = s;
+            Ok(false)
+        }
     }
 }
