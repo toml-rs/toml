@@ -1,3 +1,9 @@
+#[cfg(not(feature = "easy"))]
+fn main() {
+    println!("Add `--features easy`");
+}
+
+#[cfg(feature = "easy")]
 fn main() {
     const CARGO_MANIFEST: &str = r#"
 [package]
@@ -118,6 +124,6 @@ deny-warnings = []
 vendored-openssl = ["openssl/vendored"]
 pretty-env-logger = ["pretty_env_logger"]
 "#;
-    let manifest = CARGO_MANIFEST.parse::<toml_edit::Document>().unwrap();
-    println!("{:#?}", manifest);
+    #[cfg(feature = "easy")]
+    let _ = CARGO_MANIFEST.parse::<toml_edit::easy::Value>().unwrap();
 }
