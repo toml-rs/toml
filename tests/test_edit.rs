@@ -763,7 +763,7 @@ fn test_insert_dotted_into_std_table() {
 
             root["nixpkgs"]["src"] = table();
             root["nixpkgs"]["src"]
-                .as_table_mut()
+                .as_table_like_mut()
                 .unwrap()
                 .set_dotted(true);
             root["nixpkgs"]["src"]["git"] = value("https://github.com/nixos/nixpkgs");
@@ -784,7 +784,7 @@ fn test_insert_dotted_into_implicit_table() {
 
             root["nixpkgs"]["src"]["git"] = value("https://github.com/nixos/nixpkgs");
             root["nixpkgs"]["src"]
-                .as_inline_table_mut()
+                .as_table_like_mut()
                 .unwrap()
                 .set_dotted(true);
         })

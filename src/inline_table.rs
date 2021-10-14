@@ -388,6 +388,13 @@ impl TableLike for InlineTable {
     fn sort_values(&mut self) {
         self.sort_values()
     }
+    fn set_dotted(&mut self, yes: bool) {
+        self.set_dotted(yes)
+    }
+    fn is_dotted(&self) -> bool {
+        self.is_dotted()
+    }
+
     fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
         self.key_decor_mut(key)
     }
