@@ -44,11 +44,11 @@ impl InlineTable {
     pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         let mut values = Vec::new();
         let root = Vec::new();
-        self.get_values_internal(&root, &mut values);
+        self.append_values(&root, &mut values);
         values
     }
 
-    fn get_values_internal<'s, 'c>(
+    pub(crate) fn append_values<'s, 'c>(
         &'s self,
         parent: &[&'s Key],
         values: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
@@ -58,7 +58,7 @@ impl InlineTable {
             path.push(&value.key);
             match &value.value {
                 Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
-                    table.get_values_internal(&path, values);
+                    table.append_values(&path, values);
                 }
                 Item::Value(value) => {
                     values.push((path, value));
