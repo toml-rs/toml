@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.0] - 2021-10-14
+
 #### Features
 
 - Add `TableLike::set_dotted` so you can make a table dotted, independent of its type
@@ -112,7 +114,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/ordian/toml_edit/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/ordian/toml_edit/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/ordian/toml_edit/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/ordian/toml_edit/compare/v0.3.0...v0.3.1
