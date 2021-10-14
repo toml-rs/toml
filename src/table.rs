@@ -431,6 +431,10 @@ pub trait TableLike: crate::private::Sealed {
     ///
     /// Doesn't affect subtables or subarrays.
     fn sort_values(&mut self);
+    /// Change this table's dotted status
+    fn set_dotted(&mut self, yes: bool);
+    /// Check if this is a wrapper for dotted keys, rather than a standard table
+    fn is_dotted(&self) -> bool;
 
     /// Returns the decor associated with a given key of the table.
     fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor>;
@@ -470,6 +474,13 @@ impl TableLike for Table {
     fn sort_values(&mut self) {
         self.sort_values()
     }
+    fn is_dotted(&self) -> bool {
+        self.is_dotted()
+    }
+    fn set_dotted(&mut self, yes: bool) {
+        self.set_dotted(yes)
+    }
+
     fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
         self.key_decor_mut(key)
     }
