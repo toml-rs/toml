@@ -396,7 +396,7 @@ pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 pub type IterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Item)> + 'a>;
 
 /// This trait represents either a `Table`, or an `InlineTable`.
-pub trait TableLike {
+pub trait TableLike: crate::private::Sealed {
     /// Returns an iterator over key/value pairs.
     fn iter(&self) -> Iter<'_>;
     /// Returns an mutable iterator over all key/value pairs, including empty.

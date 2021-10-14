@@ -111,4 +111,6 @@ pub(crate) mod private {
     impl Sealed for bool {}
     impl Sealed for crate::Datetime {}
     impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
+    impl Sealed for crate::Table {}
+    impl Sealed for crate::InlineTable {}
 }
