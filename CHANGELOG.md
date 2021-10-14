@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+#### Features
+
+- Add `TableLike::set_dotted` so you can make a table dotted, independent of its type
+
+#### Fixes
+
+- Allow dotted inline-tables in standard tables
+
+#### Breaking Changes
+
+- `toml_edit::TableLike` is now sealed, disallowing others to implement it
+
 ## [0.5.0] - 2021-09-30
 
 #### Performance
