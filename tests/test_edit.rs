@@ -754,3 +754,44 @@ fn test_inline_table_append() {
     assert!(a.contains_key("e"));
     assert_eq!(b.len(), 3);
 }
+
+#[test]
+fn test_insert_dotted_into_std_table() {
+    given("")
+        .running(|root| {
+            root["nixpkgs"] = table();
+
+            root["nixpkgs"]["src"] = table();
+            root["nixpkgs"]["src"]
+                .as_table_mut()
+                .unwrap()
+                .set_dotted(true);
+            root["nixpkgs"]["src"]["git"] = value("https://github.com/nixos/nixpkgs");
+        })
+        .produces_display(
+            r#"
+[nixpkgs]
+src.git = "https://github.com/nixos/nixpkgs"
+"#,
+        );
+}
+
+#[test]
+fn test_insert_dotted_into_implicit_table() {
+    given("")
+        .running(|root| {
+            root["nixpkgs"] = table();
+
+            root["nixpkgs"]["src"]["git"] = value("https://github.com/nixos/nixpkgs");
+            root["nixpkgs"]["src"]
+                .as_inline_table_mut()
+                .unwrap()
+                .set_dotted(true);
+        })
+        .produces_display(
+            r#"
+[nixpkgs]
+src.git = "https://github.com/nixos/nixpkgs"
+"#,
+        );
+}

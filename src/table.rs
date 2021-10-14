@@ -55,11 +55,11 @@ impl Table {
     pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         let mut values = Vec::new();
         let root = Vec::new();
-        self.get_values_internal(&root, &mut values);
+        self.append_values(&root, &mut values);
         values
     }
 
-    fn get_values_internal<'s, 'c>(
+    fn append_values<'s, 'c>(
         &'s self,
         parent: &[&'s Key],
         values: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
@@ -69,10 +69,18 @@ impl Table {
             path.push(&value.key);
             match &value.value {
                 Item::Table(table) if table.is_dotted() => {
-                    table.get_values_internal(&path, values);
+                    table.append_values(&path, values);
                 }
                 Item::Value(value) => {
-                    values.push((path, value));
+                    if let Some(table) = value.as_inline_table() {
+                        if table.is_dotted() {
+                            table.append_values(&path, values);
+                        } else {
+                            values.push((path, value));
+                        }
+                    } else {
+                        values.push((path, value));
+                    }
                 }
                 _ => {}
             }
