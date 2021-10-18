@@ -2,7 +2,12 @@
 //!
 //! This library implements a [TOML] v0.5.0 compatible parser,
 //! primarily supporting the [`serde`] library for encoding/decoding
-//! various types in Rust.
+//! various types in Rust
+//!
+//! **NOTE:** Unlike the core `toml_edit` API, this is not format preserving but is a drop-in
+//! replacement for [toml-rs](https://github.com/alexcrichton/toml-rs) for those needing both
+//! `toml_edit` and `toml-rs` but want either consistency in behavior or to reduce their
+//! dependencies.
 //!
 //! TOML itself is a simple, ergonomic, and readable configuration format:
 //!

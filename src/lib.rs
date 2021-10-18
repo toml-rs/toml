@@ -10,6 +10,8 @@
 //!
 //! It is primarily tailored to the needs of [cargo-edit](https://github.com/killercup/cargo-edit/).
 //!
+//! If you also need the ease of a more traditional API, see the [`easy`] module.
+//!
 //! # Example
 //!
 //! ```rust
