@@ -147,13 +147,6 @@ mod enum_newtype {
 
     #[test]
     fn from_dotted_table() {
-        // FIXME: { kind: Wanted { expected: "string or table", found: "datetime" }
-        // This gets auto parsed as datetime, because 'NewType' has a 'T' in it's name.
-        //
-        // assert_eq!(
-        //     TheEnum::NewType("value".to_string()),
-        //     toml::from_str(r#"NewType = "value""#).unwrap()
-        // );
         assert_eq!(
             Val {
                 val: TheEnum::NewType("value".to_string()),

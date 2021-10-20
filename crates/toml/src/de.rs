@@ -152,9 +152,6 @@ enum ErrorKind {
     /// A previously defined table was redefined as an array.
     RedefineAsArray,
 
-    /// An empty table key was found.
-    EmptyTableKey,
-
     /// Multiline strings are not allowed for key
     MultilineStringKey,
 
@@ -674,10 +671,13 @@ impl<'de, 'b> de::Deserializer<'de> for MapVisitor<'de, 'b> {
     {
         let table = &mut self.tables[self.cur_parent];
         let name = table.header[table.header.len() - 1].1.to_owned();
+
+        // If we are parsing an array of tables, then we will have values to process populated in
+        // self by next_element_seed(). Otherwise, get the values from the current table.
         let mut values: Vec<TablePair<'_>> = if self.values.peek().is_some() {
             self.values.collect()
         } else {
-            table.values.take().unwrap_or_else(Vec::new)
+            table.values.take().unwrap_or_default()
         };
 
         if variants.contains(&name.deref()) {
@@ -690,11 +690,14 @@ impl<'de, 'b> de::Deserializer<'de> for MapVisitor<'de, 'b> {
                 },
             })
         } else if values.len() == 1 {
+            // Handle the cases where:
+            // - There is a newtype variant where NewTypeVariant = "value".
+            // - There is an array of tables, where the variant name is in the values.
             let value = values.remove(0);
             let name = (value.0).1.clone();
 
             visitor.visit_enum(DottedTableDeserializer {
-                name: name,
+                name,
                 value: Value {
                     e: value.1.e,
                     start: 0,
@@ -703,7 +706,7 @@ impl<'de, 'b> de::Deserializer<'de> for MapVisitor<'de, 'b> {
             })
         } else {
             Err(Error::from_kind(
-                None, // FIXME: How do we get an offset here?
+                Some(table.at),
                 ErrorKind::Wanted {
                     expected: "to be able to determine enum type",
                     found: "no values",
@@ -2131,7 +2134,6 @@ impl fmt::Display for Error {
                 write!(f, "redefinition of table `{}`", s)?;
             }
             ErrorKind::RedefineAsArray => "table redefined as array".fmt(f)?,
-            ErrorKind::EmptyTableKey => "empty table key found".fmt(f)?,
             ErrorKind::MultilineStringKey => "multiline strings are not allowed for key".fmt(f)?,
             ErrorKind::Custom => self.inner.message.fmt(f)?,
             ErrorKind::ExpectedTuple(l) => write!(f, "expected table with length {}", l)?,
