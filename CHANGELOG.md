@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- Disallow the direct creation of `toml_edit::ser::Serializer` so we can change it in the future.
+
+#### Fixes
+
+- Decouple serde support from `easy` feature
+- Make core types impl `Deserializer`, making it easier to use them
+- Make core types impl `Display` so its easier to print errors to users
+
 ## [0.7.0] - 2021-11-02
 
 ### Breaking Changes
