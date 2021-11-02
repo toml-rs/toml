@@ -278,6 +278,17 @@ impl FromStr for Item {
     }
 }
 
+impl std::fmt::Display for Item {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Item::None => Ok(()),
+            Item::Value(v) => v.fmt(f),
+            Item::Table(v) => v.fmt(f),
+            Item::ArrayOfTables(v) => v.fmt(f),
+        }
+    }
+}
+
 /// Returns a formatted value.
 ///
 /// Since formatting is part of a `Value`, the right hand side of the
