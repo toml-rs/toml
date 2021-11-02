@@ -8,7 +8,7 @@ use crate::{InternalString, Item, Table};
 #[derive(Debug, Clone)]
 pub struct Document {
     /// Root should always be `Item::Table`.
-    pub root: Item,
+    pub(crate) root: Item,
     // Trailing comments and whitespaces
     pub(crate) trailing: InternalString,
 }
