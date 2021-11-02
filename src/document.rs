@@ -61,3 +61,17 @@ impl FromStr for Document {
         parser::TomlParser::parse(s.as_bytes())
     }
 }
+
+impl std::ops::Deref for Document {
+    type Target = Table;
+
+    fn deref(&self) -> &Self::Target {
+        &self.root
+    }
+}
+
+impl std::ops::DerefMut for Document {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.root
+    }
+}

@@ -16,7 +16,7 @@ fn decoded_to_document(
 ) -> Result<toml_edit::Document, toml_test_harness::Error> {
     let item = root_from_decoded(decoded)?;
     let mut doc = toml_edit::Document::new();
-    *doc.as_table_mut() = item;
+    *doc = item;
     Ok(doc)
 }
 

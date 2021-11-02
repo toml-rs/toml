@@ -17,7 +17,7 @@ impl toml_test_harness::Decoder for Decoder {
 fn document_to_decoded(
     value: &toml_edit::Document,
 ) -> Result<toml_test_harness::Decoded, toml_test_harness::Error> {
-    table_to_decoded(value.as_table())
+    table_to_decoded(value)
 }
 
 fn item_to_decoded(
