@@ -9,38 +9,27 @@ use crate::{value, InlineTable, InternalString, Item, Table, Value};
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs
 
 pub trait Index: crate::private::Sealed {
-    /// Return `Option::None` if the key is not already in the array or table.
     #[doc(hidden)]
-    fn index<'v>(&self, v: &'v Item) -> Option<&'v Item>;
-
-    /// Panic if array index out of bounds. If key is not already in the table,
-    /// insert it with a value of `Item::None`. Panic if `v` has a type that cannot be
-    /// indexed into, except if `v` is `Item::None` then it can be treated as an empty
-    /// inline table.
+    fn index<'v>(&self, val: &'v Item) -> Option<&'v Item>;
     #[doc(hidden)]
-    fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item;
+    fn index_mut<'v>(&self, val: &'v mut Item) -> Option<&'v mut Item>;
 }
 
 impl Index for usize {
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item> {
         match *v {
             Item::ArrayOfTables(ref aot) => aot.values.get(*self),
-            Item::Value(ref a) if a.is_array() => a.as_array().unwrap().values.get(*self),
+            Item::Value(ref a) if a.is_array() => a.as_array().and_then(|a| a.values.get(*self)),
             _ => None,
         }
     }
-    fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
+    fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
         match *v {
-            Item::ArrayOfTables(ref mut vec) => {
-                vec.values.get_mut(*self).expect("index out of bounds")
+            Item::ArrayOfTables(ref mut vec) => vec.values.get_mut(*self),
+            Item::Value(ref mut a) if a.is_array() => {
+                a.as_array_mut().and_then(|a| a.values.get_mut(*self))
             }
-            Item::Value(ref mut a) if a.is_array() => a
-                .as_array_mut()
-                .unwrap()
-                .values
-                .get_mut(*self)
-                .expect("index out of bounds"),
-            _ => panic!("cannot access index {}", self),
+            _ => None,
         }
     }
 }
@@ -55,7 +44,7 @@ impl Index for str {
             _ => None,
         }
     }
-    fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
+    fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
         if let Item::None = *v {
             let mut t = InlineTable::default();
             t.items.insert(
@@ -65,17 +54,15 @@ impl Index for str {
             *v = value(Value::InlineTable(t));
         }
         match *v {
-            Item::Table(ref mut t) => t.entry(self).or_insert(Item::None),
-            Item::Value(ref mut v) if v.is_inline_table() => {
-                &mut v
-                    .as_inline_table_mut()
-                    .unwrap()
+            Item::Table(ref mut t) => Some(t.entry(self).or_insert(Item::None)),
+            Item::Value(ref mut v) if v.is_inline_table() => v.as_inline_table_mut().map(|t| {
+                &mut t
                     .items
                     .entry(InternalString::from(self))
                     .or_insert_with(|| TableKeyValue::new(Key::new(self), Item::None))
                     .value
-            }
-            _ => panic!("cannot access key {}", self),
+            }),
+            _ => None,
         }
     }
 }
@@ -84,8 +71,8 @@ impl Index for String {
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item> {
         self[..].index(v)
     }
-    fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
-        self[..].index_or_insert(v)
+    fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
+        self[..].index_mut(v)
     }
 }
 
@@ -96,8 +83,8 @@ where
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item> {
         (**self).index(v)
     }
-    fn index_or_insert<'v>(&self, v: &'v mut Item) -> &'v mut Item {
-        (**self).index_or_insert(v)
+    fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
+        (**self).index_mut(v)
     }
 }
 
@@ -108,8 +95,7 @@ where
     type Output = Item;
 
     fn index(&self, index: I) -> &Item {
-        static NONE: Item = Item::None;
-        index.index(self).unwrap_or(&NONE)
+        index.index(self).expect("index not found")
     }
 }
 
@@ -118,7 +104,7 @@ where
     I: Index,
 {
     fn index_mut(&mut self, index: I) -> &mut Item {
-        index.index_or_insert(self)
+        index.index_mut(self).expect("index not found")
     }
 }
 
@@ -126,8 +112,7 @@ impl<'s> ops::Index<&'s str> for Table {
     type Output = Item;
 
     fn index(&self, key: &'s str) -> &Item {
-        static NONE: Item = Item::None;
-        self.get(key).unwrap_or(&NONE)
+        self.get(key).expect("index not found")
     }
 }
 
