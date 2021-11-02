@@ -1,6 +1,6 @@
 use serde::de::IntoDeserializer;
 
-use crate::easy::de::Error;
+use crate::de::Error;
 
 pub(crate) struct TableDeserializer {
     input: crate::Table,
@@ -19,7 +19,7 @@ impl<'de, 'a> serde::Deserializer<'de> for TableDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_map(crate::easy::de::TableMapAccess::new(self.input))
+        visitor.visit_map(crate::de::TableMapAccess::new(self.input))
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -54,15 +54,15 @@ impl<'de, 'a> serde::Deserializer<'de> for TableDeserializer {
         V: serde::de::Visitor<'de>,
     {
         if self.input.is_empty() {
-            Err(crate::easy::de::Error::custom(
+            Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
             ))
         } else if self.input.len() != 1 {
-            Err(crate::easy::de::Error::custom(
+            Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
             ))
         } else {
-            visitor.visit_enum(crate::easy::de::TableMapAccess::new(self.input))
+            visitor.visit_enum(crate::de::TableMapAccess::new(self.input))
         }
     }
 
@@ -108,7 +108,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some(v) => seed.deserialize(crate::easy::de::ItemDeserializer::new(v)),
+            Some(v) => seed.deserialize(crate::de::ItemDeserializer::new(v)),
             None => {
                 panic!("no more values in next_value_seed, internal error in ItemDeserializer")
             }

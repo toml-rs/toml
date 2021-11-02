@@ -136,15 +136,15 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
         V: serde::de::Visitor<'de>,
     {
         if self.input.root.is_empty() {
-            Err(crate::easy::de::Error::custom(
+            Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
             ))
         } else if self.input.root.len() != 1 {
-            Err(crate::easy::de::Error::custom(
+            Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
             ))
         } else {
-            visitor.visit_enum(crate::easy::de::TableMapAccess::new(self.input.root))
+            visitor.visit_enum(crate::de::TableMapAccess::new(self.input.root))
         }
     }
 

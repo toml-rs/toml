@@ -135,13 +135,13 @@
 
 mod datetime;
 
-pub mod de;
 #[doc(hidden)]
 pub mod macros;
 pub mod map;
-pub mod ser;
 pub mod value;
 
+pub use crate::de;
+pub use crate::ser;
 pub use crate::toml;
 #[doc(no_inline)]
 pub use de::{from_document, from_slice, from_str, Deserializer};

@@ -1,4 +1,4 @@
-use crate::easy::de::Error;
+use crate::de::Error;
 
 /// Deserializes table values into enum variants.
 pub(crate) struct TableEnumDeserializer {

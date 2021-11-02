@@ -1,4 +1,4 @@
-use crate::easy::de::Error;
+use crate::de::Error;
 
 pub(crate) struct ItemDeserializer {
     input: crate::Item,
@@ -28,12 +28,10 @@ impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
     {
         match self.input {
             crate::Item::None => visitor.visit_none(),
-            crate::Item::Value(v) => {
-                crate::easy::de::ValueDeserializer::new(v).deserialize_any(visitor)
-            }
-            crate::Item::Table(v) => visitor.visit_map(crate::easy::de::TableMapAccess::new(v)),
+            crate::Item::Value(v) => crate::de::ValueDeserializer::new(v).deserialize_any(visitor),
+            crate::Item::Table(v) => visitor.visit_map(crate::de::TableMapAccess::new(v)),
             crate::Item::ArrayOfTables(v) => {
-                visitor.visit_seq(crate::easy::de::ArraySeqAccess::with_array_of_tables(v))
+                visitor.visit_seq(crate::de::ArraySeqAccess::with_array_of_tables(v))
             }
         }
     }
@@ -81,22 +79,22 @@ impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
     {
         match self.input {
             crate::Item::Value(v) => {
-                crate::easy::de::ValueDeserializer::new(v).deserialize_enum(name, variants, visitor)
+                crate::de::ValueDeserializer::new(v).deserialize_enum(name, variants, visitor)
             }
             crate::Item::Table(v) => {
                 if v.is_empty() {
-                    Err(crate::easy::de::Error::custom(
+                    Err(crate::de::Error::custom(
                         "wanted exactly 1 element, found 0 elements",
                     ))
                 } else if v.len() != 1 {
-                    Err(crate::easy::de::Error::custom(
+                    Err(crate::de::Error::custom(
                         "wanted exactly 1 element, more than 1 element",
                     ))
                 } else {
-                    visitor.visit_enum(crate::easy::de::TableMapAccess::new(v))
+                    visitor.visit_enum(crate::de::TableMapAccess::new(v))
                 }
             }
-            _ => Err(crate::easy::de::Error::custom("wanted string or table")),
+            _ => Err(crate::de::Error::custom("wanted string or table")),
         }
     }
 
