@@ -1,4 +1,4 @@
-use crate::easy::de::Error;
+use crate::de::Error;
 
 pub(crate) struct ArrayDeserializer {
     input: Vec<crate::Item>,
@@ -56,7 +56,7 @@ impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess {
     {
         match self.iter.next() {
             Some(v) => seed
-                .deserialize(crate::easy::de::ItemDeserializer::new(v))
+                .deserialize(crate::de::ItemDeserializer::new(v))
                 .map(Some),
             None => Ok(None),
         }

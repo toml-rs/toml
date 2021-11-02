@@ -1,6 +1,6 @@
 use serde::de::IntoDeserializer;
 
-use crate::easy::de::Error;
+use crate::de::Error;
 
 pub(crate) struct InlineTableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
@@ -37,7 +37,7 @@ impl<'de> serde::de::MapAccess<'de> for InlineTableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some(v) => seed.deserialize(crate::easy::de::ItemDeserializer::new(v)),
+            Some(v) => seed.deserialize(crate::de::ItemDeserializer::new(v)),
             None => {
                 panic!("no more values in next_value_seed, internal error in ValueDeserializer")
             }

@@ -1,6 +1,6 @@
 use serde::de::IntoDeserializer;
 
-use crate::easy::de::Error;
+use crate::de::Error;
 
 pub(crate) struct ValueDeserializer {
     input: crate::Value,
@@ -28,11 +28,9 @@ impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
                 date: v.into_value(),
                 visited: false,
             }),
-            crate::Value::Array(v) => {
-                visitor.visit_seq(crate::easy::de::ArraySeqAccess::with_array(v))
-            }
+            crate::Value::Array(v) => visitor.visit_seq(crate::de::ArraySeqAccess::with_array(v)),
             crate::Value::InlineTable(v) => {
-                visitor.visit_map(crate::easy::de::InlineTableMapAccess::new(v))
+                visitor.visit_map(crate::de::InlineTableMapAccess::new(v))
             }
         }
     }
@@ -81,20 +79,18 @@ impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
             crate::Value::String(v) => visitor.visit_enum(v.into_value().into_deserializer()),
             crate::Value::InlineTable(v) => {
                 if v.is_empty() {
-                    Err(crate::easy::de::Error::custom(
+                    Err(crate::de::Error::custom(
                         "wanted exactly 1 element, found 0 elements",
                     ))
                 } else if v.len() != 1 {
-                    Err(crate::easy::de::Error::custom(
+                    Err(crate::de::Error::custom(
                         "wanted exactly 1 element, more than 1 element",
                     ))
                 } else {
-                    visitor.visit_enum(crate::easy::de::InlineTableMapAccess::new(v))
+                    visitor.visit_enum(crate::de::InlineTableMapAccess::new(v))
                 }
             }
-            _ => Err(crate::easy::de::Error::custom(
-                "wanted string or inline table",
-            )),
+            _ => Err(crate::de::Error::custom("wanted string or inline table")),
         }
     }
 
