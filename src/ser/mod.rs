@@ -170,6 +170,7 @@ where
 /// Currently a serializer always writes its output to an in-memory `String`,
 /// which is passed in when creating the serializer itself.
 #[derive(Default)]
+#[non_exhaustive]
 pub struct Serializer {}
 
 impl Serializer {
