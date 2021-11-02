@@ -7,26 +7,24 @@ use crate::easy::value::{Array, Table, Value};
 /// [`toml_edit::easy::Value`]: value/enum.Value.html
 ///
 /// ```rust
-/// fn main() {
-///     let cargo_toml = toml_edit::easy::toml! {
-///         [package]
-///         name = "toml"
-///         version = "0.4.5"
-///         authors = ["Alex Crichton <alex@alexcrichton.com>"]
+/// let cargo_toml = toml_edit::easy::toml! {
+///     [package]
+///     name = "toml"
+///     version = "0.4.5"
+///     authors = ["Alex Crichton <alex@alexcrichton.com>"]
 ///
-///         [badges]
-///         travis-ci = { repository = "alexcrichton/toml-rs" }
+///     [badges]
+///     travis-ci = { repository = "alexcrichton/toml-rs" }
 ///
-///         [dependencies]
-///         serde = "1.0"
+///     [dependencies]
+///     serde = "1.0"
 ///
-///         [dev-dependencies]
-///         serde_derive = "1.0"
-///         serde_json = "1.0"
-///     };
+///     [dev-dependencies]
+///     serde_derive = "1.0"
+///     serde_json = "1.0"
+/// };
 ///
-///     println!("{:#?}", cargo_toml);
-/// }
+/// println!("{:#?}", cargo_toml);
 /// ```
 #[macro_export]
 macro_rules! toml {
