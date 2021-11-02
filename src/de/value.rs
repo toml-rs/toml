@@ -2,24 +2,14 @@ use serde::de::IntoDeserializer;
 
 use crate::de::Error;
 
-pub(crate) struct ValueDeserializer {
-    input: crate::Value,
-}
-
-impl ValueDeserializer {
-    pub(crate) fn new(input: crate::Value) -> Self {
-        Self { input }
-    }
-}
-
-impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
+impl<'de, 'a> serde::Deserializer<'de> for crate::Value {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        match self.input {
+        match self {
             crate::Value::String(v) => visitor.visit_string(v.into_value()),
             crate::Value::Integer(v) => visitor.visit_i64(v.into_value()),
             crate::Value::Float(v) => visitor.visit_f64(v.into_value()),
@@ -45,7 +35,7 @@ impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
         V: serde::de::Visitor<'de>,
     {
         if name == crate::datetime::dt_serde::NAME && fields == [crate::datetime::dt_serde::FIELD] {
-            if let crate::Value::Datetime(d) = self.input {
+            if let crate::Value::Datetime(d) = self {
                 return visitor.visit_map(DatetimeDeserializer {
                     date: d.into_value(),
                     visited: false,
@@ -75,7 +65,7 @@ impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        match self.input {
+        match self {
             crate::Value::String(v) => visitor.visit_enum(v.into_value().into_deserializer()),
             crate::Value::InlineTable(v) => {
                 if v.is_empty() {
@@ -98,6 +88,14 @@ impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit newtype_struct
         ignored_any unit_struct tuple_struct tuple identifier
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Value {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self {
+        self
     }
 }
 

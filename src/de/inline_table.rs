@@ -2,6 +2,75 @@ use serde::de::IntoDeserializer;
 
 use crate::de::Error;
 
+impl<'de, 'a> serde::Deserializer<'de> for crate::InlineTable {
+    type Error = Error;
+
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_map(crate::de::InlineTableMapAccess::new(self))
+    }
+
+    // `None` is interpreted as a missing field so be sure to implement `Some`
+    // as a present field.
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_some(self)
+    }
+
+    fn deserialize_struct<V>(
+        self,
+        _name: &'static str,
+        _fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
+    }
+
+    // Called when the type to deserialize is an enum, as opposed to a field in the type.
+    fn deserialize_enum<V>(
+        self,
+        _name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        if self.is_empty() {
+            Err(crate::de::Error::custom(
+                "wanted exactly 1 element, found 0 elements",
+            ))
+        } else if self.len() != 1 {
+            Err(crate::de::Error::custom(
+                "wanted exactly 1 element, more than 1 element",
+            ))
+        } else {
+            visitor.visit_enum(crate::de::InlineTableMapAccess::new(self))
+        }
+    }
+
+    serde::forward_to_deserialize_any! {
+        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
+        bytes byte_buf map unit newtype_struct
+        ignored_any unit_struct tuple_struct tuple identifier
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::InlineTable {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self {
+        self
+    }
+}
+
 pub(crate) struct InlineTableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
     value: Option<crate::Item>,
