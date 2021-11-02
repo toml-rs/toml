@@ -2,13 +2,12 @@ use std::str::FromStr;
 
 use crate::parser;
 use crate::table::Iter;
-use crate::{InternalString, Item, Table};
+use crate::{InternalString, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
 pub struct Document {
-    /// Root should always be `Item::Table`.
-    pub(crate) root: Item,
+    pub(crate) root: Table,
     // Trailing comments and whitespaces
     pub(crate) trailing: InternalString,
 }
@@ -21,22 +20,17 @@ impl Document {
 
     /// Returns a reference to the root table.
     pub fn as_table(&self) -> &Table {
-        self.root.as_table().expect("root should always be a table")
+        &self.root
     }
 
     /// Returns a mutable reference to the root table.
     pub fn as_table_mut(&mut self) -> &mut Table {
-        self.root
-            .as_table_mut()
-            .expect("root should always be a table")
+        &mut self.root
     }
 
     /// Returns an iterator over the root table.
     pub fn iter(&self) -> Iter<'_> {
-        self.root
-            .as_table()
-            .expect("root should always be a table")
-            .iter()
+        self.root.iter()
     }
 
     /// Set whitespace after last element
@@ -53,7 +47,7 @@ impl Document {
 impl Default for Document {
     fn default() -> Self {
         Self {
-            root: Item::Table(Table::with_pos(Some(0))),
+            root: Table::with_pos(Some(0)),
             trailing: Default::default(),
         }
     }
