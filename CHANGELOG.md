@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- `Document::root` is now private
+
+#### Features
+
+- `Document` now derefs to `Table` for easier access
+- `Item` now has `get` / `get_mut` like `easy::Value`
+
+#### Fixes
+
+- Clarified role of `toml_edit::easy`
+
 ## [0.6.0] - 2021-10-14
 
 #### Features
