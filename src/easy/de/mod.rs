@@ -113,7 +113,7 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        ItemDeserializer::new(self.input.root).deserialize_any(visitor)
+        TableDeserializer::new(self.input.root).deserialize_any(visitor)
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -135,21 +135,16 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        match self.input.root {
-            crate::Item::Table(v) => {
-                if v.is_empty() {
-                    Err(crate::easy::de::Error::custom(
-                        "wanted exactly 1 element, found 0 elements",
-                    ))
-                } else if v.len() != 1 {
-                    Err(crate::easy::de::Error::custom(
-                        "wanted exactly 1 element, more than 1 element",
-                    ))
-                } else {
-                    visitor.visit_enum(crate::easy::de::TableMapAccess::new(v))
-                }
-            }
-            _ => Err(crate::easy::de::Error::custom("wanted table")),
+        if self.input.root.is_empty() {
+            Err(crate::easy::de::Error::custom(
+                "wanted exactly 1 element, found 0 elements",
+            ))
+        } else if self.input.root.len() != 1 {
+            Err(crate::easy::de::Error::custom(
+                "wanted exactly 1 element, more than 1 element",
+            ))
+        } else {
+            visitor.visit_enum(crate::easy::de::TableMapAccess::new(self.input.root))
         }
     }
 

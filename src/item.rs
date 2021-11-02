@@ -41,6 +41,34 @@ impl Item {
         }
     }
 
+    /// Index into a TOML array or map. A string index can be used to access a
+    /// value in a map, and a usize index can be used to access an element of an
+    /// array.
+    ///
+    /// Returns `None` if:
+    /// - The type of `self` does not match the type of the
+    ///   index, for example if the index is a string and `self` is an array or a
+    ///   number.
+    /// - The given key does not exist in the map
+    ///   or the given index is not within the bounds of the array.
+    pub fn get<I: crate::index::Index>(&self, index: I) -> Option<&Item> {
+        index.index(self)
+    }
+
+    /// Mutably index into a TOML array or map. A string index can be used to
+    /// access a value in a map, and a usize index can be used to access an
+    /// element of an array.
+    ///
+    /// Returns `None` if:
+    /// - The type of `self` does not match the type of the
+    ///   index, for example if the index is a string and `self` is an array or a
+    ///   number.
+    /// - The given key does not exist in the map
+    ///   or the given index is not within the bounds of the array.
+    pub fn get_mut<I: crate::index::Index>(&mut self, index: I) -> Option<&mut Item> {
+        index.index_mut(self)
+    }
+
     /// Casts `self` to value.
     pub fn as_value(&self) -> Option<&Value> {
         match *self {

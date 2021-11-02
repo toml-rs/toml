@@ -39,7 +39,7 @@ impl serde::ser::SerializeMap for SerializeDocument {
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         self.inner.end().map(|root| crate::Document {
-            root: crate::Item::Table(root),
+            root,
             ..Default::default()
         })
     }
@@ -62,7 +62,7 @@ impl serde::ser::SerializeStruct for SerializeDocument {
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         self.inner.end().map(|root| crate::Document {
-            root: crate::Item::Table(root),
+            root,
             ..Default::default()
         })
     }

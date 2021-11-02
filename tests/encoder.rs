@@ -14,9 +14,9 @@ impl toml_test_harness::Encoder for Encoder {
 fn decoded_to_document(
     decoded: &toml_test_harness::Decoded,
 ) -> Result<toml_edit::Document, toml_test_harness::Error> {
-    let item = toml_edit::Item::Table(root_from_decoded(decoded)?);
+    let item = root_from_decoded(decoded)?;
     let mut doc = toml_edit::Document::new();
-    doc.root = item;
+    *doc = item;
     Ok(doc)
 }
 
