@@ -17,7 +17,6 @@ use inline_table::*;
 use item::*;
 use table::*;
 use table_enum::*;
-use value::*;
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -113,7 +112,7 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        TableDeserializer::new(self.input.root).deserialize_any(visitor)
+        self.input.deserialize_any(visitor)
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -122,36 +121,73 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_some(self)
+        self.input.deserialize_option(visitor)
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
     fn deserialize_enum<V>(
         self,
-        _name: &'static str,
-        _variants: &'static [&'static str],
+        name: &'static str,
+        variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if self.input.root.is_empty() {
-            Err(crate::de::Error::custom(
-                "wanted exactly 1 element, found 0 elements",
-            ))
-        } else if self.input.root.len() != 1 {
-            Err(crate::de::Error::custom(
-                "wanted exactly 1 element, more than 1 element",
-            ))
-        } else {
-            visitor.visit_enum(crate::de::TableMapAccess::new(self.input.root))
-        }
+        self.input.deserialize_enum(name, variants, visitor)
     }
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit newtype_struct
         ignored_any unit_struct tuple_struct tuple identifier struct
+    }
+}
+
+impl<'de, 'a> serde::Deserializer<'de> for crate::Document {
+    type Error = Error;
+
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.root.deserialize_any(visitor)
+    }
+
+    // `None` is interpreted as a missing field so be sure to implement `Some`
+    // as a present field.
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.root.deserialize_option(visitor)
+    }
+
+    // Called when the type to deserialize is an enum, as opposed to a field in the type.
+    fn deserialize_enum<V>(
+        self,
+        name: &'static str,
+        variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.root.deserialize_enum(name, variants, visitor)
+    }
+
+    serde::forward_to_deserialize_any! {
+        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
+        bytes byte_buf map unit newtype_struct
+        ignored_any unit_struct tuple_struct tuple identifier struct
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self {
+        self
     }
 }
 

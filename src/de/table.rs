@@ -2,24 +2,14 @@ use serde::de::IntoDeserializer;
 
 use crate::de::Error;
 
-pub(crate) struct TableDeserializer {
-    input: crate::Table,
-}
-
-impl TableDeserializer {
-    pub(crate) fn new(input: crate::Table) -> Self {
-        Self { input }
-    }
-}
-
-impl<'de, 'a> serde::Deserializer<'de> for TableDeserializer {
+impl<'de, 'a> serde::Deserializer<'de> for crate::Table {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_map(crate::de::TableMapAccess::new(self.input))
+        visitor.visit_map(crate::de::TableMapAccess::new(self))
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -53,16 +43,16 @@ impl<'de, 'a> serde::Deserializer<'de> for TableDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        if self.input.is_empty() {
+        if self.is_empty() {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
             ))
-        } else if self.input.len() != 1 {
+        } else if self.len() != 1 {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
             ))
         } else {
-            visitor.visit_enum(crate::de::TableMapAccess::new(self.input))
+            visitor.visit_enum(crate::de::TableMapAccess::new(self))
         }
     }
 
@@ -70,6 +60,14 @@ impl<'de, 'a> serde::Deserializer<'de> for TableDeserializer {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit newtype_struct
         ignored_any unit_struct tuple_struct tuple identifier
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Table {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self {
+        self
     }
 }
 
