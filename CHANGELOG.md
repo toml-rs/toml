@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog].
 ### Breaking Changes
 
 - `Document::root` is now private
+- The `Index` implementation for `Item` now panics when the index is not found
+  - Use `Item::get` and `Item::get_mut` instead
 
 #### Features
 
