@@ -10,6 +10,13 @@ authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.c
 repository = "https://github.com/ordian/toml_edit"
 documentation = "https://docs.rs/toml_edit"
 edition = "2018"
+include = [
+  "src/**/*",
+  "Cargo.toml",
+  "LICENSE*",
+  "README.md",
+  "examples/**/*"
+]
 
 [package.metadata.docs.rs]
 features = ["easy"]
