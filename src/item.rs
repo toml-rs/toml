@@ -131,6 +131,10 @@ impl Item {
     pub fn into_table(self) -> Result<Table, Self> {
         match self {
             Item::Table(t) => Ok(t),
+            Item::Value(v) => match v {
+                Value::InlineTable(t) => Ok(t.into_table()),
+                _ => Err(Item::Value(v)),
+            },
             _ => Err(self),
         }
     }

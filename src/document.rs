@@ -75,3 +75,12 @@ impl std::ops::DerefMut for Document {
         &mut self.root
     }
 }
+
+impl From<Table> for Document {
+    fn from(root: Table) -> Self {
+        Self {
+            root,
+            ..Default::default()
+        }
+    }
+}

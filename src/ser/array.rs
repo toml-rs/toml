@@ -1,6 +1,7 @@
 use super::Error;
 
-pub(crate) struct SerializeItemArray {
+#[doc(hidden)]
+pub struct SerializeItemArray {
     values: Vec<crate::Item>,
 }
 
