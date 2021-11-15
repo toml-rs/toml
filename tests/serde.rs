@@ -357,7 +357,6 @@ fn newtypes() {
     }
 
     #[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
-    #[serde(transparent)]
     struct B(u32);
 
     equivalent! {
@@ -374,7 +373,6 @@ fn newtypes2() {
     }
 
     #[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
-    #[serde(transparent)]
     struct B(Option<C>);
 
     #[derive(Deserialize, Serialize, PartialEq, Debug, Clone)]
