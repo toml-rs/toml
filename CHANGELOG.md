@@ -7,13 +7,27 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- Some types in `toml_edit::ser` got shuffled around.
+
+### Features
+
+- Added `toml_edit::ser::to_item` for converting any serializable state to a `toml_edit::Item`
+- Added `toml_edit::InlineTable::into_table`
+- Added `toml_edit::Document` now has a `From<Table>` impl.
+
+### Fixes
+
+- `toml_edit::Item::into_table` now includes `InlineTable`
+
 ## [0.8.0] - 2021-11-02
 
 ### Breaking Changes
 
 - Disallow the direct creation of `toml_edit::ser::Serializer` so we can change it in the future.
 
-#### Fixes
+### Fixes
 
 - Decouple serde support from `easy` feature
 - Make core types impl `Deserializer`, making it easier to use them
