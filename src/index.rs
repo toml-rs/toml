@@ -122,6 +122,20 @@ impl<'s> ops::IndexMut<&'s str> for Table {
     }
 }
 
+impl<'s> ops::Index<&'s str> for InlineTable {
+    type Output = Value;
+
+    fn index(&self, key: &'s str) -> &Value {
+        self.get(key).expect("index not found")
+    }
+}
+
+impl<'s> ops::IndexMut<&'s str> for InlineTable {
+    fn index_mut(&mut self, key: &'s str) -> &mut Value {
+        self.get_mut(key).expect("index not found")
+    }
+}
+
 impl<'s> ops::Index<&'s str> for Document {
     type Output = Item;
 
