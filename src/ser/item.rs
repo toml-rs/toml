@@ -1,6 +1,24 @@
 use super::{Error, ErrorKind};
 
-pub(crate) struct ItemSerializer {}
+/// Serialization implementation for TOML.
+///
+/// This structure implements serialization support for TOML to serialize an
+/// arbitrary type to TOML. Note that the TOML format does not support all
+/// datatypes in Rust, such as enums, tuples, and tuple structs. These types
+/// will generate an error when serialized.
+///
+/// Currently a serializer always writes its output to an in-memory `String`,
+/// which is passed in when creating the serializer itself.
+#[derive(Default)]
+#[non_exhaustive]
+pub struct ItemSerializer {}
+
+impl ItemSerializer {
+    /// Creates a new serializer generate a TOML document.
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl serde::ser::Serializer for ItemSerializer {
     type Ok = crate::Item;

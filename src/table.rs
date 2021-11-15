@@ -38,7 +38,14 @@ impl Table {
         }
     }
 
-    /// Convert to an inline array
+    pub(crate) fn with_pairs(items: KeyValuePairs) -> Self {
+        Self {
+            items,
+            ..Default::default()
+        }
+    }
+
+    /// Convert to an inline table
     pub fn into_inline_table(mut self) -> InlineTable {
         for (_, kv) in self.items.iter_mut() {
             kv.value.make_value();

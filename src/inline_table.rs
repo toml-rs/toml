@@ -4,7 +4,7 @@ use crate::key::Key;
 use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
 use crate::value::{DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
-use crate::{InternalString, Item, Value};
+use crate::{InternalString, Item, Table, Value};
 
 /// Type representing a TOML inline table,
 /// payload of the `Value::InlineTable` variant
@@ -33,6 +33,11 @@ impl InlineTable {
             items,
             ..Default::default()
         }
+    }
+
+    /// Convert to a table
+    pub fn into_table(self) -> Table {
+        Table::with_pairs(self.items)
     }
 }
 
