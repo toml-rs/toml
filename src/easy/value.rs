@@ -48,8 +48,8 @@ impl Value {
     where
         T: serde::ser::Serialize,
     {
-        let doc = super::to_document(&value)?;
-        let value = super::from_document(doc)?;
+        let item = super::ser::to_item(&value)?;
+        let value = super::de::from_item(item)?;
         Ok(value)
     }
 
@@ -66,8 +66,8 @@ impl Value {
     where
         T: serde::de::Deserialize<'static>,
     {
-        let doc = super::to_document(&self)?;
-        let value = super::from_document(doc)?;
+        let item = super::ser::to_item(&self)?;
+        let value = super::de::from_item(item)?;
         Ok(value)
     }
 
