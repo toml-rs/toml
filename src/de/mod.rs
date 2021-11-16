@@ -84,13 +84,21 @@ where
     from_str(s)
 }
 
-/// Convert a value into `T`.
+/// Convert a document into `T`.
 pub fn from_document<T>(d: crate::Document) -> Result<T, Error>
 where
     T: Deserialize<'static>,
 {
     let deserializer = Deserializer::new(d);
     T::deserialize(deserializer)
+}
+
+/// Convert an item into `T`.
+pub fn from_item<T>(d: crate::Item) -> Result<T, Error>
+where
+    T: Deserialize<'static>,
+{
+    T::deserialize(d)
 }
 
 /// Deserialization implementation for TOML.
