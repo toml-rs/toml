@@ -230,9 +230,19 @@ impl Value {
 
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        super::to_string_pretty(self)
-            .map_err(|_| std::fmt::Error)?
-            .fmt(f)
+        match *self {
+            Value::String(..)
+            | Value::Integer(..)
+            | Value::Float(..)
+            | Value::Boolean(..)
+            | Value::Datetime(..)
+            | Value::Array(..) => crate::ser::to_item(self)
+                .map_err(|_| std::fmt::Error)?
+                .fmt(f),
+            Value::Table(_) => crate::ser::to_string_pretty(self)
+                .map_err(|_| std::fmt::Error)?
+                .fmt(f),
+        }
     }
 }
 
