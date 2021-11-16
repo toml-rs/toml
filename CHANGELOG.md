@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Allow indexing on `InlineTable`
+
+### Fixes
+
+- serde support for newtypes
+- Don't error on `easy::Value::to_string`
+
 ## [0.9.0] - 2021-11-15
 
 ### Breaking Changes
