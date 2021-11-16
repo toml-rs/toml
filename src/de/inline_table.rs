@@ -21,6 +21,17 @@ impl<'de, 'a> serde::Deserializer<'de> for crate::InlineTable {
         visitor.visit_some(self)
     }
 
+    fn deserialize_newtype_struct<V>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_newtype_struct(self)
+    }
+
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
@@ -58,7 +69,7 @@ impl<'de, 'a> serde::Deserializer<'de> for crate::InlineTable {
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct
+        bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }

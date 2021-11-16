@@ -38,6 +38,17 @@ impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
         self.input.deserialize_option(visitor)
     }
 
+    fn deserialize_newtype_struct<V>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_newtype_struct(self)
+    }
+
     fn deserialize_struct<V>(
         self,
         name: &'static str,
@@ -75,7 +86,7 @@ impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct
+        bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
@@ -104,6 +115,17 @@ impl<'de, 'a> serde::Deserializer<'de> for crate::Item {
         V: serde::de::Visitor<'de>,
     {
         visitor.visit_some(self)
+    }
+
+    fn deserialize_newtype_struct<V>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        visitor.visit_newtype_struct(self)
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
@@ -137,7 +159,7 @@ impl<'de, 'a> serde::Deserializer<'de> for crate::Item {
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct struct
+        bytes byte_buf map unit struct
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
