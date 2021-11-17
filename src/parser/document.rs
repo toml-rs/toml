@@ -86,6 +86,9 @@ impl TomlParser {
     //                ( ws table ws [ comment ] ) /
     //                  ws )
     pub(crate) fn parse(s: &[u8]) -> Result<Document, TomlError> {
+        // Remove BOM if present
+        let s = s.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(s);
+
         let mut parser = RefCell::new(Self::default());
         let input = Stream::new(s);
 
