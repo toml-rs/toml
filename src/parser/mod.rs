@@ -632,6 +632,25 @@ key = "value"
             assert_eq!(PrettyString(document), PrettyString(&doc.to_string()));
         }
 
+        let parse_only = ["\u{FEFF}
+[package]
+name = \"foo\"
+version = \"0.0.1\"
+authors = []
+"];
+        for document in &parse_only {
+            let doc = TomlParser::parse(document.as_bytes());
+            match doc {
+                Ok(_) => (),
+                Err(err) => {
+                    panic!(
+                        "Parse error: {}\nFailed to parse:\n```\n{}\n```",
+                        err, document
+                    )
+                }
+            }
+        }
+
         let invalid_inputs = [r#" hello = 'darkness' # my old friend
 $"#];
         for document in &invalid_inputs {
