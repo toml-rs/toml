@@ -627,6 +627,31 @@ fn test_remove_from_array() {
     );
 }
 
+#[test]
+fn test_format_array() {
+    given(
+        r#"
+    a = [
+      1,
+            "2",
+      3.0,
+    ]
+    "#,
+    )
+    .running(|root| {
+        for (_, v) in root.iter_mut() {
+            if let Item::Value(Value::Array(array)) = v {
+                array.fmt();
+            }
+        }
+    })
+    .produces_display(
+        r#"
+    a = [1, "2", 3.0]
+    "#,
+    );
+}
+
 macro_rules! as_inline_table {
     ($entry:ident) => {{
         assert!($entry.is_value());
