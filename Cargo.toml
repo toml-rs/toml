@@ -74,6 +74,10 @@ harness = false
 name = "linear"
 harness = false
 
+[[example]]
+name = "visit"
+test = true
+
 [profile.release]
 debug = 1
 
