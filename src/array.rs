@@ -368,4 +368,7 @@ fn decorate_array(array: &mut Array) {
             value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
         }
     }
+    // Since everything is now on the same line, remove trailing commas and whitespace.
+    array.set_trailing_comma(false);
+    array.set_trailing("");
 }
