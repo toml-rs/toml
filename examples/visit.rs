@@ -1,5 +1,7 @@
 //! Example for how to use `VisitMut` to iterate over a table.
 
+use std::collections::BTreeSet;
+use toml_edit::visit::*;
 use toml_edit::visit_mut::*;
 use toml_edit::{Array, Document, InlineTable, Item, KeyMut, Table, Value};
 
@@ -53,6 +55,35 @@ impl VisitState {
             (VisitState::Dependencies, _) => VisitState::SubDependencies,
             (VisitState::SubDependencies, _) => VisitState::SubDependencies,
             (VisitState::Other, _) => VisitState::Other,
+        }
+    }
+}
+
+/// Collect the names of every dependency key.
+#[derive(Debug)]
+struct DependencyNameVisitor<'doc> {
+    state: VisitState,
+    names: BTreeSet<&'doc str>,
+}
+
+impl<'doc> Visit<'doc> for DependencyNameVisitor<'doc> {
+    fn visit_table_like_kv(&mut self, key: &'doc str, node: &'doc Item) {
+        if self.state == VisitState::Dependencies {
+            self.names.insert(key);
+        } else {
+            // Since we're only interested in collecting the top-level keys right under
+            // [dependencies], don't recurse unconditionally.
+
+            let old_state = self.state;
+
+            // Figure out the next state given the key.
+            self.state = self.state.descend(key);
+
+            // Recurse further into the document tree.
+            visit_table_like_kv(self, key, node);
+
+            // Restore the old state after it's done.
+            self.state = old_state;
         }
     }
 }
@@ -192,6 +223,17 @@ cargo-test-macro = { path = "crates/cargo-test-macro" }
 flate2 = { version = "0.4" }
 "#;
 
+fn visit_example(document: &Document) -> BTreeSet<&str> {
+    let mut visitor = DependencyNameVisitor {
+        state: VisitState::Root,
+        names: BTreeSet::new(),
+    };
+
+    visitor.visit_document(document);
+
+    visitor.names
+}
+
 fn visit_mut_example(document: &mut Document) {
     let mut visitor = NormalizeDependencyTablesVisitor {
         state: VisitState::Root,
@@ -203,9 +245,33 @@ fn visit_mut_example(document: &mut Document) {
 fn main() {
     let mut document: Document = INPUT.parse().expect("input is valid TOML");
 
+    println!("** visit example");
+    println!("{:?}", visit_example(&document));
+
     println!("** visit_mut example");
     visit_mut_example(&mut document);
     println!("{}", document);
+}
+
+#[cfg(test)]
+#[test]
+fn visit_correct() {
+    let document: Document = INPUT.parse().expect("input is valid TOML");
+
+    let names = visit_example(&document);
+    let expected = vec![
+        "atty",
+        "cargo-platform",
+        "pretty_env_logger",
+        "fwdansi",
+        "winapi",
+        "miniz_oxide",
+        "cargo-test-macro",
+        "flate2",
+    ]
+    .into_iter()
+    .collect();
+    assert_eq!(names, expected);
 }
 
 #[cfg(test)]

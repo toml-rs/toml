@@ -87,6 +87,7 @@ pub mod de;
 #[cfg(feature = "serde")]
 pub mod ser;
 
+pub mod visit;
 pub mod visit_mut;
 
 pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
