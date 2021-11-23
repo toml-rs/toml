@@ -26,7 +26,9 @@ impl ArrayOfTables {
         for value in self.values.iter_mut() {
             value.make_value();
         }
-        Array::with_vec(self.values)
+        let mut a = Array::with_vec(self.values);
+        a.fmt();
+        a
     }
 }
 

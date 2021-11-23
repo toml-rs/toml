@@ -116,8 +116,14 @@ impl Item {
         match self {
             Item::None => Err(self),
             Item::Value(v) => Ok(v),
-            Item::Table(v) => Ok(Value::InlineTable(v.into_inline_table())),
-            Item::ArrayOfTables(v) => Ok(Value::Array(v.into_array())),
+            Item::Table(v) => {
+                let v = v.into_inline_table();
+                Ok(Value::InlineTable(v))
+            }
+            Item::ArrayOfTables(v) => {
+                let v = v.into_array();
+                Ok(Value::Array(v))
+            }
         }
     }
     /// In-place convert to a value
