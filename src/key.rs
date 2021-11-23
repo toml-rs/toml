@@ -111,6 +111,35 @@ impl Key {
     }
 }
 
+impl std::ops::Deref for Key {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.get()
+    }
+}
+
+impl<'s> PartialEq<str> for Key {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        PartialEq::eq(self.get(), other)
+    }
+}
+
+impl<'s> PartialEq<&'s str> for Key {
+    #[inline]
+    fn eq(&self, other: &&str) -> bool {
+        PartialEq::eq(self.get(), *other)
+    }
+}
+
+impl<'s> PartialEq<String> for Key {
+    #[inline]
+    fn eq(&self, other: &String) -> bool {
+        PartialEq::eq(self.get(), other.as_str())
+    }
+}
+
 impl std::fmt::Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::encode::Encode::encode(self, f, ("", ""))
