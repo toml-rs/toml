@@ -6,7 +6,9 @@ use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{Formatted, Repr, ValueRepr};
 use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_TABLE_DECOR};
-use crate::value::{DEFAULT_LEADING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
+use crate::value::{
+    DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
+};
 use crate::{Array, InlineTable, Item, Table, Value};
 
 pub(crate) trait Encode {
@@ -101,13 +103,20 @@ impl Encode for InlineTable {
         write!(buf, "{}", self.preamble)?;
 
         let children = self.get_values();
+        let len = children.len();
         for (i, (key_path, value)) in children.into_iter().enumerate() {
             if i != 0 {
                 write!(buf, ",")?;
             }
+            let inner_decor;
+            if i == len - 1 {
+                inner_decor = DEFAULT_TRAILING_VALUE_DECOR;
+            } else {
+                inner_decor = DEFAULT_VALUE_DECOR;
+            }
             key_path.as_slice().encode(buf, DEFAULT_INLINE_KEY_DECOR)?;
             write!(buf, "=")?;
-            value.encode(buf, DEFAULT_VALUE_DECOR)?;
+            value.encode(buf, inner_decor)?;
         }
 
         write!(
