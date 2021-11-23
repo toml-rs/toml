@@ -5,7 +5,7 @@ use indexmap::map::IndexMap;
 use crate::key::Key;
 use crate::repr::Decor;
 use crate::value::DEFAULT_VALUE_DECOR;
-use crate::{InlineTable, InternalString, Item, Value};
+use crate::{InlineTable, InternalString, Item, KeyMut, Value};
 
 /// Type representing a TOML non-inline table
 #[derive(Clone, Debug, Default)]
@@ -201,7 +201,7 @@ impl Table {
         Box::new(
             self.items
                 .iter_mut()
-                .map(|(key, kv)| (&key[..], &mut kv.value)),
+                .map(|(_, kv)| (kv.key.as_mut(), &mut kv.value)),
         )
     }
 
@@ -401,7 +401,7 @@ pub type IntoIter = Box<dyn Iterator<Item = (InternalString, Item)>>;
 /// An iterator type over `Table`'s key/value pairs.
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 /// A mutable iterator type over `Table`'s key/value pairs.
-pub type IterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Item)> + 'a>;
+pub type IterMut<'a> = Box<dyn Iterator<Item = (KeyMut<'a>, &'a mut Item)> + 'a>;
 
 /// This trait represents either a `Table`, or an `InlineTable`.
 pub trait TableLike: crate::private::Sealed {

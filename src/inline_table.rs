@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 use crate::key::Key;
 use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
-use crate::{InternalString, Item, Table, Value};
+use crate::{InternalString, Item, KeyMut, Table, Value};
 
 /// Type representing a TOML inline table,
 /// payload of the `Value::InlineTable` variant
@@ -141,7 +141,7 @@ impl InlineTable {
             self.items
                 .iter_mut()
                 .filter(|(_, kv)| kv.value.is_value())
-                .map(|(k, kv)| (&k[..], kv.value.as_value_mut().unwrap())),
+                .map(|(_, kv)| (kv.key.as_mut(), kv.value.as_value_mut().unwrap())),
         )
     }
 
@@ -345,7 +345,7 @@ pub type InlineTableIntoIter = Box<dyn Iterator<Item = (InternalString, Value)>>
 /// An iterator type over key/value pairs of an inline table.
 pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
 /// A mutable iterator type over key/value pairs of an inline table.
-pub type InlineTableIterMut<'a> = Box<dyn Iterator<Item = (&'a str, &'a mut Value)> + 'a>;
+pub type InlineTableIterMut<'a> = Box<dyn Iterator<Item = (KeyMut<'a>, &'a mut Value)> + 'a>;
 
 impl TableLike for InlineTable {
     fn iter(&self) -> Iter<'_> {
@@ -355,7 +355,7 @@ impl TableLike for InlineTable {
         Box::new(
             self.items
                 .iter_mut()
-                .map(|(key, kv)| (&key[..], &mut kv.value)),
+                .map(|(_, kv)| (kv.key.as_mut(), &mut kv.value)),
         )
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {

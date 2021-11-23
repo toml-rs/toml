@@ -59,6 +59,11 @@ impl Key {
         self
     }
 
+    /// Access a mutable proxy for the `Key`.
+    pub fn as_mut(&mut self) -> KeyMut<'_> {
+        KeyMut { key: self }
+    }
+
     /// Returns the parsed key value.
     pub fn get(&self) -> &str {
         &self.key
@@ -197,5 +202,73 @@ impl From<InternalString> for Key {
 impl From<Key> for InternalString {
     fn from(key: Key) -> InternalString {
         key.key
+    }
+}
+
+/// A mutable reference to a `Key`
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
+pub struct KeyMut<'k> {
+    key: &'k mut Key,
+}
+
+impl<'k> KeyMut<'k> {
+    /// Returns the parsed key value.
+    pub fn get(&self) -> &str {
+        self.key.get()
+    }
+
+    /// Returns the key raw representation.
+    pub fn to_repr(&self) -> Cow<Repr> {
+        self.key.to_repr()
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor_mut(&mut self) -> &mut Decor {
+        self.key.decor_mut()
+    }
+
+    /// Returns the surrounding whitespace
+    pub fn decor(&self) -> &Decor {
+        self.key.decor()
+    }
+
+    /// Auto formats the key.
+    pub fn fmt(&mut self) {
+        self.key.fmt()
+    }
+}
+
+impl<'k> std::ops::Deref for KeyMut<'k> {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.get()
+    }
+}
+
+impl<'s> PartialEq<str> for KeyMut<'s> {
+    #[inline]
+    fn eq(&self, other: &str) -> bool {
+        PartialEq::eq(self.get(), other)
+    }
+}
+
+impl<'s> PartialEq<&'s str> for KeyMut<'s> {
+    #[inline]
+    fn eq(&self, other: &&str) -> bool {
+        PartialEq::eq(self.get(), *other)
+    }
+}
+
+impl<'s> PartialEq<String> for KeyMut<'s> {
+    #[inline]
+    fn eq(&self, other: &String) -> bool {
+        PartialEq::eq(self.get(), other.as_str())
+    }
+}
+
+impl<'k> std::fmt::Display for KeyMut<'k> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.key, f)
     }
 }
