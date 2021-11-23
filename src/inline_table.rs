@@ -36,7 +36,9 @@ impl InlineTable {
 
     /// Convert to a table
     pub fn into_table(self) -> Table {
-        Table::with_pairs(self.items)
+        let mut t = Table::with_pairs(self.items);
+        t.fmt();
+        t
     }
 }
 

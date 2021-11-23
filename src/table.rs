@@ -50,7 +50,9 @@ impl Table {
         for (_, kv) in self.items.iter_mut() {
             kv.value.make_value();
         }
-        InlineTable::with_pairs(self.items)
+        let mut t = InlineTable::with_pairs(self.items);
+        t.fmt();
+        t
     }
 }
 
