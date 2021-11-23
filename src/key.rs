@@ -89,6 +89,7 @@ impl Key {
     /// Auto formats the key.
     pub fn fmt(&mut self) {
         self.repr = Some(to_key_repr(&self.key));
+        self.decor.clear();
     }
 
     fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
