@@ -372,9 +372,8 @@ fn decorate_table(table: &mut Table) {
         .filter(|&(_, ref kv)| kv.value.is_value())
         .map(|(_, kv)| (&mut kv.key.decor, kv.value.as_value_mut().unwrap()))
     {
-        // `key1 = value1`
-        *key_decor = Decor::new(DEFAULT_KEY_DECOR.0, DEFAULT_KEY_DECOR.1);
-        value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
+        key_decor.clear();
+        value.decor_mut().clear();
     }
 }
 

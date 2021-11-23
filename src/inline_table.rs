@@ -3,7 +3,6 @@ use std::iter::FromIterator;
 use crate::key::Key;
 use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
-use crate::value::{DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
 use crate::{InternalString, Item, Table, Value};
 
 /// Type representing a TOML inline table,
@@ -328,24 +327,14 @@ impl<'s> IntoIterator for &'s InlineTable {
 }
 
 fn decorate_inline_table(table: &mut InlineTable) {
-    let n = table.len();
-    for (i, (key_decor, value)) in table
+    for (key_decor, value) in table
         .items
         .iter_mut()
         .filter(|&(_, ref kv)| kv.value.is_value())
         .map(|(_, kv)| (&mut kv.key.decor, kv.value.as_value_mut().unwrap()))
-        .enumerate()
     {
-        // { key1 = value1, key2 = value2 }
-        *key_decor = Decor::new(DEFAULT_INLINE_KEY_DECOR.0, DEFAULT_INLINE_KEY_DECOR.1);
-        if i == n - 1 {
-            value.decorate(
-                DEFAULT_TRAILING_VALUE_DECOR.0,
-                DEFAULT_TRAILING_VALUE_DECOR.1,
-            );
-        } else {
-            value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
-        }
+        key_decor.clear();
+        value.decor_mut().clear();
     }
 }
 
