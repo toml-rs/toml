@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- `TableLike::fmt` now resets the decor to default (`None`) rather than assigning the default decor
+- Converting between table types clears formatting
+
+### Features
+
+- `Key` now derefs to the key's value
+- Allow modifying key formatting with `iter_mut()`
+- New `visit` and `visit_mut` APIs
+
+### Fixes
+
+- `Value::try_from` and `Value::try_into` to work with all types
+- Don't fail on UTF-8 BOM
+- Ensure there is a trailing space for default-formatted inline tables
+- Converting between table types clears formatting
+- `Array::fmt` removes trailing comma and whitespace
+
 ## [0.9.1] - 2021-11-15
 
 ### Features
