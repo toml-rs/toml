@@ -288,7 +288,7 @@ mod tests {
         parsed_eq!(
             parsed,
             "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}"
-        )
+        );
     }
 
     #[test]
@@ -417,6 +417,12 @@ trimmed in raw strings.
         for input in &inputs {
             parsed_date_time_eq!(input, is_datetime);
         }
+    }
+
+    #[test]
+    fn time_fraction_truncated() {
+        let input = "1987-07-05T17:45:00.123456789012345Z";
+        parsed_date_time_eq!(input, is_datetime);
     }
 
     #[test]
