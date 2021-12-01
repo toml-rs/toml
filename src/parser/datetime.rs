@@ -163,16 +163,23 @@ parse!(time_second() -> u8, {
 
 // time-secfrac   = "." 1*DIGIT
 parse!(time_secfrac() -> u32, {
+    static SCALE: [u32; 10] =
+        [0, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100, 10, 1];
     byte(b'.').and(take_while1(|c: u8| c.is_ascii_digit())).and_then::<_, _, CustomError>(|(_, repr): (u8, &[u8])| {
-        let repr = unsafe { from_utf8_unchecked(repr, "`is_ascii_digit` filters out on-ASCII") };
+        let mut repr = unsafe { from_utf8_unchecked(repr, "`is_ascii_digit` filters out on-ASCII") };
+        let max_digits = SCALE.len() - 1;
+        if max_digits < repr.len() {
+            // Millisecond precision is required. Further precision of fractional seconds is
+            // implementation-specific. If the value contains greater precision than the
+            // implementation can support, the additional precision must be truncated, not rounded.
+            repr = &repr[0..max_digits];
+        }
 
         let v = repr.parse::<u32>().map_err(|_| CustomError::OutOfRange)?;
-        let consumed = repr.len();
+        let num_digits = repr.len();
 
         // scale the number accordingly.
-        static SCALE: [u32; 10] =
-            [0, 100_000_000, 10_000_000, 1_000_000, 100_000, 10_000, 1_000, 100, 10, 1];
-        let scale = SCALE.get(consumed).ok_or(CustomError::OutOfRange)?;
+        let scale = SCALE.get(num_digits).ok_or(CustomError::OutOfRange)?;
         let v = v.checked_mul(*scale).ok_or(CustomError::OutOfRange)?;
         Ok(v)
     })
