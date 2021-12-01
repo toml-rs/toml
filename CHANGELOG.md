@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Allow trailing whitespace after dates
+- Truncate overflowing fractional seconds rather than error (we will still roundtrip the original time)
+
 ## [0.10.0] - 2021-11-25
 
 ### Breaking Changes
