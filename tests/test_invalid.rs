@@ -1,13 +1,14 @@
 use toml_edit::Document;
 
+#[track_caller]
 fn run(toml: &str, msg: &str) {
     let doc = toml.parse::<Document>();
-    assert!(doc.is_err());
 
     let err = match doc {
         Err(e) => e.to_string(),
-        _ => unreachable!(""),
+        _ => unreachable!("must fail"),
     };
+    dbg!(&err);
     assert!(err.contains(msg));
 }
 

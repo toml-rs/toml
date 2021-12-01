@@ -19,7 +19,10 @@ parse!(date_time() -> Datetime, {
         (
             full_date(),
             optional((
-                satisfy(is_time_delim),
+                attempt((
+                    satisfy(is_time_delim),
+                    look_ahead(time_hour())
+                )),
                 partial_time(),
                 optional(time_offset()),
             ))

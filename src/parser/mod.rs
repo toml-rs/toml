@@ -620,6 +620,8 @@ key = "value"
 "#,
             r#"hello.world = "a"
 "#,
+            r#"foo = 1979-05-27 # Comment
+"#,
         ];
         for document in &documents {
             let doc = TomlParser::parse(document.as_bytes());
