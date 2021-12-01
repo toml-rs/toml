@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.10.1] - 2021-12-01
+
 ### Fixes
 
 - Allow trailing whitespace after dates
@@ -196,7 +198,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/ordian/toml_edit/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/ordian/toml_edit/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/ordian/toml_edit/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/ordian/toml_edit/compare/v0.8.0...v0.9.0
