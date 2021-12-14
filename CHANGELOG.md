@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Use `Key::parse` to parse a string of dotted keys into a `Vec<Key>`
+
+### Fixes
+
+- `Key::from_str` now strictly parses TOML syntax
+
+### Breaking Changes
+
+- `Key::from_str` now strictly parses TOML syntax
+
 ## [0.10.1] - 2021-12-01
 
 ### Fixes
