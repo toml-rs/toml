@@ -48,6 +48,13 @@ impl Key {
         }
     }
 
+    /// Parse a TOML key expression
+    ///
+    /// Unlike `"".parse<Key>()`, this supports dotted keys.
+    pub fn parse(repr: &str) -> Result<Vec<Self>, parser::TomlError> {
+        Self::try_parse_path(repr)
+    }
+
     pub(crate) fn with_repr_unchecked(mut self, repr: Repr) -> Self {
         self.repr = Some(repr);
         self
@@ -97,12 +104,12 @@ impl Key {
         self.decor.clear();
     }
 
-    fn try_parse(s: &str) -> Result<Key, parser::TomlError> {
+    fn try_parse_simple(s: &str) -> Result<Key, parser::TomlError> {
         use combine::stream::position::{IndexPositioner, Positioner};
         use combine::EasyParser;
 
         let b = s.as_bytes();
-        let result = parser::key_parser().easy_parse(Stream::new(b));
+        let result = parser::simple_key().easy_parse(Stream::new(b));
         match result {
             Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
                 (&rest.positioner
@@ -111,6 +118,24 @@ impl Key {
                 b,
             )),
             Ok(((raw, key), _)) => Ok(Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw))),
+            Err(e) => Err(parser::TomlError::new(e, b)),
+        }
+    }
+
+    fn try_parse_path(s: &str) -> Result<Vec<Key>, parser::TomlError> {
+        use combine::stream::position::{IndexPositioner, Positioner};
+        use combine::EasyParser;
+
+        let b = s.as_bytes();
+        let result = parser::key_path().easy_parse(Stream::new(b));
+        match result {
+            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
+                (&rest.positioner
+                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
+                    .position(),
+                b,
+            )),
+            Ok((keys, _)) => Ok(keys),
             Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }
@@ -158,7 +183,7 @@ impl FromStr for Key {
     /// if fails, tries as basic quoted key (surrounds with "")
     /// and then literal quoted key (surrounds with '')
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Key::try_parse(s)
+        Key::try_parse_simple(s)
     }
 }
 
