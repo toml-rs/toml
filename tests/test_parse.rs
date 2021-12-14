@@ -3,7 +3,7 @@ use toml_edit::{Key, Value};
 macro_rules! parse {
     ($s:expr, $ty:ty) => {{
         let v = $s.parse::<$ty>();
-        assert!(v.is_ok());
+        assert!(v.is_ok(), "Failed with {}", v.unwrap_err());
         v.unwrap()
     }};
 }
@@ -17,7 +17,7 @@ macro_rules! parse_value {
 macro_rules! test_key {
     ($s:expr, $expected:expr) => {{
         let key = parse!($s, Key);
-        assert_eq!(key.get(), $expected);
+        assert_eq!(key.get(), $expected, "");
     }};
 }
 
@@ -26,7 +26,11 @@ macro_rules! parse_error {
         let res = $input.parse::<$ty>();
         assert!(res.is_err());
         let err = res.unwrap_err();
-        assert!(err.to_string().find($err_msg).is_some());
+        assert!(
+            err.to_string().find($err_msg).is_some(),
+            "Error was: `{:?}`",
+            err.to_string()
+        );
     }};
 }
 
@@ -35,7 +39,7 @@ fn test_parse_error() {
     parse_error!("'hello'bla", Value, "Could not parse the line");
     parse_error!(r#"{a = 2"#, Value, "Expected `}`");
 
-    parse_error!("'\"", Key, "Could not parse the line");
+    parse_error!("'\"", Key, "Expected `'`");
 }
 
 #[test]
@@ -46,10 +50,12 @@ fn test_key_from_str() {
         r#""Jos\u00E9\U000A0000\n\t\r\f\b\"""#,
         "Jos\u{00E9}\u{A0000}\n\t\r\u{c}\u{8}\""
     );
-    test_key!("", "");
-    test_key!("'hello key'bla", "'hello key'bla");
-    let wp = "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9";
-    test_key!(wp, wp);
+    test_key!("\"\"", "");
+    test_key!("\"'hello key'bla\"", "'hello key'bla");
+    test_key!(
+        "'C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9'",
+        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9"
+    );
 }
 
 #[test]
