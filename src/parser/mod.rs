@@ -17,7 +17,8 @@ mod value;
 
 pub use self::errors::TomlError;
 pub(crate) use self::key::is_unquoted_char;
-pub(crate) use self::key::simple_key as key_parser;
+pub(crate) use self::key::key as key_path;
+pub(crate) use self::key::simple_key;
 pub(crate) use self::value::value as value_parser;
 
 use self::table::duplicate_key;
