@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Serde trait bounds switched from `serde::Deserialize<'static>` to `serde::de::DeserializeOwned`
+
+### Breaking Changes
+
+- Serde trait bounds switched from `serde::Deserialize<'static>` to `serde::de::DeserializeOwned`
+
 ## [0.11.0] - 2021-12-14
 
 ### Features
