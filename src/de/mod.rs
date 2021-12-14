@@ -3,7 +3,7 @@
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
 use itertools::Itertools;
-use serde::Deserialize;
+use serde::de::DeserializeOwned;
 
 mod array;
 mod inline_table;
@@ -69,7 +69,7 @@ impl std::error::Error for Error {}
 /// Convert a value into `T`.
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
-    T: Deserialize<'static>,
+    T: DeserializeOwned,
 {
     let d = s.parse::<crate::Document>()?;
     from_document(d)
@@ -78,7 +78,7 @@ where
 /// Convert a value into `T`.
 pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
-    T: Deserialize<'static>,
+    T: DeserializeOwned,
 {
     let s = std::str::from_utf8(s).map_err(Error::custom)?;
     from_str(s)
@@ -87,7 +87,7 @@ where
 /// Convert a document into `T`.
 pub fn from_document<T>(d: crate::Document) -> Result<T, Error>
 where
-    T: Deserialize<'static>,
+    T: DeserializeOwned,
 {
     let deserializer = Deserializer::new(d);
     T::deserialize(deserializer)
@@ -96,7 +96,7 @@ where
 /// Convert an item into `T`.
 pub fn from_item<T>(d: crate::Item) -> Result<T, Error>
 where
-    T: Deserialize<'static>,
+    T: DeserializeOwned,
 {
     T::deserialize(d)
 }

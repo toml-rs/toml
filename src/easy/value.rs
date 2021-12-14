@@ -64,7 +64,7 @@ impl Value {
     /// primitive type.
     pub fn try_into<T>(self) -> Result<T, crate::TomlError>
     where
-        T: serde::de::Deserialize<'static>,
+        T: serde::de::DeserializeOwned,
     {
         let item = super::ser::to_item(&self)?;
         let value = super::de::from_item(item)?;
