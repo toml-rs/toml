@@ -158,11 +158,7 @@ impl FromStr for Key {
     /// if fails, tries as basic quoted key (surrounds with "")
     /// and then literal quoted key (surrounds with '')
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let basic = format!("\"{}\"", s);
-        let literal = format!("'{}'", s);
         Key::try_parse(s)
-            .or_else(|_| Key::try_parse(&basic))
-            .or_else(|_| Key::try_parse(&literal))
     }
 }
 
