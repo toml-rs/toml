@@ -106,5 +106,5 @@ fn from_table(
 fn from_array(
     decoded: &[toml_test_harness::Decoded],
 ) -> Result<toml_edit::Array, toml_test_harness::Error> {
-    decoded.iter().map(|v| from_decoded(v)).collect()
+    decoded.iter().map(from_decoded).collect()
 }
