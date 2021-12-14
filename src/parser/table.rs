@@ -31,7 +31,7 @@ const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 toml_parser!(std_table, parser, {
     (
         between(byte(STD_TABLE_OPEN), byte(STD_TABLE_CLOSE), key()),
-        line_trailing().and_then(|t| std::str::from_utf8(t)),
+        line_trailing().and_then(std::str::from_utf8),
     )
         .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_std_header(h, t))
 });
@@ -42,7 +42,7 @@ toml_parser!(std_table, parser, {
 toml_parser!(array_table, parser, {
     (
         between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE), key()),
-        line_trailing().and_then(|t| std::str::from_utf8(t)),
+        line_trailing().and_then(std::str::from_utf8),
     )
         .and_then(|(h, t)| parser.borrow_mut().deref_mut().on_array_header(h, t))
 });
