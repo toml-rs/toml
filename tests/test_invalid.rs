@@ -1,301 +1,302 @@
 use toml_edit::Document;
 
 #[track_caller]
-fn run(toml: &str, msg: &str) {
+fn run_contains(toml: &str, msg: &str) {
     let doc = toml.parse::<Document>();
 
     let err = match doc {
         Err(e) => e.to_string(),
         _ => unreachable!("must fail"),
     };
+    dbg!(msg);
     dbg!(&err);
     assert!(err.contains(msg));
 }
 
-macro_rules! t(
-    ($name:ident, $msg:expr, $toml:expr) => (
+macro_rules! t_file_contains(
+    ($name:ident, $toml:expr, $msg:expr, ) => (
         #[test]
         fn $name() {
-            run(include_str!($toml), $msg);
+            run_contains(include_str!($toml), $msg);
         }
     )
 );
 
-t!(
+t_file_contains!(
     test_datetime_malformed_no_leads,
+    "fixtures/invalid/datetime-malformed-no-leads.toml",
     "While parsing a Date-Time",
-    "fixtures/invalid/datetime-malformed-no-leads.toml"
 );
-t!(
+t_file_contains!(
     test_datetime_malformed_no_secs,
+    "fixtures/invalid/datetime-malformed-no-secs.toml",
     "While parsing a Date-Time",
-    "fixtures/invalid/datetime-malformed-no-secs.toml"
 );
-t!(
+t_file_contains!(
     test_datetime_malformed_no_t,
+    "fixtures/invalid/datetime-malformed-no-t.toml",
     "",
-    "fixtures/invalid/datetime-malformed-no-t.toml"
 );
-t!(
+t_file_contains!(
     test_datetime_malformed_with_milli,
+    "fixtures/invalid/datetime-malformed-with-milli.toml",
     "While parsing a Date-Time",
-    "fixtures/invalid/datetime-malformed-with-milli.toml"
 );
-t!(
+t_file_contains!(
     test_duplicate_keys,
+    "fixtures/invalid/duplicate-keys.toml",
     "Duplicate key",
-    "fixtures/invalid/duplicate-keys.toml"
 );
-t!(
+t_file_contains!(
     test_duplicate_key_table,
+    "fixtures/invalid/duplicate-key-table.toml",
     "Duplicate key",
-    "fixtures/invalid/duplicate-key-table.toml"
 );
-t!(
+t_file_contains!(
     test_duplicate_tables,
+    "fixtures/invalid/duplicate-tables.toml",
     "Duplicate key",
-    "fixtures/invalid/duplicate-tables.toml"
 );
-t!(
+t_file_contains!(
     test_duplicate_key_std_into_dotted,
+    "fixtures/invalid/duplicate-key-std-into-dotted.toml",
     "Duplicate key",
-    "fixtures/invalid/duplicate-key-std-into-dotted.toml"
 );
-t!(
+t_file_contains!(
     test_duplicate_key_dotted_into_std,
+    "fixtures/invalid/duplicate-key-dotted-into-std.toml",
     "Duplicate key",
-    "fixtures/invalid/duplicate-key-dotted-into-std.toml"
 );
-t!(
+t_file_contains!(
     test_empty_implicit_table,
+    "fixtures/invalid/empty-implicit-table.toml",
     "While parsing a Table Header",
-    "fixtures/invalid/empty-implicit-table.toml"
 );
-t!(
+t_file_contains!(
     test_empty_table,
+    "fixtures/invalid/empty-table.toml",
     "While parsing a Table Header",
-    "fixtures/invalid/empty-table.toml"
 );
-t!(
+t_file_contains!(
     test_float_leading_zero_neg,
+    "fixtures/invalid/float-leading-zero-neg.toml",
     "Unexpected `3`",
-    "fixtures/invalid/float-leading-zero-neg.toml"
 );
-t!(
+t_file_contains!(
     test_float_leading_zero_pos,
+    "fixtures/invalid/float-leading-zero-pos.toml",
     "Unexpected `3`",
-    "fixtures/invalid/float-leading-zero-pos.toml"
 );
-t!(
+t_file_contains!(
     test_float_leading_zero,
+    "fixtures/invalid/float-leading-zero.toml",
     "Unexpected `3`",
-    "fixtures/invalid/float-leading-zero.toml"
 );
-t!(
+t_file_contains!(
     test_float_no_leading_zero,
+    "fixtures/invalid/float-no-leading-zero.toml",
     "Unexpected `.`",
-    "fixtures/invalid/float-no-leading-zero.toml"
 );
-t!(
+t_file_contains!(
     test_float_no_trailing_digits,
+    "fixtures/invalid/float-no-trailing-digits.toml",
     "While parsing a Float",
-    "fixtures/invalid/float-no-trailing-digits.toml"
 );
-t!(
+t_file_contains!(
     test_float_underscore_after_point,
+    "fixtures/invalid/float-underscore-after-point.toml",
     "While parsing a Float",
-    "fixtures/invalid/float-underscore-after-point.toml"
 );
-t!(
+t_file_contains!(
     test_float_underscore_after,
+    "fixtures/invalid/float-underscore-after.toml",
     "column 11",
-    "fixtures/invalid/float-underscore-after.toml"
 );
-t!(
+t_file_contains!(
     test_float_underscore_before_point,
+    "fixtures/invalid/float-underscore-before-point.toml",
     "column 9",
-    "fixtures/invalid/float-underscore-before-point.toml"
 );
-t!(
+t_file_contains!(
     test_float_underscore_before,
+    "fixtures/invalid/float-underscore-before.toml",
     "column 7",
-    "fixtures/invalid/float-underscore-before.toml"
 );
-t!(
+t_file_contains!(
     test_integer_leading_zero_neg,
+    "fixtures/invalid/integer-leading-zero-neg.toml",
     "",
-    "fixtures/invalid/integer-leading-zero-neg.toml"
 );
-t!(
+t_file_contains!(
     test_integer_leading_zero_pos,
+    "fixtures/invalid/integer-leading-zero-pos.toml",
     "",
-    "fixtures/invalid/integer-leading-zero-pos.toml"
 );
-t!(
+t_file_contains!(
     test_integer_leading_zero,
+    "fixtures/invalid/integer-leading-zero.toml",
     "",
-    "fixtures/invalid/integer-leading-zero.toml"
 );
-t!(
+t_file_contains!(
     test_integer_underscore_after,
+    "fixtures/invalid/integer-underscore-after.toml",
     "",
-    "fixtures/invalid/integer-underscore-after.toml"
 );
-t!(
+t_file_contains!(
     test_integer_underscore_before,
+    "fixtures/invalid/integer-underscore-before.toml",
     "",
-    "fixtures/invalid/integer-underscore-before.toml"
 );
-t!(
+t_file_contains!(
     test_integer_underscore_double,
+    "fixtures/invalid/integer-underscore-double.toml",
     "",
-    "fixtures/invalid/integer-underscore-double.toml"
 );
-t!(
+t_file_contains!(
     test_integer_invalid_hex_char,
+    "fixtures/invalid/integer-invalid-hex-char.toml",
     "",
-    "fixtures/invalid/integer-invalid-hex-char.toml"
 );
-t!(
+t_file_contains!(
     test_integer_invalid_octal_char,
+    "fixtures/invalid/integer-invalid-octal-char.toml",
     "",
-    "fixtures/invalid/integer-invalid-octal-char.toml"
 );
-t!(
+t_file_contains!(
     test_integer_invalid_binary_char,
+    "fixtures/invalid/integer-invalid-binary-char.toml",
     "",
-    "fixtures/invalid/integer-invalid-binary-char.toml"
 );
-t!(
+t_file_contains!(
     test_key_after_array,
+    "fixtures/invalid/key-after-array.toml",
     "",
-    "fixtures/invalid/key-after-array.toml"
 );
-t!(
+t_file_contains!(
     test_key_after_table,
+    "fixtures/invalid/key-after-table.toml",
     "",
-    "fixtures/invalid/key-after-table.toml"
 );
-t!(test_key_empty, "", "fixtures/invalid/key-empty.toml");
-t!(test_key_hash, "", "fixtures/invalid/key-hash.toml");
-t!(test_key_newline, "", "fixtures/invalid/key-newline.toml");
-t!(test_key_no_eol, "", "fixtures/invalid/key-no-eol.toml");
-t!(
+t_file_contains!(test_key_empty, "fixtures/invalid/key-empty.toml", "",);
+t_file_contains!(test_key_hash, "fixtures/invalid/key-hash.toml", "",);
+t_file_contains!(test_key_newline, "fixtures/invalid/key-newline.toml", "",);
+t_file_contains!(test_key_no_eol, "fixtures/invalid/key-no-eol.toml", "",);
+t_file_contains!(
     test_key_open_bracket,
+    "fixtures/invalid/key-open-bracket.toml",
     "",
-    "fixtures/invalid/key-open-bracket.toml"
 );
-t!(
+t_file_contains!(
     test_key_single_open_bracket,
+    "fixtures/invalid/key-single-open-bracket.toml",
     "",
-    "fixtures/invalid/key-single-open-bracket.toml"
 );
-t!(test_key_space, "", "fixtures/invalid/key-space.toml");
-t!(
+t_file_contains!(test_key_space, "fixtures/invalid/key-space.toml", "",);
+t_file_contains!(
     test_key_start_bracket,
+    "fixtures/invalid/key-start-bracket.toml",
     "",
-    "fixtures/invalid/key-start-bracket.toml"
 );
-t!(
+t_file_contains!(
     test_key_two_equals,
+    "fixtures/invalid/key-two-equals.toml",
     "",
-    "fixtures/invalid/key-two-equals.toml"
 );
-t!(test_llbrace, "", "fixtures/invalid/llbrace.toml");
-t!(test_rrbrace, "", "fixtures/invalid/rrbrace.toml");
-t!(
+t_file_contains!(test_llbrace, "fixtures/invalid/llbrace.toml", "",);
+t_file_contains!(test_rrbrace, "fixtures/invalid/rrbrace.toml", "",);
+t_file_contains!(
     test_string_bad_byte_escape,
+    "fixtures/invalid/string-bad-byte-escape.toml",
     "",
-    "fixtures/invalid/string-bad-byte-escape.toml"
 );
-t!(
+t_file_contains!(
     test_string_bad_escape,
+    "fixtures/invalid/string-bad-escape.toml",
     "",
-    "fixtures/invalid/string-bad-escape.toml"
 );
-t!(
+t_file_contains!(
     test_string_bad_surrogate,
+    "fixtures/invalid/string-bad-surrogate.toml",
     "",
-    "fixtures/invalid/string-bad-surrogate.toml"
 );
-t!(
+t_file_contains!(
     test_string_bad_uni_esc,
+    "fixtures/invalid/string-bad-uni-esc.toml",
     "",
-    "fixtures/invalid/string-bad-uni-esc.toml"
 );
-t!(
+t_file_contains!(
     test_string_byte_escapes,
+    "fixtures/invalid/string-byte-escapes.toml",
     "",
-    "fixtures/invalid/string-byte-escapes.toml"
 );
-t!(
+t_file_contains!(
     test_string_no_close,
+    "fixtures/invalid/string-no-close.toml",
     "",
-    "fixtures/invalid/string-no-close.toml"
 );
-t!(
+t_file_contains!(
     test_table_array_implicit,
+    "fixtures/invalid/table-array-implicit.toml",
     "",
-    "fixtures/invalid/table-array-implicit.toml"
 );
-t!(
+t_file_contains!(
     test_table_array_malformed_bracket,
+    "fixtures/invalid/table-array-malformed-bracket.toml",
     "",
-    "fixtures/invalid/table-array-malformed-bracket.toml"
 );
-t!(
+t_file_contains!(
     test_table_array_malformed_empty,
+    "fixtures/invalid/table-array-malformed-empty.toml",
     "",
-    "fixtures/invalid/table-array-malformed-empty.toml"
 );
-t!(test_table_empty, "", "fixtures/invalid/table-empty.toml");
-t!(
+t_file_contains!(test_table_empty, "fixtures/invalid/table-empty.toml", "",);
+t_file_contains!(
     test_table_nested_brackets_close,
+    "fixtures/invalid/table-nested-brackets-close.toml",
     "",
-    "fixtures/invalid/table-nested-brackets-close.toml"
 );
-t!(
+t_file_contains!(
     test_table_nested_brackets_open,
+    "fixtures/invalid/table-nested-brackets-open.toml",
     "",
-    "fixtures/invalid/table-nested-brackets-open.toml"
 );
-t!(
+t_file_contains!(
     test_table_whitespace,
+    "fixtures/invalid/table-whitespace.toml",
     "",
-    "fixtures/invalid/table-whitespace.toml"
 );
-t!(
+t_file_contains!(
     test_table_with_pound,
+    "fixtures/invalid/table-with-pound.toml",
     "",
-    "fixtures/invalid/table-with-pound.toml"
 );
-t!(
+t_file_contains!(
     test_text_after_array_entries,
+    "fixtures/invalid/text-after-array-entries.toml",
     "",
-    "fixtures/invalid/text-after-array-entries.toml"
 );
-t!(
+t_file_contains!(
     test_text_after_integer,
+    "fixtures/invalid/text-after-integer.toml",
     "",
-    "fixtures/invalid/text-after-integer.toml"
 );
-t!(
+t_file_contains!(
     test_text_after_string,
+    "fixtures/invalid/text-after-string.toml",
     "",
-    "fixtures/invalid/text-after-string.toml"
 );
-t!(
+t_file_contains!(
     test_text_after_table,
+    "fixtures/invalid/text-after-table.toml",
     "",
-    "fixtures/invalid/text-after-table.toml"
 );
-t!(
+t_file_contains!(
     test_text_before_array_separator,
+    "fixtures/invalid/text-before-array-separator.toml",
     "",
-    "fixtures/invalid/text-before-array-separator.toml"
 );
-t!(
+t_file_contains!(
     test_text_in_array,
+    "fixtures/invalid/text-in-array.toml",
     "",
-    "fixtures/invalid/text-in-array.toml"
 );
