@@ -13,6 +13,26 @@ fn run_contains(toml: &str, msg: &str) {
     assert!(err.contains(msg));
 }
 
+#[track_caller]
+fn run_exact(toml: &str, msg: &str) {
+    let doc = toml.parse::<Document>();
+
+    let err = match doc {
+        Err(e) => e.to_string(),
+        _ => unreachable!("must fail"),
+    };
+    assert_eq!(err, msg);
+}
+
+macro_rules! t_exact(
+    ($name:ident, $toml:expr, $msg:expr, ) => (
+        #[test]
+        fn $name() {
+            run_exact($toml, $msg);
+        }
+    )
+);
+
 macro_rules! t_file_contains(
     ($name:ident, $toml:expr, $msg:expr, ) => (
         #[test]
@@ -299,4 +319,67 @@ t_file_contains!(
     test_text_in_array,
     "fixtures/invalid/text-in-array.toml",
     "",
+);
+
+t_exact!(
+    test_quote_suggestion_in_key_value_pair,
+    "value= ZZZ",
+    "TOML parse error at line 1, column 8
+  |
+1 | value= ZZZ
+  |        ^
+Unexpected `Z`
+Expected `-`, `+`, `inf`, `nan`, `0x`, `0o` or `0b`
+expected 4 more elements
+expected 2 more elements
+While parsing a Time
+While parsing a hexadecimal Integer
+While parsing a octal Integer
+While parsing a binary Integer
+While parsing an Integer
+While parsing a Date-Time
+While parsing a Float
+",
+);
+t_exact!(
+    test_quote_suggestion_in_array,
+    "value=[ZZZ]",
+    "TOML parse error at line 1, column 8
+  |
+1 | value=[ZZZ]
+  |        ^
+Unexpected `Z`
+Expected `a newline` or `#`
+",
+);
+t_exact!(
+    test_quote_suggestion_in_inline_table,
+    "value={key = ZZZ}",
+    "TOML parse error at line 1, column 14
+  |
+1 | value={key = ZZZ}
+  |              ^
+Unexpected `Z`
+Expected `-`, `+`, `inf`, `nan`, `0x`, `0o` or `0b`
+expected 4 more elements
+expected 2 more elements
+While parsing a Time
+While parsing a hexadecimal Integer
+While parsing a octal Integer
+While parsing a binary Integer
+While parsing an Integer
+While parsing a Date-Time
+While parsing a Float
+",
+);
+t_exact!(
+    test_quote_suggestion_similar_to_constants_in_key_value_pair,
+    "value= trust",
+    "TOML parse error at line 1, column 9
+  |
+1 | value= trust
+  |         ^
+Unexpected `r`
+Expected `rue`
+",
 );
