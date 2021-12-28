@@ -15,6 +15,12 @@ parse!(boolean() -> bool, {
         (byte(FALSE[0]), range(&FALSE[1..]),),
     )).map(|p| p.0 == b't')
 });
+parse!(true_() -> bool, {
+    range(crate::parser::numbers::TRUE).map(|_| true)
+});
+parse!(false_() -> bool, {
+    range(crate::parser::numbers::FALSE).map(|_| false)
+});
 
 // ;; Integer
 
