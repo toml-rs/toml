@@ -1,0 +1,7 @@
+TOML parse error at line 13, column 1
+   |
+13 | [[albums]]
+   | ^
+Duplicate key `albums` in `[]` table
+
+While parsing a Table Header

@@ -1,0 +1,6 @@
+TOML parse error at line 1, column 2
+  |
+1 | [
+  |  ^
+Unexpected `end of input`
+While parsing a Table Header

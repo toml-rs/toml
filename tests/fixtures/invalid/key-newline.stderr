@@ -1,0 +1,7 @@
+TOML parse error at line 1, column 2
+  |
+1 | a
+  |  ^
+Unexpected `
+`
+Expected `.` or `=`

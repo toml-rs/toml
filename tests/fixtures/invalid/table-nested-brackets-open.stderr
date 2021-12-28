@@ -1,0 +1,7 @@
+TOML parse error at line 1, column 3
+  |
+1 | [a[b]
+  |   ^
+Unexpected `[`
+Expected `.` or `]`
+While parsing a Table Header
