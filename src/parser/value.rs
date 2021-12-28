@@ -7,6 +7,7 @@ use crate::parser::trivia::from_utf8_unchecked;
 use crate::repr::{Formatted, Repr};
 use crate::value as v;
 use crate::Value;
+use combine::parser::range::range;
 use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
@@ -23,6 +24,14 @@ parse!(value() -> v::Value, {
             }),
             crate::parser::array::ARRAY_OPEN => array().map(v::Value::Array),
             crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table().map(v::Value::InlineTable),
+            b'a'..=b'z' | b'A'..=b'Z' => {
+                choice((
+                    range(crate::parser::numbers::TRUE).map(|_| v::Value::from(true)),
+                    range(crate::parser::numbers::FALSE).map(|_| v::Value::from(false)),
+                    crate::parser::numbers::inf().map(v::Value::from),
+                    crate::parser::numbers::nan().map(v::Value::from),
+                ))
+            },
             // Uncommon enough not to be worth optimizing at this time
             _ => choice((
                 boolean()

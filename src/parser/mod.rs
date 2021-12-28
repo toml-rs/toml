@@ -9,7 +9,7 @@ mod document;
 mod errors;
 mod inline_table;
 mod key;
-mod numbers;
+pub(crate) mod numbers;
 pub(crate) mod strings;
 mod table;
 mod trivia;
