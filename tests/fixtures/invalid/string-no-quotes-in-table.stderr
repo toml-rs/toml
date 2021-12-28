@@ -1,6 +1,6 @@
-TOML parse error at line 1, column 14
+TOML parse error at line 1, column 7
   |
-1 | value={key = ZZZ}
-  |              ^
+1 | value=ZZZ
+  |       ^
 Unexpected `Z`
-Expected `true`, `false`, `inf` or `nan`
+Expected `quoted string`
