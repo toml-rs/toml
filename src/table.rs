@@ -121,7 +121,7 @@ impl Table {
     ///
     /// The comparison function receives two key and value pairs to compare (you can sort by keys or
     /// values or their combination as needed).
-    pub fn sort_by<F>(&mut self, compare: F)
+    pub fn sort_values_by<F>(&mut self, compare: F)
     where
         F: Fn(&Key, &Item, &Key, &Item) -> std::cmp::Ordering,
     {
@@ -134,10 +134,10 @@ impl Table {
             cmp(&val1.key, &val1.value, &val2.key, &val2.value)
         };
 
-        self.sort_by_internal(&modified_cmp);
+        self.sort_values_by_internal(&modified_cmp);
     }
 
-    fn sort_by_internal<F>(&mut self, compare: &F)
+    fn sort_values_by_internal<F>(&mut self, compare: &F)
     where
         F: Fn(
             &InternalString,
@@ -150,7 +150,7 @@ impl Table {
         for kv in self.items.values_mut() {
             match &mut kv.value {
                 Item::Table(table) if table.is_dotted() => {
-                    table.sort_by_internal(compare);
+                    table.sort_values_by_internal(compare);
                 }
                 _ => {}
             }

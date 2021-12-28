@@ -460,7 +460,7 @@ fn test_sort_values() {
 }
 
 #[test]
-fn test_sort_by() {
+fn test_sort_values_by() {
     given(
         r#"
         [a.z]
@@ -478,7 +478,7 @@ fn test_sort_by() {
         let a = as_table!(a);
         // Sort by the representation, not the value. So "\"c\"" sorts before "a" because '"' sorts
         // before 'a'.
-        a.sort_by(|k1, _, k2, _| k1.to_repr().as_raw().cmp(k2.to_repr().as_raw()));
+        a.sort_values_by(|k1, _, k2, _| k1.to_repr().as_raw().cmp(k2.to_repr().as_raw()));
     })
     .produces_display(
         r#"
