@@ -1,0 +1,6 @@
+TOML parse error at line 5, column 1
+  |
+5 | apple.color = "red"
+  | ^
+Duplicate key `color` in `<unknown>` table
+

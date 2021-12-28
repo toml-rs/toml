@@ -1,0 +1,7 @@
+TOML parse error at line 2, column 1
+  |
+2 | [a]
+  | ^
+Duplicate key `a` in `[]` table
+
+While parsing a Table Header

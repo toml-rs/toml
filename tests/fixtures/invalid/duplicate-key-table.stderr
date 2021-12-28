@@ -1,0 +1,7 @@
+TOML parse error at line 4, column 1
+  |
+4 | [fruit.type]
+  | ^
+Duplicate key `type` in `[fruit]` table
+
+While parsing a Table Header
