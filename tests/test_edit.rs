@@ -460,6 +460,42 @@ fn test_sort_values() {
 }
 
 #[test]
+fn test_sort_values_by() {
+    given(
+        r#"
+        [a.z]
+
+        [a]
+        # this comment is attached to b
+        b = 2 # as well as this
+        a = 1
+        "c" = 3
+
+        [a.y]"#,
+    )
+    .running(|root| {
+        let a = root.get_mut("a").unwrap();
+        let a = as_table!(a);
+        // Sort by the representation, not the value. So "\"c\"" sorts before "a" because '"' sorts
+        // before 'a'.
+        a.sort_values_by(|k1, _, k2, _| k1.to_repr().as_raw().cmp(k2.to_repr().as_raw()));
+    })
+    .produces_display(
+        r#"
+        [a.z]
+
+        [a]
+        "c" = 3
+        a = 1
+        # this comment is attached to b
+        b = 2 # as well as this
+
+        [a.y]
+"#,
+    );
+}
+
+#[test]
 fn test_set_position() {
     given(
         r#"

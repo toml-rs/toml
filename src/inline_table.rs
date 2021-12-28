@@ -93,6 +93,40 @@ impl InlineTable {
         }
     }
 
+    /// Sort Key/Value Pairs of the table using the using the comparison function `compare`.
+    ///
+    /// The comparison function receives two key and value pairs to compare (you can sort by keys or
+    /// values or their combination as needed).
+    pub fn sort_values_by<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(&Key, &Item, &Key, &Item) -> std::cmp::Ordering,
+    {
+        self.sort_values_by_internal(&mut compare);
+    }
+
+    fn sort_values_by_internal<F>(&mut self, compare: &mut F)
+    where
+        F: FnMut(&Key, &Item, &Key, &Item) -> std::cmp::Ordering,
+    {
+        let modified_cmp = |_: &InternalString,
+                            val1: &TableKeyValue,
+                            _: &InternalString,
+                            val2: &TableKeyValue|
+         -> std::cmp::Ordering {
+            compare(&val1.key, &val1.value, &val2.key, &val2.value)
+        };
+
+        self.items.sort_by(modified_cmp);
+        for kv in self.items.values_mut() {
+            match &mut kv.value {
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    table.sort_values_by_internal(compare);
+                }
+                _ => {}
+            }
+        }
+    }
+
     /// Change this table's dotted status
     pub fn set_dotted(&mut self, yes: bool) {
         self.dotted = yes;
