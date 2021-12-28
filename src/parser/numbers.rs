@@ -7,10 +7,12 @@ use combine::*;
 // ;; Boolean
 
 // boolean = true / false
+pub(crate) const TRUE: &[u8] = b"true";
+pub(crate) const FALSE: &[u8] = b"false";
 parse!(boolean() -> bool, {
     choice((
-        (byte(b't'), range(&b"rue"[..]),),
-        (byte(b'f'), range(&b"alse"[..]),),
+        (byte(TRUE[0]), range(&TRUE[1..]),),
+        (byte(FALSE[0]), range(&FALSE[1..]),),
     )).map(|p| p.0 == b't')
 });
 
@@ -175,11 +177,13 @@ parse!(special_float() -> f64, {
 });
 
 // inf = %x69.6e.66  ; inf
+pub(crate) const INF: &[u8] = b"inf";
 parse!(inf() -> f64, {
-    range(&b"inf"[..]).map(|_| f64::INFINITY)
+    range(INF).map(|_| f64::INFINITY)
 });
 
 // nan = %x6e.61.6e  ; nan
+pub(crate) const NAN: &[u8] = b"nan";
 parse!(nan() -> f64, {
-    range(&b"nan"[..]).map(|_| f64::NAN)
+    range(NAN).map(|_| f64::NAN)
 });
