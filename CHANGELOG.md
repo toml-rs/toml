@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.12.1] - 2021-12-28
+
 ### Features
 
 - Added `Table::sort_values_by` and `InlineTable::sort_values_by`
@@ -230,7 +232,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/ordian/toml_edit/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/ordian/toml_edit/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/ordian/toml_edit/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/ordian/toml_edit/compare/v0.10.0...v0.10.1
