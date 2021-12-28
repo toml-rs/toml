@@ -1,13 +1,12 @@
 use crate::parser::array::array;
 use crate::parser::datetime::date_time;
 use crate::parser::inline_table::inline_table;
-use crate::parser::numbers::{boolean, float, integer};
+use crate::parser::numbers::{float, integer};
 use crate::parser::strings::string;
 use crate::parser::trivia::from_utf8_unchecked;
 use crate::repr::{Formatted, Repr};
 use crate::value as v;
 use crate::Value;
-use combine::parser::range::range;
 use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
@@ -24,25 +23,29 @@ parse!(value() -> v::Value, {
             }),
             crate::parser::array::ARRAY_OPEN => array().map(v::Value::Array),
             crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table().map(v::Value::InlineTable),
-            b'a'..=b'z' | b'A'..=b'Z' => {
+            // Date/number starts
+            b'+' | b'-' | b'0'..=b'9' |
+            // Report as if they were numbers because its most likely a typo
+            b'.' | b'_' => {
+                // Uncommon enough not to be worth optimizing at this time
                 choice((
-                    range(crate::parser::numbers::TRUE).map(|_| v::Value::from(true)),
-                    range(crate::parser::numbers::FALSE).map(|_| v::Value::from(false)),
+                    date_time()
+                        .map(v::Value::from),
+                    float()
+                        .map(v::Value::from),
+                    integer()
+                        .map(v::Value::from),
+                ))
+            },
+            _ => {
+                // Uncommon enough not to be worth optimizing at this time
+                choice((
+                    crate::parser::numbers::true_().map(v::Value::from),
+                    crate::parser::numbers::false_().map(v::Value::from),
                     crate::parser::numbers::inf().map(v::Value::from),
                     crate::parser::numbers::nan().map(v::Value::from),
                 ))
             },
-            // Uncommon enough not to be worth optimizing at this time
-            _ => choice((
-                boolean()
-                    .map(v::Value::from),
-                date_time()
-                    .map(v::Value::from),
-                float()
-                    .map(v::Value::from),
-                integer()
-                    .map(v::Value::from),
-            )),
         )
     })).and_then(|(raw, value)| apply_raw(value, raw))
 });
