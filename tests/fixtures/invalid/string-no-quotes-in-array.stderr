@@ -1,7 +1,6 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 10
   |
-1 | value = ZZZ
-  |         ^
-Unexpected `end of input`
+1 | value = [ZZZ]
+  |          ^
 Unexpected `Z`
-Expected `true`, `false`, `inf` or `nan`
+Expected `a newline` or `#`

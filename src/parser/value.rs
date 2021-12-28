@@ -37,14 +37,21 @@ parse!(value() -> v::Value, {
                         .map(v::Value::from),
                 ))
             },
+            b't' => {
+                crate::parser::numbers::true_().map(v::Value::from).expected("quoted string")
+            },
+            b'f' => {
+                crate::parser::numbers::false_().map(v::Value::from).expected("quoted string")
+            },
+            b'i' => {
+                crate::parser::numbers::inf().map(v::Value::from).expected("quoted string")
+            },
+            b'n' => {
+                crate::parser::numbers::nan().map(v::Value::from).expected("quoted string")
+            },
             _ => {
-                // Uncommon enough not to be worth optimizing at this time
-                choice((
-                    crate::parser::numbers::true_().map(v::Value::from),
-                    crate::parser::numbers::false_().map(v::Value::from),
-                    crate::parser::numbers::inf().map(v::Value::from),
-                    crate::parser::numbers::nan().map(v::Value::from),
-                ))
+                // Pick something random to fail, we'll override `expected` anyways
+                crate::parser::numbers::nan().map(v::Value::from).expected("quoted string")
             },
         )
     })).and_then(|(raw, value)| apply_raw(value, raw))
