@@ -179,11 +179,11 @@ parse!(special_float() -> f64, {
 // inf = %x69.6e.66  ; inf
 pub(crate) const INF: &[u8] = b"inf";
 parse!(inf() -> f64, {
-    range(INF).map(|_| f64::INFINITY)
+    bytes(INF).map(|_| f64::INFINITY)
 });
 
 // nan = %x6e.61.6e  ; nan
 pub(crate) const NAN: &[u8] = b"nan";
 parse!(nan() -> f64, {
-    range(NAN).map(|_| f64::NAN)
+    bytes(NAN).map(|_| f64::NAN)
 });
