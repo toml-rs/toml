@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Added `Table::sort_values_by` and `InlineTable::sort_values_by`
+
+### Fixes
+
+- Clarified error message when accidentally using bare words for values
+
 ## [0.12.0] - 2021-12-14
 
 ### Fixes
