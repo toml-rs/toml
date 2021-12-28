@@ -99,21 +99,26 @@ impl InlineTable {
     /// values or their combination as needed).
     pub fn sort_values_by<F>(&mut self, mut compare: F)
     where
-        F: FnMut(&Key, &Item, &Key, &Item) -> std::cmp::Ordering,
+        F: FnMut(&Key, &Value, &Key, &Value) -> std::cmp::Ordering,
     {
         self.sort_values_by_internal(&mut compare);
     }
 
     fn sort_values_by_internal<F>(&mut self, compare: &mut F)
     where
-        F: FnMut(&Key, &Item, &Key, &Item) -> std::cmp::Ordering,
+        F: FnMut(&Key, &Value, &Key, &Value) -> std::cmp::Ordering,
     {
         let modified_cmp = |_: &InternalString,
                             val1: &TableKeyValue,
                             _: &InternalString,
                             val2: &TableKeyValue|
          -> std::cmp::Ordering {
-            compare(&val1.key, &val1.value, &val2.key, &val2.value)
+            match (val1.value.as_value(), val2.value.as_value()) {
+                (Some(v1), Some(v2)) => compare(&val1.key, v1, &val2.key, v2),
+                (Some(_), None) => std::cmp::Ordering::Greater,
+                (None, Some(_)) => std::cmp::Ordering::Less,
+                (None, None) => std::cmp::Ordering::Equal,
+            }
         };
 
         self.items.sort_by(modified_cmp);
