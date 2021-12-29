@@ -62,7 +62,7 @@ pub(crate) const CR: u8 = b'\r';
 parse!(newline() -> char, {
     choice((lf(), crlf()))
         .map(|_| '\n')
-        .expected("a newline")
+        .expected("newline")
 });
 
 // ws-newline       = *( wschar / newline )
