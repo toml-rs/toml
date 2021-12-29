@@ -21,6 +21,11 @@ use table_enum::*;
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error {
+    inner: Box<ErrorInner>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+struct ErrorInner {
     message: String,
 }
 
@@ -30,7 +35,9 @@ impl Error {
         T: std::fmt::Display,
     {
         Error {
-            message: msg.to_string(),
+            inner: Box::new(ErrorInner {
+                message: msg.to_string(),
+            }),
         }
     }
 }
@@ -40,15 +47,13 @@ impl serde::de::Error for Error {
     where
         T: std::fmt::Display,
     {
-        Error {
-            message: msg.to_string(),
-        }
+        Error::custom(msg)
     }
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.message.fmt(formatter)
+        self.inner.message.fmt(formatter)
     }
 }
 
