@@ -239,6 +239,10 @@ pub(crate) enum CustomError {
         key: String,
         table: Option<Vec<Key>>,
     },
+    DottedKeyExtendWrongType {
+        key: Vec<Key>,
+        actual: &'static str,
+    },
     InvalidHexEscape(u32),
     UnparsedLine,
     OutOfRange,
@@ -264,6 +268,14 @@ impl Display for CustomError {
                 } else {
                     writeln!(f, "Duplicate key `{}`", key)
                 }
+            }
+            CustomError::DottedKeyExtendWrongType { key, actual } => {
+                let path = key.iter().join(".");
+                writeln!(
+                    f,
+                    "Dotted key `{}` attempted to extend non-table type (`{}`)",
+                    path, actual
+                )
             }
             CustomError::InvalidHexEscape(h) => {
                 writeln!(f, "Invalid hex escape code: {:x} ", h)
