@@ -9,7 +9,6 @@ use combine::parser::byte::byte;
 use combine::parser::range::range;
 use combine::stream::RangeStream;
 use combine::*;
-use itertools::Itertools;
 use std::cell::RefCell;
 use std::mem;
 // https://github.com/rust-lang/rust/issues/41358
@@ -71,13 +70,9 @@ parser! {
 
 pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
     assert!(i < path.len());
-    let header = path[..i]
-        .iter()
-        .map(|k| k.to_repr().as_ref().as_raw().to_owned())
-        .join(".");
     CustomError::DuplicateKey {
         key: path[i].to_repr().as_ref().as_raw().into(),
-        table: format!("[{}]", header),
+        table: Some(path[..i].to_vec()),
     }
 }
 

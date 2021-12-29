@@ -159,7 +159,7 @@ impl TomlParser {
         if mixed_table_types {
             return Err(CustomError::DuplicateKey {
                 key: kv.key.get().into(),
-                table: "<unknown>".into(), // TODO: get actual table name
+                table: None,
             });
         }
 
@@ -170,7 +170,7 @@ impl TomlParser {
         if duplicate_key {
             return Err(CustomError::DuplicateKey {
                 key: key.as_str().into(),
-                table: "<unknown>".into(), // TODO: get actual table name
+                table: Some(self.current_table_path.clone()),
             });
         }
 

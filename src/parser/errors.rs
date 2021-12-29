@@ -1,6 +1,8 @@
+use crate::Key;
 use combine::easy::Errors as ParseError;
 use combine::stream::easy::Error;
 use combine::stream::position::SourcePosition;
+use itertools::Itertools;
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
@@ -233,7 +235,10 @@ mod test_translate_position {
 
 #[derive(Debug, Clone)]
 pub(crate) enum CustomError {
-    DuplicateKey { key: String, table: String },
+    DuplicateKey {
+        key: String,
+        table: Option<Vec<Key>>,
+    },
     InvalidHexEscape(u32),
     UnparsedLine,
     OutOfRange,
@@ -247,11 +252,20 @@ impl StdError for CustomError {
 
 impl Display for CustomError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        match *self {
-            CustomError::DuplicateKey { ref key, ref table } => {
-                writeln!(f, "Duplicate key `{}` in `{}` table", key, table)
+        match self {
+            CustomError::DuplicateKey { key, table } => {
+                if let Some(table) = table {
+                    if table.is_empty() {
+                        writeln!(f, "Duplicate key `{}` in document root", key)
+                    } else {
+                        let path = table.iter().join(".");
+                        writeln!(f, "Duplicate key `{}` in table `{}`", key, path)
+                    }
+                } else {
+                    writeln!(f, "Duplicate key `{}`", key)
+                }
             }
-            CustomError::InvalidHexEscape(ref h) => {
+            CustomError::InvalidHexEscape(h) => {
                 writeln!(f, "Invalid hex escape code: {:x} ", h)
             }
             CustomError::UnparsedLine => writeln!(f, "Could not parse the line"),

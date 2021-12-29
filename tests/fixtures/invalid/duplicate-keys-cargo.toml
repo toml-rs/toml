@@ -1,0 +1,11 @@
+[project]
+
+name = "dep1"
+version = "0.5.0"
+authors = ["carlhuda@example.com"]
+categories = ["algorithms"]
+categories = ["algorithms"]
+
+[lib]
+
+name = "dep1"
