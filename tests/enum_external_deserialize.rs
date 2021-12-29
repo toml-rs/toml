@@ -32,7 +32,7 @@ fn invalid_variant_returns_error_with_good_message_string() {
 
     assert_eq!(
         error.to_string(),
-        "unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"
+        "unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct` for key `val`"
     );
 }
 
@@ -41,7 +41,7 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
     let error = toml::from_str::<Val>("val = { NonExistent = {} }").unwrap_err();
     assert_eq!(
         error.to_string(),
-        "unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"
+        "unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct` for key `val`"
     );
 }
 
@@ -49,7 +49,7 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
 fn extra_field_returns_expected_empty_table_error() {
     let error = toml::from_str::<Val>("val = { Plain = { extra_field = 404 } }").unwrap_err();
 
-    assert_eq!(error.to_string(), "expected empty table");
+    assert_eq!(error.to_string(), "expected empty table for key `val`");
 }
 
 #[test]
@@ -60,7 +60,7 @@ fn extra_field_returns_expected_empty_table_error_struct_variant() {
 
     assert_eq!(
         error.to_string(),
-        r#"unexpected keys in table: extra_0, extra_1, available keys: value"#
+        r#"unexpected keys in table: extra_0, extra_1, available keys: value for key `val`"#
     );
 }
 

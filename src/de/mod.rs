@@ -27,6 +27,7 @@ pub struct Error {
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct ErrorInner {
     message: String,
+    reverse_key: Vec<crate::InternalString>,
 }
 
 impl Error {
@@ -37,8 +38,13 @@ impl Error {
         Error {
             inner: Box::new(ErrorInner {
                 message: msg.to_string(),
+                reverse_key: Default::default(),
             }),
         }
+    }
+
+    pub(crate) fn parent_key(&mut self, key: crate::InternalString) {
+        self.inner.reverse_key.push(key);
     }
 }
 
@@ -52,8 +58,21 @@ impl serde::de::Error for Error {
 }
 
 impl std::fmt::Display for Error {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.inner.message.fmt(formatter)
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.inner.message.fmt(f)?;
+
+        if !self.inner.reverse_key.is_empty() {
+            write!(f, " for key `")?;
+            for (i, k) in self.inner.reverse_key.iter().rev().enumerate() {
+                if i > 0 {
+                    write!(f, ".")?;
+                }
+                write!(f, "{}", k)?;
+            }
+            write!(f, "`")?;
+        }
+
+        Ok(())
     }
 }
 
