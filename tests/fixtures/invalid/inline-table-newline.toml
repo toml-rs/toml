@@ -1,0 +1,9 @@
+[package]
+name = "foo"
+version = "0.0.0"
+authors = []
+
+[target.x86_64-apple-darwin.freetype]
+native = {
+  foo: "bar"
+}
