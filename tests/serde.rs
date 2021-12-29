@@ -470,3 +470,59 @@ fn json_interoperability() {
     )
     .unwrap();
 }
+
+#[test]
+fn error_includes_key() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let res: Result<Package, _> = toml_edit::de::from_str(
+        r#"
+[package]
+name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile.dev]
+debug = 'a'
+"#,
+    );
+    let err = res.unwrap_err();
+    assert_eq!(err.to_string(), "expected a boolean or an integer");
+
+    let res: Result<Package, _> = toml_edit::de::from_str(
+        r#"
+[package]
+name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile]
+dev = { debug = 'a' }
+"#,
+    );
+    let err = res.unwrap_err();
+    assert_eq!(err.to_string(), "expected a boolean or an integer");
+}
