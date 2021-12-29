@@ -20,7 +20,7 @@ parse!(key() -> Vec<Key>, {
             Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw)).with_decor(Decor::new(pre, suffix))
         }),
         byte(DOT_SEP)
-    )
+    ).expected("key")
 });
 
 // simple-key = quoted-key / unquoted-key
