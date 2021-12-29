@@ -346,7 +346,7 @@ fn extra_keys() {
 
     let toml = Table(map! { a: Integer(2), b: Integer(2) });
     assert!(toml.clone().try_into::<Foo>().is_ok());
-    assert!(toml::from_str::<Foo>(&toml.to_string()).is_ok());
+    assert!(toml_edit::de::from_str::<Foo>(&toml.to_string()).is_ok());
 }
 
 #[test]
@@ -402,8 +402,8 @@ struct CanBeEmpty {
 
 #[test]
 fn table_structs_empty() {
-    let text = "[bar]\n\n[baz]\n\n[bazv]\na = \"foo\"\n\n[foo]\n";
-    let value: BTreeMap<String, CanBeEmpty> = toml::from_str(text).unwrap();
+    let text = "bar = {}\nbaz = {}\nbazv = { a = \"foo\" }\nfoo = {}\n";
+    let value: BTreeMap<String, CanBeEmpty> = toml_edit::de::from_str(text).unwrap();
     let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
     expected.insert("bar".to_string(), CanBeEmpty::default());
     expected.insert("baz".to_string(), CanBeEmpty::default());
@@ -416,7 +416,7 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_string(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    assert_eq!(toml::to_string(&value).unwrap(), text);
+    assert_eq!(toml_edit::ser::to_string(&value).unwrap(), text);
 }
 
 #[test]
@@ -460,7 +460,7 @@ fn homogeneous_tuple() {
 fn json_interoperability() {
     #[derive(Serialize, Deserialize)]
     struct Foo {
-        any: toml::Value,
+        any: toml_edit::easy::Value,
     }
 
     let _foo: Foo = serde_json::from_str(
