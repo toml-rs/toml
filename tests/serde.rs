@@ -211,8 +211,8 @@ fn type_errors() {
         Table(map! {
             bar: Value::String("a".to_string())
         }),
-        "invalid type: string \"a\", expected isize",
-        "invalid type: string \"a\", expected isize"
+        "invalid type: string \"a\", expected isize for key `bar`",
+        "invalid type: string \"a\", expected isize for key `bar`"
     }
 
     #[derive(Deserialize)]
@@ -228,8 +228,8 @@ fn type_errors() {
                 bar: Value::String("a".to_string())
             })
         }),
-        "invalid type: string \"a\", expected isize",
-        "invalid type: string \"a\", expected isize"
+        "invalid type: string \"a\", expected isize for key `foo.bar`",
+        "invalid type: string \"a\", expected isize for key `foo.bar`"
     }
 }
 
@@ -510,7 +510,10 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    assert_eq!(err.to_string(), "expected a boolean or an integer");
+    assert_eq!(
+        err.to_string(),
+        "expected a boolean or an integer for key `profile.dev.debug`"
+    );
 
     let res: Result<Package, _> = toml_edit::de::from_str(
         r#"
@@ -524,5 +527,8 @@ dev = { debug = 'a' }
 "#,
     );
     let err = res.unwrap_err();
-    assert_eq!(err.to_string(), "expected a boolean or an integer");
+    assert_eq!(
+        err.to_string(),
+        "expected a boolean or an integer for key `profile.dev.debug`"
+    );
 }
