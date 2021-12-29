@@ -35,7 +35,7 @@ fn table_from_pairs(
         if duplicate_key {
             return Err(CustomError::DuplicateKey {
                 key: key.as_str().into(),
-                table: "inline".into(),
+                table: None,
             });
         }
     }

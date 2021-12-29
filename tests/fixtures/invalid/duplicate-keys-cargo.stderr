@@ -1,0 +1,6 @@
+TOML parse error at line 7, column 1
+  |
+7 | categories = ["algorithms"]
+  | ^
+Duplicate key `categories` in table `project`
+
