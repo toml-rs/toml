@@ -76,6 +76,14 @@ pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
     }
 }
 
+pub(crate) fn extend_wrong_type(path: &[Key], i: usize, actual: &'static str) -> CustomError {
+    assert!(i < path.len());
+    CustomError::DottedKeyExtendWrongType {
+        key: path[..=i].to_vec(),
+        actual,
+    }
+}
+
 impl TomlParser {
     pub(crate) fn descend_path<'t, 'k>(
         mut table: &'t mut Table,
@@ -91,8 +99,8 @@ impl TomlParser {
                 Item::Table(new_table)
             });
             match *entry {
-                Item::Value(..) => {
-                    return Err(duplicate_key(path, i));
+                Item::Value(ref v) => {
+                    return Err(extend_wrong_type(path, i, v.type_name()));
                 }
                 Item::ArrayOfTables(ref mut array) => {
                     debug_assert!(!array.is_empty());

@@ -1,0 +1,4 @@
+[http]
+ssl-version = 'tlsv1.1'
+ssl-version.min = 'tlsv1.2'
+ssl-version.max = 'tlsv1.3'
