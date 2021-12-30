@@ -5,12 +5,15 @@
 mod array;
 mod item;
 mod key;
+mod pretty;
 mod table;
 
 pub(crate) use array::*;
 pub(crate) use item::*;
 pub(crate) use key::*;
 pub(crate) use table::*;
+
+use crate::visit_mut::VisitMut;
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -146,7 +149,9 @@ pub fn to_string_pretty<T: ?Sized>(value: &T) -> Result<String, Error>
 where
     T: serde::ser::Serialize,
 {
-    to_document(value).map(|e| e.to_string())
+    let mut document = to_document(value)?;
+    pretty::Pretty.visit_document_mut(&mut document);
+    Ok(document.to_string())
 }
 
 /// Serialize the given data structure into a TOML document.

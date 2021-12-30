@@ -29,9 +29,15 @@ macro_rules! equivalent {
 
         // Through a string equivalent
         println!("to_string(literal)");
-        assert_eq!(t!(toml_edit::easy::to_string(&literal)), toml.to_string());
+        assert_eq!(
+            t!(toml_edit::easy::to_string_pretty(&literal)),
+            toml.to_string()
+        );
         println!("to_string(toml)");
-        assert_eq!(t!(toml_edit::easy::to_string(&toml)), toml.to_string());
+        assert_eq!(
+            t!(toml_edit::easy::to_string_pretty(&toml)),
+            toml.to_string()
+        );
         println!("literal, from_str(toml)");
         assert_eq!(literal, t!(toml_edit::easy::from_str(&toml.to_string())));
         println!("toml, from_str(toml)");
