@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- `to_string_pretty` now hides empty tables
+
 ## [0.12.2] - 2021-12-30
 
 ### Fixes
