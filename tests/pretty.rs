@@ -108,3 +108,43 @@ fn table_array() {
     println!("\nRESULT:\n{}", result);
     assert_eq!(toml, &result);
 }
+
+#[test]
+fn error_includes_key() {
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+        profile: Profile,
+    }
+
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let raw = r#"name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+"#;
+
+    let pkg: Package = toml_edit::de::from_str(raw).unwrap();
+    let pretty = toml_edit::ser::to_string_pretty(&pkg).unwrap();
+    assert_eq!(raw, pretty,);
+}

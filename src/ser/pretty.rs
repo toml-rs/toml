@@ -16,6 +16,7 @@ impl crate::visit_mut::VisitMut for Pretty {
 
     fn visit_table_mut(&mut self, node: &mut crate::Table) {
         node.decor_mut().clear();
+        node.set_implicit(true);
 
         crate::visit_mut::visit_table_mut(self, node);
     }
