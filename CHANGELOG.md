@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Cleaned up several error messages
+- `toml_edit::ser::to_string_pretty` is now pretty
+
 ## [0.12.1] - 2021-12-28
 
 ### Features
