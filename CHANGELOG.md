@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.12.4] - 2022-01-07
+
 ### Fixes
 
 - Fix `Table::set_position` documentation so its clear it always applies
@@ -249,7 +251,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.12.3...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.12.4...HEAD
+[0.12.4]: https://github.com/ordian/toml_edit/compare/v0.12.3...v0.12.4
 [0.12.3]: https://github.com/ordian/toml_edit/compare/v0.12.2...v0.12.3
 [0.12.2]: https://github.com/ordian/toml_edit/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/ordian/toml_edit/compare/v0.12.0...v0.12.1
