@@ -147,7 +147,7 @@ impl Display for Document {
         let mut last_position = 0;
         let mut tables = Vec::new();
         visit_nested_tables(self.as_table(), &mut path, false, &mut |t, p, is_array| {
-            if let Some(pos) = t.position {
+            if let Some(pos) = t.position() {
                 last_position = pos;
             }
             tables.push((last_position, t, p.clone(), is_array));
