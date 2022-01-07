@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix `Table::set_position` documentation so its clear it always applies
+
 ## [0.12.3] - 2021-12-31
 
 ### Fixes
