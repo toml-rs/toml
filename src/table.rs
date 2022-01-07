@@ -189,9 +189,6 @@ impl Table {
     }
 
     /// Sets the position of the `Table` within the `Document`.
-    ///
-    /// Setting the position of a table will only affect output when
-    /// `Document::to_string_in_original_order` is used.
     pub fn set_position(&mut self, position: usize) {
         self.position = Some(position);
     }
