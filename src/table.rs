@@ -10,15 +10,16 @@ use crate::{InlineTable, InternalString, Item, KeyMut, Value};
 /// Type representing a TOML non-inline table
 #[derive(Clone, Debug, Default)]
 pub struct Table {
-    // comments/spaces before and after the header
+    // Comments/spaces before and after the header
     pub(crate) decor: Decor,
-    // whether to hide an empty table
+    // Whether to hide an empty table
     pub(crate) implicit: bool,
-    // whether this is a proxy for dotted keys
+    // Whether this is a proxy for dotted keys
     pub(crate) dotted: bool,
-    // used for putting tables back in their original order when serialising.
-    // Will be None when the Table wasn't parsed from a file.
-    pub(crate) position: Option<usize>,
+    // Used for putting tables back in their original order when serialising.
+    //
+    // `None` for user created tables (can be overridden with `set_position`)
+    doc_position: Option<usize>,
     pub(crate) items: KeyValuePairs,
 }
 
@@ -31,9 +32,9 @@ impl Table {
         Default::default()
     }
 
-    pub(crate) fn with_pos(position: Option<usize>) -> Self {
+    pub(crate) fn with_pos(doc_position: Option<usize>) -> Self {
         Self {
-            position,
+            doc_position,
             ..Default::default()
         }
     }
@@ -105,7 +106,7 @@ impl Table {
     ///
     /// Doesn't affect subtables or subarrays.
     pub fn sort_values(&mut self) {
-        // Assuming standard tables have their position set and this won't negatively impact them
+        // Assuming standard tables have their doc_position set and this won't negatively impact them
         self.items.sort_keys();
         for kv in self.items.values_mut() {
             match &mut kv.value {
@@ -189,16 +190,17 @@ impl Table {
     }
 
     /// Sets the position of the `Table` within the `Document`.
-    pub fn set_position(&mut self, position: usize) {
-        self.position = Some(position);
+    pub fn set_position(&mut self, doc_position: usize) {
+        self.doc_position = Some(doc_position);
     }
 
     /// The position of the `Table` within the `Document`.
     ///
     /// Returns `None` if the `Table` was created manually (i.e. not via parsing)
-    /// in which case its position is set automatically.
+    /// in which case its position is set automatically.  This can be overridden with
+    /// [`Table::set_position`].
     pub fn position(&self) -> Option<usize> {
-        self.position
+        self.doc_position
     }
 
     /// Returns the surrounding whitespace
