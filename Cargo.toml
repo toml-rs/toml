@@ -38,7 +38,7 @@ easy = ["serde"]
 
 [dependencies]
 indexmap = "1.7"
-combine = "4.5.2"
+combine = "4.6.3"
 itertools = "0.10"
 serde = { version = "1", features = ["derive"], optional = true }
 kstring = { version = "1", features = ["max_inline"] }

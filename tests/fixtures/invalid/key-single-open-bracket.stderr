@@ -2,6 +2,6 @@ TOML parse error at line 1, column 2
   |
 1 | [
   |  ^
-Unexpected `end of input`
-Expected `key`
+Unexpected end of input
+Expected key
 While parsing a Table Header
