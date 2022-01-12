@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Errors now only quote literals
+
 ## [0.12.4] - 2022-01-07
 
 ### Fixes
