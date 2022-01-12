@@ -3,5 +3,5 @@ TOML parse error at line 1, column 9
 1 | bad = 1_.2
   |         ^
 Unexpected `.`
-Expected `digit`
+Expected digit
 While parsing an Integer

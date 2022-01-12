@@ -4,4 +4,4 @@ TOML parse error at line 7, column 11
   |           ^
 Unexpected `
 `
-Expected `key`
+Expected key
