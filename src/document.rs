@@ -2,12 +2,12 @@ use std::str::FromStr;
 
 use crate::parser;
 use crate::table::Iter;
-use crate::{InternalString, Table};
+use crate::{InternalString, Item, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
 pub struct Document {
-    pub(crate) root: Table,
+    pub(crate) root: Item,
     // Trailing comments and whitespaces
     pub(crate) trailing: InternalString,
 }
@@ -18,19 +18,31 @@ impl Document {
         Default::default()
     }
 
+    /// Returns a reference to the root item.
+    pub fn as_item(&self) -> &Item {
+        &self.root
+    }
+
+    /// Returns a mutable reference to the root item.
+    pub fn as_item_mut(&mut self) -> &mut Item {
+        &mut self.root
+    }
+
     /// Returns a reference to the root table.
     pub fn as_table(&self) -> &Table {
-        &self.root
+        self.root.as_table().expect("root should always be a table")
     }
 
     /// Returns a mutable reference to the root table.
     pub fn as_table_mut(&mut self) -> &mut Table {
-        &mut self.root
+        self.root
+            .as_table_mut()
+            .expect("root should always be a table")
     }
 
     /// Returns an iterator over the root table.
     pub fn iter(&self) -> Iter<'_> {
-        self.root.iter()
+        self.as_table().iter()
     }
 
     /// Set whitespace after last element
@@ -47,7 +59,7 @@ impl Document {
 impl Default for Document {
     fn default() -> Self {
         Self {
-            root: Table::with_pos(Some(0)),
+            root: Item::Table(Table::with_pos(Some(0))),
             trailing: Default::default(),
         }
     }
@@ -66,20 +78,20 @@ impl std::ops::Deref for Document {
     type Target = Table;
 
     fn deref(&self) -> &Self::Target {
-        &self.root
+        self.as_table()
     }
 }
 
 impl std::ops::DerefMut for Document {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.root
+        self.as_table_mut()
     }
 }
 
 impl From<Table> for Document {
     fn from(root: Table) -> Self {
         Self {
-            root,
+            root: Item::Table(root),
             ..Default::default()
         }
     }
