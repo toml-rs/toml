@@ -205,14 +205,8 @@ impl InlineTable {
         match self.items.entry(key.into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
-                let scratch = std::mem::take(&mut entry.get_mut().value);
-                let scratch = Item::Value(
-                    scratch
-                        .into_value()
-                        // HACK: `Item::None` is a corner case of a corner case, let's just pick a
-                        // "safe" value
-                        .unwrap_or_else(|_| Value::InlineTable(Default::default())),
-                );
+                let scratch = std::mem::replace(&mut entry.get_mut().value, crate::value(0));
+                let scratch = Item::Value(scratch.into_value());
                 entry.get_mut().value = scratch;
 
                 InlineEntry::Occupied(InlineOccupiedEntry { entry })
@@ -229,14 +223,8 @@ impl InlineTable {
         match self.items.entry(key.get().into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
-                let scratch = std::mem::take(&mut entry.get_mut().value);
-                let scratch = Item::Value(
-                    scratch
-                        .into_value()
-                        // HACK: `Item::None` is a corner case of a corner case, let's just pick a
-                        // "safe" value
-                        .unwrap_or_else(|_| Value::InlineTable(Default::default())),
-                );
+                let scratch = std::mem::replace(&mut entry.get_mut().value, crate::value(0));
+                let scratch = Item::Value(scratch.into_value());
                 entry.get_mut().value = scratch;
 
                 InlineEntry::Occupied(InlineOccupiedEntry { entry })
@@ -285,7 +273,7 @@ impl InlineTable {
         let kv = TableKeyValue::new(Key::new(key), Item::Value(value));
         self.items
             .insert(InternalString::from(key), kv)
-            .and_then(|kv| kv.value.into_value().ok())
+            .map(|kv| kv.value.into_value())
     }
 
     /// Inserts a key-value pair into the map.
@@ -294,21 +282,20 @@ impl InlineTable {
         self.items
             .insert(InternalString::from(key.get()), kv)
             .filter(|kv| kv.value.is_value())
-            .map(|kv| kv.value.into_value().unwrap())
+            .map(|kv| kv.value.into_value())
     }
 
     /// Removes an item given the key.
     pub fn remove(&mut self, key: &str) -> Option<Value> {
-        self.items
-            .shift_remove(key)
-            .and_then(|kv| kv.value.into_value().ok())
+        self.items.shift_remove(key).map(|kv| kv.value.into_value())
     }
 
     /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
     pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Value)> {
-        self.items.shift_remove(key).and_then(|kv| {
+        self.items.shift_remove(key).map(|kv| {
             let key = kv.key;
-            kv.value.into_value().ok().map(|value| (key, value))
+            let value = kv.value.into_value();
+            (key, value)
         })
     }
 }
@@ -351,7 +338,7 @@ impl IntoIterator for InlineTable {
             self.items
                 .into_iter()
                 .filter(|(_, kv)| kv.value.is_value())
-                .map(|(k, kv)| (k, kv.value.into_value().unwrap())),
+                .map(|(k, kv)| (k, kv.value.into_value())),
         )
     }
 }
@@ -395,6 +382,12 @@ impl TableLike for InlineTable {
                 .map(|(_, kv)| (kv.key.as_mut(), &mut kv.value)),
         )
     }
+    fn len(&self) -> usize {
+        self.len()
+    }
+    fn is_empty(&self) -> bool {
+        self.is_empty()
+    }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.items.get(key).map(|kv| &kv.value)
     }
@@ -405,8 +398,7 @@ impl TableLike for InlineTable {
         self.contains_key(key)
     }
     fn insert(&mut self, key: &str, value: Item) -> Option<Item> {
-        self.insert(key, value.into_value().unwrap())
-            .map(Item::Value)
+        self.insert(key, value.into_value()).map(Item::Value)
     }
     fn remove(&mut self, key: &str) -> Option<Item> {
         self.remove(key).map(Item::Value)
@@ -526,12 +518,12 @@ impl<'a> InlineOccupiedEntry<'a> {
     pub fn insert(&mut self, value: Value) -> Value {
         let mut value = Item::Value(value);
         std::mem::swap(&mut value, &mut self.entry.get_mut().value);
-        value.into_value().unwrap()
+        value.into_value()
     }
 
     /// Takes the value out of the entry, and returns it
     pub fn remove(self) -> Value {
-        self.entry.shift_remove().value.into_value().unwrap()
+        self.entry.shift_remove().value.into_value()
     }
 }
 

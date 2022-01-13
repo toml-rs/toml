@@ -227,12 +227,7 @@ impl Table {
 impl Table {
     /// Returns an iterator over all key/value pairs, including empty.
     pub fn iter(&self) -> Iter<'_> {
-        Box::new(
-            self.items
-                .iter()
-                .filter(|(_, kv)| !kv.value.is_none())
-                .map(|(key, kv)| (&key[..], &kv.value)),
-        )
+        Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
     }
 
     /// Returns an mutable iterator over all key/value pairs, including empty.
@@ -240,19 +235,18 @@ impl Table {
         Box::new(
             self.items
                 .iter_mut()
-                .filter(|(_, kv)| !kv.value.is_none())
                 .map(|(_, kv)| (kv.key.as_mut(), &mut kv.value)),
         )
     }
 
     /// Returns the number of non-empty items in the table.
     pub fn len(&self) -> usize {
-        self.items.iter().filter(|i| !(i.1).value.is_none()).count()
+        self.items.len()
     }
 
     /// Returns true iff the table is empty.
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.items.is_empty()
     }
 
     /// Clears the table, removing all key-value pairs. Keeps the allocated memory for reuse.
@@ -283,33 +277,17 @@ impl Table {
 
     /// Returns an optional reference to an item given the key.
     pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
-        self.items.get(key).and_then(|kv| {
-            if !kv.value.is_none() {
-                Some(&kv.value)
-            } else {
-                None
-            }
-        })
+        self.items.get(key).map(|kv| &kv.value)
     }
 
     /// Returns an optional mutable reference to an item given the key.
     pub fn get_mut<'a>(&'a mut self, key: &str) -> Option<&'a mut Item> {
-        self.items.get_mut(key).and_then(|kv| {
-            if !kv.value.is_none() {
-                Some(&mut kv.value)
-            } else {
-                None
-            }
-        })
+        self.items.get_mut(key).map(|kv| &mut kv.value)
     }
 
     /// Returns true iff the table contains an item with the given key.
     pub fn contains_key(&self, key: &str) -> bool {
-        if let Some(kv) = self.items.get(key) {
-            !kv.value.is_none()
-        } else {
-            false
-        }
+        self.items.contains_key(key)
     }
 
     /// Returns true iff the table contains a table with the given key.
@@ -462,13 +440,9 @@ pub trait TableLike: crate::private::Sealed {
     /// Returns an mutable iterator over all key/value pairs, including empty.
     fn iter_mut(&mut self) -> IterMut<'_>;
     /// Returns the number of nonempty items.
-    fn len(&self) -> usize {
-        self.iter().filter(|&(_, v)| !v.is_none()).count()
-    }
+    fn len(&self) -> usize;
     /// Returns true iff the table is empty.
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
+    fn is_empty(&self) -> bool;
     /// Returns an optional reference to an item given the key.
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
     /// Returns an optional mutable reference to an item given the key.
@@ -508,6 +482,12 @@ impl TableLike for Table {
     }
     fn iter_mut(&mut self) -> IterMut<'_> {
         self.iter_mut()
+    }
+    fn len(&self) -> usize {
+        self.len()
+    }
+    fn is_empty(&self) -> bool {
+        self.is_empty()
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.get(key)

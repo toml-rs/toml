@@ -99,7 +99,6 @@ impl<'de, 'a> serde::Deserializer<'de> for crate::Item {
         V: serde::de::Visitor<'de>,
     {
         match self {
-            crate::Item::None => visitor.visit_none(),
             crate::Item::Value(v) => v.deserialize_any(visitor),
             crate::Item::Table(v) => visitor.visit_map(crate::de::TableMapAccess::new(v)),
             crate::Item::ArrayOfTables(v) => {

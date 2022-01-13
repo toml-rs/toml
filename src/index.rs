@@ -1,9 +1,7 @@
 use std::ops;
 
 use crate::document::Document;
-use crate::key::Key;
-use crate::table::TableKeyValue;
-use crate::{value, InlineTable, InternalString, Item, Table, Value};
+use crate::{InlineTable, Item, Table, Value};
 
 // copied from
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs
@@ -39,34 +37,16 @@ impl Index for str {
             Item::Value(ref v) => v
                 .as_inline_table()
                 .and_then(|t| t.items.get(self))
-                .and_then(|kv| {
-                    if !kv.value.is_none() {
-                        Some(&kv.value)
-                    } else {
-                        None
-                    }
-                }),
+                .map(|kv| &kv.value),
             _ => None,
         }
     }
     fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
-        if let Item::None = *v {
-            let mut t = InlineTable::default();
-            t.items.insert(
-                InternalString::from(self),
-                TableKeyValue::new(Key::new(self), Item::None),
-            );
-            *v = value(Value::InlineTable(t));
-        }
         match *v {
-            Item::Table(ref mut t) => Some(t.entry(self).or_insert(Item::None)),
-            Item::Value(ref mut v) => v.as_inline_table_mut().map(|t| {
-                &mut t
-                    .items
-                    .entry(InternalString::from(self))
-                    .or_insert_with(|| TableKeyValue::new(Key::new(self), Item::None))
-                    .value
-            }),
+            Item::Table(ref mut t) => t.get_mut(self),
+            Item::Value(ref mut v) => v
+                .as_inline_table_mut()
+                .and_then(|t| t.items.get_mut(self).map(|kv| &mut kv.value)),
             _ => None,
         }
     }
@@ -123,7 +103,7 @@ impl<'s> ops::Index<&'s str> for Table {
 
 impl<'s> ops::IndexMut<&'s str> for Table {
     fn index_mut(&mut self, key: &'s str) -> &mut Item {
-        self.entry(key).or_insert(Item::None)
+        self.get_mut(key).expect("index not found")
     }
 }
 
