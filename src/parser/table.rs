@@ -113,7 +113,6 @@ impl TomlParser {
                 Item::Table(ref mut sweet_child_of_mine) => {
                     table = sweet_child_of_mine;
                 }
-                _ => unreachable!(),
             }
         }
         Ok(table)

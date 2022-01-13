@@ -45,7 +45,6 @@ impl crate::visit_mut::VisitMut for Pretty {
 
 fn remove_table_prefix(node: &mut crate::Item) {
     match node {
-        crate::Item::None => {}
         crate::Item::Value(_) => {}
         crate::Item::Table(t) => t.decor_mut().set_prefix(""),
         crate::Item::ArrayOfTables(a) => {

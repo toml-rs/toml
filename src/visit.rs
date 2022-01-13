@@ -28,7 +28,6 @@
 //!     V: Visit<'doc> + ?Sized,
 //! {
 //!     match node {
-//!         Item::None => {}
 //!         Item::Value(value) => v.visit_value(value),
 //!         Item::Table(table) => v.visit_table(table),
 //!         Item::ArrayOfTables(array) => v.visit_array_of_tables(array),
@@ -149,7 +148,6 @@ where
     V: Visit<'doc> + ?Sized,
 {
     match node {
-        Item::None => {}
         Item::Value(value) => v.visit_value(value),
         Item::Table(table) => v.visit_table(table),
         Item::ArrayOfTables(array) => v.visit_array_of_tables(array),

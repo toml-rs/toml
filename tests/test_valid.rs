@@ -37,7 +37,6 @@ fn pair_to_json((key, value): (&str, Item)) -> (String, Json) {
                 .collect::<Vec<_>>(),
         ),
         Item::Table(ref table) => to_json(iter_to_owned(table.iter())),
-        Item::None => Json::Null,
     };
     (key.to_owned(), json)
 }
