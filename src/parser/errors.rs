@@ -273,7 +273,7 @@ impl Display for CustomError {
                 let path = key.iter().join(".");
                 writeln!(
                     f,
-                    "Dotted key `{}` attempted to extend non-table type (`{}`)",
+                    "Dotted key `{}` attempted to extend non-table type ({})",
                     path, actual
                 )
             }
