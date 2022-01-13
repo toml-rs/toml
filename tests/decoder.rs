@@ -24,7 +24,6 @@ fn item_to_decoded(
     value: &toml_edit::Item,
 ) -> Result<toml_test_harness::Decoded, toml_test_harness::Error> {
     match value {
-        toml_edit::Item::None => unreachable!("No nones"),
         toml_edit::Item::Value(v) => value_to_decoded(v),
         toml_edit::Item::Table(v) => table_to_decoded(v),
         toml_edit::Item::ArrayOfTables(v) => {

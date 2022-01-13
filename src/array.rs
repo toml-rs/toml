@@ -340,7 +340,7 @@ impl IntoIterator for Array {
             self.values
                 .into_iter()
                 .filter(|v| v.is_value())
-                .map(|v| v.into_value().unwrap()),
+                .map(|v| v.into_value()),
         )
     }
 }
