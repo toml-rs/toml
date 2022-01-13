@@ -277,12 +277,24 @@ impl Table {
 
     /// Returns an optional reference to an item given the key.
     pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
-        self.items.get(key).map(|kv| &kv.value)
+        self.items.get(key).and_then(|kv| {
+            if !kv.value.is_none() {
+                Some(&kv.value)
+            } else {
+                None
+            }
+        })
     }
 
     /// Returns an optional mutable reference to an item given the key.
     pub fn get_mut<'a>(&'a mut self, key: &str) -> Option<&'a mut Item> {
-        self.items.get_mut(key).map(|kv| &mut kv.value)
+        self.items.get_mut(key).and_then(|kv| {
+            if !kv.value.is_none() {
+                Some(&mut kv.value)
+            } else {
+                None
+            }
+        })
     }
 
     /// Returns true iff the table contains an item with the given key.
