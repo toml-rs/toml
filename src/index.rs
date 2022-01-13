@@ -38,7 +38,14 @@ impl Index for str {
             Item::Table(ref t) => t.get(self),
             Item::Value(ref v) => v
                 .as_inline_table()
-                .and_then(|t| t.items.get(self).map(|kv| &kv.value)),
+                .and_then(|t| t.items.get(self))
+                .and_then(|kv| {
+                    if !kv.value.is_none() {
+                        Some(&kv.value)
+                    } else {
+                        None
+                    }
+                }),
             _ => None,
         }
     }
