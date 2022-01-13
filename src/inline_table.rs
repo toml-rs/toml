@@ -205,16 +205,15 @@ impl InlineTable {
         match self.items.entry(key.into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
-                let mut scratch = Item::None;
-                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
-                let mut scratch = Item::Value(
+                let scratch = std::mem::take(&mut entry.get_mut().value);
+                let scratch = Item::Value(
                     scratch
                         .into_value()
                         // HACK: `Item::None` is a corner case of a corner case, let's just pick a
                         // "safe" value
                         .unwrap_or_else(|_| Value::InlineTable(Default::default())),
                 );
-                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
+                entry.get_mut().value = scratch;
 
                 InlineEntry::Occupied(InlineOccupiedEntry { entry })
             }
@@ -230,16 +229,15 @@ impl InlineTable {
         match self.items.entry(key.get().into()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 // Ensure it is a `Value` to simplify `InlineOccupiedEntry`'s code.
-                let mut scratch = Item::None;
-                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
-                let mut scratch = Item::Value(
+                let scratch = std::mem::take(&mut entry.get_mut().value);
+                let scratch = Item::Value(
                     scratch
                         .into_value()
                         // HACK: `Item::None` is a corner case of a corner case, let's just pick a
                         // "safe" value
                         .unwrap_or_else(|_| Value::InlineTable(Default::default())),
                 );
-                std::mem::swap(&mut scratch, &mut entry.get_mut().value);
+                entry.get_mut().value = scratch;
 
                 InlineEntry::Occupied(InlineOccupiedEntry { entry })
             }
