@@ -264,7 +264,7 @@ impl InlineTable {
     /// Returns true iff the table contains given key.
     pub fn contains_key(&self, key: &str) -> bool {
         if let Some(kv) = self.items.get(key) {
-            !kv.value.is_none()
+            kv.value.is_value()
         } else {
             false
         }
