@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- `iter`, `get`, and `contains_key` functions were made consistent across `Table` and `InlineTable`, ignoring `Item::None`.
+
+### Fixes
+
+- Reduce places users need to handle both `None` and `Item::None`, making the APIs more consistent across the board
+- Remove a quote around a non-literal value in an error
+
 ## [0.12.6] - 2022-01-12
 
 ### Fixes
