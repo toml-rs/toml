@@ -227,7 +227,12 @@ impl Table {
 impl Table {
     /// Returns an iterator over all key/value pairs, including empty.
     pub fn iter(&self) -> Iter<'_> {
-        Box::new(self.items.iter().map(|(key, kv)| (&key[..], &kv.value)))
+        Box::new(
+            self.items
+                .iter()
+                .filter(|(_, kv)| !kv.value.is_none())
+                .map(|(key, kv)| (&key[..], &kv.value)),
+        )
     }
 
     /// Returns an mutable iterator over all key/value pairs, including empty.
@@ -235,6 +240,7 @@ impl Table {
         Box::new(
             self.items
                 .iter_mut()
+                .filter(|(_, kv)| !kv.value.is_none())
                 .map(|(_, kv)| (kv.key.as_mut(), &mut kv.value)),
         )
     }
