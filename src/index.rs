@@ -26,9 +26,7 @@ impl Index for usize {
     fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
         match *v {
             Item::ArrayOfTables(ref mut vec) => vec.values.get_mut(*self),
-            Item::Value(ref mut a) if a.is_array() => {
-                a.as_array_mut().and_then(|a| a.values.get_mut(*self))
-            }
+            Item::Value(ref mut a) => a.as_array_mut().and_then(|a| a.values.get_mut(*self)),
             _ => None,
         }
     }
@@ -38,7 +36,7 @@ impl Index for str {
     fn index<'v>(&self, v: &'v Item) -> Option<&'v Item> {
         match *v {
             Item::Table(ref t) => t.get(self),
-            Item::Value(ref v) if v.is_inline_table() => v
+            Item::Value(ref v) => v
                 .as_inline_table()
                 .and_then(|t| t.items.get(self).map(|kv| &kv.value)),
             _ => None,
@@ -55,7 +53,7 @@ impl Index for str {
         }
         match *v {
             Item::Table(ref mut t) => Some(t.entry(self).or_insert(Item::None)),
-            Item::Value(ref mut v) if v.is_inline_table() => v.as_inline_table_mut().map(|t| {
+            Item::Value(ref mut v) => v.as_inline_table_mut().map(|t| {
                 &mut t
                     .items
                     .entry(InternalString::from(self))
