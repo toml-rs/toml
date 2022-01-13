@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.13.0] - 2022-01-13
+
 ### Breaking Changes
 
 - `iter`, `get`, and `contains_key` functions were made consistent across `Table` and `InlineTable`, ignoring `Item::None`.
@@ -272,7 +274,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.12.6...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/ordian/toml_edit/compare/v0.12.6...v0.13.0
 [0.12.6]: https://github.com/ordian/toml_edit/compare/v0.12.5...v0.12.6
 [0.12.5]: https://github.com/ordian/toml_edit/compare/v0.12.4...v0.12.5
 [0.12.4]: https://github.com/ordian/toml_edit/compare/v0.12.3...v0.12.4
