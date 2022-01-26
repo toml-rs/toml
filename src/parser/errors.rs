@@ -37,7 +37,7 @@ impl TomlError {
 
     /// Produces a (line, column) pair of the position of the error if available
     ///
-    /// All indexes are 1-based.
+    /// All indexes are 0-based.
     pub fn line_col(&self) -> Option<(usize, usize)> {
         self.line_col
     }
@@ -97,15 +97,21 @@ impl<'a> Display for FancyError<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let SourcePosition { line, column } = self.position;
 
-        let offset = line.to_string().len();
+        let line_num = line + 1;
+        let col_num = column + 1;
+        let offset = line_num.to_string().len();
         let content = self
             .input
             .split(|b| *b == b'\n')
-            .nth((line - 1) as usize)
-            .expect("line");
+            .nth((line) as usize)
+            .expect("valid line number");
         let content = String::from_utf8_lossy(content);
 
-        writeln!(f, "TOML parse error at line {}, column {}", line, column)?;
+        writeln!(
+            f,
+            "TOML parse error at line {}, column {}",
+            line_num, col_num
+        )?;
 
         //   |
         for _ in 0..=offset {
@@ -114,7 +120,7 @@ impl<'a> Display for FancyError<'a> {
         writeln!(f, "|")?;
 
         // 1 | 00:32:00.a999999
-        write!(f, "{} | ", line)?;
+        write!(f, "{} | ", line_num)?;
         writeln!(f, "{}", content)?;
 
         //   |          ^
@@ -122,7 +128,7 @@ impl<'a> Display for FancyError<'a> {
             write!(f, " ")?;
         }
         write!(f, "|")?;
-        for _ in 0..column {
+        for _ in 0..=column {
             write!(f, " ")?;
         }
         writeln!(f, "^")?;
@@ -134,8 +140,8 @@ impl<'a> Display for FancyError<'a> {
 fn translate_position(input: &[u8], index: usize) -> SourcePosition {
     if input.is_empty() {
         return SourcePosition {
-            line: 1,
-            column: (index + 1) as i32,
+            line: 0,
+            column: index as i32,
         };
     }
 
@@ -153,12 +159,12 @@ fn translate_position(input: &[u8], index: usize) -> SourcePosition {
         Some(nl) => nl + 1,
         None => 0,
     };
-    let line = input[0..line_start].iter().filter(|b| **b == b'\n').count() + 1;
+    let line = input[0..line_start].iter().filter(|b| **b == b'\n').count();
     let line = line as i32;
 
     let column = std::str::from_utf8(&input[line_start..=index])
-        .map(|s| s.chars().count())
-        .unwrap_or_else(|_| index - line_start + 1);
+        .map(|s| s.chars().count() - 1)
+        .unwrap_or_else(|_| index - line_start);
     let column = (column + column_offset) as i32;
 
     SourcePosition { line, column }
@@ -173,7 +179,7 @@ mod test_translate_position {
         let input = b"";
         let index = 0;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 1, column: 1 });
+        assert_eq!(position, SourcePosition { line: 0, column: 0 });
     }
 
     #[test]
@@ -181,7 +187,7 @@ mod test_translate_position {
         let input = b"Hello";
         let index = 0;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 1, column: 1 });
+        assert_eq!(position, SourcePosition { line: 0, column: 0 });
     }
 
     #[test]
@@ -192,8 +198,8 @@ mod test_translate_position {
         assert_eq!(
             position,
             SourcePosition {
-                line: 1,
-                column: input.len() as i32
+                line: 0,
+                column: input.len() as i32 - 1
             }
         );
     }
@@ -206,8 +212,8 @@ mod test_translate_position {
         assert_eq!(
             position,
             SourcePosition {
-                line: 1,
-                column: (input.len() + 1) as i32
+                line: 0,
+                column: input.len() as i32
             }
         );
     }
@@ -217,7 +223,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 2;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 1, column: 3 });
+        assert_eq!(position, SourcePosition { line: 0, column: 2 });
     }
 
     #[test]
@@ -225,7 +231,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 5;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 1, column: 6 });
+        assert_eq!(position, SourcePosition { line: 0, column: 5 });
     }
 
     #[test]
@@ -233,7 +239,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 6;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 2, column: 1 });
+        assert_eq!(position, SourcePosition { line: 1, column: 0 });
     }
 
     #[test]
@@ -241,7 +247,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 8;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 2, column: 3 });
+        assert_eq!(position, SourcePosition { line: 1, column: 2 });
     }
 }
 
