@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.13.1] - 2022-01-26
+
 ### Features
 
 - Programmatically expose line and column for some errors
@@ -282,7 +284,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/ordian/toml_edit/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/ordian/toml_edit/compare/v0.12.6...v0.13.0
 [0.12.6]: https://github.com/ordian/toml_edit/compare/v0.12.5...v0.12.6
 [0.12.5]: https://github.com/ordian/toml_edit/compare/v0.12.4...v0.12.5
