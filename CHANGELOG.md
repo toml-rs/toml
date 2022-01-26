@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Programmatically expose line and column for some errors
+
+### Performance
+
+- Slight performance improvement with comments
+
 ## [0.13.0] - 2022-01-13
 
 ### Breaking Changes
