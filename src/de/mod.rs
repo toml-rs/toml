@@ -28,6 +28,7 @@ pub struct Error {
 struct ErrorInner {
     message: String,
     reverse_key: Vec<crate::InternalString>,
+    line_col: Option<(usize, usize)>,
 }
 
 impl Error {
@@ -39,12 +40,20 @@ impl Error {
             inner: Box::new(ErrorInner {
                 message: msg.to_string(),
                 reverse_key: Default::default(),
+                line_col: None,
             }),
         }
     }
 
     pub(crate) fn parent_key(&mut self, key: crate::InternalString) {
         self.inner.reverse_key.push(key);
+    }
+
+    /// Produces a (line, column) pair of the position of the error if available
+    ///
+    /// All indexes are 0-based.
+    pub fn line_col(&self) -> Option<(usize, usize)> {
+        self.inner.line_col
     }
 }
 
@@ -78,7 +87,10 @@ impl std::fmt::Display for Error {
 
 impl From<crate::TomlError> for Error {
     fn from(e: crate::TomlError) -> Error {
-        Self::custom(e)
+        let line_col = e.line_col();
+        let mut err = Self::custom(e);
+        err.inner.line_col = line_col;
+        err
     }
 }
 
