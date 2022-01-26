@@ -134,8 +134,7 @@ impl TomlParser {
     }
 
     fn on_comment(&mut self, c: &str, e: &str) {
-        self.trailing.push_str(c);
-        self.trailing.push_str(e);
+        self.trailing = [&self.trailing, c, e].concat();
     }
 
     fn on_keyval(&mut self, mut path: Vec<Key>, mut kv: TableKeyValue) -> Result<(), CustomError> {
