@@ -10,13 +10,15 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,
+    line_col: Option<(usize, usize)>,
 }
 
 impl TomlError {
     pub(crate) fn new(error: ParseError<u8, &[u8], usize>, input: &[u8]) -> Self {
-        Self {
-            message: format!("{}", FancyError::new(error, input)),
-        }
+        let fancy = FancyError::new(error, input);
+        let message = fancy.to_string();
+        let line_col = Some((fancy.position.line as usize, fancy.position.column as usize));
+        Self { message, line_col }
     }
 
     pub(crate) fn from_unparsed(pos: usize, input: &[u8]) -> Self {
@@ -27,7 +29,17 @@ impl TomlError {
     }
 
     pub(crate) fn custom(message: String) -> Self {
-        Self { message }
+        Self {
+            message,
+            line_col: None,
+        }
+    }
+
+    /// Produces a (line, column) pair of the position of the error if available
+    ///
+    /// All indexes are 1-based.
+    pub fn line_col(&self) -> Option<(usize, usize)> {
+        self.line_col
     }
 }
 
