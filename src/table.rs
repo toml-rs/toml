@@ -469,6 +469,8 @@ pub trait TableLike: crate::private::Sealed {
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
+    /// Clears the table, removing all key-value pairs. Keeps the allocated memory for reuse.
+    fn clear(&mut self);
     /// Returns an optional reference to an item given the key.
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
     /// Returns an optional mutable reference to an item given the key.
@@ -508,6 +510,9 @@ impl TableLike for Table {
     }
     fn iter_mut(&mut self) -> IterMut<'_> {
         self.iter_mut()
+    }
+    fn clear(&mut self) {
+        self.clear();
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.get(key)

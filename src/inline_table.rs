@@ -395,6 +395,9 @@ impl TableLike for InlineTable {
                 .map(|(_, kv)| (kv.key.as_mut(), &mut kv.value)),
         )
     }
+    fn clear(&mut self) {
+        self.clear();
+    }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.items.get(key).map(|kv| &kv.value)
     }
