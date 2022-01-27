@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Allowing clearing table-likes
+
 ## [0.13.1] - 2022-01-26
 
 ### Features
