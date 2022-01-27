@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.13.2] - 2022-01-27
+
 ### Features
 
 - Allowing clearing table-likes
@@ -288,7 +290,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.13.2...HEAD
+[0.13.2]: https://github.com/ordian/toml_edit/compare/v0.13.1...v0.13.2
 [0.13.1]: https://github.com/ordian/toml_edit/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/ordian/toml_edit/compare/v0.12.6...v0.13.0
 [0.12.6]: https://github.com/ordian/toml_edit/compare/v0.12.5...v0.12.6
