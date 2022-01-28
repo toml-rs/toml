@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- `toml_edit::value` now uses default decor
+
 ## [0.13.2] - 2022-01-27
 
 ### Features
