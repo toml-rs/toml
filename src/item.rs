@@ -347,7 +347,7 @@ impl std::fmt::Display for Item {
 /// "#);
 /// ```
 pub fn value<V: Into<Value>>(v: V) -> Item {
-    Item::Value(v.into().decorated(" ", ""))
+    Item::Value(v.into())
 }
 
 /// Returns an empty table.
