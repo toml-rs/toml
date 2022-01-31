@@ -201,6 +201,16 @@ fn visit_table(
     is_array_of_tables: bool,
 ) -> Result {
     let children = table.get_values();
+    // We are intentionally hiding implicit tables without any tables nested under them (ie
+    // `table.is_empty()` which is in contrast to `table.get_values().is_empty()`).  We are
+    // trusting the user that an empty implicit table is not semantically meaningful
+    //
+    // This allows a user to delete all tables under this implicit table and the implicit table
+    // will disappear.
+    //
+    // However, this means that users need to take care in deciding what tables get marked as
+    // implicit.
+    let is_visible_std_table = !(table.implicit && children.is_empty());
 
     if path.is_empty() {
         // don't print header for the root node
@@ -216,7 +226,7 @@ fn visit_table(
             "]]{}",
             table.decor.suffix().unwrap_or(DEFAULT_TABLE_DECOR.1)
         )?;
-    } else if !(table.implicit && children.is_empty()) {
+    } else if is_visible_std_table {
         write!(
             buf,
             "{}[",
