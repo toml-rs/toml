@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Have `toml_edit::easy::to_string_pretty` render empty tables
+
 ## [0.13.3] - 2022-01-28
 
 ### Fixes
