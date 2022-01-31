@@ -109,6 +109,19 @@ fn table_array() {
     assert_eq!(toml, &result);
 }
 
+const PRETTY_EMPTY_TABLE: &str = r#"[example]
+"#;
+
+#[test]
+fn pretty_empty_table() {
+    let toml = PRETTY_EMPTY_TABLE;
+    let value: toml_edit::easy::Value = toml_edit::easy::from_str(toml).unwrap();
+    let result = toml_edit::easy::to_string_pretty(&value).unwrap();
+    println!("EXPECTED:\n{}", toml);
+    println!("\nRESULT:\n{}", result);
+    assert_eq!(toml, &result);
+}
+
 #[test]
 fn error_includes_key() {
     #[derive(Debug, serde::Serialize, serde::Deserialize)]
