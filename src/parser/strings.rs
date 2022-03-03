@@ -56,7 +56,7 @@ fn is_basic_unescaped(c: u8) -> bool {
 parse!(escaped() -> char, {
     satisfy(|c| c == ESCAPE)
         .then(|_| parser(move |input| {
-            escale_seq_char().parse_stream(input).into_result()
+            escape_seq_char().parse_stream(input).into_result()
         }))
 });
 
@@ -72,7 +72,7 @@ const ESCAPE: u8 = b'\\';
 // escape-seq-char =/ %x74         ; t    tab             U+0009
 // escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
-parse!(escale_seq_char() -> char, {
+parse!(escape_seq_char() -> char, {
     satisfy(is_escape_seq_char)
         .message("While parsing escape sequence")
         .then(|c| {
