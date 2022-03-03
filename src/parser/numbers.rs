@@ -31,7 +31,7 @@ parse!(integer() -> i64, {
         attempt(oct_int()),
         attempt(bin_int()),
         dec_int()
-            .and_then(|s| s.replace("_", "").parse())
+            .and_then(|s| s.replace('_', "").parse())
             .message("While parsing an Integer")
     )
 });
@@ -69,7 +69,7 @@ parse!(hex_int() -> i64, {
         ).map(|t| t.0)
     )).and_then(|b: &[u8]| {
         let s = unsafe { from_utf8_unchecked(b, "`hex_digit` and `_` filter out non-ASCII") };
-        i64::from_str_radix(&s.replace("_", ""), 16)
+        i64::from_str_radix(&s.replace('_', ""), 16)
     }).message("While parsing a hexadecimal Integer")
 });
 
@@ -86,7 +86,7 @@ parse!(oct_int() -> i64, {
         ).map(|t| t.0)
     )).and_then(|b: &[u8]| {
         let s = unsafe { from_utf8_unchecked(b, "`oct_digit` and `_` filter out non-ASCII") };
-        i64::from_str_radix(&s.replace("_", ""), 8)
+        i64::from_str_radix(&s.replace('_', ""), 8)
     }).message("While parsing a octal Integer")
 });
 
@@ -103,7 +103,7 @@ parse!(bin_int() -> i64, {
         ).map(|t| t.0)
     )).and_then(|b: &[u8]| {
         let s = unsafe { from_utf8_unchecked(b, "`is_digit` and `_` filter out non-ASCII") };
-        i64::from_str_radix(&s.replace("_", ""), 2)
+        i64::from_str_radix(&s.replace('_', ""), 2)
     }).message("While parsing a binary Integer")
 });
 
@@ -115,7 +115,7 @@ parse!(bin_int() -> i64, {
 parse!(float() -> f64, {
     choice((
         parse_float()
-            .and_then(|s| s.replace("_", "").parse()),
+            .and_then(|s| s.replace('_', "").parse()),
         special_float(),
     )).message("While parsing a Float")
 });

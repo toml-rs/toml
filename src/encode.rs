@@ -108,12 +108,11 @@ impl Encode for InlineTable {
             if i != 0 {
                 write!(buf, ",")?;
             }
-            let inner_decor;
-            if i == len - 1 {
-                inner_decor = DEFAULT_TRAILING_VALUE_DECOR;
+            let inner_decor = if i == len - 1 {
+                DEFAULT_TRAILING_VALUE_DECOR
             } else {
-                inner_decor = DEFAULT_VALUE_DECOR;
-            }
+                DEFAULT_VALUE_DECOR
+            };
             key_path.as_slice().encode(buf, DEFAULT_INLINE_KEY_DECOR)?;
             write!(buf, "=")?;
             value.encode(buf, inner_decor)?;
