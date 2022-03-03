@@ -52,7 +52,7 @@ parse!(dec_int() -> &'a str, {
             ).map(|t| t.0),
         )),
     )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out npn-ASCII") }
+        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") }
     })
 });
 
@@ -68,7 +68,7 @@ parse!(hex_int() -> i64, {
             )),
         ).map(|t| t.0)
     )).and_then(|b: &[u8]| {
-        let s = unsafe { from_utf8_unchecked(b, "`hex_digit` and `_` filter out npn-ASCII") };
+        let s = unsafe { from_utf8_unchecked(b, "`hex_digit` and `_` filter out non-ASCII") };
         i64::from_str_radix(&s.replace("_", ""), 16)
     }).message("While parsing a hexadecimal Integer")
 });
@@ -85,7 +85,7 @@ parse!(oct_int() -> i64, {
             )),
         ).map(|t| t.0)
     )).and_then(|b: &[u8]| {
-        let s = unsafe { from_utf8_unchecked(b, "`oct_digit` and `_` filter out npn-ASCII") };
+        let s = unsafe { from_utf8_unchecked(b, "`oct_digit` and `_` filter out non-ASCII") };
         i64::from_str_radix(&s.replace("_", ""), 8)
     }).message("While parsing a octal Integer")
 });
@@ -102,7 +102,7 @@ parse!(bin_int() -> i64, {
             )),
         ).map(|t| t.0)
     )).and_then(|b: &[u8]| {
-        let s = unsafe { from_utf8_unchecked(b, "`is_digit` and `_` filter out npn-ASCII") };
+        let s = unsafe { from_utf8_unchecked(b, "`is_digit` and `_` filter out non-ASCII") };
         i64::from_str_radix(&s.replace("_", ""), 2)
     }).message("While parsing a binary Integer")
 });
@@ -131,7 +131,7 @@ parse!(parse_float() -> &'a str, {
             ).map(|_| "")
         )),
     )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`dec_int`, `one_of`, `exp`, and `frac` filter out npn-ASCII") }
+        unsafe { from_utf8_unchecked(b, "`dec_int`, `one_of`, `exp`, and `frac` filter out non-ASCII") }
     })
 });
 
@@ -142,7 +142,7 @@ parse!(frac() -> &'a str, {
         byte(b'.'),
         parse_zero_prefixable_int(),
     )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`.` and `parse_zero_prefixable_int` filter out npn-ASCII") }
+        unsafe { from_utf8_unchecked(b, "`.` and `parse_zero_prefixable_int` filter out non-ASCII") }
     })
 });
 
@@ -155,7 +155,7 @@ parse!(parse_zero_prefixable_int() -> &'a str, {
             skip_many1(digit()),
         )),
     )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out npn-ASCII") }
+        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") }
     })
 });
 
@@ -167,7 +167,7 @@ parse!(exp() -> &'a str, {
         optional(one_of([b'+', b'-'])),
         parse_zero_prefixable_int(),
     )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`one_of` and `parse_zero_prefixable_int` filter out npn-ASCII") }
+        unsafe { from_utf8_unchecked(b, "`one_of` and `parse_zero_prefixable_int` filter out non-ASCII") }
     })
 });
 
