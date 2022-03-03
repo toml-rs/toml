@@ -430,16 +430,15 @@ fn traverse<'a>(root: &'a mut Value, path: &[&str]) -> &'a mut Value {
     for &key in path {
         // Lexical lifetimes :D
         let cur1 = cur;
-        let cur2;
 
         // From the TOML spec:
         //
         // > Each double-bracketed sub-table will belong to the most recently
         // > defined table element above it.
-        if cur1.is_array() {
-            cur2 = cur1.as_array_mut().unwrap().last_mut().unwrap();
+        let cur2 = if cur1.is_array() {
+            cur1.as_array_mut().unwrap().last_mut().unwrap()
         } else {
-            cur2 = cur1;
+            cur1
         };
 
         // We are about to index into this value, so it better be a table.
