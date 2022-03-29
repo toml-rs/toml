@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Upgrade to faster `kstring`
+
 ## [0.13.4] - 2022-01-31
 
 ### Fixes
