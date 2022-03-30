@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- make performance-specific dependencies optional with the `perf` feature (default)
+
 ## [0.14.0] - 2022-03-29
 
 ### Performance
