@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.14.2] - 2022-03-30
+
 ### Fixes
 
 - Make `perf` opt-in
@@ -318,7 +320,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.14.1...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.14.2...HEAD
+[0.14.2]: https://github.com/ordian/toml_edit/compare/v0.14.1...v0.14.2
 [0.14.1]: https://github.com/ordian/toml_edit/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/ordian/toml_edit/compare/v0.13.4...v0.14.0
 [0.13.4]: https://github.com/ordian/toml_edit/compare/v0.13.3...v0.13.4
