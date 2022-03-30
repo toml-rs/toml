@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Make `perf` opt-in
+
 ## [0.14.1] - 2022-03-30
 
 ### Features
