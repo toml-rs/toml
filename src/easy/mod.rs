@@ -28,7 +28,7 @@
 //!
 //! A value in TOML is represented with the [`Value`] enum in this crate.
 //!
-//! TOML is similar to JSON with the notable addition of a [`Datetime`]
+//! TOML is similar to JSON with the notable addition of a [`Datetime`][crate::Datetime]
 //! type. In general, TOML and JSON are interchangeable in terms of
 //! formats.
 //!
@@ -45,7 +45,7 @@
 //! ```
 //!
 //! The [`Value`] type implements a number of convenience methods and
-//! traits; the example above uses [`FromStr`] to parse a [`str`] into a
+//! traits; the example above uses [`FromStr`][std::str::FromStr] to parse a [`str`] into a
 //! [`Value`].
 //!
 //! ## Deserialization and Serialization
@@ -63,7 +63,7 @@
 //! * `Deserializer for Value`
 //!
 //! This means that you can use Serde to deserialize/serialize the
-//! [`Value`] type as well as the [`Datetime`] type in this crate. You can also
+//! [`Value`] type as well as the [`Datetime`][crate::Datetime] type in this crate. You can also
 //! use the [`Deserializer`], [`Serializer`], or [`Value`] type itself to act as
 //! a deserializer/serializer for arbitrary types.
 //!
