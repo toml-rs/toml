@@ -3,12 +3,17 @@ use std::str::FromStr;
 
 /// Opaque string storage internal to `toml_edit`
 #[derive(Default, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct InternalString(kstring::KString);
+pub struct InternalString(Inner);
+
+#[cfg(feature = "kstring")]
+type Inner = kstring::KString;
+#[cfg(not(feature = "kstring"))]
+type Inner = String;
 
 impl InternalString {
     /// Create an empty string
     pub fn new() -> Self {
-        InternalString(kstring::KString::new())
+        InternalString(Inner::new())
     }
 
     /// Access the underlying string
@@ -44,7 +49,12 @@ impl AsRef<str> for InternalString {
 impl From<&str> for InternalString {
     #[inline]
     fn from(s: &str) -> Self {
-        InternalString(kstring::KString::from_ref(s))
+        #[cfg(feature = "kstring")]
+        let inner = kstring::KString::from_ref(s);
+        #[cfg(not(feature = "kstring"))]
+        let inner = String::from(s);
+
+        InternalString(inner)
     }
 }
 
