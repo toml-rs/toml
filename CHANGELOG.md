@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+Tables
+- Added `OccupiedEntry::key_mut` and `InlineOccupiedEntry::key_mut`
+- Added `TableLike::entry` and `TableLike::entry`
+- Added `get_key_value()` and `get_key_value_mut()` to `TableLike`, `Table`, and `InlineTable`
+
 ## [0.14.2] - 2022-03-30
 
 ### Fixes
