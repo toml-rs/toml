@@ -509,6 +509,11 @@ impl<'a> InlineOccupiedEntry<'a> {
         self.entry.key().as_str()
     }
 
+    /// Gets a mutable reference to the entry key
+    pub fn key_mut(&mut self) -> KeyMut<'_> {
+        self.entry.get_mut().key.as_mut()
+    }
+
     /// Gets a reference to the value in the entry.
     pub fn get(&self) -> &Value {
         self.entry.get().value.as_value().unwrap()
