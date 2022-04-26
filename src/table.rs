@@ -303,6 +303,28 @@ impl Table {
         })
     }
 
+    /// Return references to the key-value pair stored for key, if it is present, else None.
+    pub fn get_key_value<'a>(&'a self, key: &str) -> Option<(&'a Key, &'a Item)> {
+        self.items.get(key).and_then(|kv| {
+            if !kv.value.is_none() {
+                Some((&kv.key, &kv.value))
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Return mutable references to the key-value pair stored for key, if it is present, else None.
+    pub fn get_key_value_mut<'a>(&'a mut self, key: &str) -> Option<(KeyMut<'a>, &'a mut Item)> {
+        self.items.get_mut(key).and_then(|kv| {
+            if !kv.value.is_none() {
+                Some((kv.key.as_mut(), &mut kv.value))
+            } else {
+                None
+            }
+        })
+    }
+
     /// Returns true iff the table contains an item with the given key.
     pub fn contains_key(&self, key: &str) -> bool {
         if let Some(kv) = self.items.get(key) {
@@ -479,6 +501,10 @@ pub trait TableLike: crate::private::Sealed {
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
     /// Returns an optional mutable reference to an item given the key.
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item>;
+    /// Return references to the key-value pair stored for key, if it is present, else None.
+    fn get_key_value<'a>(&'a self, key: &str) -> Option<(&'a Key, &'a Item)>;
+    /// Return mutable references to the key-value pair stored for key, if it is present, else None.
+    fn get_key_value_mut<'a>(&'a mut self, key: &str) -> Option<(KeyMut<'a>, &'a mut Item)>;
     /// Returns true iff the table contains an item with the given key.
     fn contains_key(&self, key: &str) -> bool;
     /// Inserts a key-value pair into the map.
@@ -529,6 +555,12 @@ impl TableLike for Table {
     }
     fn get_mut<'s>(&'s mut self, key: &str) -> Option<&'s mut Item> {
         self.get_mut(key)
+    }
+    fn get_key_value<'a>(&'a self, key: &str) -> Option<(&'a Key, &'a Item)> {
+        self.get_key_value(key)
+    }
+    fn get_key_value_mut<'a>(&'a mut self, key: &str) -> Option<(KeyMut<'a>, &'a mut Item)> {
+        self.get_key_value_mut(key)
     }
     fn contains_key(&self, key: &str) -> bool {
         self.contains_key(key)
