@@ -398,6 +398,29 @@ impl TableLike for InlineTable {
     fn clear(&mut self) {
         self.clear();
     }
+    fn entry<'a>(&'a mut self, key: &str) -> crate::Entry<'a> {
+        // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
+        match self.items.entry(key.into()) {
+            indexmap::map::Entry::Occupied(entry) => {
+                crate::Entry::Occupied(crate::OccupiedEntry { entry })
+            }
+            indexmap::map::Entry::Vacant(entry) => {
+                crate::Entry::Vacant(crate::VacantEntry { entry, key: None })
+            }
+        }
+    }
+    fn entry_format<'a>(&'a mut self, key: &Key) -> crate::Entry<'a> {
+        // Accept a `&Key` to be consistent with `entry`
+        match self.items.entry(key.get().into()) {
+            indexmap::map::Entry::Occupied(entry) => {
+                crate::Entry::Occupied(crate::OccupiedEntry { entry })
+            }
+            indexmap::map::Entry::Vacant(entry) => crate::Entry::Vacant(crate::VacantEntry {
+                entry,
+                key: Some(key.to_owned()),
+            }),
+        }
+    }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.items.get(key).map(|kv| &kv.value)
     }

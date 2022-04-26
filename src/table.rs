@@ -471,6 +471,10 @@ pub trait TableLike: crate::private::Sealed {
     }
     /// Clears the table, removing all key-value pairs. Keeps the allocated memory for reuse.
     fn clear(&mut self);
+    /// Gets the given key's corresponding entry in the Table for in-place manipulation.
+    fn entry<'a>(&'a mut self, key: &str) -> Entry<'a>;
+    /// Gets the given key's corresponding entry in the Table for in-place manipulation.
+    fn entry_format<'a>(&'a mut self, key: &Key) -> Entry<'a>;
     /// Returns an optional reference to an item given the key.
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item>;
     /// Returns an optional mutable reference to an item given the key.
@@ -513,6 +517,12 @@ impl TableLike for Table {
     }
     fn clear(&mut self) {
         self.clear();
+    }
+    fn entry<'a>(&'a mut self, key: &str) -> Entry<'a> {
+        self.entry(key)
+    }
+    fn entry_format<'a>(&'a mut self, key: &Key) -> Entry<'a> {
+        self.entry_format(key)
     }
     fn get<'s>(&'s self, key: &str) -> Option<&'s Item> {
         self.get(key)
@@ -602,7 +612,7 @@ impl<'a> Entry<'a> {
 
 /// A view into a single occupied location in a `IndexMap`.
 pub struct OccupiedEntry<'a> {
-    entry: indexmap::map::OccupiedEntry<'a, InternalString, TableKeyValue>,
+    pub(crate) entry: indexmap::map::OccupiedEntry<'a, InternalString, TableKeyValue>,
 }
 
 impl<'a> OccupiedEntry<'a> {
@@ -656,8 +666,8 @@ impl<'a> OccupiedEntry<'a> {
 
 /// A view into a single empty location in a `IndexMap`.
 pub struct VacantEntry<'a> {
-    entry: indexmap::map::VacantEntry<'a, InternalString, TableKeyValue>,
-    key: Option<Key>,
+    pub(crate) entry: indexmap::map::VacantEntry<'a, InternalString, TableKeyValue>,
+    pub(crate) key: Option<Key>,
 }
 
 impl<'a> VacantEntry<'a> {
