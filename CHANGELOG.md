@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.14.4] - 2022-05-09
+
 ### Fixes
 
 - Allow enum variants as table keys
@@ -333,7 +335,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.14.3...HEAD
+[Unreleased]: https://github.com/ordian/toml_edit/compare/v0.14.4...HEAD
+[0.14.4]: https://github.com/ordian/toml_edit/compare/v0.14.3...v0.14.4
 [0.14.3]: https://github.com/ordian/toml_edit/compare/v0.14.2...v0.14.3
 [0.14.2]: https://github.com/ordian/toml_edit/compare/v0.14.1...v0.14.2
 [0.14.1]: https://github.com/ordian/toml_edit/compare/v0.14.0...v0.14.1
