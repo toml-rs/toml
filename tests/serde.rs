@@ -309,6 +309,25 @@ fn parse_enum_string() {
 }
 
 #[test]
+fn map_key_unit_variants() {
+    #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone, PartialOrd, Ord)]
+    enum Sort {
+        #[serde(rename = "ascending")]
+        Asc,
+        Desc,
+    }
+
+    let mut map = BTreeMap::new();
+    map.insert(Sort::Asc, 1);
+    map.insert(Sort::Desc, 2);
+
+    equivalent! {
+        map,
+        Table(map! { ascending: Integer(1), Desc: Integer(2) }),
+    }
+}
+
+#[test]
 fn empty_arrays() {
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
