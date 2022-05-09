@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Allow enum variants as table keys
+
 ## [0.14.3] - 2022-04-26
 
 ### Features
