@@ -1,19 +1,27 @@
 use super::{Error, ErrorKind, KeySerializer};
+use crate::Datetime;
+use std::str::FromStr;
 
 #[doc(hidden)]
 pub struct SerializeItemTable {
+    is_date_time: bool,
+    date_time: Option<Datetime>,
     inner: SerializeKeyValuePairs,
 }
 
 impl SerializeItemTable {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(is_date_time: bool) -> Self {
         Self {
+            is_date_time,
+            date_time: None,
             inner: SerializeKeyValuePairs::new(),
         }
     }
 
     pub(crate) fn with_capacity(len: usize) -> Self {
         Self {
+            is_date_time: false,
+            date_time: None,
             inner: SerializeKeyValuePairs::with_capacity(len),
         }
     }
@@ -58,15 +66,33 @@ impl serde::ser::SerializeStruct for SerializeItemTable {
     where
         T: serde::ser::Serialize,
     {
-        self.inner.serialize_field(key, value)
+        if self.is_date_time {
+            if key == crate::dt_serde::FIELD {
+                let value = value.serialize(KeySerializer)?;
+                let datetime = Datetime::from_str(&value).unwrap();
+                self.date_time = Some(datetime);
+                Ok(())
+            } else {
+                Err(Error::custom("invalid date time"))
+            }
+        } else {
+            self.inner.serialize_field(key, value)
+        }
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        self.inner.end().map(|items| {
-            crate::Item::Value(crate::Value::InlineTable(crate::InlineTable::with_pairs(
-                items,
+        if self.is_date_time {
+            let datetime = self.date_time.unwrap();
+            Ok(crate::Item::Value(crate::Value::Datetime(
+                crate::Formatted::new(datetime),
             )))
-        })
+        } else {
+            self.inner.end().map(|items| {
+                crate::Item::Value(crate::Value::InlineTable(crate::InlineTable::with_pairs(
+                    items,
+                )))
+            })
+        }
     }
 }
 

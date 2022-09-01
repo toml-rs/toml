@@ -174,17 +174,21 @@ impl serde::ser::Serializer for ItemSerializer {
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         let serializer = match len {
             Some(len) => super::SerializeItemTable::with_capacity(len),
-            None => super::SerializeItemTable::new(),
+            None => super::SerializeItemTable::new(false),
         };
         Ok(serializer)
     }
 
     fn serialize_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        self.serialize_map(Some(len))
+        if name == crate::dt_serde::NAME {
+            Ok(super::SerializeItemTable::new(true))
+        } else {
+            self.serialize_map(Some(len))
+        }
     }
 
     fn serialize_struct_variant(
