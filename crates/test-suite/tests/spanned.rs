@@ -10,19 +10,19 @@ use toml::Spanned;
 
 /// A set of good datetimes.
 pub fn good_datetimes() -> Vec<&'static str> {
-    let mut v = Vec::new();
-    v.push("1997-09-09T09:09:09Z");
-    v.push("1997-09-09T09:09:09+09:09");
-    v.push("1997-09-09T09:09:09-09:09");
-    v.push("1997-09-09T09:09:09");
-    v.push("1997-09-09");
-    v.push("09:09:09");
-    v.push("1997-09-09T09:09:09.09Z");
-    v.push("1997-09-09T09:09:09.09+09:09");
-    v.push("1997-09-09T09:09:09.09-09:09");
-    v.push("1997-09-09T09:09:09.09");
-    v.push("09:09:09.09");
-    v
+    vec![
+        "1997-09-09T09:09:09Z",
+        "1997-09-09T09:09:09+09:09",
+        "1997-09-09T09:09:09-09:09",
+        "1997-09-09T09:09:09",
+        "1997-09-09",
+        "09:09:09",
+        "1997-09-09T09:09:09.09Z",
+        "1997-09-09T09:09:09.09+09:09",
+        "1997-09-09T09:09:09.09-09:09",
+        "1997-09-09T09:09:09.09",
+        "09:09:09.09",
+    ]
 }
 
 #[test]
@@ -106,8 +106,8 @@ fn test_inner_spanned_table() {
             // be updated *if* one day there is support for emitting the actual span.
             assert_eq!(foo.foo.end(), 0);
         } else {
-            assert_eq!(foo.foo.start(), s.find("{").unwrap());
-            assert_eq!(foo.foo.end(), s.find("}").unwrap() + 1);
+            assert_eq!(foo.foo.start(), s.find('{').unwrap());
+            assert_eq!(foo.foo.end(), s.find('}').unwrap() + 1);
         }
         for (k, v) in foo.foo.get_ref().iter() {
             assert_eq!(&s[k.start()..k.end()], k.get_ref());

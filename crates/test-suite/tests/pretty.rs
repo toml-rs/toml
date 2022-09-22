@@ -3,7 +3,7 @@ extern crate toml;
 
 use serde::ser::Serialize;
 
-const NO_PRETTY: &'static str = "\
+const NO_PRETTY: &str = "\
 [example]
 array = [\"item 1\", \"item 2\"]
 empty = []
@@ -40,7 +40,7 @@ fn disable_pretty() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_STD: &'static str = "\
+const PRETTY_STD: &str = "\
 [example]
 array = [
     'item 1',
@@ -68,7 +68,7 @@ fn pretty_std() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_INDENT_2: &'static str = "\
+const PRETTY_INDENT_2: &str = "\
 [example]
 array = [
   'item 1',
@@ -102,7 +102,7 @@ fn pretty_indent_2() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_INDENT_2_OTHER: &'static str = "\
+const PRETTY_INDENT_2_OTHER: &str = "\
 [example]
 array = [
   \"item 1\",
@@ -127,7 +127,7 @@ fn pretty_indent_2_other() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_ARRAY_NO_COMMA: &'static str = "\
+const PRETTY_ARRAY_NO_COMMA: &str = "\
 [example]
 array = [
     \"item 1\",
@@ -151,7 +151,7 @@ fn pretty_indent_array_no_comma() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_NO_STRING: &'static str = "\
+const PRETTY_NO_STRING: &str = "\
 [example]
 array = [
     \"item 1\",
@@ -175,7 +175,7 @@ fn pretty_no_string() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_TRICKY: &'static str = r##"[example]
+const PRETTY_TRICKY: &str = r##"[example]
 f = "\f"
 glass = '''
 Nothing too unusual, except that I can eat glass in:
@@ -215,7 +215,7 @@ fn pretty_tricky() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_TABLE_ARRAY: &'static str = r##"[[array]]
+const PRETTY_TABLE_ARRAY: &str = r##"[[array]]
 key = 'foo'
 
 [[array]]
@@ -241,7 +241,7 @@ fn pretty_table_array() {
     assert_eq!(toml, &result);
 }
 
-const TABLE_ARRAY: &'static str = r##"[[array]]
+const TABLE_ARRAY: &str = r##"[[array]]
 key = "foo"
 
 [[array]]
@@ -267,7 +267,7 @@ fn table_array() {
     assert_eq!(toml, &result);
 }
 
-const PRETTY_TRICKY_NON_LITERAL: &'static str = r##"[example]
+const PRETTY_TRICKY_NON_LITERAL: &str = r##"[example]
 f = "\f"
 glass = """
 Nothing too unusual, except that I can eat glass in:

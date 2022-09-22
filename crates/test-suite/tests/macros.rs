@@ -20,6 +20,7 @@ macro_rules! table {
 macro_rules! array {
     ($($element:expr,)*) => {{
         // https://github.com/rust-lang/rust/issues/60643
+        #![allow(clippy::vec_init_then_push)]
         #[allow(unused_mut)]
         let mut array = toml::value::Array::new();
         $(
@@ -144,6 +145,8 @@ fn test_array() {
 
 #[test]
 fn test_number() {
+    #![allow(clippy::unusual_byte_groupings)] // Verify the macro with odd formatting
+
     let actual = toml! {
         positive = 1
         negative = -1
@@ -151,7 +154,7 @@ fn test_number() {
         array = [ 1, -1 ]
         neg_zero = -0
         pos_zero = +0
-        float = 3.14
+        float = 1.618
 
         sf1 = inf
         sf2 = +inf
@@ -177,7 +180,7 @@ fn test_number() {
         },
         "neg_zero" => -0,
         "pos_zero" => 0,
-        "float" => 3.14,
+        "float" => 1.618,
         "sf1" => f64::INFINITY,
         "sf2" => f64::INFINITY,
         "sf3" => f64::NEG_INFINITY,

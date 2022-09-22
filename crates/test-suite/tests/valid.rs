@@ -21,7 +21,7 @@ fn to_json(toml: toml::Value) -> Json {
             "float",
             Json::String({
                 let s = format!("{:.15}", f);
-                let s = format!("{}", s.trim_end_matches('0'));
+                let s = s.trim_end_matches('0').to_string();
                 if s.ends_with('.') {
                     format!("{}0", s)
                 } else {
@@ -32,10 +32,7 @@ fn to_json(toml: toml::Value) -> Json {
         Toml::Boolean(b) => doit("bool", Json::String(format!("{}", b))),
         Toml::Datetime(s) => doit("datetime", Json::String(s.to_string())),
         Toml::Array(arr) => {
-            let is_table = match arr.first() {
-                Some(&Toml::Table(..)) => true,
-                _ => false,
-            };
+            let is_table = matches!(arr.first(), Some(&Toml::Table(..)));
             let json = Json::Array(arr.into_iter().map(to_json).collect());
             if is_table {
                 json

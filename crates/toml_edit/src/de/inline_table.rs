@@ -2,7 +2,7 @@ use serde::de::IntoDeserializer;
 
 use crate::de::Error;
 
-impl<'de, 'a> serde::Deserializer<'de> for crate::InlineTable {
+impl<'de> serde::Deserializer<'de> for crate::InlineTable {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>

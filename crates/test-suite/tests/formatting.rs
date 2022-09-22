@@ -36,7 +36,7 @@ fn no_unnecessary_newlines_array() {
         ],
     })
     .unwrap()
-    .starts_with("\n"));
+    .starts_with('\n'));
 }
 
 #[test]
@@ -52,5 +52,5 @@ fn no_unnecessary_newlines_table() {
         },
     })
     .unwrap()
-    .starts_with("\n"));
+    .starts_with('\n'));
 }

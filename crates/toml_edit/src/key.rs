@@ -149,7 +149,7 @@ impl std::ops::Deref for Key {
     }
 }
 
-impl<'s> PartialEq<str> for Key {
+impl PartialEq<str> for Key {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.get(), other)
@@ -163,7 +163,7 @@ impl<'s> PartialEq<&'s str> for Key {
     }
 }
 
-impl<'s> PartialEq<String> for Key {
+impl PartialEq<String> for Key {
     #[inline]
     fn eq(&self, other: &String) -> bool {
         PartialEq::eq(self.get(), other.as_str())
