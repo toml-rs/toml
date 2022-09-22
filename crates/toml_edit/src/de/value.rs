@@ -2,7 +2,7 @@ use serde::de::IntoDeserializer;
 
 use crate::de::Error;
 
-impl<'de, 'a> serde::Deserializer<'de> for crate::Value {
+impl<'de> serde::Deserializer<'de> for crate::Value {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>

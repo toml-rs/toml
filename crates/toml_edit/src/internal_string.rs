@@ -61,6 +61,7 @@ impl From<&str> for InternalString {
 impl From<String> for InternalString {
     #[inline]
     fn from(s: String) -> Self {
+        #[allow(clippy::useless_conversion)] // handle any string type
         InternalString(s.into())
     }
 }

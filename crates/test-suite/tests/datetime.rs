@@ -20,9 +20,9 @@ fn times() {
     }
     fn good(s: &str) {
         dogood(s, s);
-        dogood(&s.replace("T", " "), s);
-        dogood(&s.replace("T", "t"), s);
-        dogood(&s.replace("Z", "z"), s);
+        dogood(&s.replace('T', " "), s);
+        dogood(&s.replace('T', "t"), s);
+        dogood(&s.replace('Z', "z"), s);
     }
 
     good("1997-09-09T09:09:09Z");

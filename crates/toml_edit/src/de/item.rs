@@ -19,7 +19,7 @@ impl ItemDeserializer {
     }
 }
 
-impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
+impl<'de> serde::Deserializer<'de> for ItemDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -91,7 +91,7 @@ impl<'de, 'a> serde::Deserializer<'de> for ItemDeserializer {
     }
 }
 
-impl<'de, 'a> serde::Deserializer<'de> for crate::Item {
+impl<'de> serde::Deserializer<'de> for crate::Item {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
