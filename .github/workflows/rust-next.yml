@@ -24,12 +24,16 @@ jobs:
         profile: minimal
         override: true
     - uses: Swatinem/rust-cache@v1
+    - name: Build
+      run: cargo test --no-run --workspace
     - name: Default features
       run: cargo test --workspace
-    - name: All features
-      run: cargo test --workspace --all-features
-    - name: No-default features
-      run: cargo test --workspace --no-default-features
+    - name: toml_edit (all features)
+      run: cargo test -p toml_edit --all-features
+    - name: toml_edit (no-default features)
+      run: cargo test -p toml_edit --no-default-features
+    - name: toml (preserve_order)
+      run: cargo test -p toml --features preserve_order
   rustfmt:
     name: rustfmt
     strategy:
@@ -52,27 +56,27 @@ jobs:
     - uses: Swatinem/rust-cache@v1
     - name: Check formatting
       run: cargo fmt --all -- --check
-  clippy:
-    name: clippy
-    strategy:
-      matrix:
-        rust:
-        - 1.59.0  # MSRV
-        - stable
-    continue-on-error: ${{ matrix.rust != '1.59.0' }}  # MSRV
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust }}
-        profile: minimal
-        override: true
-        components: clippy
-    - uses: Swatinem/rust-cache@v1
-    - uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --workspace --all-features --all-targets -- -D warnings
+#  clippy:
+#    name: clippy
+#    strategy:
+#      matrix:
+#        rust:
+#        - 1.59.0  # MSRV
+#        - stable
+#    continue-on-error: ${{ matrix.rust != '1.59.0' }}  # MSRV
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: Checkout repository
+#      uses: actions/checkout@v3
+#    - name: Install Rust
+#      uses: actions-rs/toolchain@v1
+#      with:
+#        toolchain: ${{ matrix.rust }}
+#        profile: minimal
+#        override: true
+#        components: clippy
+#    - uses: Swatinem/rust-cache@v1
+#    - uses: actions-rs/clippy-check@v1
+#      with:
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        args: --workspace --all-features --all-targets -- -D warnings
