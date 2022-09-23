@@ -1,28 +1,39 @@
 [package]
 name = "toml"
 version = "0.5.9"
-authors = ["Alex Crichton <alex@alexcrichton.com>"]
-license = "MIT/Apache-2.0"
 readme = "README.md"
-keywords = ["encoding"]
-repository = "https://github.com/alexcrichton/toml-rs"
-homepage = "https://github.com/alexcrichton/toml-rs"
-documentation = "https://docs.rs/toml"
+license = "MIT/Apache-2.0"
+keywords = ["encoding", "toml"]
+categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = """
 A native Rust encoder and decoder of TOML-formatted files and streams. Provides
 implementations of the standard Serialize/Deserialize traits for TOML data to
 facilitate deserializing and serializing Rust structures.
 """
-categories = ["config", "encoding", "parser-implementations"]
-edition = "2018"
+authors = ["Alex Crichton <alex@alexcrichton.com>"]
+repository = "https://github.com/alexcrichton/toml-rs"
+homepage = "https://github.com/alexcrichton/toml-rs"
+documentation = "https://docs.rs/toml"
+edition = "2021"
+rust-version = "1.60.0"  # MSRV
+include = [
+  "src/**/*",
+  "Cargo.toml",
+  "LICENSE*",
+  "README.md",
+  "examples/**/*",
+  "benches/**/*",
+  "tests/**/*"
+]
 
-[dependencies]
-serde = "1.0.97"
-indexmap = { version = "1.0", optional = true }
-
-[dev-dependencies]
-serde_derive = "1.0"
-serde_json = "1.0"
+[package.metadata.release]
+pre-release-replacements = [
+  {file="CHANGELOG.md", search="Unreleased", replace="{{version}}", min=1},
+  {file="CHANGELOG.md", search="\\.\\.\\.HEAD", replace="...{{tag_name}}", exactly=1},
+  {file="CHANGELOG.md", search="ReleaseDate", replace="{{date}}", min=1},
+  {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n## [Unreleased] - ReleaseDate\n", exactly=1},
+  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/toml-rs/toml_edit/compare/{{tag_name}}...HEAD", exactly=1},
+]
 
 [features]
 default = []
@@ -31,3 +42,11 @@ default = []
 # This allows data to be read into a Value and written back to a TOML string
 # while preserving the order of map keys in the input.
 preserve_order = ["indexmap"]
+
+[dependencies]
+serde = "1.0.145"
+indexmap = { version = "1.9.1", optional = true }
+
+[dev-dependencies]
+serde_derive = "1.0.145"
+serde_json = "1.0.85"
