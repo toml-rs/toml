@@ -9,7 +9,8 @@ description = "Yet another format-preserving TOML parser."
 authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.com>"]
 repository = "https://github.com/ordian/toml_edit"
 documentation = "https://docs.rs/toml_edit"
-edition = "2018"
+edition = "2021"
+rust-version = "1.60.0"  # MSRV
 include = [
   "src/**/*",
   "Cargo.toml",

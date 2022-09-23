@@ -3,7 +3,8 @@ name = "toml_test_suite"
 version = "0.0.0"
 authors = ["Alex Crichton <alex@alexcrichton.com>"]
 publish = false
-edition = "2018"
+edition = "2021"
+rust-version = "1.60.0"  # MSRV
 
 [[bench]]
 name = "linear"
