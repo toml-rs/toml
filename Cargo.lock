@@ -776,6 +776,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "toml_datetime",
 ]
 
 [[package]]
@@ -820,6 +821,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml_datetime"
+version = "0.5.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "toml_edit"
 version = "0.14.4"
 dependencies = [
@@ -833,6 +841,7 @@ dependencies = [
  "snapbox",
  "toml 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml-test-harness",
+ "toml_datetime",
 ]
 
 [[package]]

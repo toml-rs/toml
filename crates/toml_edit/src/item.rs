@@ -1,7 +1,8 @@
 use std::str::FromStr;
 
+use toml_datetime::*;
+
 use crate::array_of_tables::ArrayOfTables;
-use crate::datetime::*;
 use crate::table::TableLike;
 use crate::{Array, InlineTable, Table, Value};
 

@@ -31,8 +31,8 @@ use std::fmt::{self, Write};
 use std::marker;
 use std::rc::Rc;
 
-use crate::datetime;
 use serde::ser;
+use toml_datetime::__unstable as datetime;
 
 /// Serialize the given data structure as a TOML byte vector.
 ///

@@ -12,8 +12,8 @@ use serde::de;
 use serde::de::IntoDeserializer;
 use serde::ser;
 
-use crate::datetime::{self, DatetimeFromString};
-pub use crate::datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
+use toml_datetime::__unstable as datetime;
+pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
 
 pub use crate::map::{Entry, Map};
 
@@ -518,7 +518,7 @@ impl<'de> de::Deserialize<'de> for Value {
                 let datetime = visitor.next_key_seed(DatetimeOrTable { key: &mut key })?;
                 match datetime {
                     Some(true) => {
-                        let date: DatetimeFromString = visitor.next_value()?;
+                        let date: datetime::DatetimeFromString = visitor.next_value()?;
                         return Ok(Value::Datetime(date.value));
                     }
                     None => return Ok(Value::Table(Map::new())),

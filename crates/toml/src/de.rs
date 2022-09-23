@@ -17,8 +17,8 @@ use std::vec;
 use serde::de;
 use serde::de::value::BorrowedStrDeserializer;
 use serde::de::IntoDeserializer;
+use toml_datetime::__unstable as datetime;
 
-use crate::datetime;
 use crate::spanned;
 use crate::tokens::{Error as TokenError, Span, Token, Tokenizer};
 

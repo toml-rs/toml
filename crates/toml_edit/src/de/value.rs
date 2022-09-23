@@ -34,7 +34,7 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
     where
         V: serde::de::Visitor<'de>,
     {
-        if name == crate::datetime::dt_serde::NAME && fields == [crate::datetime::dt_serde::FIELD] {
+        if name == toml_datetime::__unstable::NAME && fields == [toml_datetime::__unstable::FIELD] {
             if let crate::Value::Datetime(d) = self {
                 return visitor.visit_map(DatetimeDeserializer {
                     date: d.into_value(),
@@ -135,7 +135,7 @@ impl<'de> serde::de::Deserializer<'de> for DatetimeFieldDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_borrowed_str(crate::datetime::dt_serde::FIELD)
+        visitor.visit_borrowed_str(toml_datetime::__unstable::FIELD)
     }
 
     serde::forward_to_deserialize_any! {
