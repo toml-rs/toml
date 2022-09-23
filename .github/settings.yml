@@ -17,6 +17,24 @@ repository:
   delete_branch_on_merge: true
 
 labels:
+  - name: "A-parse"
+    description: "Area: Parsing TOML"
+    color: '#f7e101'
+  - name: "A-output"
+    description: "Area: Outputting TOML"
+    color: '#f7e101'
+  - name: "A-serde"
+    description: "Area: Serde integration"
+    color: '#f7e101'
+  - name: "A-error"
+    description: "Area: Error reporting"
+    color: '#f7e101'
+  - name: "A-docs"
+    description: "Area: Documentation"
+    color: '#f7e101'
+  - name: "A-meta"
+    description: "Area: Project-wide"
+    color: '#f7e101'
   - name: "C-bug"
     description: "Category: Things not working as expected"
     color: '#f5f1fd'
