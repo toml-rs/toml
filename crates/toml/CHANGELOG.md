@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Bumped MSRV to 1.60.0
+- Deprecated  `Deserializer::set_require_newline_after_table`
+- Deprecated  `Deserializer::set_allow_duplicate_after_longer_table`
+
 ## [0.5.9]
 
 Changes:
