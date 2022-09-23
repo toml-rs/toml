@@ -1,0 +1,47 @@
+# These settings are synced to GitHub by https://probot.github.io/apps/settings/
+
+repository:
+  description: Rust TOML Parser
+  topics: rust toml
+  has_issues: true
+  has_projects: false
+  has_wiki: false
+  has_downloads: true
+  default_branch: main
+
+  allow_squash_merge: true
+  allow_merge_commit: true
+  allow_rebase_merge: true
+
+  # Manual: allow_auto_merge: true, see https://github.com/probot/settings/issues/402
+  delete_branch_on_merge: true
+
+labels:
+  - name: "bug"
+    description: "Category: Things not working as expected"
+    color: '#f5f1fd'
+  - name: "enhancement"
+    description: "Category: Raise on the bar on expectations"
+    color: '#f5f1fd'
+  # Flavor
+  - name: "question"
+    color: "#cc317c"
+    description: Uncertainty is involved
+  - name: "breaking-change"
+    description: "Meta: Implementing or merging this will introduce a breaking change."
+    color: '#E10C02'
+  - name: good first issue
+    description: "Call for participation: Help is requested to fix this issue."
+    color: '#02E10C'
+
+branches:
+  - name: main
+    protection:
+      required_pull_request_reviews: null
+      required_conversation_resolution: true
+      required_status_checks:
+        # Required. Require branches to be up to date before merging.
+        strict: false
+        contexts: ["CI"]
+      enforce_admins: false
+      restrictions: null
