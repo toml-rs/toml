@@ -17,20 +17,19 @@ repository:
   delete_branch_on_merge: true
 
 labels:
-  - name: "bug"
+  - name: "C-bug"
     description: "Category: Things not working as expected"
     color: '#f5f1fd'
-  - name: "enhancement"
+  - name: "C-enhancement"
     description: "Category: Raise on the bar on expectations"
     color: '#f5f1fd'
-  # Flavor
-  - name: "question"
-    color: "#cc317c"
+  - name: "C-question"
     description: Uncertainty is involved
-  - name: "breaking-change"
+    color: '#f5f1fd'
+  - name: "M-breaking-change"
     description: "Meta: Implementing or merging this will introduce a breaking change."
     color: '#E10C02'
-  - name: good first issue
+  - name: "E-help-wanted"
     description: "Call for participation: Help is requested to fix this issue."
     color: '#02E10C'
 
