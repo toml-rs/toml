@@ -15,3 +15,12 @@ toml = { path = "../toml" }
 serde = { version = "1.0.145", features = ["derive"] }
 serde_derive = "1.0.145"
 serde_json = "1.0.85"
+toml-test-harness = "0.4.1"
+
+[[test]]
+name = "decoder_compliance"
+harness = false
+
+[[test]]
+name = "encoder_compliance"
+harness = false
