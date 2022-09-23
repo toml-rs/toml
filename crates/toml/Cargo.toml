@@ -43,9 +43,9 @@ default = []
 preserve_order = ["indexmap"]
 
 [dependencies]
-serde = "1.0.97"
-indexmap = { version = "1.0", optional = true }
+serde = "1.0.145"
+indexmap = { version = "1.9.1", optional = true }
 
 [dev-dependencies]
-serde_derive = "1.0"
-serde_json = "1.0"
+serde_derive = "1.0.145"
+serde_json = "1.0.85"

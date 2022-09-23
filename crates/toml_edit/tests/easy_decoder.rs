@@ -1,5 +1,6 @@
 #![cfg(feature = "easy")]
 
+#[derive(Copy, Clone)]
 pub struct Decoder;
 
 impl toml_test_harness::Decoder for Decoder {
