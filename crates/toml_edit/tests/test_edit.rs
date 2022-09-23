@@ -1,6 +1,7 @@
-use pretty_assertions::assert_eq;
 use std::fmt;
 use std::iter::FromIterator;
+
+use snapbox::assert_eq;
 use toml_edit::{array, table, value, Document, Item, Key, Table, Value};
 
 macro_rules! parse_key {
@@ -54,7 +55,7 @@ impl Test {
     }
 
     fn produces_display(&self, expected: &str) -> &Self {
-        assert_eq!(PrettyString(expected), PrettyString(&self.doc.to_string()));
+        assert_eq(expected, self.doc.to_string());
         self
     }
 }
@@ -391,7 +392,7 @@ fn test_remove_value() {
         let value = value.as_value().unwrap();
         assert!(value.is_str());
         let value = value.as_str().unwrap();
-        assert_eq!(value, "1.0.0");
+        assert_eq(value, "1.0.0");
     })
     .produces_display(
         r#"

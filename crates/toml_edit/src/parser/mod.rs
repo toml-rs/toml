@@ -157,7 +157,7 @@ mod tests {
     use crate::parser::*;
     use combine::stream::position::Stream;
     use combine::*;
-    use pretty_assertions::assert_eq;
+    use snapbox::assert_eq;
     use std::fmt;
     // Copied from https://github.com/colin-kiegel/rust-pretty-assertions/issues/24
     /// Wrapper around string slice that makes debug output `{:?}` to print string same way as `{}`.
@@ -213,7 +213,7 @@ mod tests {
                     panic!("Unexpected error for {:?}: {:?}", $input, err);
                 }
             };
-            assert_eq!(v.to_string(), *$input);
+            assert_eq(v.to_string(), $input);
             assert!(rest.input.is_empty());
         };
     }
@@ -223,7 +223,7 @@ mod tests {
             let parsed = value::value().easy_parse(Stream::new($input.as_bytes()));
             assert!(parsed.is_ok());
             let (v, rest) = parsed.unwrap();
-            assert_eq!(v.to_string(), *$input);
+            assert_eq(v.to_string(), $input);
             assert!(rest.input.is_empty());
             assert!(v.$is());
         }};
@@ -391,7 +391,7 @@ trimmed in raw strings.
             "1979-05-27T00:32:00-07:00",
             "1979-05-27T00:32:00.999999-07:00",
         ];
-        for input in &inputs {
+        for input in inputs {
             parsed_date_time_eq!(input, is_datetime);
         }
     }
@@ -399,7 +399,7 @@ trimmed in raw strings.
     #[test]
     fn local_date_time() {
         let inputs = ["1979-05-27T07:32:00", "1979-05-27T00:32:00.999999"];
-        for input in &inputs {
+        for input in inputs {
             parsed_date_time_eq!(input, is_datetime);
         }
     }
@@ -407,7 +407,7 @@ trimmed in raw strings.
     #[test]
     fn local_date() {
         let inputs = ["1979-05-27", "2017-07-20"];
-        for input in &inputs {
+        for input in inputs {
             parsed_date_time_eq!(input, is_datetime);
         }
     }
@@ -415,7 +415,7 @@ trimmed in raw strings.
     #[test]
     fn local_time() {
         let inputs = ["07:32:00", "00:32:00.999999"];
-        for input in &inputs {
+        for input in inputs {
             parsed_date_time_eq!(input, is_datetime);
         }
     }
@@ -448,12 +448,12 @@ trimmed in raw strings.
 
    "#,
         ];
-        for input in &inputs {
+        for input in inputs {
             let parsed = trivia::ws_comment_newline().easy_parse(Stream::new(input.as_bytes()));
             assert!(parsed.is_ok());
             let (t, rest) = parsed.unwrap();
             assert!(rest.input.is_empty());
-            assert_eq!(t, input.as_bytes());
+            assert_eq(t, input.as_bytes());
         }
     }
 
@@ -494,12 +494,12 @@ trimmed in raw strings.
             r#"[ [ 1, 2 ], ["a", "b", "c"] ]"#,
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
-        for input in &inputs {
+        for input in inputs {
             parsed_value_eq!(input);
         }
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
-        for input in &invalid_inputs {
+        for input in invalid_inputs {
             let parsed = array::array().easy_parse(Stream::new(input.as_bytes()));
             assert!(parsed.is_err());
         }
@@ -514,11 +514,11 @@ trimmed in raw strings.
             r#"{ hello = "world", a = 1}"#,
             r#"{ hello.world = "a" }"#,
         ];
-        for input in &inputs {
+        for input in inputs {
             parsed_value_eq!(input);
         }
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
-        for input in &invalid_inputs {
+        for input in invalid_inputs {
             let parsed = inline_table::inline_table().easy_parse(Stream::new(input.as_bytes()));
             assert!(parsed.is_err());
         }
@@ -532,11 +532,11 @@ trimmed in raw strings.
             (r#"'hello\n '"#, "hello\\n "),
         ];
 
-        for &(input, expected) in &cases {
+        for (input, expected) in cases {
             let parsed = key::simple_key().easy_parse(Stream::new(input.as_bytes()));
             assert!(parsed.is_ok());
             let ((.., k), rest) = parsed.unwrap();
-            assert_eq!(k.as_str(), expected);
+            assert_eq(k.as_str(), expected);
             assert_eq!(rest.input.len(), 0);
         }
     }
@@ -560,7 +560,7 @@ trimmed in raw strings.
             r#"{ hello = "world", a = 1}"#,
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
-        for input in &inputs {
+        for input in inputs {
             parsed_value_eq!(input);
         }
     }
@@ -624,7 +624,7 @@ key = "value"
             r#"foo = 1979-05-27 # Comment
 "#,
         ];
-        for document in &documents {
+        for document in documents {
             let doc = TomlParser::parse(document.as_bytes());
             let doc = match doc {
                 Ok(doc) => doc,
@@ -638,7 +638,7 @@ key = "value"
 
             dbg!(doc.to_string());
             dbg!(document);
-            assert_eq!(PrettyString(document), PrettyString(&doc.to_string()));
+            assert_eq(document, doc.to_string());
         }
 
         let parse_only = ["\u{FEFF}
@@ -647,7 +647,7 @@ name = \"foo\"
 version = \"0.0.1\"
 authors = []
 "];
-        for document in &parse_only {
+        for document in parse_only {
             let doc = TomlParser::parse(document.as_bytes());
             match doc {
                 Ok(_) => (),
@@ -662,7 +662,7 @@ authors = []
 
         let invalid_inputs = [r#" hello = 'darkness' # my old friend
 $"#];
-        for document in &invalid_inputs {
+        for document in invalid_inputs {
             let doc = TomlParser::parse(document.as_bytes());
 
             assert!(doc.is_err());
