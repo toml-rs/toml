@@ -1,6 +1,6 @@
 #![cfg(feature = "easy")]
 
-use pretty_assertions::assert_eq;
+use snapbox::assert_eq;
 
 const PRETTY_STD: &str = r#"[example]
 array = [
@@ -23,7 +23,7 @@ fn pretty_std() {
     let result = toml_edit::easy::to_string_pretty(&value).unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 const PRETTY_TRICKY: &str = r##"[example]
@@ -60,7 +60,7 @@ fn pretty_tricky() {
     let result = toml_edit::easy::to_string_pretty(&value).unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 const PRETTY_TABLE_ARRAY: &str = r##"[[array]]
@@ -83,7 +83,7 @@ fn pretty_table_array() {
     let result = toml_edit::easy::to_string_pretty(&value).unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 const TABLE_ARRAY: &str = r##"[[array]]
@@ -106,7 +106,7 @@ fn table_array() {
     let result = toml_edit::easy::to_string_pretty(&value).unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 const PRETTY_EMPTY_TABLE: &str = r#"[example]
@@ -119,7 +119,7 @@ fn pretty_empty_table() {
     let result = toml_edit::easy::to_string_pretty(&value).unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 #[test]
@@ -159,5 +159,5 @@ debug = true
 
     let pkg: Package = toml_edit::de::from_str(raw).unwrap();
     let pretty = toml_edit::ser::to_string_pretty(&pkg).unwrap();
-    assert_eq!(raw, pretty,);
+    assert_eq(raw, pretty);
 }

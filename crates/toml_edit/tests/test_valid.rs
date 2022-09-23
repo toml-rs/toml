@@ -1,6 +1,6 @@
-use pretty_assertions::assert_eq;
 use serde_json::Map as JsonMap;
 use serde_json::Value as Json;
+use snapbox::assert_eq;
 
 use toml_edit::{Document, Item, Iter, Value};
 
@@ -67,7 +67,7 @@ fn run(json: &str, toml: &str) {
     let doc = toml.parse::<Document>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
-    assert_eq!(doc.to_string(), toml);
+    assert_eq(doc.to_string(), toml);
 }
 
 macro_rules! t(
@@ -98,7 +98,7 @@ fn test_key_unification() {
     assert!(doc.is_ok());
     let doc = doc.unwrap();
 
-    assert_eq!(doc.to_string(), expected);
+    assert_eq(doc.to_string(), expected);
 }
 
 t!(

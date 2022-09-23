@@ -1,4 +1,4 @@
-use pretty_assertions::assert_eq;
+use snapbox::assert_eq;
 
 use toml_edit::{Document, Item, Value};
 
@@ -21,7 +21,7 @@ other = "world"
     // `table=` is because we didn't re-format the table key, only the value
     let expected = r#"table= { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }
 "#;
-    assert_eq!(actual, expected);
+    assert_eq(actual, expected);
 }
 
 #[test]
@@ -46,7 +46,7 @@ array = [1, 2, 3]
 inline = { "1" = 1, "2" = 2 }
 child = { other = "world" }
 "#;
-    assert_eq!(actual, expected);
+    assert_eq(actual, expected);
 }
 
 #[test]
@@ -76,5 +76,5 @@ other = "world"
     // `table=` is because we didn't re-format the table key, only the value
     let expected = r#"table= [{ string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }, { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }]
 "#;
-    assert_eq!(actual, expected);
+    assert_eq(actual, expected);
 }
