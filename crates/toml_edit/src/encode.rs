@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Result, Write};
 
-use crate::datetime::*;
+use toml_datetime::*;
+
 use crate::document::Document;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;

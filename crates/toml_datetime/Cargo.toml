@@ -1,19 +1,15 @@
 [package]
-name = "toml"
-version = "0.5.9"
+name = "toml_datetime"
+version = "0.5.0"
 readme = "README.md"
 license = "MIT/Apache-2.0"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
-description = """
-A native Rust encoder and decoder of TOML-formatted files and streams. Provides
-implementations of the standard Serialize/Deserialize traits for TOML data to
-facilitate deserializing and serializing Rust structures.
-"""
+description = "A TOML-compatible datetime type"
 authors = ["Alex Crichton <alex@alexcrichton.com>"]
 repository = "https://github.com/toml-rs/toml"
 homepage = "https://github.com/toml-rs/toml"
-documentation = "https://docs.rs/toml"
+documentation = "https://docs.rs/toml_datetime"
 edition = "2021"
 rust-version = "1.60.0"  # MSRV
 include = [
@@ -35,19 +31,5 @@ pre-release-replacements = [
   {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/toml-rs/toml_edit/compare/{{tag_name}}...HEAD", exactly=1},
 ]
 
-[features]
-default = []
-
-# Use indexmap rather than BTreeMap as the map type of toml::Value.
-# This allows data to be read into a Value and written back to a TOML string
-# while preserving the order of map keys in the input.
-preserve_order = ["indexmap"]
-
 [dependencies]
-serde = "1.0.145"
-indexmap = { version = "1.9.1", optional = true }
-toml_datetime = { version = "0.5.0", path = "../toml_datetime", features = ["serde"] }
-
-[dev-dependencies]
-serde_derive = "1.0.145"
-serde_json = "1.0.85"
+serde = { version = "1.0.145", optional = true }

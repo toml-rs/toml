@@ -66,7 +66,6 @@
 
 mod array;
 mod array_of_tables;
-mod datetime;
 mod document;
 mod encode;
 mod index;
@@ -94,7 +93,6 @@ pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
-pub use crate::datetime::*;
 pub use crate::document::Document;
 pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,
@@ -109,6 +107,7 @@ pub use crate::table::{
     Entry, IntoIter, Iter, IterMut, OccupiedEntry, Table, TableLike, VacantEntry,
 };
 pub use crate::value::Value;
+pub use toml_datetime::*;
 
 // Prevent users from some traits.
 pub(crate) mod private {

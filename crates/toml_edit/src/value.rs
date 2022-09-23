@@ -2,8 +2,8 @@ use std::iter::FromIterator;
 use std::str::FromStr;
 
 use combine::stream::position::Stream;
+use toml_datetime::*;
 
-use crate::datetime::*;
 use crate::key::Key;
 use crate::parser;
 use crate::repr::{Decor, Formatted};

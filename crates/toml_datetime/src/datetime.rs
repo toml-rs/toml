@@ -2,6 +2,7 @@ use std::error;
 use std::fmt;
 use std::str::{self, FromStr};
 
+#[cfg(feature = "serde")]
 use serde::{de, ser};
 
 /// A parsed TOML datetime value
@@ -76,7 +77,7 @@ use serde::{de, ser};
 /// [Local Date-Time]: https://toml.io/en/v1.0.0#local-date-time
 /// [Local Date]: https://toml.io/en/v1.0.0#local-date
 /// [Local Time]: https://toml.io/en/v1.0.0#local-time
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub struct Datetime {
     /// Optional date.
     /// Required for: *Offset Date-Time*, *Local Date-Time*, *Local Date*.
@@ -103,7 +104,11 @@ pub struct DatetimeParseError {
 //
 // In general the TOML encoder/decoder will catch this and not literally emit
 // these strings but rather emit datetimes as they're intended.
+#[doc(hidden)]
+#[cfg(feature = "serde")]
 pub const FIELD: &str = "$__toml_private_datetime";
+#[doc(hidden)]
+#[cfg(feature = "serde")]
 pub const NAME: &str = "$__toml_private_Datetime";
 
 /// A parsed TOML date value
@@ -120,7 +125,7 @@ pub const NAME: &str = "$__toml_private_Datetime";
 /// > ```
 ///
 /// [Local Date]: https://toml.io/en/v1.0.0#local-date
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub struct Date {
     /// Year: four digits
     pub year: u16,
@@ -150,7 +155,7 @@ pub struct Date {
 /// > must be truncated, not rounded.
 ///
 /// [Local Time]: https://toml.io/en/v1.0.0#local-time
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub struct Time {
     /// Hour: 0 to 23
     pub hour: u8,
@@ -164,7 +169,7 @@ pub struct Time {
 
 /// A parsed TOML time offset
 ///
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub enum Offset {
     /// > A suffix which, when applied to a time, denotes a UTC offset of 00:00;
     /// > often spoken "Zulu" from the ICAO phonetic alphabet representation of
@@ -183,9 +188,23 @@ pub enum Offset {
     },
 }
 
-impl fmt::Debug for Datetime {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self, f)
+impl From<Date> for Datetime {
+    fn from(other: Date) -> Self {
+        Datetime {
+            date: Some(other),
+            time: None,
+            offset: None,
+        }
+    }
+}
+
+impl From<Time> for Datetime {
+    fn from(other: Time) -> Self {
+        Datetime {
+            date: None,
+            time: Some(other),
+            offset: None,
+        }
     }
 }
 
@@ -424,6 +443,7 @@ fn digit(chars: &mut str::Chars<'_>) -> Result<u8, DatetimeParseError> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl ser::Serialize for Datetime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -437,6 +457,7 @@ impl ser::Serialize for Datetime {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for Datetime {
     fn deserialize<D>(deserializer: D) -> Result<Datetime, D::Error>
     where
@@ -469,8 +490,10 @@ impl<'de> de::Deserialize<'de> for Datetime {
     }
 }
 
+#[cfg(feature = "serde")]
 struct DatetimeKey;
 
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for DatetimeKey {
     fn deserialize<D>(deserializer: D) -> Result<DatetimeKey, D::Error>
     where
@@ -502,10 +525,13 @@ impl<'de> de::Deserialize<'de> for DatetimeKey {
     }
 }
 
+#[doc(hidden)]
+#[cfg(feature = "serde")]
 pub struct DatetimeFromString {
     pub value: Datetime,
 }
 
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for DatetimeFromString {
     fn deserialize<D>(deserializer: D) -> Result<DatetimeFromString, D::Error>
     where

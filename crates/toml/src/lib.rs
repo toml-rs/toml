@@ -153,7 +153,6 @@ pub mod map;
 pub mod value;
 #[doc(no_inline)]
 pub use crate::value::Value;
-mod datetime;
 
 pub mod ser;
 #[doc(no_inline)]
@@ -169,8 +168,8 @@ pub mod macros;
 mod spanned;
 pub use crate::spanned::Spanned;
 
-// Just for rustdoc
-#[allow(unused_imports)]
-use crate::datetime::Datetime;
+// Shortcuts for the module doc-comment
 #[allow(unused_imports)]
 use core::str::FromStr;
+#[allow(unused_imports)]
+use toml_datetime::Datetime;
