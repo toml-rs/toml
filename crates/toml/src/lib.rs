@@ -88,20 +88,18 @@
 //!     travis: Option<String>,
 //! }
 //!
-//! fn main() {
-//!     let config: Config = toml::from_str(r#"
-//!         ip = '127.0.0.1'
+//! let config: Config = toml::from_str(r#"
+//!     ip = '127.0.0.1'
 //!
-//!         [keys]
-//!         github = 'xxxxxxxxxxxxxxxxx'
-//!         travis = 'yyyyyyyyyyyyyyyyy'
-//!     "#).unwrap();
+//!     [keys]
+//!     github = 'xxxxxxxxxxxxxxxxx'
+//!     travis = 'yyyyyyyyyyyyyyyyy'
+//! "#).unwrap();
 //!
-//!     assert_eq!(config.ip, "127.0.0.1");
-//!     assert_eq!(config.port, None);
-//!     assert_eq!(config.keys.github, "xxxxxxxxxxxxxxxxx");
-//!     assert_eq!(config.keys.travis.as_ref().unwrap(), "yyyyyyyyyyyyyyyyy");
-//! }
+//! assert_eq!(config.ip, "127.0.0.1");
+//! assert_eq!(config.port, None);
+//! assert_eq!(config.keys.github, "xxxxxxxxxxxxxxxxx");
+//! assert_eq!(config.keys.travis.as_ref().unwrap(), "yyyyyyyyyyyyyyyyy");
 //! ```
 //!
 //! You can serialize types in a similar fashion:
@@ -122,18 +120,16 @@
 //!     travis: Option<String>,
 //! }
 //!
-//! fn main() {
-//!     let config = Config {
-//!         ip: "127.0.0.1".to_string(),
-//!         port: None,
-//!         keys: Keys {
-//!             github: "xxxxxxxxxxxxxxxxx".to_string(),
-//!             travis: Some("yyyyyyyyyyyyyyyyy".to_string()),
-//!         },
-//!     };
+//! let config = Config {
+//!     ip: "127.0.0.1".to_string(),
+//!     port: None,
+//!     keys: Keys {
+//!         github: "xxxxxxxxxxxxxxxxx".to_string(),
+//!         travis: Some("yyyyyyyyyyyyyyyyy".to_string()),
+//!     },
+//! };
 //!
-//!     let toml = toml::to_string(&config).unwrap();
-//! }
+//! let toml = toml::to_string(&config).unwrap();
 //! ```
 //!
 //! [TOML]: https://github.com/toml-lang/toml
