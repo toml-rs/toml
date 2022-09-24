@@ -13,3 +13,5 @@ toml_edit = { path = ".." }
 [[bin]]
 name = "parse_document"
 path = "parse_document.rs"
+
+[workspace]
