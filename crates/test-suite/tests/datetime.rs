@@ -1,5 +1,3 @@
-extern crate toml;
-
 use std::str::FromStr;
 
 macro_rules! bad {

@@ -1,7 +1,7 @@
 use std::cmp::{Ord, Ordering, PartialOrd};
+
+use serde_derive::Deserialize;
 use toml::{from_str, Spanned};
-#[macro_use]
-extern crate serde_derive;
 
 #[test]
 fn test_spans_impls() {

@@ -1,6 +1,5 @@
-extern crate toml;
-#[macro_use]
-extern crate serde_derive;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Recipe {

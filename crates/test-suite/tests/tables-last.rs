@@ -1,8 +1,6 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate toml;
-
 use std::collections::HashMap;
+
+use serde_derive::Serialize;
 
 #[derive(Serialize)]
 struct A {

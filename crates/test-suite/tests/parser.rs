@@ -1,5 +1,3 @@
-extern crate toml;
-
 use toml::Value;
 
 macro_rules! bad {

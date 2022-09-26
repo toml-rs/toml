@@ -1,5 +1,3 @@
-extern crate toml;
-
 use toml::map::Map;
 use toml::Value::{Array, Boolean, Float, Integer, String, Table};
 

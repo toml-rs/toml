@@ -1,6 +1,3 @@
-extern crate serde;
-extern crate toml;
-
 use serde::ser::Serialize;
 
 const NO_PRETTY: &str = "\

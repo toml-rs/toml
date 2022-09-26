@@ -1,10 +1,7 @@
-extern crate serde;
-extern crate toml;
-#[macro_use]
-extern crate serde_derive;
-
 use std::collections::HashMap;
 use std::fmt::Debug;
+
+use serde_derive::Deserialize;
 use toml::value::Datetime;
 use toml::Spanned;
 
