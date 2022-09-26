@@ -1,9 +1,8 @@
 #![recursion_limit = "256"]
 
-#[macro_use]
-extern crate toml;
-
 use std::f64;
+
+use toml::toml;
 
 macro_rules! table {
     ($($key:expr => $value:expr,)*) => {{

@@ -1,5 +1,3 @@
-extern crate toml;
-
 macro_rules! bad {
     ($toml:expr, $msg:expr) => {
         match $toml.parse::<toml::Value>() {

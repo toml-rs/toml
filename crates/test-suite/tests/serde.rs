@@ -1,10 +1,6 @@
-extern crate serde;
-extern crate serde_json;
-extern crate toml;
-#[macro_use]
-extern crate serde_derive;
-
-use serde::{Deserialize, Deserializer};
+use serde::Deserializer;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use std::collections::{BTreeMap, HashSet};
 
 use toml::map::Map;
@@ -128,9 +124,9 @@ fn nested() {
 fn application_decode_error() {
     #[derive(PartialEq, Debug)]
     struct Range10(usize);
-    impl<'de> Deserialize<'de> for Range10 {
+    impl<'de> serde::Deserialize<'de> for Range10 {
         fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Range10, D::Error> {
-            let x: usize = Deserialize::deserialize(d)?;
+            let x: usize = serde::Deserialize::deserialize(d)?;
             if x > 10 {
                 Err(serde::de::Error::custom("more than 10"))
             } else {

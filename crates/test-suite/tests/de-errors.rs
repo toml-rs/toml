@@ -1,6 +1,3 @@
-extern crate serde;
-extern crate toml;
-
 use serde::{de, Deserialize};
 use std::fmt;
 

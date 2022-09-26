@@ -1,7 +1,3 @@
-extern crate serde;
-extern crate serde_json;
-extern crate toml;
-
 use serde::ser::Serialize;
 use serde_json::Value as Json;
 use toml::{to_string_pretty, Value as Toml};

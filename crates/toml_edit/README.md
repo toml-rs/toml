@@ -16,8 +16,6 @@ relative order* or items.
 ## Example
 
 ```rust
-extern crate toml_edit;
-
 use toml_edit::{Document, value};
 
 fn main() {
