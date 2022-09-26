@@ -866,7 +866,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml_edit-targets"
+name = "toml_edit_fuzz"
 version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",

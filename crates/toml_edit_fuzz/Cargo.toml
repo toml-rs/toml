@@ -1,5 +1,5 @@
 [package]
-name = "toml_edit-targets"
+name = "toml_edit_fuzz"
 version = "0.0.0"
 edition = "2021"
 publish = false
@@ -14,3 +14,4 @@ toml_edit = { path = "../toml_edit" }
 [[bin]]
 name = "parse_document"
 path = "parse_document.rs"
+test = false
