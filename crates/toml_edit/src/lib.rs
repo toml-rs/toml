@@ -5,7 +5,7 @@
 //! # `toml_edit`
 //!
 //! This crate allows you to parse and modify toml
-//! documents, while preserving comments, spaces* and
+//! documents, while preserving comments, spaces *and
 //! relative order* or items.
 //!
 //! It is primarily tailored to the needs of [cargo-edit](https://github.com/killercup/cargo-edit/).
