@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- `Datetime`'s `FromStr::Err` changed from `toml_edit::Error` to `toml_edit::DatetimeParseError`
+- `Datetime` no longer implements `TryFrom`
+- `Time` no longer implements `FromStr`, `TryFrom`, `Serialize`, or `Deserialize`
+- `Date` no longer implements `FromStr`, `TryFrom`, `Serialize`, or `Deserialize`
+
+### Fixes
+
+- Remove leading newlines in the document with default table decor
+
 ## [0.14.4] - 2022-05-09
 
 ### Fixes
