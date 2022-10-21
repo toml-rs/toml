@@ -636,8 +636,7 @@ fn newline_dotted_table() {
     };
     let raw = toml_edit::ser::to_string_pretty(&package).unwrap();
     assert_eq(
-        r#"
-[profile.dev]
+        r#"[profile.dev]
 debug = true
 "#,
         raw,

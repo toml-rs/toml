@@ -150,7 +150,8 @@ where
     T: serde::ser::Serialize,
 {
     let mut document = to_document(value)?;
-    pretty::Pretty.visit_document_mut(&mut document);
+    pretty::MakeItem.visit_document_mut(&mut document);
+    pretty::Pretty::new().visit_document_mut(&mut document);
     Ok(document.to_string())
 }
 

@@ -1,24 +1,44 @@
-pub(crate) struct Pretty;
+pub(crate) struct Pretty {
+    depth: usize,
+    strip_prefix: bool,
+}
+
+impl Pretty {
+    pub(crate) fn new() -> Self {
+        Self {
+            depth: 0,
+            strip_prefix: true,
+        }
+    }
+}
 
 impl crate::visit_mut::VisitMut for Pretty {
     fn visit_document_mut(&mut self, node: &mut crate::Document) {
-        crate::visit_mut::visit_document_mut(self, node);
-        if let Some((_, first)) = node.iter_mut().next() {
-            remove_table_prefix(first);
+        match node.iter().next() {
+            Some((_, crate::Item::None)) | Some((_, crate::Item::Value(_))) | None => {
+                self.strip_prefix = false;
+            }
+            Some((_, crate::Item::Table(_))) | Some((_, crate::Item::ArrayOfTables(_))) => {}
         }
-    }
-
-    fn visit_item_mut(&mut self, node: &mut crate::Item) {
-        node.make_item();
-
-        crate::visit_mut::visit_item_mut(self, node);
+        crate::visit_mut::visit_document_mut(self, node);
     }
 
     fn visit_table_mut(&mut self, node: &mut crate::Table) {
-        node.decor_mut().clear();
+        self.depth += 1;
+        let implicit = !node.is_empty();
+        if 1 < self.depth {
+            node.decor_mut().clear();
+
+            let children = node.get_values();
+            let is_visible_std_table = !(implicit && children.is_empty());
+            if is_visible_std_table && self.strip_prefix {
+                node.decor_mut().set_prefix("");
+                self.strip_prefix = false;
+            }
+        }
 
         // Empty tables could be semantically meaningful, so make sure they are not implicit
-        if !node.is_empty() {
+        if implicit {
             node.set_implicit(true);
         }
 
@@ -47,15 +67,12 @@ impl crate::visit_mut::VisitMut for Pretty {
     }
 }
 
-fn remove_table_prefix(node: &mut crate::Item) {
-    match node {
-        crate::Item::None => {}
-        crate::Item::Value(_) => {}
-        crate::Item::Table(t) => t.decor_mut().set_prefix(""),
-        crate::Item::ArrayOfTables(a) => {
-            if let Some(first) = a.values.iter_mut().next() {
-                remove_table_prefix(first);
-            }
-        }
+pub(crate) struct MakeItem;
+
+impl crate::visit_mut::VisitMut for MakeItem {
+    fn visit_item_mut(&mut self, node: &mut crate::Item) {
+        node.make_item();
+
+        crate::visit_mut::visit_item_mut(self, node);
     }
 }
