@@ -39,8 +39,7 @@ fn inline_table_to_table() {
     doc.insert("table", Item::Table(t));
 
     let actual = doc.to_string();
-    let expected = r#"
-[table]
+    let expected = r#"[table]
 string = "value"
 array = [1, 2, 3]
 inline = { "1" = 1, "2" = 2 }

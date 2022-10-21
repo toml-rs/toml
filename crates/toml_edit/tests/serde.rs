@@ -1,8 +1,9 @@
 #![cfg(feature = "easy")]
 
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
+use snapbox::assert_eq;
 use toml_edit::easy::map::Map;
 use toml_edit::easy::Value;
 use toml_edit::easy::Value::{Array, Float, Integer, Table};
@@ -555,5 +556,151 @@ dev = { debug = 'a' }
     assert_eq!(
         err.to_string(),
         "expected a boolean or an integer for key `profile.dev.debug`"
+    );
+}
+
+#[test]
+fn newline_key_value() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+    }
+
+    let package = Package {
+        name: "foo".to_owned(),
+    };
+    let raw = toml_edit::ser::to_string_pretty(&package).unwrap();
+    assert_eq(
+        r#"name = "foo"
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn newline_table() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Manifest {
+        package: Package,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+    }
+
+    let package = Manifest {
+        package: Package {
+            name: "foo".to_owned(),
+        },
+    };
+    let raw = toml_edit::ser::to_string_pretty(&package).unwrap();
+    assert_eq(
+        r#"[package]
+name = "foo"
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn newline_dotted_table() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Manifest {
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let package = Manifest {
+        profile: Profile {
+            dev: Dev {
+                debug: U32OrBool::Bool(true),
+            },
+        },
+    };
+    let raw = toml_edit::ser::to_string_pretty(&package).unwrap();
+    assert_eq(
+        r#"[profile.dev]
+debug = true
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn newline_mixed_tables() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Manifest {
+        cargo_features: Vec<String>,
+        package: Package,
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let package = Manifest {
+        cargo_features: vec![],
+        package: Package {
+            name: "foo".to_owned(),
+            version: "1.0.0".to_owned(),
+            authors: vec![],
+        },
+        profile: Profile {
+            dev: Dev {
+                debug: U32OrBool::Bool(true),
+            },
+        },
+    };
+    let raw = toml_edit::ser::to_string_pretty(&package).unwrap();
+    assert_eq(
+        r#"cargo_features = []
+
+[package]
+name = "foo"
+version = "1.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+"#,
+        raw,
     );
 }
