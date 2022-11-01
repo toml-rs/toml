@@ -32,4 +32,4 @@ pre-release-replacements = [
 ]
 
 [dependencies]
-serde = { version = "1.0.145", optional = true }
+serde = { version = "1.0.147", optional = true }
