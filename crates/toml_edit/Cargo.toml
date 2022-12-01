@@ -44,7 +44,7 @@ serde = ["dep:serde", "toml_datetime/serde"]
 indexmap = "1.9.1"
 combine = "4.6.6"
 itertools = "0.10.5"
-serde = { version = "1.0.145", features = ["derive"], optional = true }
+serde = { version = "1.0.148", features = ["derive"], optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.5.0", path = "../toml_datetime" }
 
