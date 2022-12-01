@@ -41,7 +41,7 @@ perf = ["dep:kstring"]
 serde = ["dep:serde", "toml_datetime/serde"]
 
 [dependencies]
-indexmap = "1.9.1"
+indexmap = "1.9.2"
 combine = "4.6.6"
 itertools = "0.10.5"
 serde = { version = "1.0.145", features = ["derive"], optional = true }
