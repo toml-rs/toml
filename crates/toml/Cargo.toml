@@ -49,5 +49,5 @@ indexmap = { version = "1.9.1", optional = true }
 toml_datetime = { version = "0.5.0", path = "../toml_datetime", features = ["serde"] }
 
 [dev-dependencies]
-serde_derive = "1.0.148"
+serde_derive = "1.0.149"
 serde_json = "1.0.89"
