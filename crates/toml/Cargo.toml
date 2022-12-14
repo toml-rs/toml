@@ -15,6 +15,7 @@ repository = "https://github.com/toml-rs/toml"
 homepage = "https://github.com/toml-rs/toml"
 documentation = "https://docs.rs/toml"
 edition = "2018"
+rust-version = "1.48.0"
 include = [
   "src/**/*",
   "Cargo.toml",
