@@ -1,6 +1,0 @@
-[fruit.apple]
-size = "small"
-
-[fruit]
-apple.color = "red"
-apple.taste.sweet = true

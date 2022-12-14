@@ -1,8 +1,0 @@
-TOML parse error at line 1, column 11
-  |
-1 | bad = 1.2_
-  |           ^
-Unexpected `
-`
-Expected digit
-While parsing a Float
