@@ -88,7 +88,7 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.5.9"
+version = "0.5.10"
 dependencies = [
  "indexmap",
  "serde",
