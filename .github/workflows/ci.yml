@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - toml-v0.5
   schedule:
   - cron: '19 19 19 * *'
 jobs:
