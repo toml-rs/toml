@@ -28,10 +28,13 @@ use crate::value::{Array, Table, Value};
 /// ```
 #[macro_export]
 macro_rules! toml {
-    ($($toml:tt)+) => {{
+    ($($toml:tt)*) => {{
         let table = $crate::value::Table::new();
+
+        #[allow(unused_mut)]
         let mut root = $crate::Value::Table(table);
-        $crate::toml_internal!(@toplevel root [] $($toml)+);
+
+        $crate::toml_internal!(@toplevel root [] $($toml)*);
         root
     }};
 }
