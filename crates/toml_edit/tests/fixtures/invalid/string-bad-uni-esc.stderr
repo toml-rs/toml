@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 14
+TOML parse error at line 1, column 13
   |
 1 | str = "val\ue"
-  |              ^
-expected 3 more elements
-While parsing a Basic String
+  |             ^
+Invalid unicode 4-digit hex code

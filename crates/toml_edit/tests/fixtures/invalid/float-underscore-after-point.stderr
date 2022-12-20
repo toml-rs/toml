@@ -2,6 +2,5 @@ TOML parse error at line 1, column 9
   |
 1 | bad = 1._2
   |         ^
-Unexpected `_`
+Invalid floating-point number
 Expected digit
-While parsing a Float

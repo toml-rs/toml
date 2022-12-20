@@ -1,6 +1,6 @@
-TOML parse error at line 1, column 10
+TOML parse error at line 1, column 9
   |
 1 | [naughty..naughty]
-  |          ^
-Unexpected `.`
-While parsing a Table Header
+  |         ^
+Invalid table header
+Expected `.`, `]`

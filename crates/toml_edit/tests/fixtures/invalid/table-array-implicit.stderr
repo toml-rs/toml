@@ -2,6 +2,5 @@ TOML parse error at line 13, column 1
    |
 13 | [[albums]]
    | ^
+Invalid table header
 Duplicate key `albums` in document root
-
-While parsing a Table Header

@@ -1,7 +1,6 @@
-TOML parse error at line 1, column 12
+TOML parse error at line 1, column 13
   |
 1 | answer = "\x33"
-  |            ^
-Unexpected `x`
-While parsing escape sequence
-While parsing a Basic String
+  |             ^
+Invalid escape sequence
+Expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`

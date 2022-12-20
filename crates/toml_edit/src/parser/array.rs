@@ -1,19 +1,27 @@
-use combine::parser::byte::byte;
-use combine::parser::range::recognize_with_value;
-use combine::stream::RangeStream;
-use combine::*;
+use nom8::combinator::cut;
+use nom8::combinator::opt;
+use nom8::multi::separated_list1;
+use nom8::sequence::delimited;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::{Array, Value};
+use crate::{Array, Item, Value};
+
+use crate::parser::prelude::*;
 
 // ;; Array
 
 // array = array-open array-values array-close
-parse!(array() -> Array, {
-    between(byte(ARRAY_OPEN), byte(ARRAY_CLOSE),
-            array_values())
-});
+pub(crate) fn array(input: Input<'_>) -> IResult<Input<'_>, Array, ParserError<'_>> {
+    delimited(
+        ARRAY_OPEN,
+        cut(array_values),
+        cut(ARRAY_CLOSE)
+            .context(Context::Expression("array"))
+            .context(Context::Expected(ParserValue::CharLiteral(']'))),
+    )
+    .parse(input)
+}
 
 // note: we're omitting ws and newlines here, because
 // they should be part of the formatted values
@@ -27,41 +35,41 @@ const ARRAY_SEP: u8 = b',';
 // note: this rule is modified
 // array-values = [ ( array-value array-sep array-values ) /
 //                  array-value / ws-comment-newline ]
-parse!(array_values() -> Array, {
+pub(crate) fn array_values(input: Input<'_>) -> IResult<Input<'_>, Array, ParserError<'_>> {
     (
-        optional(
-            recognize_with_value(
-                sep_end_by1(array_value(), byte(ARRAY_SEP))
-            ).map(|(r, v): (&'a [u8], Array)| (v, r[r.len() - 1] == b','))
+        opt(
+            (separated_list1(ARRAY_SEP, array_value), opt(ARRAY_SEP)).map(
+                |(v, trailing): (Vec<Value>, Option<u8>)| {
+                    (
+                        Array::with_vec(v.into_iter().map(Item::Value).collect()),
+                        trailing.is_some(),
+                    )
+                },
+            ),
         ),
-        ws_comment_newline(),
-    ).and_then::<_, _, std::str::Utf8Error>(|(array, trailing)| {
-        let (mut array, comma) = array.unwrap_or_default();
-        array.set_trailing_comma(comma);
-        array.set_trailing(std::str::from_utf8(trailing)?);
-        Ok(array)
-    })
-});
+        ws_comment_newline,
+    )
+        .map_res::<_, _, std::str::Utf8Error>(|(array, trailing)| {
+            let (mut array, comma) = array.unwrap_or_default();
+            array.set_trailing_comma(comma);
+            array.set_trailing(std::str::from_utf8(trailing)?);
+            Ok(array)
+        })
+        .parse(input)
+}
 
-parse!(array_value() -> Value, {
-    attempt((
-        ws_comment_newline(),
-        value(),
-        ws_comment_newline(),
-    )).and_then::<_, _, std::str::Utf8Error>(|(ws1, v, ws2)| {
-        let v = v.decorated(
-            std::str::from_utf8(ws1)?,
-            std::str::from_utf8(ws2)?,
-        );
-        Ok(v)
-    })
-});
+pub(crate) fn array_value(input: Input<'_>) -> IResult<Input<'_>, Value, ParserError<'_>> {
+    (ws_comment_newline, value, ws_comment_newline)
+        .map_res::<_, _, std::str::Utf8Error>(|(ws1, v, ws2)| {
+            let v = v.decorated(std::str::from_utf8(ws1)?, std::str::from_utf8(ws2)?);
+            Ok(v)
+        })
+        .parse(input)
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    use combine::stream::position::Stream;
 
     #[test]
     fn arrays() {
@@ -101,12 +109,13 @@ mod test {
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
-            parsed_value_eq!(input);
+            let parsed = array.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
-            let parsed = array().easy_parse(Stream::new(input.as_bytes()));
+            let parsed = array.parse(input.as_bytes()).finish();
             assert!(parsed.is_err());
         }
     }

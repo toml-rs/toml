@@ -2,7 +2,5 @@ TOML parse error at line 1, column 12
   |
 1 | answer = 1.
   |            ^
-Unexpected `
-`
+Invalid floating-point number
 Expected digit
-While parsing a Float

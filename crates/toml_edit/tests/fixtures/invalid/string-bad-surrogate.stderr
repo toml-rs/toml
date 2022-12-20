@@ -2,6 +2,5 @@ TOML parse error at line 1, column 15
   |
 1 | notgood = "a\uDCFF"
   |               ^
-Invalid hex escape code: dcff 
-
-While parsing a Basic String
+Invalid unicode 4-digit hex code
+Value is out of range

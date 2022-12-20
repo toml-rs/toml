@@ -1,7 +1,17 @@
-use combine::parser::byte::{byte, crlf, newline as lf};
-use combine::parser::range::{recognize, take_while, take_while1};
-use combine::stream::RangeStream;
-use combine::*;
+use std::ops::RangeInclusive;
+
+use nom8::branch::alt;
+use nom8::bytes::one_of;
+use nom8::bytes::take_while;
+use nom8::bytes::take_while1;
+use nom8::combinator::eof;
+use nom8::combinator::opt;
+use nom8::multi::many0_count;
+use nom8::multi::many1_count;
+use nom8::prelude::*;
+use nom8::sequence::terminated;
+
+use crate::parser::prelude::*;
 
 pub(crate) unsafe fn from_utf8_unchecked<'b>(
     bytes: &'b [u8],
@@ -17,119 +27,93 @@ pub(crate) unsafe fn from_utf8_unchecked<'b>(
 
 // wschar = ( %x20 /              ; Space
 //            %x09 )              ; Horizontal tab
-#[inline]
-pub(crate) fn is_wschar(c: u8) -> bool {
-    matches!(c, b' ' | b'\t')
-}
+pub(crate) const WSCHAR: (u8, u8) = (b' ', b'\t');
 
 // ws = *wschar
-parse!(ws() -> &'a str, {
-    take_while(is_wschar).map(|b| {
-        unsafe { from_utf8_unchecked(b, "`is_wschar` filters out on-ASCII") }
-    })
-});
+pub(crate) fn ws(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    take_while(WSCHAR)
+        .map(|b| unsafe { from_utf8_unchecked(b, "`is_wschar` filters out on-ASCII") })
+        .parse(input)
+}
 
 // non-ascii = %x80-D7FF / %xE000-10FFFF
-#[inline]
-pub(crate) fn is_non_ascii(c: u8) -> bool {
-    // - ASCII is 0xxxxxxx
-    // - First byte for UTF-8 is 11xxxxxx
-    // - Subsequent UTF-8 bytes are 10xxxxxx
-    matches!(c, 0x80..=0xff)
-}
+// - ASCII is 0xxxxxxx
+// - First byte for UTF-8 is 11xxxxxx
+// - Subsequent UTF-8 bytes are 10xxxxxx
+pub(crate) const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 
 // non-eol = %x09 / %x20-7E / non-ascii
-#[inline]
-fn is_non_eol(c: u8) -> bool {
-    matches!(c, 0x09 | 0x20..=0x7E) | is_non_ascii(c)
-}
+pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
+    (0x09, 0x20..=0x7E, NON_ASCII);
 
 // comment-start-symbol = %x23 ; #
 pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 // comment = comment-start-symbol *non-eol
-parse!(comment() -> &'a [u8], {
-    recognize((
-        byte(COMMENT_START_SYMBOL),
-        take_while(is_non_eol),
-    ))
-});
+pub(crate) fn comment(input: Input<'_>) -> IResult<Input<'_>, &[u8], ParserError<'_>> {
+    (COMMENT_START_SYMBOL, take_while(NON_EOL))
+        .recognize()
+        .parse(input)
+}
 
 // newline = ( %x0A /              ; LF
 //             %x0D.0A )           ; CRLF
+pub(crate) fn newline(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+    alt((
+        one_of(LF).value(b'\n'),
+        (one_of(CR), one_of(LF)).value(b'\n'),
+    ))
+    .parse(input)
+}
 pub(crate) const LF: u8 = b'\n';
 pub(crate) const CR: u8 = b'\r';
-parse!(newline() -> char, {
-    choice((lf(), crlf()))
-        .map(|_| '\n')
-        .expected("newline")
-});
 
 // ws-newline       = *( wschar / newline )
-parse!(ws_newline() -> &'a str, {
-    recognize(
-        skip_many(choice((
-            newline().map(|_| &b"\n"[..]),
-            take_while1(is_wschar),
-        ))),
-    ).map(|b| {
-        unsafe { from_utf8_unchecked(b, "`is_wschar` and `newline` filters out on-ASCII") }
-    })
-});
+pub(crate) fn ws_newline(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    many0_count(alt((newline.value(&b"\n"[..]), take_while1(WSCHAR))))
+        .recognize()
+        .map(|b| unsafe {
+            from_utf8_unchecked(b, "`is_wschar` and `newline` filters out on-ASCII")
+        })
+        .parse(input)
+}
 
 // ws-newlines      = newline *( wschar / newline )
-parse!(ws_newlines() -> &'a str, {
-    recognize((
-        newline(),
-        ws_newline(),
-    )).map(|b| {
-        unsafe { from_utf8_unchecked(b, "`is_wschar` and `newline` filters out on-ASCII") }
-    })
-});
+pub(crate) fn ws_newlines(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (newline, ws_newline)
+        .recognize()
+        .map(|b| unsafe {
+            from_utf8_unchecked(b, "`is_wschar` and `newline` filters out on-ASCII")
+        })
+        .parse(input)
+}
 
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
-parse!(ws_comment_newline() -> &'a [u8], {
-    recognize(
-        skip_many(
-            choice((
-                skip_many1(
-                    choice((
-                        take_while1(is_wschar),
-                        newline().map(|_| &b"\n"[..]),
-                    ))
-                ),
-                comment().map(|_| ()),
-            ))
-        )
-    )
-});
+pub(crate) fn ws_comment_newline(input: Input<'_>) -> IResult<Input<'_>, &[u8], ParserError<'_>> {
+    many0_count(alt((
+        many1_count(alt((take_while1(WSCHAR), newline.value(&b"\n"[..])))).value(()),
+        comment.value(()),
+    )))
+    .recognize()
+    .parse(input)
+}
 
 // note: this rule is not present in the original grammar
 // line-ending = newline / eof
-parse!(line_ending() -> &'a str, {
-    choice((
-        newline().map(|_| "\n"),
-        eof().map(|_| "")
-    ))
-});
+pub(crate) fn line_ending(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    alt((newline.value("\n"), eof.value(""))).parse(input)
+}
 
 // note: this rule is not present in the original grammar
 // line-trailing = ws [comment] skip-line-ending
-parse!(line_trailing() -> &'a [u8], {
-    recognize((
-        ws(),
-        optional(comment()),
-    )).skip(line_ending())
-});
+pub(crate) fn line_trailing(input: Input<'_>) -> IResult<Input<'_>, &[u8], ParserError<'_>> {
+    terminated((ws, opt(comment)).recognize(), line_ending).parse(input)
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    use crate::parser::*;
-    use combine::stream::position::Stream;
-    use snapbox::assert_eq;
 
     #[test]
     fn trivia() {
@@ -154,11 +138,10 @@ mod test {
    "#,
         ];
         for input in inputs {
-            let parsed = trivia::ws_comment_newline().easy_parse(Stream::new(input.as_bytes()));
-            assert!(parsed.is_ok());
-            let (t, rest) = parsed.unwrap();
-            assert!(rest.input.is_empty());
-            assert_eq(t, input.as_bytes());
+            let parsed = ws_comment_newline.parse(input.as_bytes()).finish();
+            assert!(parsed.is_ok(), "{:?}", parsed);
+            let parsed = parsed.unwrap();
+            assert_eq!(parsed, input.as_bytes());
         }
     }
 }

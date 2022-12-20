@@ -70,7 +70,13 @@ impl FromStr for Document {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::document(s.as_bytes())
+        use nom8::prelude::*;
+
+        let b = s.as_bytes();
+        parser::document::document
+            .parse(b)
+            .finish()
+            .map_err(|e| Self::Err::new(e, b))
     }
 }
 

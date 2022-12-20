@@ -2,5 +2,4 @@ TOML parse error at line 1, column 10
   |
 1 | value=123hello
   |          ^
-Unexpected `h`
-Expected `#`
+Expected newline, `#`

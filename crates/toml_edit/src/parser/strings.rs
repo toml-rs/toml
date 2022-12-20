@@ -1,69 +1,99 @@
 use std::borrow::Cow;
 use std::char;
+use std::ops::RangeInclusive;
 
-use combine::error::Commit;
-use combine::parser::byte::{byte, bytes, hex_digit};
-use combine::parser::range::{range, recognize, take_while, take_while1};
-use combine::stream::RangeStream;
-use combine::*;
+use nom8::branch::alt;
+use nom8::bytes::any;
+use nom8::bytes::none_of;
+use nom8::bytes::one_of;
+use nom8::bytes::tag;
+use nom8::bytes::take_while;
+use nom8::bytes::take_while1;
+use nom8::bytes::take_while_m_n;
+use nom8::combinator::cut;
+use nom8::combinator::fail;
+use nom8::combinator::opt;
+use nom8::combinator::peek;
+use nom8::combinator::success;
+use nom8::multi::many0_count;
+use nom8::multi::many1_count;
+use nom8::sequence::delimited;
+use nom8::sequence::preceded;
+use nom8::sequence::terminated;
 
 use crate::parser::errors::CustomError;
-use crate::parser::trivia::{
-    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
-};
+use crate::parser::numbers::HEXDIG;
+use crate::parser::prelude::*;
+use crate::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_ASCII, WSCHAR};
 
 // ;; String
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
-parse!(string() -> String, {
-    choice((
-        ml_basic_string(),
-        basic_string(),
-        ml_literal_string(),
-        literal_string().map(|s: &'a str| s.into()),
+pub(crate) fn string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    alt((
+        ml_basic_string,
+        basic_string,
+        ml_literal_string,
+        literal_string.map(Cow::Borrowed),
     ))
-});
+    .parse(input)
+}
 
 // ;; Basic String
 
 // basic-string = quotation-mark *basic-char quotation-mark
-parse!(basic_string() -> String, {
-    between(
-        byte(QUOTATION_MARK), byte(QUOTATION_MARK),
-        many(basic_chars())
-    )
-    .message("While parsing a Basic String")
-});
+pub(crate) fn basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    let (mut input, _) = one_of(QUOTATION_MARK).parse(input)?;
+
+    let mut c = Cow::Borrowed("");
+    if let Some((i, ci)) = ok_error(basic_chars.parse(input))? {
+        input = i;
+        c = ci;
+    }
+    while let Some((i, ci)) = ok_error(basic_chars.parse(input))? {
+        input = i;
+        c.to_mut().push_str(&ci);
+    }
+
+    let (input, _) = cut(one_of(QUOTATION_MARK))
+        .context(Context::Expression("basic string"))
+        .parse(input)?;
+
+    Ok((input, c))
+}
 
 // quotation-mark = %x22            ; "
 pub(crate) const QUOTATION_MARK: u8 = b'"';
 
 // basic-char = basic-unescaped / escaped
-parse!(basic_chars() -> Cow<'a, str>, {
-    choice((
+fn basic_chars(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    alt((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
-        take_while1(is_basic_unescaped).and_then(std::str::from_utf8).map(Cow::Borrowed),
-        escaped().map(|c| Cow::Owned(String::from(c))),
+        take_while1(BASIC_UNESCAPED)
+            .map_res(std::str::from_utf8)
+            .map(Cow::Borrowed),
+        escaped.map(|c| Cow::Owned(String::from(c))),
     ))
-});
-
-// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
-#[inline]
-fn is_basic_unescaped(c: u8) -> bool {
-    is_wschar(c) | matches!(c, 0x21 | 0x23..=0x5B | 0x5D..=0x7E) | is_non_ascii(c)
+    .parse(input)
 }
 
+// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+pub(crate) const BASIC_UNESCAPED: (
+    (u8, u8),
+    u8,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
+
 // escaped = escape escape-seq-char
-parse!(escaped() -> char, {
-    satisfy(|c| c == ESCAPE)
-        .then(|_| parser(move |input| {
-            escape_seq_char().parse_stream(input).into_result()
-        }))
-});
+fn escaped(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>> {
+    preceded(ESCAPE, escape_seq_char).parse(input)
+}
 
 // escape = %x5C                    ; \
-const ESCAPE: u8 = b'\\';
+pub(crate) const ESCAPE: u8 = b'\\';
 
 // escape-seq-char =  %x22         ; "    quotation mark  U+0022
 // escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
@@ -74,243 +104,253 @@ const ESCAPE: u8 = b'\\';
 // escape-seq-char =/ %x74         ; t    tab             U+0009
 // escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
-parse!(escape_seq_char() -> char, {
-    satisfy(is_escape_seq_char)
-        .message("While parsing escape sequence")
-        .then(|c| {
-            parser(move |input| {
-                match c {
-                    b'b'  => Ok(('\u{8}', Commit::Peek(()))),
-                    b'f'  => Ok(('\u{c}', Commit::Peek(()))),
-                    b'n'  => Ok(('\n',    Commit::Peek(()))),
-                    b'r'  => Ok(('\r',    Commit::Peek(()))),
-                    b't'  => Ok(('\t',    Commit::Peek(()))),
-                    b'u'  => hexescape(4).parse_stream(input).into_result(),
-                    b'U'  => hexescape(8).parse_stream(input).into_result(),
-                    b'\\' => Ok(('\\',    Commit::Peek(()))),
-                    b'"'  => Ok(('"',     Commit::Peek(()))),
-                    _ => unreachable!("{:?} filtered out by is_escape_seq_char", c),
-                }
-            })
-        })
-});
-
-#[inline]
-fn is_escape_seq_char(c: u8) -> bool {
-    matches!(
-        c,
-        b'"' | b'\\' | b'b' | b'f' | b'n' | b'r' | b't' | b'u' | b'U'
-    )
+fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>> {
+    dispatch! {any;
+        b'b' => success('\u{8}'),
+        b'f' => success('\u{c}'),
+        b'n' => success('\n'),
+        b'r' => success('\r'),
+        b't' => success('\t'),
+        b'u' => cut(hexescape::<4>).context(Context::Expression("unicode 4-digit hex code")),
+        b'U' => cut(hexescape::<8>).context(Context::Expression("unicode 8-digit hex code")),
+        b'\\' => success('\\'),
+        b'"' => success('"'),
+        _ => {
+            cut(fail::<_, char, _>)
+            .context(Context::Expression("escape sequence"))
+            .context(Context::Expected(ParserValue::CharLiteral('b')))
+            .context(Context::Expected(ParserValue::CharLiteral('f')))
+            .context(Context::Expected(ParserValue::CharLiteral('n')))
+            .context(Context::Expected(ParserValue::CharLiteral('r')))
+            .context(Context::Expected(ParserValue::CharLiteral('t')))
+            .context(Context::Expected(ParserValue::CharLiteral('u')))
+            .context(Context::Expected(ParserValue::CharLiteral('U')))
+            .context(Context::Expected(ParserValue::CharLiteral('\\')))
+            .context(Context::Expected(ParserValue::CharLiteral('"')))
+        }
+    }
+    .parse(input)
 }
 
-parse!(hexescape(n: usize) -> char, {
-    recognize(skip_count_min_max(
-        *n, *n,
-        hex_digit(),
-    ))
+pub(crate) fn hexescape<const N: usize>(
+    input: Input<'_>,
+) -> IResult<Input<'_>, char, ParserError<'_>> {
+    take_while_m_n(0, N, HEXDIG)
+        .verify(|b: &[u8]| b.len() == N)
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
-        .and_then(|s| u32::from_str_radix(s, 16))
-        .and_then(|h| char::from_u32(h).ok_or(CustomError::InvalidHexEscape(h)))
-});
+        .map_opt(|s| u32::from_str_radix(s, 16).ok())
+        .map_res(|h| char::from_u32(h).ok_or(CustomError::OutOfRange))
+        .parse(input)
+}
 
 // ;; Multiline Basic String
 
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
-parse!(ml_basic_string() -> String, {
-    (
-        range(ML_BASIC_STRING_DELIM),
-        (
-            optional(newline()),
-            ml_basic_body(),
-        ).map(|t| t.1),
-        // Deviate from grammar by pulling mll_quotes into here so we can handle the confusion with
-        // it and the closing delim
-        choice((
-            attempt((
-                bytes(b"\"\""), range(ML_BASIC_STRING_DELIM)
-            )).map(|_| Some("\"\"")),
-            attempt((
-                bytes(b"\""), range(ML_BASIC_STRING_DELIM)
-            )).map(|_| Some("\"")),
-            range(ML_BASIC_STRING_DELIM).map(|_| None),
-        )),
-    ).map(|(_, mut b, q)| {
-        if let Some(q) = q {
-            b.push_str(q);
-        }
-        b
-    }).message("While parsing a Multiline Basic String")
-});
+fn ml_basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    delimited(
+        ML_BASIC_STRING_DELIM,
+        preceded(opt(newline), cut(ml_basic_body)),
+        cut(ML_BASIC_STRING_DELIM),
+    )
+    .context(Context::Expression("multiline basic string"))
+    .parse(input)
+}
 
 // ml-basic-string-delim = 3quotation-mark
-const ML_BASIC_STRING_DELIM: &[u8] = b"\"\"\"";
+pub(crate) const ML_BASIC_STRING_DELIM: &[u8] = b"\"\"\"";
 
 // ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
-parse!(ml_basic_body() -> String, {
-    (
-        many(mlb_content()),
-        many(attempt((
-            mlb_quotes(),
-            many1(mlb_content()),
-        ).map(|(q, c): (&str, String)| {
-            let mut total = q.to_owned();
-            total.push_str(&c);
-            total
-        }))),
-        // Deviate: see `ml_basic_string`
-        //optional(mll_quotes()),
-    ).map(|(mut c, qc): (String, String)| {
-        c.push_str(&qc);
-        c
-    })
-});
+fn ml_basic_body(mut input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    let mut c = Cow::Borrowed("");
+    if let Some((i, ci)) = ok_error(mlb_content.parse(input))? {
+        input = i;
+        c = ci;
+    }
+    while let Some((i, ci)) = ok_error(mlb_content.parse(input))? {
+        input = i;
+        c.to_mut().push_str(&ci);
+    }
+
+    while let Some((i, qi)) = ok_error(mlb_quotes(none_of(b'\"').value(())).parse(input))? {
+        if let Some((i, ci)) = ok_error(mlb_content.parse(i))? {
+            input = i;
+            c.to_mut().push_str(qi);
+            c.to_mut().push_str(&ci);
+            while let Some((i, ci)) = ok_error(mlb_content.parse(input))? {
+                input = i;
+                c.to_mut().push_str(&ci);
+            }
+        } else {
+            break;
+        }
+    }
+
+    if let Some((i, qi)) = ok_error(mlb_quotes(tag(ML_BASIC_STRING_DELIM).value(())).parse(input))?
+    {
+        input = i;
+        c.to_mut().push_str(qi);
+    }
+
+    Ok((input, c))
+}
 
 // mlb-content = mlb-char / newline / mlb-escaped-nl
 // mlb-char = mlb-unescaped / escaped
-parse!(mlb_content() -> Cow<'a, str>, {
-    choice((
+fn mlb_content(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    alt((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
-        take_while1(is_mlb_unescaped).and_then(std::str::from_utf8).map(Cow::Borrowed),
-        attempt(escaped().map(|c| Cow::Owned(String::from(c)))),
-        newline().map(|_| Cow::Borrowed("\n")),
-        mlb_escaped_nl().map(|_| Cow::Borrowed("")),
+        take_while1(MLB_UNESCAPED)
+            .map_res(std::str::from_utf8)
+            .map(Cow::Borrowed),
+        // Order changed fromg grammar so `escaped` can more easily `cut` on bad escape sequences
+        mlb_escaped_nl.map(|_| Cow::Borrowed("")),
+        escaped.map(|c| Cow::Owned(String::from(c))),
+        newline.map(|_| Cow::Borrowed("\n")),
     ))
-});
+    .parse(input)
+}
 
 // mlb-quotes = 1*2quotation-mark
-parse!(mlb_quotes() -> &'a str, {
-    choice((
-        attempt(bytes(b"\"\"")),
-        attempt(bytes(b"\"")),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`bytes` out npn-ASCII") }
-    })
-});
+fn mlb_quotes<'i>(
+    mut term: impl nom8::Parser<Input<'i>, (), ParserError<'i>>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, &str, ParserError<'i>> {
+    move |input| {
+        let res = terminated(b"\"\"", peek(term.by_ref()))
+            .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
+            .parse(input);
+
+        match res {
+            Err(nom8::Err::Error(_)) => terminated(b"\"", peek(term.by_ref()))
+                .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
+                .parse(input),
+            res => res,
+        }
+    }
+}
 
 // mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
-#[inline]
-fn is_mlb_unescaped(c: u8) -> bool {
-    is_wschar(c) | matches!(c, 0x21 | 0x23..=0x5B | 0x5D..=0x7E) | is_non_ascii(c)
-}
+pub(crate) const MLB_UNESCAPED: (
+    (u8, u8),
+    u8,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
 // mlb-escaped-nl = escape ws newline *( wschar / newline
 // When the last non-whitespace character on a line is a \,
 // it will be trimmed along with all whitespace
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
-parse!(mlb_escaped_nl() -> (), {
-    skip_many1(attempt((
-        byte(ESCAPE),
-        ws(),
-        ws_newlines(),
-    )))
-});
+fn mlb_escaped_nl(input: Input<'_>) -> IResult<Input<'_>, (), ParserError<'_>> {
+    many1_count((ESCAPE, ws, ws_newlines))
+        .value(())
+        .parse(input)
+}
 
 // ;; Literal String
 
 // literal-string = apostrophe *literal-char apostrophe
-parse!(literal_string() -> &'a str, {
-    between(
-        byte(APOSTROPHE), byte(APOSTROPHE),
-        take_while(is_literal_char)
-    ).and_then(std::str::from_utf8)
-        .message("While parsing a Literal String")
-});
+pub(crate) fn literal_string(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    delimited(APOSTROPHE, cut(take_while(LITERAL_CHAR)), cut(APOSTROPHE))
+        .map_res(std::str::from_utf8)
+        .context(Context::Expression("literal string"))
+        .parse(input)
+}
 
 // apostrophe = %x27 ; ' apostrophe
 pub(crate) const APOSTROPHE: u8 = b'\'';
 
 // literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
-#[inline]
-fn is_literal_char(c: u8) -> bool {
-    matches!(c, 0x09 | 0x20..=0x26 | 0x28..=0x7E) | is_non_ascii(c)
-}
+pub(crate) const LITERAL_CHAR: (
+    u8,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+) = (0x9, 0x20..=0x26, 0x28..=0x7E, NON_ASCII);
 
 // ;; Multiline Literal String
 
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
-parse!(ml_literal_string() -> String, {
-    (
-        range(ML_LITERAL_STRING_DELIM),
-        (
-            optional(newline()),
-            ml_literal_body(),
-        ).map(|t| t.1.replace("\r\n", "\n")),
-        // Deviate from grammar by pulling mll_quotes into here so we can handle the confusion with
-        // it and the closing delim
-        choice((
-            attempt((
-                bytes(b"''"), range(ML_LITERAL_STRING_DELIM)
-            )).map(|_| Some("''")),
-            attempt((
-                bytes(b"'"), range(ML_LITERAL_STRING_DELIM)
-            )).map(|_| Some("'")),
-            range(ML_LITERAL_STRING_DELIM).map(|_| None),
-        ))
-    ).map(|(_, mut b, q)| {
-        if let Some(q) = q {
-            b.push_str(q);
-        }
-        b
-    }).message("While parsing a Multiline Literal String")
-});
-
-// ml-literal-string-delim = 3apostrophe
-const ML_LITERAL_STRING_DELIM: &[u8] = b"'''";
-
-// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
-parse!(ml_literal_body() -> &'a str, {
-    recognize((
-        skip_many(mll_content()),
-        skip_many(attempt((mll_quotes(), skip_many1(mll_content())))),
-        // Deviate: see ml_literal_string
-        //optional(mll_quotes()),
-    )).and_then(std::str::from_utf8)
-});
-
-// mll-content = mll-char / newline
-parse!(mll_content() -> u8, {
-    choice((
-        satisfy(is_mll_char),
-        newline().map(|_| b'\n')
-    ))
-});
-
-// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
-#[inline]
-fn is_mll_char(c: u8) -> bool {
-    matches!(c, 0x09 | 0x20..=0x26 | 0x28..=0x7E) | is_non_ascii(c)
+fn ml_literal_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+    delimited(
+        (ML_LITERAL_STRING_DELIM, opt(newline)),
+        cut(ml_literal_body.map(|t| {
+            if t.contains("\r\n") {
+                Cow::Owned(t.replace("\r\n", "\n"))
+            } else {
+                Cow::Borrowed(t)
+            }
+        })),
+        cut(ML_LITERAL_STRING_DELIM),
+    )
+    .context(Context::Expression("multiline literal string"))
+    .parse(input)
 }
 
+// ml-literal-string-delim = 3apostrophe
+pub(crate) const ML_LITERAL_STRING_DELIM: &[u8] = b"'''";
+
+// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
+fn ml_literal_body(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (
+        many0_count(mll_content),
+        many0_count((
+            mll_quotes(none_of(APOSTROPHE).value(())),
+            many1_count(mll_content),
+        )),
+        opt(mll_quotes(tag(ML_LITERAL_STRING_DELIM).value(()))),
+    )
+        .recognize()
+        .map_res(std::str::from_utf8)
+        .parse(input)
+}
+
+// mll-content = mll-char / newline
+fn mll_content(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+    alt((one_of(MLL_CHAR), newline)).parse(input)
+}
+
+// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
+const MLL_CHAR: (
+    u8,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+    RangeInclusive<u8>,
+) = (0x9, 0x20..=0x26, 0x28..=0x7E, NON_ASCII);
+
 // mll-quotes = 1*2apostrophe
-parse!(mll_quotes() -> &'a str, {
-    choice((
-        attempt(bytes(b"''")),
-        attempt(bytes(b"'")),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`bytes` out npn-ASCII") }
-    })
-});
+fn mll_quotes<'i>(
+    mut term: impl nom8::Parser<Input<'i>, (), ParserError<'i>>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, &str, ParserError<'i>> {
+    move |input| {
+        let res = terminated(b"''", peek(term.by_ref()))
+            .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
+            .parse(input);
+
+        match res {
+            Err(nom8::Err::Error(_)) => terminated(b"'", peek(term.by_ref()))
+                .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
+                .parse(input),
+            res => res,
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    use crate::parser::*;
-    use combine::stream::position::Stream;
-
     #[test]
     fn basic_string() {
         let input =
             r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
-        let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
-        parsed_eq!(
-            parsed,
-            "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}"
-        );
+        let expected = "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}";
+        let parsed = string.parse(input.as_bytes()).finish();
+        assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
     }
 
     #[test]
@@ -328,15 +368,14 @@ Violets are blue"#,
         ];
 
         for &(input, expected) in &cases {
-            dbg!(input);
-            let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
-            parsed_eq!(parsed, expected);
+            let parsed = string.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
 
         let invalid_cases = [r#""""  """#, r#""""  \""""#];
 
         for input in &invalid_cases {
-            let parsed = strings::ml_basic_string().easy_parse(Stream::new(input.as_bytes()));
+            let parsed = string.parse(input.as_bytes()).finish();
             assert!(parsed.is_err());
         }
     }
@@ -357,9 +396,9 @@ The quick brown \
        """"#,
         ];
         for input in &inputs {
-            dbg!(input);
-            let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
-            parsed_eq!(parsed, "The quick brown fox jumps over the lazy dog.");
+            let expected = "The quick brown fox jumps over the lazy dog.";
+            let parsed = string.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
         let empties = [
             r#""""\
@@ -369,9 +408,10 @@ The quick brown \
   \
 """"#,
         ];
-        for empty in &empties {
-            let parsed = strings::string().easy_parse(Stream::new(empty.as_bytes()));
-            parsed_eq!(parsed, "");
+        for input in &empties {
+            let expected = "";
+            let parsed = string.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
     }
 
@@ -385,23 +425,32 @@ The quick brown \
         ];
 
         for input in &inputs {
-            let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
-            parsed_eq!(parsed, &input[1..input.len() - 1]);
+            let expected = &input[1..input.len() - 1];
+            let parsed = string.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
     }
 
     #[test]
     fn ml_literal_string() {
-        let input = r#"'''I [dw]on't need \d{2} apples'''"#;
-        let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
-        parsed_eq!(parsed, &input[3..input.len() - 3]);
+        let inputs = [
+            r#"'''I [dw]on't need \d{2} apples'''"#,
+            r#"''''one_quote''''"#,
+        ];
+        for input in &inputs {
+            let expected = &input[3..input.len() - 3];
+            let parsed = string.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
+        }
+
         let input = r#"'''
 The first newline is
 trimmed in raw strings.
    All other whitespace
    is preserved.
 '''"#;
-        let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
-        parsed_eq!(parsed, &input[4..input.len() - 3]);
+        let expected = &input[4..input.len() - 3];
+        let parsed = string.parse(input.as_bytes()).finish();
+        assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
     }
 }
