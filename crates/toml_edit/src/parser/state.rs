@@ -5,15 +5,22 @@ use crate::table::TableKeyValue;
 use crate::{ArrayOfTables, Document, InternalString, Item, Table};
 
 pub(crate) struct ParseState {
-    pub(crate) document: Document,
-    pub(crate) trailing: String,
-    pub(crate) current_table_position: usize,
-    pub(crate) current_table: Table,
-    pub(crate) current_is_array: bool,
-    pub(crate) current_table_path: Vec<Key>,
+    document: Document,
+    trailing: String,
+    current_table_position: usize,
+    current_table: Table,
+    current_is_array: bool,
+    current_table_path: Vec<Key>,
 }
 
 impl ParseState {
+    pub(crate) fn into_document(mut self) -> Result<Document, CustomError> {
+        self.finalize_table()?;
+        let trailing = self.trailing.as_str().into();
+        self.document.trailing = trailing;
+        Ok(self.document)
+    }
+
     pub(crate) fn on_ws(&mut self, w: &str) {
         self.trailing.push_str(w);
     }

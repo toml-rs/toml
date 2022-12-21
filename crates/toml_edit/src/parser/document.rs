@@ -27,7 +27,7 @@ pub(crate) fn document(s: &[u8]) -> Result<Document, TomlError> {
     // Remove BOM if present
     let s = s.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(s);
 
-    let mut parser = RefCell::new(ParseState::default());
+    let parser = RefCell::new(ParseState::default());
     let input = Stream::new(s);
 
     let parsed = parse_ws(&parser)
@@ -56,13 +56,11 @@ pub(crate) fn document(s: &[u8]) -> Result<Document, TomlError> {
             s,
         )),
         Ok(..) => {
-            parser
-                .get_mut()
-                .finalize_table()
+            let doc = parser
+                .into_inner()
+                .into_document()
                 .map_err(|e| TomlError::custom(e.to_string()))?;
-            let trailing = parser.borrow().trailing.as_str().into();
-            parser.get_mut().document.trailing = trailing;
-            Ok(parser.into_inner().document)
+            Ok(doc)
         }
         Err(e) => Err(TomlError::new(e, s)),
     }
