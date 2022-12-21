@@ -45,3 +45,68 @@ macro_rules! toml_parser (
         }
     );
 );
+
+#[cfg(test)]
+macro_rules! parsed_eq {
+    ($parsed:ident, $expected:expr) => {{
+        assert!($parsed.is_ok(), "{:?}", $parsed.err().unwrap());
+        let (v, rest) = $parsed.unwrap();
+        assert_eq!(v, $expected);
+        assert!(rest.input.is_empty());
+    }};
+}
+
+#[cfg(test)]
+macro_rules! parsed_float_eq {
+    ($input:ident, $expected:expr) => {{
+        let parsed = crate::parser::numbers::float().easy_parse(Stream::new($input.as_bytes()));
+        let (v, rest) = match parsed {
+            Ok(parsed) => parsed,
+            Err(err) => {
+                panic!("Unexpected error for {:?}: {:?}", $input, err);
+            }
+        };
+        if $expected.is_nan() {
+            assert!(v.is_nan());
+        } else if $expected.is_infinite() {
+            assert!(v.is_infinite());
+            assert_eq!($expected.is_sign_positive(), v.is_sign_positive());
+        } else {
+            dbg!($expected);
+            dbg!(v);
+            assert!(($expected - v).abs() < std::f64::EPSILON);
+        }
+        assert!(rest.input.is_empty());
+    }};
+}
+
+#[cfg(test)]
+macro_rules! parsed_value_eq {
+    ($input:expr) => {
+        use combine::EasyParser;
+        let parsed = crate::parser::value::value()
+            .easy_parse(combine::stream::position::Stream::new($input.as_bytes()));
+        let (v, rest) = match parsed {
+            Ok(parsed) => parsed,
+            Err(err) => {
+                panic!("Unexpected error for {:?}: {:?}", $input, err);
+            }
+        };
+        snapbox::assert_eq(v.to_string(), $input);
+        assert!(rest.input.is_empty());
+    };
+}
+
+#[cfg(test)]
+macro_rules! parsed_date_time_eq {
+    ($input:expr, $is:ident) => {{
+        use combine::EasyParser;
+        let parsed = crate::parser::value::value()
+            .easy_parse(combine::stream::position::Stream::new($input.as_bytes()));
+        assert!(parsed.is_ok());
+        let (v, rest) = parsed.unwrap();
+        snapbox::assert_eq(v.to_string(), $input);
+        assert!(rest.input.is_empty());
+        assert!(v.$is());
+    }};
+}

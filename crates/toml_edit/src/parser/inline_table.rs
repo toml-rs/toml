@@ -110,3 +110,29 @@ parse!(keyval() -> (Vec<Key>, TableKeyValue), {
         )
     })
 });
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use combine::stream::position::Stream;
+
+    #[test]
+    fn inline_tables() {
+        let inputs = [
+            r#"{}"#,
+            r#"{   }"#,
+            r#"{a = 1e165}"#,
+            r#"{ hello = "world", a = 1}"#,
+            r#"{ hello.world = "a" }"#,
+        ];
+        for input in inputs {
+            parsed_value_eq!(input);
+        }
+        let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
+        for input in invalid_inputs {
+            let parsed = inline_table().easy_parse(Stream::new(input.as_bytes()));
+            assert!(parsed.is_err());
+        }
+    }
+}

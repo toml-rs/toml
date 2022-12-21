@@ -121,3 +121,114 @@ parser! {
         })
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use snapbox::assert_eq;
+
+    #[test]
+    fn documents() {
+        let documents = [
+            r#"
+# This is a TOML document.
+
+title = "TOML Example"
+
+    [owner]
+    name = "Tom Preston-Werner"
+    dob = 1979-05-27T07:32:00-08:00 # First class dates
+
+    [database]
+    server = "192.168.1.1"
+    ports = [ 8001, 8001, 8002 ]
+    connection_max = 5000
+    enabled = true
+
+    [servers]
+
+    # Indentation (tabs and/or spaces) is allowed but not required
+[servers.alpha]
+    ip = "10.0.0.1"
+    dc = "eqdc10"
+
+    [servers.beta]
+    ip = "10.0.0.2"
+    dc = "eqdc10"
+
+    [clients]
+    data = [ ["gamma", "delta"], [1, 2] ]
+
+    # Line breaks are OK when inside arrays
+hosts = [
+    "alpha",
+    "omega"
+]
+
+   'some.wierd .stuff'   =  """
+                         like
+                         that
+                      #   """ # this broke my sintax highlighting
+   " also. like " = '''
+that
+'''
+   double = 2e39 # this number looks familiar
+# trailing comment"#,
+            r#""#,
+            r#"  "#,
+            r#" hello = 'darkness' # my old friend
+"#,
+            r#"[parent . child]
+key = "value"
+"#,
+            r#"hello.world = "a"
+"#,
+            r#"foo = 1979-05-27 # Comment
+"#,
+        ];
+        for input in documents {
+            let doc = document(input.as_bytes());
+            let doc = match doc {
+                Ok(doc) => doc,
+                Err(err) => {
+                    panic!(
+                        "Parse error: {}\nFailed to parse:\n```\n{}\n```",
+                        err, input
+                    )
+                }
+            };
+
+            dbg!(doc.to_string());
+            dbg!(input);
+            assert_eq(input, doc.to_string());
+        }
+
+        let parse_only = ["\u{FEFF}
+[package]
+name = \"foo\"
+version = \"0.0.1\"
+authors = []
+"];
+        for input in parse_only {
+            let doc = document(input.as_bytes());
+            match doc {
+                Ok(_) => (),
+                Err(err) => {
+                    panic!(
+                        "Parse error: {}\nFailed to parse:\n```\n{}\n```",
+                        err, input
+                    )
+                }
+            }
+        }
+
+        let invalid_inputs = [r#" hello = 'darkness' # my old friend
+$"#];
+        for input in invalid_inputs {
+            let doc = document(input.as_bytes());
+
+            assert!(doc.is_err());
+        }
+    }
+}

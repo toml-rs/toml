@@ -208,3 +208,48 @@ parse!(unsigned_digits(count: usize) -> u32, {
         s.parse::<u32>()
     })
 });
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn offset_date_time() {
+        let inputs = [
+            "1979-05-27T07:32:00Z",
+            "1979-05-27T00:32:00-07:00",
+            "1979-05-27T00:32:00.999999-07:00",
+        ];
+        for input in inputs {
+            parsed_date_time_eq!(input, is_datetime);
+        }
+    }
+
+    #[test]
+    fn local_date_time() {
+        let inputs = ["1979-05-27T07:32:00", "1979-05-27T00:32:00.999999"];
+        for input in inputs {
+            parsed_date_time_eq!(input, is_datetime);
+        }
+    }
+
+    #[test]
+    fn local_date() {
+        let inputs = ["1979-05-27", "2017-07-20"];
+        for input in inputs {
+            parsed_date_time_eq!(input, is_datetime);
+        }
+    }
+
+    #[test]
+    fn local_time() {
+        let inputs = ["07:32:00", "00:32:00.999999"];
+        for input in inputs {
+            parsed_date_time_eq!(input, is_datetime);
+        }
+    }
+
+    #[test]
+    fn time_fraction_truncated() {
+        let input = "1987-07-05T17:45:00.123456789012345Z";
+        parsed_date_time_eq!(input, is_datetime);
+    }
+}
