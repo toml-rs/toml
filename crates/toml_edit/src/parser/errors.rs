@@ -1,10 +1,12 @@
-use crate::Key;
+use std::error::Error as StdError;
+use std::fmt::{Display, Formatter, Result};
+
 use combine::easy::Errors as ParseError;
 use combine::stream::easy::Error;
 use combine::stream::position::SourcePosition;
 use itertools::Itertools;
-use std::error::Error as StdError;
-use std::fmt::{Display, Formatter, Result};
+
+use crate::Key;
 
 /// Type representing a TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]

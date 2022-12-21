@@ -1,3 +1,8 @@
+use combine::parser::byte::byte;
+use combine::stream::RangeStream;
+use combine::*;
+use indexmap::map::Entry;
+
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
@@ -5,10 +10,6 @@ use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
 use crate::{InlineTable, InternalString, Item, Value};
-use combine::parser::byte::byte;
-use combine::stream::RangeStream;
-use combine::*;
-use indexmap::map::Entry;
 
 // ;; Inline Table
 

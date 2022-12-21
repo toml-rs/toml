@@ -1,12 +1,13 @@
+use combine::parser::byte::byte;
+use combine::parser::range::{recognize_with_value, take_while1};
+use combine::stream::RangeStream;
+use combine::*;
+
 use crate::key::Key;
 use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::{from_utf8_unchecked, ws};
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
-use combine::parser::byte::byte;
-use combine::parser::range::{recognize_with_value, take_while1};
-use combine::stream::RangeStream;
-use combine::*;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )

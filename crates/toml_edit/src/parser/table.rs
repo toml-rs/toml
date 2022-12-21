@@ -1,11 +1,13 @@
-use crate::parser::key::key;
-use crate::parser::trivia::line_trailing;
-use crate::parser::ParseState;
+use std::cell::RefCell;
+
 use combine::parser::byte::byte;
 use combine::parser::range::range;
 use combine::stream::RangeStream;
 use combine::*;
-use std::cell::RefCell;
+
+use crate::parser::key::key;
+use crate::parser::trivia::line_trailing;
+use crate::parser::ParseState;
 
 // std-table-open  = %x5B ws     ; [ Left square bracket
 pub(crate) const STD_TABLE_OPEN: u8 = b'[';

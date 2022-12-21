@@ -1,14 +1,16 @@
-use crate::parser::errors::CustomError;
-use crate::parser::trivia::{
-    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
-};
+use std::borrow::Cow;
+use std::char;
+
 use combine::error::Commit;
 use combine::parser::byte::{byte, bytes, hex_digit};
 use combine::parser::range::{range, recognize, take_while, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
-use std::borrow::Cow;
-use std::char;
+
+use crate::parser::errors::CustomError;
+use crate::parser::trivia::{
+    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
+};
 
 // ;; String
 

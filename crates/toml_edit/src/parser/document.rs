@@ -1,3 +1,11 @@
+use std::cell::RefCell;
+
+use combine::parser::byte::byte;
+use combine::stream::position::{IndexPositioner, Positioner, Stream};
+use combine::stream::RangeStream;
+use combine::Parser;
+use combine::*;
+
 use crate::document::Document;
 use crate::key::Key;
 use crate::parser::inline_table::KEYVAL_SEP;
@@ -8,12 +16,6 @@ use crate::parser::value::value;
 use crate::parser::{ParseState, TomlError};
 use crate::table::TableKeyValue;
 use crate::Item;
-use combine::parser::byte::byte;
-use combine::stream::position::{IndexPositioner, Positioner, Stream};
-use combine::stream::RangeStream;
-use combine::Parser;
-use combine::*;
-use std::cell::RefCell;
 
 // ;; TOML
 

@@ -1,8 +1,9 @@
-use crate::parser::trivia::from_utf8_unchecked;
 use combine::parser::byte::{byte, bytes, digit, hex_digit, oct_digit};
 use combine::parser::range::{range, recognize};
 use combine::stream::RangeStream;
 use combine::*;
+
+use crate::parser::trivia::from_utf8_unchecked;
 
 // ;; Boolean
 

@@ -1,10 +1,11 @@
-use crate::parser::trivia::ws_comment_newline;
-use crate::parser::value::value;
-use crate::{Array, Value};
 use combine::parser::byte::byte;
 use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
+
+use crate::parser::trivia::ws_comment_newline;
+use crate::parser::value::value;
+use crate::{Array, Value};
 
 // ;; Array
 

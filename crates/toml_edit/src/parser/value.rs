@@ -1,3 +1,7 @@
+use combine::parser::range::recognize_with_value;
+use combine::stream::RangeStream;
+use combine::*;
+
 use crate::parser::array::array;
 use crate::parser::datetime::date_time;
 use crate::parser::inline_table::inline_table;
@@ -7,9 +11,6 @@ use crate::parser::trivia::from_utf8_unchecked;
 use crate::repr::{Formatted, Repr};
 use crate::value as v;
 use crate::Value;
-use combine::parser::range::recognize_with_value;
-use combine::stream::RangeStream;
-use combine::*;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
 parse!(value() -> v::Value, {
