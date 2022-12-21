@@ -1,7 +1,6 @@
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
-use crate::parser::table::extend_wrong_type;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
@@ -62,7 +61,7 @@ fn descend_path<'a>(
                 table = sweet_child_of_mine;
             }
             ref v => {
-                return Err(extend_wrong_type(path, i, v.type_name()));
+                return Err(CustomError::extend_wrong_type(path, i, v.type_name()));
             }
         }
     }

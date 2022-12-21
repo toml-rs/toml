@@ -266,6 +266,24 @@ pub(crate) enum CustomError {
     OutOfRange,
 }
 
+impl CustomError {
+    pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
+        assert!(i < path.len());
+        Self::DuplicateKey {
+            key: path[i].to_repr().as_ref().as_raw().into(),
+            table: Some(path[..i].to_vec()),
+        }
+    }
+
+    pub(crate) fn extend_wrong_type(path: &[Key], i: usize, actual: &'static str) -> Self {
+        assert!(i < path.len());
+        Self::DottedKeyExtendWrongType {
+            key: path[..=i].to_vec(),
+            actual,
+        }
+    }
+}
+
 impl StdError for CustomError {
     fn description(&self) -> &'static str {
         "TOML parse error"

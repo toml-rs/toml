@@ -1,5 +1,3 @@
-use crate::key::Key;
-use crate::parser::errors::CustomError;
 use crate::parser::key::key;
 use crate::parser::trivia::line_trailing;
 use crate::parser::ParseState;
@@ -59,21 +57,5 @@ parser! {
         array_table(parser)
             .or(std_table(parser))
             .message("While parsing a Table Header")
-    }
-}
-
-pub(crate) fn duplicate_key(path: &[Key], i: usize) -> CustomError {
-    assert!(i < path.len());
-    CustomError::DuplicateKey {
-        key: path[i].to_repr().as_ref().as_raw().into(),
-        table: Some(path[..i].to_vec()),
-    }
-}
-
-pub(crate) fn extend_wrong_type(path: &[Key], i: usize, actual: &'static str) -> CustomError {
-    assert!(i < path.len());
-    CustomError::DottedKeyExtendWrongType {
-        key: path[..=i].to_vec(),
-        actual,
     }
 }

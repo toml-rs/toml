@@ -1,7 +1,5 @@
-use super::table::duplicate_key;
 use crate::key::Key;
 use crate::parser::errors::CustomError;
-use crate::parser::table::extend_wrong_type;
 use crate::repr::Decor;
 use crate::table::TableKeyValue;
 use crate::{ArrayOfTables, Document, InternalString, Item, Table};
@@ -88,7 +86,7 @@ impl ParseState {
             .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
         entry
             .as_array_of_tables()
-            .ok_or_else(|| duplicate_key(&path, path.len() - 1))?;
+            .ok_or_else(|| CustomError::duplicate_key(&path, path.len() - 1))?;
 
         self.current_table_position += 1;
         self.current_table.decor = decor;
@@ -114,7 +112,7 @@ impl ParseState {
                 Item::Table(t) if t.implicit => {
                     self.current_table = t;
                 }
-                _ => return Err(duplicate_key(&path, path.len() - 1)),
+                _ => return Err(CustomError::duplicate_key(&path, path.len() - 1)),
             }
         }
 
@@ -144,7 +142,7 @@ impl ParseState {
                 .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
             let array = entry
                 .as_array_of_tables_mut()
-                .ok_or_else(|| duplicate_key(&path, path.len() - 1))?;
+                .ok_or_else(|| CustomError::duplicate_key(&path, path.len() - 1))?;
             array.push(table);
         } else {
             let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
@@ -158,7 +156,7 @@ impl ParseState {
                         Item::Table(ref mut t) if t.implicit => {
                             std::mem::swap(t, &mut table);
                         }
-                        _ => return Err(duplicate_key(&path, path.len() - 1)),
+                        _ => return Err(CustomError::duplicate_key(&path, path.len() - 1)),
                     }
                 }
                 crate::Entry::Vacant(entry) => {
@@ -186,7 +184,7 @@ impl ParseState {
             });
             match *entry {
                 Item::Value(ref v) => {
-                    return Err(extend_wrong_type(path, i, v.type_name()));
+                    return Err(CustomError::extend_wrong_type(path, i, v.type_name()));
                 }
                 Item::ArrayOfTables(ref mut array) => {
                     debug_assert!(!array.is_empty());
