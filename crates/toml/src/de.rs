@@ -2016,6 +2016,11 @@ impl Error {
         self.inner.line.map(|line| (line, self.inner.col))
     }
 
+    /// Produces the cause of the error wihout additional line and colum information
+    pub fn message(&self) -> String {
+        self.inner.message.to_owned()
+    }
+
     fn from_kind(at: Option<usize>, kind: ErrorKind) -> Error {
         Error {
             inner: Box::new(ErrorInner {
