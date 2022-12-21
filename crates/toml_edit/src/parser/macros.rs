@@ -27,7 +27,7 @@ macro_rules! parse (
 macro_rules! toml_parser (
     ($name:ident, $argh:ident, $closure:expr) => (
         parser!{
-            fn $name['a, 'b, I]($argh: &'b RefCell<TomlParser>)(I) -> ()
+            fn $name['a, 'b, I]($argh: &'b RefCell<ParseState>)(I) -> ()
             where
                 [I: RangeStream<
                  Range = &'a [u8],
