@@ -1,3 +1,7 @@
+use combine::parser::range::recognize_with_value;
+use combine::stream::RangeStream;
+use combine::*;
+
 use crate::parser::array::array;
 use crate::parser::datetime::date_time;
 use crate::parser::inline_table::inline_table;
@@ -7,9 +11,6 @@ use crate::parser::trivia::from_utf8_unchecked;
 use crate::repr::{Formatted, Repr};
 use crate::value as v;
 use crate::Value;
-use combine::parser::range::recognize_with_value;
-use combine::stream::RangeStream;
-use combine::*;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
 parse!(value() -> v::Value, {
@@ -83,4 +84,31 @@ fn apply_raw(mut val: Value, raw: &[u8]) -> Result<Value, std::str::Utf8Error> {
     };
     val.decorate("", "");
     Ok(val)
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn values() {
+        let inputs = [
+            "1979-05-27T00:32:00.999999",
+            "-239",
+            "1e200",
+            "9_224_617.445_991_228_313",
+            r#"'''I [dw]on't need \d{2} apples'''"#,
+            r#"'''
+The first newline is
+trimmed in raw strings.
+   All other whitespace
+   is preserved.
+'''"#,
+            r#""Jos\u00E9\n""#,
+            r#""\\\"\b/\f\n\r\t\u00E9\U000A0000""#,
+            r#"{ hello = "world", a = 1}"#,
+            r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
+        ];
+        for input in inputs {
+            parsed_value_eq!(input);
+        }
+    }
 }

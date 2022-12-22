@@ -1,14 +1,16 @@
-use crate::parser::errors::CustomError;
-use crate::parser::trivia::{
-    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
-};
+use std::borrow::Cow;
+use std::char;
+
 use combine::error::Commit;
 use combine::parser::byte::{byte, bytes, hex_digit};
 use combine::parser::range::{range, recognize, take_while, take_while1};
 use combine::stream::RangeStream;
 use combine::*;
-use std::borrow::Cow;
-use std::char;
+
+use crate::parser::errors::CustomError;
+use crate::parser::trivia::{
+    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
+};
 
 // ;; String
 
@@ -292,3 +294,114 @@ parse!(mll_quotes() -> &'a str, {
         unsafe { from_utf8_unchecked(b, "`bytes` out npn-ASCII") }
     })
 });
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use crate::parser::*;
+    use combine::stream::position::Stream;
+
+    #[test]
+    fn basic_string() {
+        let input =
+            r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
+        let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
+        parsed_eq!(
+            parsed,
+            "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}"
+        );
+    }
+
+    #[test]
+    fn ml_basic_string() {
+        let cases = [
+            (
+                r#""""
+Roses are red
+Violets are blue""""#,
+                r#"Roses are red
+Violets are blue"#,
+            ),
+            (r#"""" \""" """"#, " \"\"\" "),
+            (r#"""" \\""""#, " \\"),
+        ];
+
+        for &(input, expected) in &cases {
+            dbg!(input);
+            let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
+            parsed_eq!(parsed, expected);
+        }
+
+        let invalid_cases = [r#""""  """#, r#""""  \""""#];
+
+        for input in &invalid_cases {
+            let parsed = strings::ml_basic_string().easy_parse(Stream::new(input.as_bytes()));
+            assert!(parsed.is_err());
+        }
+    }
+
+    #[test]
+    fn ml_basic_string_escape_ws() {
+        let inputs = [
+            r#""""
+The quick brown \
+
+
+  fox jumps over \
+    the lazy dog.""""#,
+            r#""""\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """"#,
+        ];
+        for input in &inputs {
+            dbg!(input);
+            let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
+            parsed_eq!(parsed, "The quick brown fox jumps over the lazy dog.");
+        }
+        let empties = [
+            r#""""\
+       """"#,
+            r#""""
+\
+  \
+""""#,
+        ];
+        for empty in &empties {
+            let parsed = strings::string().easy_parse(Stream::new(empty.as_bytes()));
+            parsed_eq!(parsed, "");
+        }
+    }
+
+    #[test]
+    fn literal_string() {
+        let inputs = [
+            r#"'C:\Users\nodejs\templates'"#,
+            r#"'\\ServerX\admin$\system32\'"#,
+            r#"'Tom "Dubs" Preston-Werner'"#,
+            r#"'<\i\c*\s*>'"#,
+        ];
+
+        for input in &inputs {
+            let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
+            parsed_eq!(parsed, &input[1..input.len() - 1]);
+        }
+    }
+
+    #[test]
+    fn ml_literal_string() {
+        let input = r#"'''I [dw]on't need \d{2} apples'''"#;
+        let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
+        parsed_eq!(parsed, &input[3..input.len() - 3]);
+        let input = r#"'''
+The first newline is
+trimmed in raw strings.
+   All other whitespace
+   is preserved.
+'''"#;
+        let parsed = strings::string().easy_parse(Stream::new(input.as_bytes()));
+        parsed_eq!(parsed, &input[4..input.len() - 3]);
+    }
+}

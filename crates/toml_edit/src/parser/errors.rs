@@ -1,10 +1,12 @@
-use crate::Key;
+use std::error::Error as StdError;
+use std::fmt::{Display, Formatter, Result};
+
 use combine::easy::Errors as ParseError;
 use combine::stream::easy::Error;
 use combine::stream::position::SourcePosition;
 use itertools::Itertools;
-use std::error::Error as StdError;
-use std::fmt::{Display, Formatter, Result};
+
+use crate::Key;
 
 /// Type representing a TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -264,6 +266,24 @@ pub(crate) enum CustomError {
     InvalidHexEscape(u32),
     UnparsedLine,
     OutOfRange,
+}
+
+impl CustomError {
+    pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
+        assert!(i < path.len());
+        Self::DuplicateKey {
+            key: path[i].to_repr().as_ref().as_raw().into(),
+            table: Some(path[..i].to_vec()),
+        }
+    }
+
+    pub(crate) fn extend_wrong_type(path: &[Key], i: usize, actual: &'static str) -> Self {
+        assert!(i < path.len());
+        Self::DottedKeyExtendWrongType {
+            key: path[..=i].to_vec(),
+            actual,
+        }
+    }
 }
 
 impl StdError for CustomError {

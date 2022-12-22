@@ -1,12 +1,13 @@
+use combine::parser::byte::byte;
+use combine::parser::range::{recognize_with_value, take_while1};
+use combine::stream::RangeStream;
+use combine::*;
+
 use crate::key::Key;
 use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::{from_utf8_unchecked, ws};
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
-use combine::parser::byte::byte;
-use combine::parser::range::{recognize_with_value, take_while1};
-use combine::stream::RangeStream;
-use combine::*;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
@@ -54,3 +55,28 @@ pub(crate) fn is_unquoted_char(c: u8) -> bool {
 
 // dot-sep   = ws %x2E ws  ; . Period
 const DOT_SEP: u8 = b'.';
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use combine::stream::position::Stream;
+    use snapbox::assert_eq;
+
+    #[test]
+    fn keys() {
+        let cases = [
+            ("a", "a"),
+            (r#""hello\n ""#, "hello\n "),
+            (r#"'hello\n '"#, "hello\\n "),
+        ];
+
+        for (input, expected) in cases {
+            let parsed = simple_key().easy_parse(Stream::new(input.as_bytes()));
+            assert!(parsed.is_ok());
+            let ((.., k), rest) = parsed.unwrap();
+            assert_eq(k.as_str(), expected);
+            assert_eq!(rest.input.len(), 0);
+        }
+    }
+}

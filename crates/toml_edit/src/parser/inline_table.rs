@@ -1,15 +1,15 @@
-use crate::key::Key;
-use crate::parser::errors::CustomError;
-use crate::parser::key::key;
-use crate::parser::table::extend_wrong_type;
-use crate::parser::trivia::ws;
-use crate::parser::value::value;
-use crate::table::TableKeyValue;
-use crate::{InlineTable, InternalString, Item, Value};
 use combine::parser::byte::byte;
 use combine::stream::RangeStream;
 use combine::*;
 use indexmap::map::Entry;
+
+use crate::key::Key;
+use crate::parser::errors::CustomError;
+use crate::parser::key::key;
+use crate::parser::trivia::ws;
+use crate::parser::value::value;
+use crate::table::TableKeyValue;
+use crate::{InlineTable, InternalString, Item, Value};
 
 // ;; Inline Table
 
@@ -62,7 +62,7 @@ fn descend_path<'a>(
                 table = sweet_child_of_mine;
             }
             ref v => {
-                return Err(extend_wrong_type(path, i, v.type_name()));
+                return Err(CustomError::extend_wrong_type(path, i, v.type_name()));
             }
         }
     }
@@ -110,3 +110,29 @@ parse!(keyval() -> (Vec<Key>, TableKeyValue), {
         )
     })
 });
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use combine::stream::position::Stream;
+
+    #[test]
+    fn inline_tables() {
+        let inputs = [
+            r#"{}"#,
+            r#"{   }"#,
+            r#"{a = 1e165}"#,
+            r#"{ hello = "world", a = 1}"#,
+            r#"{ hello.world = "a" }"#,
+        ];
+        for input in inputs {
+            parsed_value_eq!(input);
+        }
+        let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
+        for input in invalid_inputs {
+            let parsed = inline_table().easy_parse(Stream::new(input.as_bytes()));
+            assert!(parsed.is_err());
+        }
+    }
+}

@@ -1,10 +1,11 @@
-use crate::parser::trivia::ws_comment_newline;
-use crate::parser::value::value;
-use crate::{Array, Value};
 use combine::parser::byte::byte;
 use combine::parser::range::recognize_with_value;
 use combine::stream::RangeStream;
 use combine::*;
+
+use crate::parser::trivia::ws_comment_newline;
+use crate::parser::value::value;
+use crate::{Array, Value};
 
 // ;; Array
 
@@ -55,3 +56,58 @@ parse!(array_value() -> Value, {
         Ok(v)
     })
 });
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use combine::stream::position::Stream;
+
+    #[test]
+    fn arrays() {
+        let inputs = [
+            r#"[]"#,
+            r#"[   ]"#,
+            r#"[
+  1, 2, 3
+]"#,
+            r#"[
+  1,
+  2, # this is ok
+]"#,
+            r#"[# comment
+# comment2
+
+
+   ]"#,
+            r#"[# comment
+# comment2
+      1
+
+#sd
+,
+# comment3
+
+   ]"#,
+            r#"[1]"#,
+            r#"[1,]"#,
+            r#"[ "all", 'strings', """are the same""", '''type''']"#,
+            r#"[ 100, -2,]"#,
+            r#"[1, 2, 3]"#,
+            r#"[1.1, 2.1, 3.1]"#,
+            r#"["a", "b", "c"]"#,
+            r#"[ [ 1, 2 ], [3, 4, 5] ]"#,
+            r#"[ [ 1, 2 ], ["a", "b", "c"] ]"#,
+            r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
+        ];
+        for input in inputs {
+            parsed_value_eq!(input);
+        }
+
+        let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
+        for input in invalid_inputs {
+            let parsed = array().easy_parse(Stream::new(input.as_bytes()));
+            assert!(parsed.is_err());
+        }
+    }
+}

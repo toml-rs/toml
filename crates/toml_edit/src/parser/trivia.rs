@@ -122,3 +122,43 @@ parse!(line_trailing() -> &'a [u8], {
         optional(comment()),
     )).skip(line_ending())
 });
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use crate::parser::*;
+    use combine::stream::position::Stream;
+    use snapbox::assert_eq;
+
+    #[test]
+    fn trivia() {
+        let inputs = [
+            "",
+            r#" "#,
+            r#"
+"#,
+            r#"
+# comment
+
+# comment2
+
+
+"#,
+            r#"
+        "#,
+            r#"# comment
+# comment2
+
+
+   "#,
+        ];
+        for input in inputs {
+            let parsed = trivia::ws_comment_newline().easy_parse(Stream::new(input.as_bytes()));
+            assert!(parsed.is_ok());
+            let (t, rest) = parsed.unwrap();
+            assert!(rest.input.is_empty());
+            assert_eq(t, input.as_bytes());
+        }
+    }
+}
