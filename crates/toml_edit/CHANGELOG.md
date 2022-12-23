@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.16.0] - 2022-12-23
+
 The parser was re-implemented and this was considered high-risk enough to treat as a breaking release
 - Significantly faster to build
 - Faster to parse, especially on files with few fields per table
@@ -353,7 +355,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/toml-rs/toml_edit/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/toml-rs/toml_edit/compare/v0.14.4...v0.15.0
 [0.14.4]: https://github.com/toml-rs/toml_edit/compare/v0.14.3...v0.14.4
 [0.14.3]: https://github.com/toml-rs/toml_edit/compare/v0.14.2...v0.14.3
