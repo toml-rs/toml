@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+The parser was re-implemented and this was considered high-risk enough to treat as a breaking release
+- Significantly faster to build
+- Faster to parse, especially on files with few fields per table
+- Error messages are different, some are better, some are worse
+
 ## [0.15.0] - 2022-10-21
 
 ### Breaking Changes
