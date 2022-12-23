@@ -2,5 +2,5 @@ TOML parse error at line 1, column 7
   |
 1 | value=ZZZ
   |       ^
-Unexpected `Z`
-Expected quoted string
+Invalid string
+Expected `"`, `'`

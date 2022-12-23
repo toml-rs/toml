@@ -1,11 +1,13 @@
-use combine::parser::range::recognize_with_value;
-use combine::stream::RangeStream;
-use combine::*;
+use nom8::branch::alt;
+use nom8::bytes::any;
+use nom8::combinator::fail;
+use nom8::combinator::peek;
 
 use crate::parser::array::array;
 use crate::parser::datetime::date_time;
 use crate::parser::inline_table::inline_table;
 use crate::parser::numbers::{float, integer};
+use crate::parser::prelude::*;
 use crate::parser::strings::string;
 use crate::parser::trivia::from_utf8_unchecked;
 use crate::repr::{Formatted, Repr};
@@ -13,50 +15,75 @@ use crate::value as v;
 use crate::Value;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
-parse!(value() -> v::Value, {
-    recognize_with_value(look_ahead(any()).then(|e| {
-        dispatch!(e;
+pub(crate) fn value(input: Input<'_>) -> IResult<Input<'_>, v::Value, ParserError<'_>> {
+    dispatch!{peek(any);
             crate::parser::strings::QUOTATION_MARK |
-            crate::parser::strings::APOSTROPHE => string().map(|s| {
+            crate::parser::strings::APOSTROPHE => string.map(|s| {
                 v::Value::String(Formatted::new(
-                    s,
+                    s.into_owned()
                 ))
             }),
-            crate::parser::array::ARRAY_OPEN => array().map(v::Value::Array),
-            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table().map(v::Value::InlineTable),
+            crate::parser::array::ARRAY_OPEN => array.map(v::Value::Array),
+            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table.map(v::Value::InlineTable),
             // Date/number starts
-            b'+' | b'-' | b'0'..=b'9' |
-            // Report as if they were numbers because its most likely a typo
-            b'.' | b'_' => {
+            b'+' | b'-' | b'0'..=b'9' => {
                 // Uncommon enough not to be worth optimizing at this time
-                choice((
-                    date_time()
+                alt((
+                    date_time
                         .map(v::Value::from),
-                    float()
+                    float
                         .map(v::Value::from),
-                    integer()
+                    integer
                         .map(v::Value::from),
                 ))
             },
+            // Report as if they were numbers because its most likely a typo
+            b'_' => {
+                    integer
+                        .map(v::Value::from)
+                .context(Context::Expected(ParserValue::Description("leading digit")))
+            },
+            // Report as if they were numbers because its most likely a typo
+            b'.' =>  {
+                    float
+                        .map(v::Value::from)
+                .context(Context::Expected(ParserValue::Description("leading digit")))
+            },
             b't' => {
-                crate::parser::numbers::true_().map(v::Value::from).expected("quoted string")
+                crate::parser::numbers::true_.map(v::Value::from)
+                    .context(Context::Expression("string"))
+                    .context(Context::Expected(ParserValue::CharLiteral('"')))
+                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             b'f' => {
-                crate::parser::numbers::false_().map(v::Value::from).expected("quoted string")
+                crate::parser::numbers::false_.map(v::Value::from)
+                    .context(Context::Expression("string"))
+                    .context(Context::Expected(ParserValue::CharLiteral('"')))
+                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             b'i' => {
-                crate::parser::numbers::inf().map(v::Value::from).expected("quoted string")
+                crate::parser::numbers::inf.map(v::Value::from)
+                    .context(Context::Expression("string"))
+                    .context(Context::Expected(ParserValue::CharLiteral('"')))
+                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             b'n' => {
-                crate::parser::numbers::nan().map(v::Value::from).expected("quoted string")
+                crate::parser::numbers::nan.map(v::Value::from)
+                    .context(Context::Expression("string"))
+                    .context(Context::Expected(ParserValue::CharLiteral('"')))
+                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             _ => {
-                // Pick something random to fail, we'll override `expected` anyways
-                crate::parser::numbers::nan().map(v::Value::from).expected("quoted string")
+                fail
+                    .context(Context::Expression("string"))
+                    .context(Context::Expected(ParserValue::CharLiteral('"')))
+                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
-        )
-    })).and_then(|(raw, value)| apply_raw(value, raw))
-});
+    }
+        .with_recognized()
+        .map_res(|(value, raw)| apply_raw(value, raw))
+        .parse(input)
+}
 
 fn apply_raw(mut val: Value, raw: &[u8]) -> Result<Value, std::str::Utf8Error> {
     match val {
@@ -88,6 +115,8 @@ fn apply_raw(mut val: Value, raw: &[u8]) -> Result<Value, std::str::Utf8Error> {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+
     #[test]
     fn values() {
         let inputs = [
@@ -108,7 +137,8 @@ trimmed in raw strings.
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
-            parsed_value_eq!(input);
+            let parsed = value.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
     }
 }

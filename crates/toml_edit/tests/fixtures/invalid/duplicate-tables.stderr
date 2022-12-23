@@ -2,6 +2,5 @@ TOML parse error at line 2, column 1
   |
 2 | [a]
   | ^
+Invalid table header
 Duplicate key `a` in document root
-
-While parsing a Table Header

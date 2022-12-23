@@ -2,7 +2,5 @@ TOML parse error at line 1, column 11
   |
 1 | bad = 123_
   |           ^
-Unexpected `
-`
+Invalid integer
 Expected digit
-While parsing an Integer

@@ -1,206 +1,269 @@
-use combine::parser::byte::{byte, bytes, digit, hex_digit, oct_digit};
-use combine::parser::range::{range, recognize};
-use combine::stream::RangeStream;
-use combine::*;
+use std::ops::RangeInclusive;
 
+use nom8::branch::alt;
+use nom8::bytes::any;
+use nom8::bytes::one_of;
+use nom8::bytes::tag;
+use nom8::combinator::cut;
+use nom8::combinator::opt;
+use nom8::combinator::peek;
+use nom8::multi::many0_count;
+use nom8::sequence::preceded;
+
+use crate::parser::prelude::*;
 use crate::parser::trivia::from_utf8_unchecked;
 
 // ;; Boolean
 
 // boolean = true / false
-pub(crate) const TRUE: &[u8] = b"true";
-pub(crate) const FALSE: &[u8] = b"false";
-parse!(boolean() -> bool, {
-    choice((
-        (byte(TRUE[0]), range(&TRUE[1..]),),
-        (byte(FALSE[0]), range(&FALSE[1..]),),
-    )).map(|p| p.0 == b't')
-});
-parse!(true_() -> bool, {
-    range(crate::parser::numbers::TRUE).map(|_| true)
-});
-parse!(false_() -> bool, {
-    range(crate::parser::numbers::FALSE).map(|_| false)
-});
+#[allow(dead_code)] // directly define in `fn value`
+pub(crate) fn boolean(input: Input<'_>) -> IResult<Input<'_>, bool, ParserError<'_>> {
+    alt((true_, false_)).parse(input)
+}
+
+pub(crate) fn true_(input: Input<'_>) -> IResult<Input<'_>, bool, ParserError<'_>> {
+    (peek(TRUE[0]), cut(TRUE)).value(true).parse(input)
+}
+const TRUE: &[u8] = b"true";
+
+pub(crate) fn false_(input: Input<'_>) -> IResult<Input<'_>, bool, ParserError<'_>> {
+    (peek(FALSE[0]), cut(FALSE)).value(false).parse(input)
+}
+const FALSE: &[u8] = b"false";
 
 // ;; Integer
 
 // integer = dec-int / hex-int / oct-int / bin-int
-parse!(integer() -> i64, {
-    choice!(
-        attempt(hex_int()),
-        attempt(oct_int()),
-        attempt(bin_int()),
-        dec_int()
-            .and_then(|s| s.replace('_', "").parse())
-            .message("While parsing an Integer")
-    )
-});
+pub(crate) fn integer(input: Input<'_>) -> IResult<Input<'_>, i64, ParserError<'_>> {
+    dispatch! {peek(opt((any, any)));
+        Some((b'0', b'x')) => hex_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 16)),
+        Some((b'0', b'o')) => oct_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 8)),
+        Some((b'0', b'b')) => bin_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 2)),
+        _ => dec_int.map_res(|s| s.replace('_', "").parse()),
+    }
+    .parse(input)
+}
 
 // dec-int = [ minus / plus ] unsigned-dec-int
 // unsigned-dec-int = DIGIT / digit1-9 1*( DIGIT / underscore DIGIT )
-parse!(dec_int() -> &'a str, {
-    recognize((
-        optional(choice([byte(b'-'), byte(b'+')])),
-        choice((
-            byte(b'0'),
+pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (
+        opt(one_of((b'+', b'-'))),
+        alt((
             (
-                satisfy(|c| (b'1'..=b'9').contains(&c)),
-                skip_many((
-                    optional(byte(b'_')),
-                    skip_many1(digit()),
-                )),
-            ).map(|t| t.0),
+                one_of(DIGIT1_9),
+                many0_count(alt((
+                    digit.value(()),
+                    (
+                        one_of(b'_'),
+                        cut(digit).context(Context::Expected(ParserValue::Description("digit"))),
+                    )
+                        .value(()),
+                ))),
+            )
+                .value(()),
+            digit.value(()),
         )),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") }
-    })
-});
+    )
+        .recognize()
+        .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") })
+        .context(Context::Expression("integer"))
+        .parse(input)
+}
+const DIGIT1_9: RangeInclusive<u8> = b'1'..=b'9';
 
 // hex-prefix = %x30.78               ; 0x
 // hex-int = hex-prefix HEXDIG *( HEXDIG / underscore HEXDIG )
-parse!(hex_int() -> i64, {
-    bytes(b"0x").with(
-        recognize((
-            hex_digit(),
-            skip_many((
-                optional(byte(b'_')),
-                skip_many1(hex_digit()),
-            )),
-        ).map(|t| t.0)
-    )).and_then(|b: &[u8]| {
-        let s = unsafe { from_utf8_unchecked(b, "`hex_digit` and `_` filter out non-ASCII") };
-        i64::from_str_radix(&s.replace('_', ""), 16)
-    }).message("While parsing a hexadecimal Integer")
-});
+pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    preceded(
+        HEX_PREFIX,
+        cut((
+            hexdig,
+            many0_count(alt((
+                hexdig.value(()),
+                (
+                    one_of(b'_'),
+                    cut(hexdig).context(Context::Expected(ParserValue::Description("digit"))),
+                )
+                    .value(()),
+            ))),
+        ))
+        .recognize(),
+    )
+    .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
+    .context(Context::Expression("hexadecimal integer"))
+    .parse(input)
+}
+const HEX_PREFIX: &[u8] = b"0x";
 
 // oct-prefix = %x30.6F               ; 0o
 // oct-int = oct-prefix digit0-7 *( digit0-7 / underscore digit0-7 )
-parse!(oct_int() -> i64, {
-    bytes(b"0o").with(
-        recognize((
-            oct_digit(),
-            skip_many((
-                optional(byte(b'_')),
-                skip_many1(oct_digit()),
-            )),
-        ).map(|t| t.0)
-    )).and_then(|b: &[u8]| {
-        let s = unsafe { from_utf8_unchecked(b, "`oct_digit` and `_` filter out non-ASCII") };
-        i64::from_str_radix(&s.replace('_', ""), 8)
-    }).message("While parsing a octal Integer")
-});
+pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    preceded(
+        OCT_PREFIX,
+        cut((
+            one_of(DIGIT0_7),
+            many0_count(alt((
+                one_of(DIGIT0_7).value(()),
+                (
+                    one_of(b'_'),
+                    cut(one_of(DIGIT0_7))
+                        .context(Context::Expected(ParserValue::Description("digit"))),
+                )
+                    .value(()),
+            ))),
+        ))
+        .recognize(),
+    )
+    .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
+    .context(Context::Expression("octal integer"))
+    .parse(input)
+}
+const OCT_PREFIX: &[u8] = b"0o";
+const DIGIT0_7: RangeInclusive<u8> = b'0'..=b'7';
 
 // bin-prefix = %x30.62               ; 0b
 // bin-int = bin-prefix digit0-1 *( digit0-1 / underscore digit0-1 )
-parse!(bin_int() -> i64, {
-    bytes(b"0b").with(
-        recognize((
-            satisfy(|c: u8| c == b'0' || c == b'1'),
-            skip_many((
-                optional(byte(b'_')),
-                skip_many1(satisfy(|c: u8| c == b'0' || c == b'1')),
-            )),
-        ).map(|t| t.0)
-    )).and_then(|b: &[u8]| {
-        let s = unsafe { from_utf8_unchecked(b, "`is_digit` and `_` filter out non-ASCII") };
-        i64::from_str_radix(&s.replace('_', ""), 2)
-    }).message("While parsing a binary Integer")
-});
+pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    preceded(
+        BIN_PREFIX,
+        cut((
+            one_of(DIGIT0_1),
+            many0_count(alt((
+                one_of(DIGIT0_1).value(()),
+                (
+                    one_of(b'_'),
+                    cut(one_of(DIGIT0_1))
+                        .context(Context::Expected(ParserValue::Description("digit"))),
+                )
+                    .value(()),
+            ))),
+        ))
+        .recognize(),
+    )
+    .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
+    .context(Context::Expression("binary integer"))
+    .parse(input)
+}
+const BIN_PREFIX: &[u8] = b"0b";
+const DIGIT0_1: RangeInclusive<u8> = b'0'..=b'1';
 
 // ;; Float
 
 // float = float-int-part ( exp / frac [ exp ] )
 // float =/ special-float
 // float-int-part = dec-int
-parse!(float() -> f64, {
-    choice((
-        parse_float()
-            .and_then(|s| s.replace('_', "").parse()),
-        special_float(),
-    )).message("While parsing a Float")
-});
+pub(crate) fn float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+    alt((
+        float_.map_res(|s| s.replace('_', "").parse()),
+        special_float,
+    ))
+    .context(Context::Expression("floating-point number"))
+    .parse(input)
+}
 
-parse!(parse_float() -> &'a str, {
-    recognize((
-        attempt((dec_int(), look_ahead(one_of([b'e', b'E', b'.'])))),
-        choice((
-            exp(),
-            (
-                frac(),
-                optional(exp()),
-            ).map(|_| "")
-        )),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`dec_int`, `one_of`, `exp`, and `frac` filter out non-ASCII") }
-    })
-});
+pub(crate) fn float_(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (dec_int, alt((exp, (frac, opt(exp)).map(|_| ""))))
+        .recognize()
+        .map(|b: &[u8]| unsafe {
+            from_utf8_unchecked(
+                b,
+                "`dec_int`, `one_of`, `exp`, and `frac` filter out non-ASCII",
+            )
+        })
+        .parse(input)
+}
 
 // frac = decimal-point zero-prefixable-int
 // decimal-point = %x2E               ; .
-parse!(frac() -> &'a str, {
-    recognize((
-        byte(b'.'),
-        parse_zero_prefixable_int(),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`.` and `parse_zero_prefixable_int` filter out non-ASCII") }
-    })
-});
+pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (
+        b'.',
+        cut(zero_prefixable_int).context(Context::Expected(ParserValue::Description("digit"))),
+    )
+        .recognize()
+        .map(|b: &[u8]| unsafe {
+            from_utf8_unchecked(
+                b,
+                "`.` and `parse_zero_prefixable_int` filter out non-ASCII",
+            )
+        })
+        .parse(input)
+}
 
 // zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
-parse!(parse_zero_prefixable_int() -> &'a str, {
-    recognize((
-        skip_many1(digit()),
-        skip_many((
-            optional(byte(b'_')),
-            skip_many1(digit()),
-        )),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") }
-    })
-});
+pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (
+        digit,
+        many0_count(alt((
+            digit.value(()),
+            (
+                one_of(b'_'),
+                cut(digit).context(Context::Expected(ParserValue::Description("digit"))),
+            )
+                .value(()),
+        ))),
+    )
+        .recognize()
+        .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") })
+        .parse(input)
+}
 
 // exp = "e" float-exp-part
 // float-exp-part = [ minus / plus ] zero-prefixable-int
-parse!(exp() -> &'a str, {
-    recognize((
-        one_of([b'e', b'E']),
-        optional(one_of([b'+', b'-'])),
-        parse_zero_prefixable_int(),
-    )).map(|b: &[u8]| {
-        unsafe { from_utf8_unchecked(b, "`one_of` and `parse_zero_prefixable_int` filter out non-ASCII") }
-    })
-});
+pub(crate) fn exp(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+    (
+        one_of((b'e', b'E')),
+        opt(one_of([b'+', b'-'])),
+        cut(zero_prefixable_int),
+    )
+        .recognize()
+        .map(|b: &[u8]| unsafe {
+            from_utf8_unchecked(
+                b,
+                "`one_of` and `parse_zero_prefixable_int` filter out non-ASCII",
+            )
+        })
+        .parse(input)
+}
 
 // special-float = [ minus / plus ] ( inf / nan )
-parse!(special_float() -> f64, {
-    attempt(optional(one_of([b'+', b'-'])).and(choice((inf(), nan()))).map(|(s, f)| {
-        match s {
+pub(crate) fn special_float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+    (opt(one_of((b'+', b'-'))), alt((inf, nan)))
+        .map(|(s, f)| match s {
             Some(b'+') | None => f,
             Some(b'-') => -f,
             _ => unreachable!("one_of should prevent this"),
-        }
-    }))
-});
-
+        })
+        .parse(input)
+}
 // inf = %x69.6e.66  ; inf
-pub(crate) const INF: &[u8] = b"inf";
-parse!(inf() -> f64, {
-    bytes(INF).map(|_| f64::INFINITY)
-});
-
+pub(crate) fn inf(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+    tag(INF).value(f64::INFINITY).parse(input)
+}
+const INF: &[u8] = b"inf";
 // nan = %x6e.61.6e  ; nan
-pub(crate) const NAN: &[u8] = b"nan";
-parse!(nan() -> f64, {
-    bytes(NAN).map(|_| f64::NAN)
-});
+pub(crate) fn nan(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+    tag(NAN).value(f64::NAN).parse(input)
+}
+const NAN: &[u8] = b"nan";
+
+// DIGIT = %x30-39 ; 0-9
+pub(crate) fn digit(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+    one_of(DIGIT).parse(input)
+}
+const DIGIT: RangeInclusive<u8> = b'0'..=b'9';
+
+// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+pub(crate) fn hexdig(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+    one_of(HEXDIG).parse(input)
+}
+pub(crate) const HEXDIG: (RangeInclusive<u8>, RangeInclusive<u8>, RangeInclusive<u8>) =
+    (DIGIT, b'A'..=b'F', b'a'..=b'f');
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    use crate::parser::*;
-    use combine::stream::position::Stream;
 
     #[test]
     fn integers() {
@@ -219,13 +282,27 @@ mod test {
             (&std::i64::MAX.to_string()[..], std::i64::MAX),
         ];
         for &(input, expected) in &cases {
-            let parsed = numbers::integer().easy_parse(Stream::new(input.as_bytes()));
-            parsed_eq!(parsed, expected);
+            let parsed = integer.parse(input.as_bytes()).finish();
+            assert_eq!(parsed, Ok(expected), "Parsing {input:?}");
         }
 
         let overflow = "1000000000000000000000000000000000";
-        let parsed = numbers::integer().easy_parse(Stream::new(overflow.as_bytes()));
+        let parsed = integer.parse(overflow.as_bytes()).finish();
         assert!(parsed.is_err());
+    }
+
+    #[track_caller]
+    fn assert_float_eq(actual: f64, expected: f64) {
+        if expected.is_nan() {
+            assert!(actual.is_nan());
+        } else if expected.is_infinite() {
+            assert!(actual.is_infinite());
+            assert_eq!(expected.is_sign_positive(), actual.is_sign_positive());
+        } else {
+            dbg!(expected);
+            dbg!(actual);
+            assert!((expected - actual).abs() < std::f64::EPSILON);
+        }
     }
 
     #[test]
@@ -250,7 +327,8 @@ mod test {
             // ("1e+400", std::f64::INFINITY),
         ];
         for &(input, expected) in &cases {
-            parsed_float_eq!(input, expected);
+            let parsed = float.parse(input.as_bytes()).finish().unwrap();
+            assert_float_eq(parsed, expected);
         }
     }
 }

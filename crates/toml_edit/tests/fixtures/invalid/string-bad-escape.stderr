@@ -1,7 +1,6 @@
-TOML parse error at line 1, column 42
+TOML parse error at line 1, column 43
   |
 1 | invalid-escape = "This string has a bad \a escape character."
-  |                                          ^
-Unexpected `a`
-While parsing escape sequence
-While parsing a Basic String
+  |                                           ^
+Invalid escape sequence
+Expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`

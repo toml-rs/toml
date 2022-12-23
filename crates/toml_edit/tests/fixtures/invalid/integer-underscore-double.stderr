@@ -2,6 +2,5 @@ TOML parse error at line 1, column 9
   |
 1 | bad = 1__23
   |         ^
-Unexpected `_`
+Invalid integer
 Expected digit
-While parsing an Integer

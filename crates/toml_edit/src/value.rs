@@ -1,7 +1,6 @@
 use std::iter::FromIterator;
 use std::str::FromStr;
 
-use combine::stream::position::Stream;
 use toml_datetime::*;
 
 use crate::key::Key;
@@ -212,19 +211,12 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use combine::stream::position::{IndexPositioner, Positioner};
-        use combine::EasyParser;
+        use nom8::prelude::*;
 
         let b = s.as_bytes();
-        let parsed = parser::value_parser().easy_parse(Stream::new(b));
+        let parsed = parser::value::value.parse(b).finish();
         match parsed {
-            Ok((_, ref rest)) if !rest.input.is_empty() => Err(Self::Err::from_unparsed(
-                (&rest.positioner
-                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
-                    .position(),
-                b,
-            )),
-            Ok((mut value, _)) => {
+            Ok(mut value) => {
                 // Only take the repr and not decor, as its probably not intended
                 value.decor_mut().clear();
                 Ok(value)

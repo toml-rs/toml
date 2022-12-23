@@ -21,27 +21,6 @@ macro_rules! test_key {
     }};
 }
 
-macro_rules! parse_error {
-    ($input:expr, $ty:ty, $err_msg:expr) => {{
-        let res = $input.parse::<$ty>();
-        assert!(res.is_err());
-        let err = res.unwrap_err();
-        assert!(
-            err.to_string().find($err_msg).is_some(),
-            "Error was: `{:?}`",
-            err.to_string()
-        );
-    }};
-}
-
-#[test]
-fn test_parse_error() {
-    parse_error!("'hello'bla", Value, "Could not parse the line");
-    parse_error!(r#"{a = 2"#, Value, "Expected `}`");
-
-    parse_error!("'\"", Key, "Expected `'`");
-}
-
 #[test]
 fn test_key_from_str() {
     test_key!("a", "a");

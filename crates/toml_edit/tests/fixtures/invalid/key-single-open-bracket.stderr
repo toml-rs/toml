@@ -1,7 +1,5 @@
-TOML parse error at line 1, column 2
+TOML parse error at line 1, column 1
   |
 1 | [
-  |  ^
-Unexpected end of input
-Expected key
-While parsing a Table Header
+  | ^
+Invalid table header

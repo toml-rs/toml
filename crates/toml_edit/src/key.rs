@@ -1,11 +1,9 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
-use combine::stream::position::Stream;
-
 use crate::encode::{to_string_repr, StringStyle};
 use crate::parser;
-use crate::parser::is_unquoted_char;
+use crate::parser::key::is_unquoted_char;
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
 
@@ -105,37 +103,23 @@ impl Key {
     }
 
     fn try_parse_simple(s: &str) -> Result<Key, parser::TomlError> {
-        use combine::stream::position::{IndexPositioner, Positioner};
-        use combine::EasyParser;
+        use nom8::prelude::*;
 
         let b = s.as_bytes();
-        let result = parser::simple_key().easy_parse(Stream::new(b));
+        let result = parser::key::simple_key.parse(b).finish();
         match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
-                (&rest.positioner
-                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
-                    .position(),
-                b,
-            )),
-            Ok(((raw, key), _)) => Ok(Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw))),
+            Ok((raw, key)) => Ok(Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw))),
             Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }
 
     fn try_parse_path(s: &str) -> Result<Vec<Key>, parser::TomlError> {
-        use combine::stream::position::{IndexPositioner, Positioner};
-        use combine::EasyParser;
+        use nom8::prelude::*;
 
         let b = s.as_bytes();
-        let result = parser::key_path().easy_parse(Stream::new(b));
+        let result = parser::key::key.parse(b).finish();
         match result {
-            Ok((_, ref rest)) if !rest.input.is_empty() => Err(parser::TomlError::from_unparsed(
-                (&rest.positioner
-                    as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
-                    .position(),
-                b,
-            )),
-            Ok((keys, _)) => Ok(keys),
+            Ok(keys) => Ok(keys),
             Err(e) => Err(parser::TomlError::new(e, b)),
         }
     }

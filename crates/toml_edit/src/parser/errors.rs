@@ -1,11 +1,9 @@
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
-use combine::easy::Errors as ParseError;
-use combine::stream::easy::Error;
-use combine::stream::position::SourcePosition;
 use itertools::Itertools;
 
+use crate::parser::prelude::*;
 use crate::Key;
 
 /// Type representing a TOML parse error
@@ -16,20 +14,21 @@ pub struct TomlError {
 }
 
 impl TomlError {
-    pub(crate) fn new(error: ParseError<u8, &[u8], usize>, input: &[u8]) -> Self {
-        let fancy = FancyError::new(error, input);
-        let message = fancy.to_string();
-        let line_col = Some((fancy.position.line as usize, fancy.position.column as usize));
+    pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
+        use nom8::input::Offset;
+        let offset = original.offset(error.input);
+        let position = translate_position(original, offset);
+        let message = ParserErrorDisplay {
+            error: &error,
+            original,
+            position,
+        }
+        .to_string();
+        let line_col = Some(position);
         Self { message, line_col }
     }
 
-    pub(crate) fn from_unparsed(pos: usize, input: &[u8]) -> Self {
-        Self::new(
-            ParseError::new(pos, CustomError::UnparsedLine.into()),
-            input,
-        )
-    }
-
+    #[cfg(feature = "serde")]
     pub(crate) fn custom(message: String) -> Self {
         Self {
             message,
@@ -70,53 +69,103 @@ impl StdError for TomlError {
 }
 
 #[derive(Debug)]
-pub(crate) struct FancyError<'a> {
-    errors: Vec<Error<char, String>>,
-    position: SourcePosition,
-    input: &'a [u8],
+pub(crate) struct ParserError<'b> {
+    input: Input<'b>,
+    context: Vec<Context>,
+    cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
-impl<'a> FancyError<'a> {
-    pub(crate) fn new(error: ParseError<u8, &'a [u8], usize>, input: &'a [u8]) -> Self {
-        let position = translate_position(input, error.position);
-        let errors: Vec<_> = error
-            .errors
-            .into_iter()
-            .map(|e| {
-                e.map_token(char::from)
-                    .map_range(|s| String::from_utf8_lossy(s).into_owned())
-            })
-            .collect();
+impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
+    fn from_error_kind(input: Input<'b>, _kind: nom8::error::ErrorKind) -> Self {
         Self {
-            errors,
-            position,
             input,
+            context: Default::default(),
+            cause: Default::default(),
+        }
+    }
+
+    fn append(_input: Input<'b>, _kind: nom8::error::ErrorKind, other: Self) -> Self {
+        other
+    }
+
+    fn from_char(_input: Input<'b>, _: char) -> Self {
+        unimplemented!("this shouldn't be called with a binary parser")
+    }
+
+    fn or(self, other: Self) -> Self {
+        other
+    }
+}
+
+impl<'b> nom8::error::ContextError<Input<'b>, Context> for ParserError<'b> {
+    fn add_context(_input: Input<'b>, ctx: Context, mut other: Self) -> Self {
+        other.context.push(ctx);
+        other
+    }
+}
+
+impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternalError<Input<'b>, E>
+    for ParserError<'b>
+{
+    fn from_external_error(input: Input<'b>, _kind: nom8::error::ErrorKind, e: E) -> Self {
+        Self {
+            input,
+            context: Default::default(),
+            cause: Some(Box::new(e)),
         }
     }
 }
 
-impl<'a> Display for FancyError<'a> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let SourcePosition { line, column } = self.position;
+// For tests
+impl<'b> std::cmp::PartialEq for ParserError<'b> {
+    fn eq(&self, other: &Self) -> bool {
+        self.input == other.input
+            && self.context == other.context
+            && self.cause.as_ref().map(ToString::to_string)
+                == other.cause.as_ref().map(ToString::to_string)
+    }
+}
 
+struct ParserErrorDisplay<'a> {
+    error: &'a ParserError<'a>,
+    original: Input<'a>,
+    position: (usize, usize),
+}
+
+impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (line, column) = self.position;
         let line_num = line + 1;
         let col_num = column + 1;
-        let offset = line_num.to_string().len();
+        let gutter = line_num.to_string().len();
         let content = self
-            .input
+            .original
             .split(|b| *b == b'\n')
-            .nth((line) as usize)
+            .nth(line)
             .expect("valid line number");
         let content = String::from_utf8_lossy(content);
+
+        let expression = self.error.context.iter().find_map(|c| match c {
+            Context::Expression(c) => Some(c),
+            _ => None,
+        });
+        let expected = self
+            .error
+            .context
+            .iter()
+            .filter_map(|c| match c {
+                Context::Expected(c) => Some(c),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
 
         writeln!(
             f,
             "TOML parse error at line {}, column {}",
             line_num, col_num
         )?;
-
         //   |
-        for _ in 0..=offset {
+        for _ in 0..=gutter {
             write!(f, " ")?;
         }
         writeln!(f, "|")?;
@@ -126,7 +175,7 @@ impl<'a> Display for FancyError<'a> {
         writeln!(f, "{}", content)?;
 
         //   |          ^
-        for _ in 0..=offset {
+        for _ in 0..=gutter {
             write!(f, " ")?;
         }
         write!(f, "|")?;
@@ -135,16 +184,59 @@ impl<'a> Display for FancyError<'a> {
         }
         writeln!(f, "^")?;
 
-        Error::fmt_errors(self.errors.as_ref(), f)
+        if let Some(expression) = expression {
+            writeln!(f, "Invalid {}", expression)?;
+        }
+
+        if !expected.is_empty() {
+            write!(f, "Expected ")?;
+            for (i, expected) in expected.iter().enumerate() {
+                if i != 0 {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}", expected)?;
+            }
+            writeln!(f)?;
+        }
+        if let Some(cause) = &self.error.cause {
+            write!(f, "{}", cause)?;
+        }
+
+        Ok(())
     }
 }
 
-fn translate_position(input: &[u8], index: usize) -> SourcePosition {
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub(crate) enum Context {
+    Expression(&'static str),
+    Expected(ParserValue),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub(crate) enum ParserValue {
+    CharLiteral(char),
+    StringLiteral(&'static str),
+    Description(&'static str),
+}
+
+impl std::fmt::Display for ParserValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParserValue::CharLiteral('\n') => "newline".fmt(f),
+            ParserValue::CharLiteral('`') => "'`'".fmt(f),
+            ParserValue::CharLiteral(c) if c.is_ascii_control() => {
+                write!(f, "`{}`", c.escape_debug())
+            }
+            ParserValue::CharLiteral(c) => write!(f, "`{}`", c),
+            ParserValue::StringLiteral(c) => write!(f, "`{}`", c),
+            ParserValue::Description(c) => write!(f, "{}", c),
+        }
+    }
+}
+
+fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     if input.is_empty() {
-        return SourcePosition {
-            line: 0,
-            column: index as i32,
-        };
+        return (0, index);
     }
 
     let safe_index = index.min(input.len() - 1);
@@ -162,14 +254,14 @@ fn translate_position(input: &[u8], index: usize) -> SourcePosition {
         None => 0,
     };
     let line = input[0..line_start].iter().filter(|b| **b == b'\n').count();
-    let line = line as i32;
+    let line = line;
 
     let column = std::str::from_utf8(&input[line_start..=index])
         .map(|s| s.chars().count() - 1)
         .unwrap_or_else(|_| index - line_start);
-    let column = (column + column_offset) as i32;
+    let column = column + column_offset;
 
-    SourcePosition { line, column }
+    (line, column)
 }
 
 #[cfg(test)]
@@ -181,7 +273,7 @@ mod test_translate_position {
         let input = b"";
         let index = 0;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 0, column: 0 });
+        assert_eq!(position, (0, 0));
     }
 
     #[test]
@@ -189,7 +281,7 @@ mod test_translate_position {
         let input = b"Hello";
         let index = 0;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 0, column: 0 });
+        assert_eq!(position, (0, 0));
     }
 
     #[test]
@@ -197,13 +289,7 @@ mod test_translate_position {
         let input = b"Hello";
         let index = input.len() - 1;
         let position = translate_position(&input[..], index);
-        assert_eq!(
-            position,
-            SourcePosition {
-                line: 0,
-                column: input.len() as i32 - 1
-            }
-        );
+        assert_eq!(position, (0, input.len() - 1));
     }
 
     #[test]
@@ -211,13 +297,7 @@ mod test_translate_position {
         let input = b"Hello";
         let index = input.len();
         let position = translate_position(&input[..], index);
-        assert_eq!(
-            position,
-            SourcePosition {
-                line: 0,
-                column: input.len() as i32
-            }
-        );
+        assert_eq!(position, (0, input.len()));
     }
 
     #[test]
@@ -225,7 +305,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 2;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 0, column: 2 });
+        assert_eq!(position, (0, 2));
     }
 
     #[test]
@@ -233,7 +313,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 5;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 0, column: 5 });
+        assert_eq!(position, (0, 5));
     }
 
     #[test]
@@ -241,7 +321,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 6;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 1, column: 0 });
+        assert_eq!(position, (1, 0));
     }
 
     #[test]
@@ -249,7 +329,7 @@ mod test_translate_position {
         let input = b"Hello\nWorld\n";
         let index = 8;
         let position = translate_position(&input[..], index);
-        assert_eq!(position, SourcePosition { line: 1, column: 2 });
+        assert_eq!(position, (1, 2));
     }
 }
 
@@ -263,8 +343,6 @@ pub(crate) enum CustomError {
         key: Vec<Key>,
         actual: &'static str,
     },
-    InvalidHexEscape(u32),
-    UnparsedLine,
     OutOfRange,
 }
 
@@ -315,10 +393,6 @@ impl Display for CustomError {
                     path, actual
                 )
             }
-            CustomError::InvalidHexEscape(h) => {
-                writeln!(f, "Invalid hex escape code: {:x} ", h)
-            }
-            CustomError::UnparsedLine => writeln!(f, "Could not parse the line"),
             CustomError::OutOfRange => writeln!(f, "Value is out of range"),
         }
     }

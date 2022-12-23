@@ -42,7 +42,7 @@ serde = ["dep:serde", "toml_datetime/serde"]
 
 [dependencies]
 indexmap = "1.9.1"
-combine = "4.6.6"
+nom8 = "0.1.0"
 itertools = "0.10.5"
 serde = { version = "1.0.145", features = ["derive"], optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }

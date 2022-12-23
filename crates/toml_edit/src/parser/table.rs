@@ -1,13 +1,17 @@
 use std::cell::RefCell;
+#[allow(unused_imports)]
+use std::ops::DerefMut;
 
-use combine::parser::byte::byte;
-use combine::parser::range::range;
-use combine::stream::RangeStream;
-use combine::*;
+use nom8::bytes::take;
+use nom8::combinator::cut;
+use nom8::combinator::peek;
+use nom8::sequence::delimited;
 
+// https://github.com/rust-lang/rust/issues/41358
 use crate::parser::key::key;
+use crate::parser::prelude::*;
+use crate::parser::state::ParseState;
 use crate::parser::trivia::line_trailing;
-use crate::parser::ParseState;
 
 // std-table-open  = %x5B ws     ; [ Left square bracket
 pub(crate) const STD_TABLE_OPEN: u8 = b'[';
@@ -21,43 +25,63 @@ const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
-toml_parser!(std_table, parser, {
-    (
-        between(byte(STD_TABLE_OPEN), byte(STD_TABLE_CLOSE), key()),
-        line_trailing().and_then(std::str::from_utf8),
-    )
-        .and_then(|(h, t)| parser.borrow_mut().on_std_header(h, t))
-});
+pub(crate) fn std_table<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+    move |i| {
+        (
+            delimited(
+                STD_TABLE_OPEN,
+                cut(key),
+                cut(STD_TABLE_CLOSE)
+                    .context(Context::Expected(ParserValue::CharLiteral('.')))
+                    .context(Context::Expected(ParserValue::StringLiteral("]"))),
+            ),
+            cut(line_trailing.map_res(std::str::from_utf8))
+                .context(Context::Expected(ParserValue::CharLiteral('\n')))
+                .context(Context::Expected(ParserValue::CharLiteral('#'))),
+        )
+            .map_res(|(h, t)| state.borrow_mut().deref_mut().on_std_header(h, t))
+            .parse(i)
+    }
+}
 
 // ;; Array Table
 
 // array-table = array-table-open key *( table-key-sep key) array-table-close
-toml_parser!(array_table, parser, {
-    (
-        between(range(ARRAY_TABLE_OPEN), range(ARRAY_TABLE_CLOSE), key()),
-        line_trailing().and_then(std::str::from_utf8),
-    )
-        .and_then(|(h, t)| parser.borrow_mut().on_array_header(h, t))
-});
+pub(crate) fn array_table<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+    move |i| {
+        (
+            delimited(
+                ARRAY_TABLE_OPEN,
+                cut(key),
+                cut(ARRAY_TABLE_CLOSE)
+                    .context(Context::Expected(ParserValue::CharLiteral('.')))
+                    .context(Context::Expected(ParserValue::StringLiteral("]]"))),
+            ),
+            cut(line_trailing.map_res(std::str::from_utf8))
+                .context(Context::Expected(ParserValue::CharLiteral('\n')))
+                .context(Context::Expected(ParserValue::CharLiteral('#'))),
+        )
+            .map_res(|(h, t)| state.borrow_mut().deref_mut().on_array_header(h, t))
+            .parse(i)
+    }
+}
 
 // ;; Table
 
 // table = std-table / array-table
-parser! {
-    pub(crate) fn table['a, 'b, I](parser: &'b RefCell<ParseState>)(I) -> ()
-    where
-        [I: RangeStream<
-         Range = &'a [u8],
-         Token = u8>,
-         I::Error: ParseError<u8, &'a [u8], <I as StreamOnce>::Position>,
-         <I::Error as ParseError<u8, &'a [u8], <I as StreamOnce>::Position>>::StreamError:
-         From<std::num::ParseIntError> +
-         From<std::num::ParseFloatError> +
-         From<std::str::Utf8Error> +
-         From<crate::parser::errors::CustomError>
-    ]    {
-        array_table(parser)
-            .or(std_table(parser))
-            .message("While parsing a Table Header")
+pub(crate) fn table<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+    move |i| {
+        dispatch!(peek::<_, &[u8],_,_>(take(2usize));
+            b"[[" => array_table(state),
+            _ => std_table(state),
+        )
+        .context(Context::Expression("table header"))
+        .parse(i)
     }
 }

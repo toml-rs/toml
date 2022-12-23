@@ -1,19 +1,23 @@
 use std::cell::RefCell;
 
-use combine::parser::byte::byte;
-use combine::stream::position::{IndexPositioner, Positioner, Stream};
-use combine::stream::RangeStream;
-use combine::Parser;
-use combine::*;
+use nom8::bytes::any;
+use nom8::bytes::one_of;
+use nom8::combinator::cut;
+use nom8::combinator::eof;
+use nom8::combinator::opt;
+use nom8::combinator::peek;
+use nom8::error::FromExternalError;
+use nom8::multi::many0_count;
 
 use crate::document::Document;
 use crate::key::Key;
 use crate::parser::inline_table::KEYVAL_SEP;
 use crate::parser::key::key;
+use crate::parser::prelude::*;
+use crate::parser::state::ParseState;
 use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
-use crate::parser::{ParseState, TomlError};
 use crate::table::TableKeyValue;
 use crate::Item;
 
@@ -25,86 +29,96 @@ use crate::Item;
 //                ( ws keyval ws [ comment ] ) /
 //                ( ws table ws [ comment ] ) /
 //                  ws )
-pub(crate) fn document(s: &[u8]) -> Result<Document, TomlError> {
-    // Remove BOM if present
-    let s = s.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(s);
+pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserError<'_>> {
+    let state = RefCell::new(ParseState::default());
+    let state_ref = &state;
 
-    let parser = RefCell::new(ParseState::default());
-    let input = Stream::new(s);
-
-    let parsed = parse_ws(&parser)
-        .with(choice((
-            eof(),
-            skip_many1(
-                look_ahead(any())
-                    .then(|e| {
-                        dispatch!(e;
-                            crate::parser::trivia::COMMENT_START_SYMBOL => parse_comment(&parser),
-                            crate::parser::table::STD_TABLE_OPEN => table(&parser),
-                            crate::parser::trivia::LF |
-                            crate::parser::trivia::CR => parse_newline(&parser),
-                            _ => keyval(&parser),
-                        )
-                    })
-                    .skip(parse_ws(&parser)),
-            ),
-        )))
-        .easy_parse(input);
-    match parsed {
-        Ok((_, ref rest)) if !rest.input.is_empty() => Err(TomlError::from_unparsed(
-            (&rest.positioner
-                as &dyn Positioner<usize, Position = usize, Checkpoint = IndexPositioner>)
-                .position(),
-            s,
+    let (i, _o) = (
+        // Remove BOM if present
+        opt(b"\xEF\xBB\xBF"),
+        parse_ws(state_ref),
+        many0_count((
+            dispatch! {peek(any);
+                crate::parser::trivia::COMMENT_START_SYMBOL => cut(parse_comment(state_ref)),
+                crate::parser::table::STD_TABLE_OPEN => cut(table(state_ref)),
+                crate::parser::trivia::LF |
+                crate::parser::trivia::CR => parse_newline(state_ref),
+                _ => cut(keyval(state_ref)),
+            },
+            parse_ws(state_ref),
         )),
-        Ok(..) => {
-            let doc = parser
-                .into_inner()
-                .into_document()
-                .map_err(|e| TomlError::custom(e.to_string()))?;
-            Ok(doc)
-        }
-        Err(e) => Err(TomlError::new(e, s)),
+        eof,
+    )
+        .parse(input)?;
+    state
+        .into_inner()
+        .into_document()
+        .map(|document| (i, document))
+        .map_err(|err| {
+            nom8::Err::Error(ParserError::from_external_error(
+                i,
+                nom8::error::ErrorKind::MapRes,
+                err,
+            ))
+        })
+}
+
+pub(crate) fn parse_comment<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'_>> + 's {
+    move |i| {
+        (comment, line_ending)
+            .map_res::<_, _, std::str::Utf8Error>(|(c, e)| {
+                let c = std::str::from_utf8(c)?;
+                state.borrow_mut().on_comment(c, e);
+                Ok(())
+            })
+            .parse(i)
     }
 }
 
-toml_parser!(parse_comment, parser, {
-    (comment(), line_ending()).and_then::<_, _, std::str::Utf8Error>(|(c, e)| {
-        let c = std::str::from_utf8(c)?;
-        parser.borrow_mut().on_comment(c, e);
-        Ok(())
-    })
-});
+pub(crate) fn parse_ws<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+    move |i| ws.map(|w| state.borrow_mut().on_ws(w)).parse(i)
+}
 
-toml_parser!(parse_ws, parser, ws().map(|w| parser.borrow_mut().on_ws(w)));
+pub(crate) fn parse_newline<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+    move |i| newline.map(|_| state.borrow_mut().on_ws("\n")).parse(i)
+}
 
-toml_parser!(parse_newline, parser, {
-    newline().map(|_| parser.borrow_mut().on_ws("\n"))
-});
-
-toml_parser!(keyval, parser, {
-    parse_keyval().and_then(|(p, kv)| parser.borrow_mut().on_keyval(p, kv))
-});
+pub(crate) fn keyval<'s, 'i>(
+    state: &'s RefCell<ParseState>,
+) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+    move |i| {
+        parse_keyval
+            .map_res(|(p, kv)| state.borrow_mut().on_keyval(p, kv))
+            .parse(i)
+    }
+}
 
 // keyval = key keyval-sep val
-parser! {
-    fn parse_keyval['a, I]()(I) -> (Vec<Key>, TableKeyValue)
-    where
-        [I: RangeStream<
-         Range = &'a [u8],
-         Token = u8>,
-         I::Error: ParseError<u8, &'a [u8], <I as StreamOnce>::Position>,
-         <I::Error as ParseError<u8, &'a [u8], <I as StreamOnce>::Position>>::StreamError:
-         From<std::num::ParseIntError> +
-         From<std::num::ParseFloatError> +
-         From<std::str::Utf8Error> +
-         From<crate::parser::errors::CustomError>
-    ] {
-        (
-            key(),
-            byte(KEYVAL_SEP),
-            (ws(), value(), line_trailing())
-        ).and_then::<_, _, std::str::Utf8Error>(|(key, _, v)| {
+pub(crate) fn parse_keyval(
+    input: Input<'_>,
+) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
+    (
+        key,
+        cut((
+            one_of(KEYVAL_SEP)
+                .context(Context::Expected(ParserValue::CharLiteral('.')))
+                .context(Context::Expected(ParserValue::CharLiteral('='))),
+            (
+                ws,
+                value,
+                line_trailing
+                    .context(Context::Expected(ParserValue::CharLiteral('\n')))
+                    .context(Context::Expected(ParserValue::CharLiteral('#'))),
+            ),
+        )),
+    )
+        .map_res::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
             let mut path = key;
             let key = path.pop().expect("grammar ensures at least 1");
 
@@ -116,21 +130,20 @@ parser! {
                 TableKeyValue {
                     key,
                     value: Item::Value(v),
-                }
+                },
             ))
         })
-    }
+        .parse(input)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    use snapbox::assert_eq;
-
     #[test]
     fn documents() {
         let documents = [
+            "",
             r#"
 # This is a TOML document.
 
@@ -188,20 +201,18 @@ key = "value"
 "#,
         ];
         for input in documents {
-            let doc = document(input.as_bytes());
-            let doc = match doc {
+            let parsed = document.parse(input.as_bytes()).finish();
+            let doc = match parsed {
                 Ok(doc) => doc,
                 Err(err) => {
                     panic!(
-                        "Parse error: {}\nFailed to parse:\n```\n{}\n```",
+                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
                         err, input
                     )
                 }
             };
 
-            dbg!(doc.to_string());
-            dbg!(input);
-            assert_eq(input, doc.to_string());
+            snapbox::assert_eq(input, doc.to_string());
         }
 
         let parse_only = ["\u{FEFF}
@@ -211,12 +222,12 @@ version = \"0.0.1\"
 authors = []
 "];
         for input in parse_only {
-            let doc = document(input.as_bytes());
-            match doc {
+            let parsed = document.parse(input.as_bytes()).finish();
+            match parsed {
                 Ok(_) => (),
                 Err(err) => {
                     panic!(
-                        "Parse error: {}\nFailed to parse:\n```\n{}\n```",
+                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
                         err, input
                     )
                 }
@@ -226,9 +237,8 @@ authors = []
         let invalid_inputs = [r#" hello = 'darkness' # my old friend
 $"#];
         for input in invalid_inputs {
-            let doc = document(input.as_bytes());
-
-            assert!(doc.is_err());
+            let parsed = document.parse(input.as_bytes()).finish();
+            assert!(parsed.is_err(), "Input: {:?}", input);
         }
     }
 }

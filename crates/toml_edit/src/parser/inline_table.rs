@@ -1,30 +1,39 @@
-use combine::parser::byte::byte;
-use combine::stream::RangeStream;
-use combine::*;
-use indexmap::map::Entry;
+use nom8::bytes::one_of;
+use nom8::combinator::cut;
+use nom8::multi::separated_list0;
+use nom8::sequence::delimited;
 
 use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::parser::key::key;
+use crate::parser::prelude::*;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
 use crate::{InlineTable, InternalString, Item, Value};
 
+use indexmap::map::Entry;
+
 // ;; Inline Table
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
-parse!(inline_table() -> InlineTable, {
-    between(byte(INLINE_TABLE_OPEN), byte(INLINE_TABLE_CLOSE),
-            inline_table_keyvals().and_then(|(kv, p)| table_from_pairs(kv, p)))
-});
+pub(crate) fn inline_table(input: Input<'_>) -> IResult<Input<'_>, InlineTable, ParserError<'_>> {
+    delimited(
+        INLINE_TABLE_OPEN,
+        cut(inline_table_keyvals.map_res(|(kv, p)| table_from_pairs(kv, p))),
+        cut(INLINE_TABLE_CLOSE)
+            .context(Context::Expression("inline table"))
+            .context(Context::Expected(ParserValue::CharLiteral('}'))),
+    )
+    .parse(input)
+}
 
 fn table_from_pairs(
     v: Vec<(Vec<Key>, TableKeyValue)>,
     preamble: &str,
 ) -> Result<InlineTable, CustomError> {
     let mut root = InlineTable::new();
-    root.preamble = InternalString::from(preamble);
+    root.preamble = preamble.into();
     // Assuming almost all pairs will be directly in `root`
     root.items.reserve(v.len());
 
@@ -83,39 +92,42 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 // ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
 // ( key keyval-sep val )
 
-parse!(inline_table_keyvals() -> (Vec<(Vec<Key>, TableKeyValue)>, &'a str), {
+fn inline_table_keyvals(
+    input: Input<'_>,
+) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, &str), ParserError<'_>> {
+    (separated_list0(INLINE_TABLE_SEP, keyval), ws).parse(input)
+}
+
+fn keyval(input: Input<'_>) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
     (
-        sep_by(keyval(), byte(INLINE_TABLE_SEP)),
-        ws(),
+        key,
+        cut((
+            one_of(KEYVAL_SEP)
+                .context(Context::Expected(ParserValue::CharLiteral('.')))
+                .context(Context::Expected(ParserValue::CharLiteral('='))),
+            (ws, value, ws),
+        )),
     )
-});
+        .map(|(key, (_, v))| {
+            let mut path = key;
+            let key = path.pop().expect("grammar ensures at least 1");
 
-parse!(keyval() -> (Vec<Key>, TableKeyValue), {
-    (
-        key(),
-        byte(KEYVAL_SEP),
-        (ws(), value(), ws()),
-    ).map(|(key, _, v)| {
-        let mut path = key;
-        let key = path.pop().expect("grammar ensures at least 1");
-
-        let (pre, v, suf) = v;
-        let v = v.decorated(pre, suf);
-        (
-            path,
-            TableKeyValue {
-                key,
-                value: Item::Value(v),
-            }
-        )
-    })
-});
+            let (pre, v, suf) = v;
+            let v = v.decorated(pre, suf);
+            (
+                path,
+                TableKeyValue {
+                    key,
+                    value: Item::Value(v),
+                },
+            )
+        })
+        .parse(input)
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    use combine::stream::position::Stream;
 
     #[test]
     fn inline_tables() {
@@ -127,11 +139,12 @@ mod test {
             r#"{ hello.world = "a" }"#,
         ];
         for input in inputs {
-            parsed_value_eq!(input);
+            let parsed = inline_table.parse(input.as_bytes()).finish();
+            assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
-            let parsed = inline_table().easy_parse(Stream::new(input.as_bytes()));
+            let parsed = inline_table.parse(input.as_bytes()).finish();
             assert!(parsed.is_err());
         }
     }
