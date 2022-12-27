@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.16.1] - 2022-12-27
+
 ### Fixes
 
 - Prevent stackoverflows with a recusion limit.  Disable with `unbounded` feature flag
@@ -359,7 +361,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.16.1...HEAD
+[0.16.1]: https://github.com/toml-rs/toml_edit/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/toml-rs/toml_edit/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/toml-rs/toml_edit/compare/v0.14.4...v0.15.0
 [0.14.4]: https://github.com/toml-rs/toml_edit/compare/v0.14.3...v0.14.4
