@@ -18,7 +18,7 @@ pub(crate) mod value;
 
 pub use errors::TomlError;
 
-mod prelude {
+pub(crate) mod prelude {
     pub(crate) use super::errors::Context;
     pub(crate) use super::errors::ParserError;
     pub(crate) use super::errors::ParserValue;
@@ -59,6 +59,47 @@ mod prelude {
                     Err(err)
                 }
             }
+        }
+    }
+
+    #[cfg(not(feature = "unbounded"))]
+    #[derive(Copy, Clone, Debug, Default)]
+    pub(crate) struct RecursionCheck {
+        current: usize,
+    }
+
+    #[cfg(not(feature = "unbounded"))]
+    impl RecursionCheck {
+        pub(crate) fn recursing(
+            mut self,
+            input: Input<'_>,
+        ) -> Result<Self, nom8::Err<ParserError<'_>>> {
+            self.current += 1;
+            if self.current < 128 {
+                Ok(self)
+            } else {
+                Err(nom8::Err::Error(
+                    nom8::error::FromExternalError::from_external_error(
+                        input,
+                        nom8::error::ErrorKind::Eof,
+                        super::errors::CustomError::RecursionLimitExceeded,
+                    ),
+                ))
+            }
+        }
+    }
+
+    #[cfg(feature = "unbounded")]
+    #[derive(Copy, Clone, Debug, Default)]
+    pub(crate) struct RecursionCheck {}
+
+    #[cfg(feature = "unbounded")]
+    impl RecursionCheck {
+        pub(crate) fn recursing(
+            self,
+            _input: Input<'_>,
+        ) -> Result<Self, nom8::Err<ParserError<'_>>> {
+            Ok(self)
         }
     }
 }

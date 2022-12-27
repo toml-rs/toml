@@ -15,16 +15,19 @@ use crate::value as v;
 use crate::Value;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
-pub(crate) fn value(input: Input<'_>) -> IResult<Input<'_>, v::Value, ParserError<'_>> {
-    dispatch!{peek(any);
+pub(crate) fn value(
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, v::Value, ParserError<'_>> {
+    move |input| {
+        dispatch!{peek(any);
             crate::parser::strings::QUOTATION_MARK |
             crate::parser::strings::APOSTROPHE => string.map(|s| {
                 v::Value::String(Formatted::new(
                     s.into_owned()
                 ))
             }),
-            crate::parser::array::ARRAY_OPEN => array.map(v::Value::Array),
-            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table.map(v::Value::InlineTable),
+            crate::parser::array::ARRAY_OPEN => array(check).map(v::Value::Array),
+            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table(check).map(v::Value::InlineTable),
             // Date/number starts
             b'+' | b'-' | b'0'..=b'9' => {
                 // Uncommon enough not to be worth optimizing at this time
@@ -83,6 +86,7 @@ pub(crate) fn value(input: Input<'_>) -> IResult<Input<'_>, v::Value, ParserErro
         .with_recognized()
         .map_res(|(value, raw)| apply_raw(value, raw))
         .parse(input)
+    }
 }
 
 fn apply_raw(mut val: Value, raw: &[u8]) -> Result<Value, std::str::Utf8Error> {
@@ -137,7 +141,7 @@ trimmed in raw strings.
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
-            let parsed = value.parse(input.as_bytes()).finish();
+            let parsed = value(Default::default()).parse(input.as_bytes()).finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
     }
