@@ -211,10 +211,13 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use nom8::prelude::*;
+        use crate::parser::prelude::*;
+        use nom8::FinishIResult;
 
         let b = s.as_bytes();
-        let parsed = parser::value::value.parse(b).finish();
+        let parsed = parser::value::value(RecursionCheck::default())
+            .parse(b)
+            .finish();
         match parsed {
             Ok(mut value) => {
                 // Only take the repr and not decor, as its probably not intended

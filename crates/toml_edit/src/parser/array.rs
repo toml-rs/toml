@@ -12,15 +12,19 @@ use crate::parser::prelude::*;
 // ;; Array
 
 // array = array-open array-values array-close
-pub(crate) fn array(input: Input<'_>) -> IResult<Input<'_>, Array, ParserError<'_>> {
-    delimited(
-        ARRAY_OPEN,
-        cut(array_values),
-        cut(ARRAY_CLOSE)
-            .context(Context::Expression("array"))
-            .context(Context::Expected(ParserValue::CharLiteral(']'))),
-    )
-    .parse(input)
+pub(crate) fn array(
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, Array, ParserError<'_>> {
+    move |input| {
+        delimited(
+            ARRAY_OPEN,
+            cut(array_values(check)),
+            cut(ARRAY_CLOSE)
+                .context(Context::Expression("array"))
+                .context(Context::Expected(ParserValue::CharLiteral(']'))),
+        )
+        .parse(input)
+    }
 }
 
 // note: we're omitting ws and newlines here, because
@@ -35,36 +39,45 @@ const ARRAY_SEP: u8 = b',';
 // note: this rule is modified
 // array-values = [ ( array-value array-sep array-values ) /
 //                  array-value / ws-comment-newline ]
-pub(crate) fn array_values(input: Input<'_>) -> IResult<Input<'_>, Array, ParserError<'_>> {
-    (
-        opt(
-            (separated_list1(ARRAY_SEP, array_value), opt(ARRAY_SEP)).map(
-                |(v, trailing): (Vec<Value>, Option<u8>)| {
+pub(crate) fn array_values(
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, Array, ParserError<'_>> {
+    move |input| {
+        let check = check.recursing(input)?;
+        (
+            opt((
+                separated_list1(ARRAY_SEP, array_value(check)),
+                opt(ARRAY_SEP),
+            )
+                .map(|(v, trailing): (Vec<Value>, Option<u8>)| {
                     (
                         Array::with_vec(v.into_iter().map(Item::Value).collect()),
                         trailing.is_some(),
                     )
-                },
-            ),
-        ),
-        ws_comment_newline,
-    )
-        .map_res::<_, _, std::str::Utf8Error>(|(array, trailing)| {
-            let (mut array, comma) = array.unwrap_or_default();
-            array.set_trailing_comma(comma);
-            array.set_trailing(std::str::from_utf8(trailing)?);
-            Ok(array)
-        })
-        .parse(input)
+                })),
+            ws_comment_newline,
+        )
+            .map_res::<_, _, std::str::Utf8Error>(|(array, trailing)| {
+                let (mut array, comma) = array.unwrap_or_default();
+                array.set_trailing_comma(comma);
+                array.set_trailing(std::str::from_utf8(trailing)?);
+                Ok(array)
+            })
+            .parse(input)
+    }
 }
 
-pub(crate) fn array_value(input: Input<'_>) -> IResult<Input<'_>, Value, ParserError<'_>> {
-    (ws_comment_newline, value, ws_comment_newline)
-        .map_res::<_, _, std::str::Utf8Error>(|(ws1, v, ws2)| {
-            let v = v.decorated(std::str::from_utf8(ws1)?, std::str::from_utf8(ws2)?);
-            Ok(v)
-        })
-        .parse(input)
+pub(crate) fn array_value(
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, Value, ParserError<'_>> {
+    move |input| {
+        (ws_comment_newline, value(check), ws_comment_newline)
+            .map_res::<_, _, std::str::Utf8Error>(|(ws1, v, ws2)| {
+                let v = v.decorated(std::str::from_utf8(ws1)?, std::str::from_utf8(ws2)?);
+                Ok(v)
+            })
+            .parse(input)
+    }
 }
 
 #[cfg(test)]
@@ -109,13 +122,13 @@ mod test {
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
-            let parsed = array.parse(input.as_bytes()).finish();
+            let parsed = array(Default::default()).parse(input.as_bytes()).finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
-            let parsed = array.parse(input.as_bytes()).finish();
+            let parsed = array(Default::default()).parse(input.as_bytes()).finish();
             assert!(parsed.is_err());
         }
     }

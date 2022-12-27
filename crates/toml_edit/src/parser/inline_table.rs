@@ -17,15 +17,19 @@ use indexmap::map::Entry;
 // ;; Inline Table
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
-pub(crate) fn inline_table(input: Input<'_>) -> IResult<Input<'_>, InlineTable, ParserError<'_>> {
-    delimited(
-        INLINE_TABLE_OPEN,
-        cut(inline_table_keyvals.map_res(|(kv, p)| table_from_pairs(kv, p))),
-        cut(INLINE_TABLE_CLOSE)
-            .context(Context::Expression("inline table"))
-            .context(Context::Expected(ParserValue::CharLiteral('}'))),
-    )
-    .parse(input)
+pub(crate) fn inline_table(
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, InlineTable, ParserError<'_>> {
+    move |input| {
+        delimited(
+            INLINE_TABLE_OPEN,
+            cut(inline_table_keyvals(check).map_res(|(kv, p)| table_from_pairs(kv, p))),
+            cut(INLINE_TABLE_CLOSE)
+                .context(Context::Expression("inline table"))
+                .context(Context::Expected(ParserValue::CharLiteral('}'))),
+        )
+        .parse(input)
+    }
 }
 
 fn table_from_pairs(
@@ -93,36 +97,44 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 // ( key keyval-sep val )
 
 fn inline_table_keyvals(
-    input: Input<'_>,
-) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, &str), ParserError<'_>> {
-    (separated_list0(INLINE_TABLE_SEP, keyval), ws).parse(input)
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, &str), ParserError<'_>>
+{
+    move |input| {
+        let check = check.recursing(input)?;
+        (separated_list0(INLINE_TABLE_SEP, keyval(check)), ws).parse(input)
+    }
 }
 
-fn keyval(input: Input<'_>) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
-    (
-        key,
-        cut((
-            one_of(KEYVAL_SEP)
-                .context(Context::Expected(ParserValue::CharLiteral('.')))
-                .context(Context::Expected(ParserValue::CharLiteral('='))),
-            (ws, value, ws),
-        )),
-    )
-        .map(|(key, (_, v))| {
-            let mut path = key;
-            let key = path.pop().expect("grammar ensures at least 1");
+fn keyval(
+    check: RecursionCheck,
+) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
+    move |input| {
+        (
+            key,
+            cut((
+                one_of(KEYVAL_SEP)
+                    .context(Context::Expected(ParserValue::CharLiteral('.')))
+                    .context(Context::Expected(ParserValue::CharLiteral('='))),
+                (ws, value(check), ws),
+            )),
+        )
+            .map(|(key, (_, v))| {
+                let mut path = key;
+                let key = path.pop().expect("grammar ensures at least 1");
 
-            let (pre, v, suf) = v;
-            let v = v.decorated(pre, suf);
-            (
-                path,
-                TableKeyValue {
-                    key,
-                    value: Item::Value(v),
-                },
-            )
-        })
-        .parse(input)
+                let (pre, v, suf) = v;
+                let v = v.decorated(pre, suf);
+                (
+                    path,
+                    TableKeyValue {
+                        key,
+                        value: Item::Value(v),
+                    },
+                )
+            })
+            .parse(input)
+    }
 }
 
 #[cfg(test)]
@@ -139,12 +151,16 @@ mod test {
             r#"{ hello.world = "a" }"#,
         ];
         for input in inputs {
-            let parsed = inline_table.parse(input.as_bytes()).finish();
+            let parsed = inline_table(Default::default())
+                .parse(input.as_bytes())
+                .finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
-            let parsed = inline_table.parse(input.as_bytes()).finish();
+            let parsed = inline_table(Default::default())
+                .parse(input.as_bytes())
+                .finish();
             assert!(parsed.is_err());
         }
     }

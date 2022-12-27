@@ -111,7 +111,7 @@ pub(crate) fn parse_keyval(
                 .context(Context::Expected(ParserValue::CharLiteral('='))),
             (
                 ws,
-                value,
+                value(RecursionCheck::default()),
                 line_trailing
                     .context(Context::Expected(ParserValue::CharLiteral('\n')))
                     .context(Context::Expected(ParserValue::CharLiteral('#'))),

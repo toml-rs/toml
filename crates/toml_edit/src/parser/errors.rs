@@ -344,6 +344,8 @@ pub(crate) enum CustomError {
         actual: &'static str,
     },
     OutOfRange,
+    #[cfg_attr(feature = "unbounded", allow(dead_code))]
+    RecursionLimitExceeded,
 }
 
 impl CustomError {
@@ -394,6 +396,7 @@ impl Display for CustomError {
                 )
             }
             CustomError::OutOfRange => writeln!(f, "Value is out of range"),
+            CustomError::RecursionLimitExceeded => writeln!(f, "Recursion limit exceded"),
         }
     }
 }
