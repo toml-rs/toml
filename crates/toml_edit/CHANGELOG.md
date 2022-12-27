@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Prevent stackoverflows with a recusion limit.  Disable with `unbounded` feature flag
+
 ## [0.16.0] - 2022-12-23
 
 The parser was re-implemented and this was considered high-risk enough to treat as a breaking release
