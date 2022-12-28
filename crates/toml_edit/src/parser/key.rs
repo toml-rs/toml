@@ -6,6 +6,7 @@ use nom8::combinator::peek;
 use nom8::multi::separated_list1;
 
 use crate::key::Key;
+use crate::parser::errors::CustomError;
 use crate::parser::prelude::*;
 use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::{from_utf8_unchecked, ws};
@@ -24,6 +25,11 @@ pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<
         }),
     )
     .context(Context::Expression("key"))
+    .map_res(|k| {
+        // Inserting the key will require recursion down the line
+        RecursionCheck::check_depth(k.len())?;
+        Ok::<_, CustomError>(k)
+    })
     .parse(input)
 }
 
