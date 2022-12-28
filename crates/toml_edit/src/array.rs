@@ -67,8 +67,8 @@ impl Array {
     }
 
     /// Set whitespace after last element
-    pub fn set_trailing(&mut self, trailing: &str) {
-        self.trailing = InternalString::from(trailing);
+    pub fn set_trailing(&mut self, trailing: impl Into<InternalString>) {
+        self.trailing = trailing.into();
     }
 
     /// Whitespace after last element
