@@ -122,13 +122,13 @@ mod test {
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
-            let parsed = array(Default::default()).parse(input.as_bytes()).finish();
+            let parsed = array(Default::default()).parse(new_input(input)).finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
 
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
-            let parsed = array(Default::default()).parse(input.as_bytes()).finish();
+            let parsed = array(Default::default()).parse(new_input(input)).finish();
             assert!(parsed.is_err());
         }
     }

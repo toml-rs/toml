@@ -282,12 +282,12 @@ mod test {
             (&std::i64::MAX.to_string()[..], std::i64::MAX),
         ];
         for &(input, expected) in &cases {
-            let parsed = integer.parse(input.as_bytes()).finish();
+            let parsed = integer.parse(new_input(input)).finish();
             assert_eq!(parsed, Ok(expected), "Parsing {input:?}");
         }
 
         let overflow = "1000000000000000000000000000000000";
-        let parsed = integer.parse(overflow.as_bytes()).finish();
+        let parsed = integer.parse(new_input(overflow)).finish();
         assert!(parsed.is_err());
     }
 
@@ -327,7 +327,7 @@ mod test {
             // ("1e+400", std::f64::INFINITY),
         ];
         for &(input, expected) in &cases {
-            let parsed = float.parse(input.as_bytes()).finish().unwrap();
+            let parsed = float.parse(new_input(input)).finish().unwrap();
             assert_float_eq(parsed, expected);
         }
     }

@@ -234,7 +234,7 @@ mod test {
             "1979-05-27T00:32:00.999999-07:00",
         ];
         for input in inputs {
-            date_time.parse(input.as_bytes()).finish().unwrap();
+            date_time.parse(new_input(input)).finish().unwrap();
         }
     }
 
@@ -242,7 +242,7 @@ mod test {
     fn local_date_time() {
         let inputs = ["1979-05-27T07:32:00", "1979-05-27T00:32:00.999999"];
         for input in inputs {
-            date_time.parse(input.as_bytes()).finish().unwrap();
+            date_time.parse(new_input(input)).finish().unwrap();
         }
     }
 
@@ -250,7 +250,7 @@ mod test {
     fn local_date() {
         let inputs = ["1979-05-27", "2017-07-20"];
         for input in inputs {
-            date_time.parse(input.as_bytes()).finish().unwrap();
+            date_time.parse(new_input(input)).finish().unwrap();
         }
     }
 
@@ -258,13 +258,13 @@ mod test {
     fn local_time() {
         let inputs = ["07:32:00", "00:32:00.999999"];
         for input in inputs {
-            date_time.parse(input.as_bytes()).finish().unwrap();
+            date_time.parse(new_input(input)).finish().unwrap();
         }
     }
 
     #[test]
     fn time_fraction_truncated() {
         let input = "1987-07-05T17:45:00.123456789012345Z";
-        date_time.parse(input.as_bytes()).finish().unwrap();
+        date_time.parse(new_input(input)).finish().unwrap();
     }
 }

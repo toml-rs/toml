@@ -88,7 +88,7 @@ mod test {
         ];
 
         for (input, expected) in cases {
-            let parsed = simple_key.parse(input.as_bytes()).finish();
+            let parsed = simple_key.parse(new_input(input)).finish();
             assert_eq!(parsed, Ok((input, expected.into())), "Parsing {input:?}");
         }
     }
