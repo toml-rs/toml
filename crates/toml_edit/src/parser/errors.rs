@@ -16,8 +16,8 @@ pub struct TomlError {
 impl TomlError {
     pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
         use nom8::input::Offset;
-        let offset = original.offset(error.input);
-        let position = translate_position(original, offset);
+        let offset = original.offset(&error.input);
+        let position = translate_position(&original, offset);
         let message = ParserErrorDisplay {
             error: &error,
             original,

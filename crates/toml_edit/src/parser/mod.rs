@@ -76,10 +76,10 @@ pub(crate) mod prelude {
 
     pub(crate) use nom8::FinishIResult as _;
 
-    pub(crate) type Input<'b> = &'b [u8];
+    pub(crate) type Input<'b> = nom8::input::Located<&'b [u8]>;
 
     pub(crate) fn new_input(s: &str) -> Input<'_> {
-        s.as_bytes()
+        nom8::input::Located::new(s.as_bytes())
     }
 
     pub(crate) fn ok_error<I, O, E>(res: IResult<I, O, E>) -> Result<Option<(I, O)>, nom8::Err<E>> {
