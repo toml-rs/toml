@@ -70,6 +70,14 @@ pub(crate) mod prelude {
 
     #[cfg(not(feature = "unbounded"))]
     impl RecursionCheck {
+        pub(crate) fn check_depth(depth: usize) -> Result<(), super::errors::CustomError> {
+            if depth < 128 {
+                Ok(())
+            } else {
+                Err(super::errors::CustomError::RecursionLimitExceeded)
+            }
+        }
+
         pub(crate) fn recursing(
             mut self,
             input: Input<'_>,
@@ -95,6 +103,10 @@ pub(crate) mod prelude {
 
     #[cfg(feature = "unbounded")]
     impl RecursionCheck {
+        pub(crate) fn check_depth(_depth: usize) -> Result<(), super::errors::CustomError> {
+            Ok(())
+        }
+
         pub(crate) fn recursing(
             self,
             _input: Input<'_>,
