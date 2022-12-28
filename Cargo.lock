@@ -915,7 +915,7 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.16.1"
+version = "0.16.2"
 dependencies = [
  "criterion",
  "indexmap",
