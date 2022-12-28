@@ -81,6 +81,10 @@ harness = false
 name = "test_invalid"
 harness = false
 
+[[test]]
+name = "test_fuzzed"
+harness = false
+
 [[bench]]
 name = "cargo"
 harness = false
