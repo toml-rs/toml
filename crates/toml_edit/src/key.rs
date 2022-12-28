@@ -96,6 +96,17 @@ impl Key {
         &self.decor
     }
 
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.repr.as_ref().and_then(|r| r.span())
+    }
+
+    pub(crate) fn despan(&mut self) {
+        if let Some(repr) = &mut self.repr {
+            repr.despan()
+        }
+    }
+
     /// Auto formats the key.
     pub fn fmt(&mut self) {
         self.repr = Some(to_key_repr(&self.key));

@@ -295,6 +295,25 @@ impl Item {
     pub fn is_table_like(&self) -> bool {
         self.as_table_like().is_some()
     }
+
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        match self {
+            Item::None => None,
+            Item::Value(v) => v.span(),
+            Item::Table(_) => None,
+            Item::ArrayOfTables(_) => None,
+        }
+    }
+
+    pub(crate) fn despan(&mut self) {
+        match self {
+            Item::None => {}
+            Item::Value(v) => v.despan(),
+            Item::Table(v) => v.despan(),
+            Item::ArrayOfTables(v) => v.despan(),
+        }
+    }
 }
 
 impl Default for Item {

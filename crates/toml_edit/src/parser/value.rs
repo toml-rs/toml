@@ -12,6 +12,7 @@ use crate::parser::strings::string;
 use crate::parser::trivia::from_utf8_unchecked;
 use crate::repr::{Formatted, Repr};
 use crate::value as v;
+use crate::RawString;
 use crate::Value;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
@@ -84,34 +85,49 @@ pub(crate) fn value(
             },
     }
         .with_recognized()
-        .map_res(|(value, raw)| apply_raw(value, raw))
+        .with_span()
+        .map_res(|((value, raw), span)| apply_raw(value, raw, span))
         .parse(input)
     }
 }
 
-fn apply_raw(mut val: Value, raw: &[u8]) -> Result<Value, std::str::Utf8Error> {
+fn apply_raw(
+    mut val: Value,
+    raw: &[u8],
+    span: std::ops::Range<usize>,
+) -> Result<Value, std::str::Utf8Error> {
     match val {
         Value::String(ref mut f) => {
             let raw = std::str::from_utf8(raw)?;
+            let raw = RawString::new(raw).with_span(span);
             f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Integer(ref mut f) => {
             let raw = unsafe { from_utf8_unchecked(raw, "`integer()` filters out non-ASCII") };
+            let raw = RawString::new(raw).with_span(span);
             f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Float(ref mut f) => {
             let raw = unsafe { from_utf8_unchecked(raw, "`float()` filters out non-ASCII") };
+            let raw = RawString::new(raw).with_span(span);
             f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Boolean(ref mut f) => {
             let raw = unsafe { from_utf8_unchecked(raw, "`boolean()` filters out non-ASCII") };
+            let raw = RawString::new(raw).with_span(span);
             f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
         Value::Datetime(ref mut f) => {
             let raw = unsafe { from_utf8_unchecked(raw, "`date_time()` filters out non-ASCII") };
+            let raw = RawString::new(raw).with_span(span);
             f.set_repr_unchecked(Repr::new_unchecked(raw));
         }
-        Value::Array(_) | Value::InlineTable(_) => {}
+        Value::Array(ref mut arr) => {
+            arr.span = Some(span);
+        }
+        Value::InlineTable(ref mut table) => {
+            table.span = Some(span);
+        }
     };
     val.decorate("", "");
     Ok(val)

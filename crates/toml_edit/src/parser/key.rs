@@ -12,6 +12,7 @@ use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::{from_utf8_unchecked, ws};
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
+use crate::RawString;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
@@ -37,7 +38,7 @@ pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<
 // quoted-key = basic-string / literal-string
 pub(crate) fn simple_key(
     input: Input<'_>,
-) -> IResult<Input<'_>, (&str, InternalString), ParserError<'_>> {
+) -> IResult<Input<'_>, (RawString, InternalString), ParserError<'_>> {
     dispatch! {peek(any);
         crate::parser::strings::QUOTATION_MARK => basic_string
             .map(|s: std::borrow::Cow<'_, str>| s.as_ref().into()),
@@ -45,9 +46,11 @@ pub(crate) fn simple_key(
         _ => unquoted_key.map(|s: &str| s.into()),
     }
         .with_recognized()
-        .map(|(k, b)| {
-            let s = unsafe { from_utf8_unchecked(b, "If `quoted_key` or `unquoted_key` are valid, then their `recognize`d value is valid") };
-            (s, k)
+        .with_span()
+        .map(|((k, raw), span)| {
+            let raw = unsafe { from_utf8_unchecked(raw, "If `quoted_key` or `unquoted_key` are valid, then their `recognize`d value is valid") };
+            let raw = RawString::new(raw).with_span(span);
+            (raw, k)
         })
         .parse(input)
 }
@@ -90,7 +93,14 @@ mod test {
         for (input, expected) in cases {
             dbg!(input);
             let parsed = simple_key.parse(new_input(input)).finish();
-            assert_eq!(parsed, Ok((input, expected.into())), "Parsing {input:?}");
+            assert_eq!(
+                parsed,
+                Ok((
+                    RawString::new(input).with_span(0..(input.len())),
+                    expected.into()
+                )),
+                "Parsing {input:?}"
+            );
         }
     }
 }

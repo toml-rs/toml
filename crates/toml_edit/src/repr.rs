@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use crate::InternalString;
+use crate::RawString;
 
 /// A value together with its `to_string` representation,
 /// including surrounding it whitespaces and comments.
@@ -46,6 +47,17 @@ where
             .unwrap_or_else(|| Cow::Owned(self.value.to_repr()))
     }
 
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.repr.as_ref().and_then(|r| r.span())
+    }
+
+    pub(crate) fn despan(&mut self) {
+        if let Some(repr) = &mut self.repr {
+            repr.despan();
+        }
+    }
+
     /// Returns the surrounding whitespace
     pub fn decor_mut(&mut self) -> &mut Decor {
         &mut self.decor
@@ -77,13 +89,13 @@ pub trait ValueRepr: crate::private::Sealed {
 }
 
 /// TOML-encoded value
-#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub struct Repr {
-    raw_value: InternalString,
+    raw_value: RawString,
 }
 
 impl Repr {
-    pub(crate) fn new_unchecked(raw: impl Into<InternalString>) -> Self {
+    pub(crate) fn new_unchecked(raw: impl Into<RawString>) -> Self {
         Repr {
             raw_value: raw.into(),
         }
@@ -91,7 +103,16 @@ impl Repr {
 
     /// Access the underlying value
     pub fn as_raw(&self) -> &str {
-        &self.raw_value
+        self.raw_value.as_str()
+    }
+
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.raw_value.span()
+    }
+
+    pub(crate) fn despan(&mut self) {
+        self.raw_value.despan()
     }
 }
 
@@ -104,7 +125,7 @@ impl std::fmt::Display for Repr {
 /// A prefix and suffix,
 ///
 /// Including comments, whitespaces and newlines.
-#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Default, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
 pub struct Decor {
     prefix: Option<InternalString>,
     suffix: Option<InternalString>,
@@ -127,7 +148,7 @@ impl Decor {
 
     /// Get the prefix.
     pub fn prefix(&self) -> Option<&str> {
-        self.prefix.as_deref()
+        self.prefix.as_ref().map(|s| s.as_str())
     }
 
     /// Set the prefix.
@@ -137,7 +158,7 @@ impl Decor {
 
     /// Get the suffix.
     pub fn suffix(&self) -> Option<&str> {
-        self.suffix.as_deref()
+        self.suffix.as_ref().map(|s| s.as_str())
     }
 
     /// Set the suffix.

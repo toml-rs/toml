@@ -15,6 +15,7 @@ pub struct Array {
     trailing_comma: bool,
     // prefix before `[` and suffix after `]`
     decor: Decor,
+    pub(crate) span: Option<std::ops::Range<usize>>,
     // always Vec<Item::Value>
     pub(crate) values: Vec<Item>,
 }
@@ -84,6 +85,18 @@ impl Array {
     /// Returns the surrounding whitespace
     pub fn decor(&self) -> &Decor {
         &self.decor
+    }
+
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span.clone()
+    }
+
+    pub(crate) fn despan(&mut self) {
+        self.span = None;
+        for value in &mut self.values {
+            value.despan();
+        }
     }
 }
 

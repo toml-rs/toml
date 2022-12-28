@@ -13,6 +13,7 @@ pub struct InlineTable {
     preamble: InternalString,
     // prefix before `{` and suffix after `}`
     decor: Decor,
+    pub(crate) span: Option<std::ops::Range<usize>>,
     // whether this is a proxy for dotted keys
     dotted: bool,
     pub(crate) items: KeyValuePairs,
@@ -170,6 +171,19 @@ impl InlineTable {
     /// Whitespace after before element
     pub fn preamble(&self) -> &str {
         self.preamble.as_str()
+    }
+
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span.clone()
+    }
+
+    pub(crate) fn despan(&mut self) {
+        self.span = None;
+        for kv in self.items.values_mut() {
+            kv.key.despan();
+            kv.value.despan();
+        }
     }
 }
 

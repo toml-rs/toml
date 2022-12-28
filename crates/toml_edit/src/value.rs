@@ -212,6 +212,31 @@ impl Value {
         let decor = self.decor_mut();
         *decor = Decor::new(prefix, suffix);
     }
+
+    /// Returns the location within the original document
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        match self {
+            Value::String(f) => f.span(),
+            Value::Integer(f) => f.span(),
+            Value::Float(f) => f.span(),
+            Value::Boolean(f) => f.span(),
+            Value::Datetime(f) => f.span(),
+            Value::Array(a) => a.span(),
+            Value::InlineTable(t) => t.span(),
+        }
+    }
+
+    pub(crate) fn despan(&mut self) {
+        match self {
+            Value::String(f) => f.despan(),
+            Value::Integer(f) => f.despan(),
+            Value::Float(f) => f.despan(),
+            Value::Boolean(f) => f.despan(),
+            Value::Datetime(f) => f.despan(),
+            Value::Array(a) => a.despan(),
+            Value::InlineTable(t) => t.despan(),
+        }
+    }
 }
 
 impl FromStr for Value {

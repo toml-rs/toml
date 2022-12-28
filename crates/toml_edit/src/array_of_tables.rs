@@ -30,6 +30,12 @@ impl ArrayOfTables {
         a.fmt();
         a
     }
+
+    pub(crate) fn despan(&mut self) {
+        for value in &mut self.values {
+            value.despan();
+        }
+    }
 }
 
 impl ArrayOfTables {

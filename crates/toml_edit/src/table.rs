@@ -222,6 +222,13 @@ impl Table {
     pub fn key_decor(&self, key: &str) -> Option<&Decor> {
         self.items.get(key).map(|kv| &kv.key.decor)
     }
+
+    pub(crate) fn despan(&mut self) {
+        for kv in self.items.values_mut() {
+            kv.key.despan();
+            kv.value.despan();
+        }
+    }
 }
 
 impl Table {
