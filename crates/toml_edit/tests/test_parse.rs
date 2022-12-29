@@ -1,4 +1,5 @@
-use toml_edit::{Key, Value};
+use snapbox::assert_eq;
+use toml_edit::{Document, Key, Value};
 
 macro_rules! parse {
     ($s:expr, $ty:ty) => {{
@@ -70,4 +71,25 @@ string'''"#
     let lwp = "'C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9'";
     assert_eq!(Value::from(wp).as_str(), parse_value!(lwp).as_str());
     assert!(parse_value!(r#""\\\"\b\f\n\r\t\u00E9\U000A0000""#).is_str());
+}
+
+#[test]
+fn test_key_unification() {
+    let toml = r#"
+[a]
+[a.'b'.c]
+[a."b".c.e]
+[a.b.c.d]
+"#;
+    let expected = r#"
+[a]
+[a.'b'.c]
+[a.'b'.c.e]
+[a.'b'.c.d]
+"#;
+    let doc = toml.parse::<Document>();
+    assert!(doc.is_ok());
+    let doc = doc.unwrap();
+
+    assert_eq(doc.to_string(), expected);
 }
