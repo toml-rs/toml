@@ -1,0 +1,6 @@
+TOML parse error at line 4, column 1
+  |
+4 | a.b.c = 2
+  | ^
+Dotted key `# Tries to access it as table: error
+a.b` attempted to extend non-table type (integer)

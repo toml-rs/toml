@@ -921,11 +921,13 @@ dependencies = [
  "indexmap",
  "itertools",
  "kstring",
+ "libtest-mimic",
  "nom8",
  "serde",
  "serde_json",
  "snapbox",
  "toml 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
 ]

@@ -1,0 +1,6 @@
+TOML parse error at line 5, column 1
+  |
+5 | [a.b]
+  | ^
+Invalid table header
+Duplicate key `b` in table `a`
