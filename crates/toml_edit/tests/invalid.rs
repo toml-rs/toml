@@ -1,26 +1,26 @@
 use toml_edit::Document;
 
 fn main() {
-    snapbox::harness::Harness::new(
-        "tests/fixtures/invalid",
-        move |input_path| {
-            let name = input_path.file_name().unwrap().to_str().unwrap().to_owned();
-            let expected = input_path.with_extension("stderr");
-            snapbox::harness::Case {
-                name,
-                expected,
-                fixture: input_path,
-            }
-        },
-        move |input_path| {
-            let raw = std::fs::read_to_string(input_path).map_err(|e| e.to_string())?;
-            match raw.parse::<Document>() {
-                Ok(_) => Err("Parsing unexpectedly succeeded".to_owned()),
-                Err(err) => Ok(err.to_string()),
-            }
-        },
-    )
-    .select(["*.toml"])
-    .action_env("INVALID_TOML")
-    .test()
+    let args = libtest_mimic::Arguments::from_args();
+    let tests = toml_test_data::invalid()
+        .map(|case| {
+            libtest_mimic::Trial::test(case.name.display().to_string(), || {
+                let expect_path =
+                    std::path::Path::new("fixtures").join(case.name.with_extension("stderr"));
+                let err = match run_case(case.fixture) {
+                    Ok(()) => "".to_owned(),
+                    Err(err) => err,
+                };
+                snapbox::assert_eq_path(expect_path, err);
+                Ok(())
+            })
+        })
+        .collect();
+    libtest_mimic::run(&args, tests).exit()
+}
+
+fn run_case(input: &[u8]) -> Result<(), String> {
+    let raw = std::str::from_utf8(input).map_err(|e| e.to_string())?;
+    let _ = raw.parse::<Document>().map_err(|e| e.to_string())?;
+    Ok(())
 }

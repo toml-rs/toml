@@ -57,6 +57,8 @@ toml_datetime = { version = "0.5.0", path = "../toml_datetime" }
 [dev-dependencies]
 serde_json = "1.0.89"
 toml-test-harness = "0.4.2"
+toml-test-data = "1.1.0"
+libtest-mimic = "0.5.2"
 snapbox = { version = "0.4.3", features = ["harness"] }
 criterion = "0.4.0"
 toml = "0.5.9"

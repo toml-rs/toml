@@ -1,0 +1,6 @@
+TOML parse error at line 2, column 11
+  |
+2 | k = """t\ t"""
+  |           ^
+Invalid escape sequence
+Expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
