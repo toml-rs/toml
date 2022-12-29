@@ -1,5 +1,4 @@
 #![cfg(feature = "easy")]
-#![recursion_limit = "256"]
 
 use std::f64;
 
