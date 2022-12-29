@@ -78,7 +78,7 @@ name = "easy_encoder_compliance"
 harness = false
 
 [[test]]
-name = "test_invalid"
+name = "invalid"
 harness = false
 
 [[bench]]
