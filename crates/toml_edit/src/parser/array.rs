@@ -5,7 +5,7 @@ use nom8::sequence::delimited;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::{Array, Item, Value};
+use crate::{Array, Item, RawString, Value};
 
 use crate::parser::prelude::*;
 
@@ -55,12 +55,14 @@ pub(crate) fn array_values(
                         trailing.is_some(),
                     )
                 })),
-            ws_comment_newline,
+            ws_comment_newline.with_span(),
         )
             .map_res::<_, _, std::str::Utf8Error>(|(array, trailing)| {
                 let (mut array, comma) = array.unwrap_or_default();
                 array.set_trailing_comma(comma);
-                array.set_trailing(std::str::from_utf8(trailing)?);
+                array.set_trailing(
+                    RawString::new(std::str::from_utf8(trailing.0)?).with_span(trailing.1),
+                );
                 Ok(array)
             })
             .parse(input)
@@ -71,9 +73,16 @@ pub(crate) fn array_value(
     check: RecursionCheck,
 ) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, Value, ParserError<'_>> {
     move |input| {
-        (ws_comment_newline, value(check), ws_comment_newline)
+        (
+            ws_comment_newline.with_span(),
+            value(check),
+            ws_comment_newline.with_span(),
+        )
             .map_res::<_, _, std::str::Utf8Error>(|(ws1, v, ws2)| {
-                let v = v.decorated(std::str::from_utf8(ws1)?, std::str::from_utf8(ws2)?);
+                let v = v.decorated(
+                    RawString::new(std::str::from_utf8(ws1.0)?).with_span(ws1.1),
+                    RawString::new(std::str::from_utf8(ws2.0)?).with_span(ws2.1),
+                );
                 Ok(v)
             })
             .parse(input)

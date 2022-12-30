@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 
-use crate::InternalString;
 use crate::RawString;
 
 /// A value together with its `to_string` representation,
@@ -127,13 +126,13 @@ impl std::fmt::Display for Repr {
 /// Including comments, whitespaces and newlines.
 #[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
 pub struct Decor {
-    prefix: Option<InternalString>,
-    suffix: Option<InternalString>,
+    prefix: Option<RawString>,
+    suffix: Option<RawString>,
 }
 
 impl Decor {
     /// Creates a new decor from the given prefix and suffix.
-    pub fn new(prefix: impl Into<InternalString>, suffix: impl Into<InternalString>) -> Self {
+    pub fn new(prefix: impl Into<RawString>, suffix: impl Into<RawString>) -> Self {
         Self {
             prefix: Some(prefix.into()),
             suffix: Some(suffix.into()),
@@ -151,8 +150,12 @@ impl Decor {
         self.prefix.as_ref().map(|s| s.as_str())
     }
 
+    pub(crate) fn prefix_span(&self) -> Option<std::ops::Range<usize>> {
+        self.prefix.as_ref().and_then(|s| s.span())
+    }
+
     /// Set the prefix.
-    pub fn set_prefix(&mut self, prefix: impl Into<InternalString>) {
+    pub fn set_prefix(&mut self, prefix: impl Into<RawString>) {
         self.prefix = Some(prefix.into());
     }
 
@@ -162,7 +165,7 @@ impl Decor {
     }
 
     /// Set the suffix.
-    pub fn set_suffix(&mut self, suffix: impl Into<InternalString>) {
+    pub fn set_suffix(&mut self, suffix: impl Into<RawString>) {
         self.suffix = Some(suffix.into());
     }
 }

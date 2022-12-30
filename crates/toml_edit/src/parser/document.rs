@@ -20,6 +20,7 @@ use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
 use crate::Item;
+use crate::RawString;
 
 // ;; TOML
 
@@ -68,9 +69,10 @@ pub(crate) fn parse_comment<'s, 'i>(
 ) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'_>> + 's {
     move |i| {
         (comment, line_ending)
-            .map_res::<_, _, std::str::Utf8Error>(|(c, e)| {
+            .with_span()
+            .map_res::<_, _, std::str::Utf8Error>(|((c, e), span)| {
                 let c = std::str::from_utf8(c)?;
-                state.borrow_mut().on_comment(c, e);
+                state.borrow_mut().on_comment(c, e, span);
                 Ok(())
             })
             .parse(i)
@@ -80,13 +82,22 @@ pub(crate) fn parse_comment<'s, 'i>(
 pub(crate) fn parse_ws<'s, 'i>(
     state: &'s RefCell<ParseState>,
 ) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
-    move |i| ws.map(|w| state.borrow_mut().on_ws(w)).parse(i)
+    move |i| {
+        ws.with_span()
+            .map(|(w, span)| state.borrow_mut().on_ws(w, span))
+            .parse(i)
+    }
 }
 
 pub(crate) fn parse_newline<'s, 'i>(
     state: &'s RefCell<ParseState>,
 ) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
-    move |i| newline.map(|_| state.borrow_mut().on_ws("\n")).parse(i)
+    move |i| {
+        newline
+            .with_span()
+            .map(|(_, span)| state.borrow_mut().on_ws("\n", span))
+            .parse(i)
+    }
 }
 
 pub(crate) fn keyval<'s, 'i>(
@@ -110,9 +121,10 @@ pub(crate) fn parse_keyval(
                 .context(Context::Expected(ParserValue::CharLiteral('.')))
                 .context(Context::Expected(ParserValue::CharLiteral('='))),
             (
-                ws,
+                ws.with_span(),
                 value(RecursionCheck::default()),
                 line_trailing
+                    .with_span()
                     .context(Context::Expected(ParserValue::CharLiteral('\n')))
                     .context(Context::Expected(ParserValue::CharLiteral('#'))),
             ),
@@ -123,7 +135,8 @@ pub(crate) fn parse_keyval(
             let key = path.pop().expect("grammar ensures at least 1");
 
             let (pre, v, suf) = v;
-            let suf = std::str::from_utf8(suf)?;
+            let pre = RawString::new(pre.0).with_span(pre.1);
+            let suf = RawString::new(std::str::from_utf8(suf.0)?).with_span(suf.1);
             let v = v.decorated(pre, suf);
             Ok((
                 path,

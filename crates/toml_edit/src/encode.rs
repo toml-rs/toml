@@ -160,7 +160,7 @@ impl Display for Document {
         for (_, table, path, is_array) in tables {
             visit_table(f, table, &path, is_array, &mut first_table)?;
         }
-        self.trailing.fmt(f)
+        self.trailing.as_str().fmt(f)
     }
 }
 

@@ -19,10 +19,13 @@ use crate::RawString;
 pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<'_>> {
     separated_list1(
         DOT_SEP,
-        (ws, simple_key, ws).map(|(pre, (raw, key), suffix)| {
+        (ws.with_span(), simple_key, ws.with_span()).map(|(pre, (raw, key), suffix)| {
             Key::new(key)
                 .with_repr_unchecked(Repr::new_unchecked(raw))
-                .with_decor(Decor::new(pre, suffix))
+                .with_decor(Decor::new(
+                    RawString::new(pre.0).with_span(pre.1),
+                    RawString::new(suffix.0).with_span(suffix.1),
+                ))
         }),
     )
     .context(Context::Expression("key"))

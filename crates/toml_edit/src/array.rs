@@ -3,7 +3,7 @@ use std::mem;
 
 use crate::repr::Decor;
 use crate::value::{DEFAULT_LEADING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
-use crate::{InternalString, Item, Value};
+use crate::{Item, RawString, Value};
 
 /// Type representing a TOML array,
 /// payload of the `Value::Array` variant's value
@@ -11,7 +11,7 @@ use crate::{InternalString, Item, Value};
 pub struct Array {
     // `trailing` represents whitespaces, newlines
     // and comments in an empty array or after the trailing comma
-    trailing: InternalString,
+    trailing: RawString,
     trailing_comma: bool,
     // prefix before `[` and suffix after `]`
     decor: Decor,
@@ -68,7 +68,7 @@ impl Array {
     }
 
     /// Set whitespace after last element
-    pub fn set_trailing(&mut self, trailing: impl Into<InternalString>) {
+    pub fn set_trailing(&mut self, trailing: impl Into<RawString>) {
         self.trailing = trailing.into();
     }
 

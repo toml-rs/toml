@@ -3,14 +3,14 @@ use std::iter::FromIterator;
 use crate::key::Key;
 use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
-use crate::{InternalString, Item, KeyMut, Table, Value};
+use crate::{InternalString, Item, KeyMut, RawString, Table, Value};
 
 /// Type representing a TOML inline table,
 /// payload of the `Value::InlineTable` variant
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
-    preamble: InternalString,
+    preamble: RawString,
     // prefix before `{` and suffix after `}`
     decor: Decor,
     pub(crate) span: Option<std::ops::Range<usize>>,
@@ -164,7 +164,7 @@ impl InlineTable {
     }
 
     /// Set whitespace after before element
-    pub fn set_preamble(&mut self, preamble: impl Into<InternalString>) {
+    pub fn set_preamble(&mut self, preamble: impl Into<RawString>) {
         self.preamble = preamble.into();
     }
 

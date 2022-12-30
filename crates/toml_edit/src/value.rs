@@ -6,7 +6,7 @@ use toml_datetime::*;
 use crate::key::Key;
 use crate::parser;
 use crate::repr::{Decor, Formatted};
-use crate::{Array, InlineTable, InternalString};
+use crate::{Array, InlineTable, InternalString, RawString};
 
 /// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
@@ -195,20 +195,12 @@ impl Value {
     /// let d = v.decorated(" ", " ");
     /// assert_eq!(&d.to_string(), " 42 ");
     /// ```
-    pub fn decorated(
-        mut self,
-        prefix: impl Into<InternalString>,
-        suffix: impl Into<InternalString>,
-    ) -> Self {
+    pub fn decorated(mut self, prefix: impl Into<RawString>, suffix: impl Into<RawString>) -> Self {
         self.decorate(prefix, suffix);
         self
     }
 
-    pub(crate) fn decorate(
-        &mut self,
-        prefix: impl Into<InternalString>,
-        suffix: impl Into<InternalString>,
-    ) {
+    pub(crate) fn decorate(&mut self, prefix: impl Into<RawString>, suffix: impl Into<RawString>) {
         let decor = self.decor_mut();
         *decor = Decor::new(prefix, suffix);
     }

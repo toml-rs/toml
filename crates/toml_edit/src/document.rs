@@ -2,14 +2,14 @@ use std::str::FromStr;
 
 use crate::parser;
 use crate::table::Iter;
-use crate::{InternalString, Item, Table};
+use crate::{Item, RawString, Table};
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
 pub struct Document {
     pub(crate) root: Item,
     // Trailing comments and whitespaces
-    pub(crate) trailing: InternalString,
+    pub(crate) trailing: RawString,
 }
 
 impl Document {
@@ -46,7 +46,7 @@ impl Document {
     }
 
     /// Set whitespace after last element
-    pub fn set_trailing(&mut self, trailing: impl Into<InternalString>) {
+    pub fn set_trailing(&mut self, trailing: impl Into<RawString>) {
         self.trailing = trailing.into();
     }
 

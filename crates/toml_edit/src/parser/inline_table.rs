@@ -10,7 +10,7 @@ use crate::parser::prelude::*;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
-use crate::{InlineTable, InternalString, Item, Value};
+use crate::{InlineTable, InternalString, Item, RawString, Value};
 
 use indexmap::map::Entry;
 
@@ -34,7 +34,7 @@ pub(crate) fn inline_table(
 
 fn table_from_pairs(
     v: Vec<(Vec<Key>, TableKeyValue)>,
-    preamble: &str,
+    preamble: RawString,
 ) -> Result<InlineTable, CustomError> {
     let mut root = InlineTable::new();
     root.set_preamble(preamble);
@@ -98,11 +98,17 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 fn inline_table_keyvals(
     check: RecursionCheck,
-) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, &str), ParserError<'_>>
-{
+) -> impl FnMut(
+    Input<'_>,
+) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ParserError<'_>> {
     move |input| {
         let check = check.recursing(input)?;
-        (separated_list0(INLINE_TABLE_SEP, keyval(check)), ws).parse(input)
+        (
+            separated_list0(INLINE_TABLE_SEP, keyval(check)),
+            ws.with_span()
+                .map(|(ws, span)| RawString::new(ws).with_span(span)),
+        )
+            .parse(input)
     }
 }
 
@@ -116,7 +122,7 @@ fn keyval(
                 one_of(KEYVAL_SEP)
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::CharLiteral('='))),
-                (ws, value(check), ws),
+                (ws.with_span(), value(check), ws.with_span()),
             )),
         )
             .map(|(key, (_, v))| {
@@ -124,6 +130,8 @@ fn keyval(
                 let key = path.pop().expect("grammar ensures at least 1");
 
                 let (pre, v, suf) = v;
+                let pre = RawString::new(pre.0).with_span(pre.1);
+                let suf = RawString::new(suf.0).with_span(suf.1);
                 let v = v.decorated(pre, suf);
                 (
                     path,
