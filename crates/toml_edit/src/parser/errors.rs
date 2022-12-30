@@ -68,11 +68,10 @@ impl StdError for TomlError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct ParserError<'b> {
     input: Input<'b>,
-    context: Vec<Context>,
-    cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+    context: Vec<Details>,
 }
 
 impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
@@ -80,7 +79,6 @@ impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
         Self {
             input,
             context: Default::default(),
-            cause: Default::default(),
         }
     }
 
@@ -99,7 +97,7 @@ impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
 
 impl<'b> nom8::error::ContextError<Input<'b>, Context> for ParserError<'b> {
     fn add_context(_input: Input<'b>, ctx: Context, mut other: Self) -> Self {
-        other.context.push(ctx);
+        other.context.push(Details::Context(ctx));
         other
     }
 }
@@ -110,19 +108,8 @@ impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternal
     fn from_external_error(input: Input<'b>, _kind: nom8::error::ErrorKind, e: E) -> Self {
         Self {
             input,
-            context: Default::default(),
-            cause: Some(Box::new(e)),
+            context: vec![Details::Cause(Box::new(e))],
         }
-    }
-}
-
-// For tests
-impl<'b> std::cmp::PartialEq for ParserError<'b> {
-    fn eq(&self, other: &Self) -> bool {
-        self.input == other.input
-            && self.context == other.context
-            && self.cause.as_ref().map(ToString::to_string)
-                == other.cause.as_ref().map(ToString::to_string)
     }
 }
 
@@ -145,8 +132,12 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
             .expect("valid line number");
         let content = String::from_utf8_lossy(content);
 
+        let cause = self.error.context.iter().find_map(|c| match c {
+            Details::Cause(c) => Some(c),
+            _ => None,
+        });
         let expression = self.error.context.iter().find_map(|c| match c {
-            Context::Expression(c) => Some(c),
+            Details::Context(Context::Expression(c)) => Some(c),
             _ => None,
         });
         let expected = self
@@ -154,7 +145,7 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
             .context
             .iter()
             .filter_map(|c| match c {
-                Context::Expected(c) => Some(c),
+                Details::Context(Context::Expected(c)) => Some(c),
                 _ => None,
             })
             .collect::<Vec<_>>();
@@ -198,11 +189,28 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
             }
             writeln!(f)?;
         }
-        if let Some(cause) = &self.error.cause {
+        if let Some(cause) = &cause {
             write!(f, "{}", cause)?;
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum Details {
+    Context(Context),
+    Cause(Box<dyn std::error::Error + Send + Sync + 'static>),
+}
+
+// For tests
+impl std::cmp::PartialEq for Details {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Context(lhs), Self::Context(rhs)) => lhs == rhs,
+            (Self::Cause(lhs), Self::Cause(rhs)) => lhs.to_string() == rhs.to_string(),
+            (_, _) => false,
+        }
     }
 }
 
