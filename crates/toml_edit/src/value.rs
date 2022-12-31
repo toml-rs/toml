@@ -218,15 +218,15 @@ impl Value {
         }
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
         match self {
-            Value::String(f) => f.despan(),
-            Value::Integer(f) => f.despan(),
-            Value::Float(f) => f.despan(),
-            Value::Boolean(f) => f.despan(),
-            Value::Datetime(f) => f.despan(),
-            Value::Array(a) => a.despan(),
-            Value::InlineTable(t) => t.despan(),
+            Value::String(f) => f.despan(input),
+            Value::Integer(f) => f.despan(input),
+            Value::Float(f) => f.despan(input),
+            Value::Boolean(f) => f.despan(input),
+            Value::Datetime(f) => f.despan(input),
+            Value::Array(a) => a.despan(input),
+            Value::InlineTable(t) => t.despan(input),
         }
     }
 }
@@ -348,7 +348,7 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
 
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 

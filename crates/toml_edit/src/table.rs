@@ -223,10 +223,10 @@ impl Table {
         self.items.get(key).map(|kv| &kv.key.decor)
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
         for kv in self.items.values_mut() {
-            kv.key.despan();
-            kv.value.despan();
+            kv.key.despan(input);
+            kv.value.despan(input);
         }
     }
 }
@@ -397,9 +397,9 @@ impl std::fmt::Display for Table {
         let children = self.get_values();
         // print table body
         for (key_path, value) in children {
-            key_path.as_slice().encode(f, DEFAULT_KEY_DECOR)?;
+            key_path.as_slice().encode(f, None, DEFAULT_KEY_DECOR)?;
             write!(f, "=")?;
-            value.encode(f, DEFAULT_VALUE_DECOR)?;
+            value.encode(f, None, DEFAULT_VALUE_DECOR)?;
             writeln!(f)?;
         }
         Ok(())

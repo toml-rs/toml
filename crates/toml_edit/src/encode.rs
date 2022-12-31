@@ -14,25 +14,47 @@ use crate::value::{
 use crate::{Array, InlineTable, Item, Table, Value};
 
 pub(crate) trait Encode {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result;
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result;
 }
 
 impl Encode for Key {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
-        let repr = self
-            .as_repr()
-            .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(self.default_repr()));
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result {
         let decor = self.decor();
-        decor.prefix_encode(buf, default_decor.0)?;
-        repr.as_raw().encode(buf)?;
-        decor.suffix_encode(buf, default_decor.1)?;
+        decor.prefix_encode(buf, input, default_decor.0)?;
+
+        if let Some(input) = input {
+            let repr = self
+                .as_repr()
+                .map(Cow::Borrowed)
+                .unwrap_or_else(|| Cow::Owned(self.default_repr()));
+            repr.encode(buf, input)?;
+        } else {
+            let repr = self.display_repr();
+            write!(buf, "{}", repr)?;
+        };
+
+        decor.suffix_encode(buf, input, default_decor.1)?;
         Ok(())
     }
 }
 
 impl<'k> Encode for &'k [&'k Key] {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result {
         for (i, key) in self.iter().enumerate() {
             let first = i == 0;
             let last = i + 1 == self.len();
@@ -51,7 +73,7 @@ impl<'k> Encode for &'k [&'k Key] {
             if !first {
                 write!(buf, ".")?;
             }
-            key.encode(buf, (prefix, suffix))?;
+            key.encode(buf, input, (prefix, suffix))?;
         }
         Ok(())
     }
@@ -61,23 +83,40 @@ impl<T> Encode for Formatted<T>
 where
     T: ValueRepr,
 {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
-        let repr = self
-            .as_repr()
-            .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(self.default_repr()));
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result {
         let decor = self.decor();
-        decor.prefix_encode(buf, default_decor.0)?;
-        repr.as_raw().encode(buf)?;
-        decor.suffix_encode(buf, default_decor.1)?;
+        decor.prefix_encode(buf, input, default_decor.0)?;
+
+        if let Some(input) = input {
+            let repr = self
+                .as_repr()
+                .map(Cow::Borrowed)
+                .unwrap_or_else(|| Cow::Owned(self.default_repr()));
+            repr.encode(buf, input)?;
+        } else {
+            let repr = self.display_repr();
+            write!(buf, "{}", repr)?;
+        };
+
+        decor.suffix_encode(buf, input, default_decor.1)?;
         Ok(())
     }
 }
 
 impl Encode for Array {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result {
         let decor = self.decor();
-        decor.prefix_encode(buf, default_decor.0)?;
+        decor.prefix_encode(buf, input, default_decor.0)?;
         write!(buf, "[")?;
 
         for (i, elem) in self.iter().enumerate() {
@@ -88,26 +127,31 @@ impl Encode for Array {
                 inner_decor = DEFAULT_VALUE_DECOR;
                 write!(buf, ",")?;
             }
-            elem.encode(buf, inner_decor)?;
+            elem.encode(buf, input, inner_decor)?;
         }
         if self.trailing_comma() && !self.is_empty() {
             write!(buf, ",")?;
         }
 
-        self.trailing().encode(buf)?;
+        self.trailing().encode_with_default(buf, input, "")?;
         write!(buf, "]")?;
-        decor.suffix_encode(buf, default_decor.1)?;
+        decor.suffix_encode(buf, input, default_decor.1)?;
 
         Ok(())
     }
 }
 
 impl Encode for InlineTable {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result {
         let decor = self.decor();
-        decor.prefix_encode(buf, default_decor.0)?;
+        decor.prefix_encode(buf, input, default_decor.0)?;
         write!(buf, "{{")?;
-        self.preamble().encode(buf)?;
+        self.preamble().encode_with_default(buf, input, "")?;
 
         let children = self.get_values();
         let len = children.len();
@@ -120,28 +164,35 @@ impl Encode for InlineTable {
             } else {
                 DEFAULT_VALUE_DECOR
             };
-            key_path.as_slice().encode(buf, DEFAULT_INLINE_KEY_DECOR)?;
+            key_path
+                .as_slice()
+                .encode(buf, input, DEFAULT_INLINE_KEY_DECOR)?;
             write!(buf, "=")?;
-            value.encode(buf, inner_decor)?;
+            value.encode(buf, input, inner_decor)?;
         }
 
         write!(buf, "}}")?;
-        decor.suffix_encode(buf, default_decor.1)?;
+        decor.suffix_encode(buf, input, default_decor.1)?;
 
         Ok(())
     }
 }
 
 impl Encode for Value {
-    fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
+    fn encode(
+        &self,
+        buf: &mut dyn Write,
+        input: Option<&str>,
+        default_decor: (&str, &str),
+    ) -> Result {
         match self {
-            Value::String(repr) => repr.encode(buf, default_decor),
-            Value::Integer(repr) => repr.encode(buf, default_decor),
-            Value::Float(repr) => repr.encode(buf, default_decor),
-            Value::Boolean(repr) => repr.encode(buf, default_decor),
-            Value::Datetime(repr) => repr.encode(buf, default_decor),
-            Value::Array(array) => array.encode(buf, default_decor),
-            Value::InlineTable(table) => table.encode(buf, default_decor),
+            Value::String(repr) => repr.encode(buf, input, default_decor),
+            Value::Integer(repr) => repr.encode(buf, input, default_decor),
+            Value::Float(repr) => repr.encode(buf, input, default_decor),
+            Value::Boolean(repr) => repr.encode(buf, input, default_decor),
+            Value::Datetime(repr) => repr.encode(buf, input, default_decor),
+            Value::Array(array) => array.encode(buf, input, default_decor),
+            Value::InlineTable(table) => table.encode(buf, input, default_decor),
         }
     }
 }
@@ -163,9 +214,17 @@ impl Display for Document {
         tables.sort_by_key(|&(id, _, _, _)| id);
         let mut first_table = true;
         for (_, table, path, is_array) in tables {
-            visit_table(f, table, &path, is_array, &mut first_table)?;
+            visit_table(
+                f,
+                self.original.as_deref(),
+                table,
+                &path,
+                is_array,
+                &mut first_table,
+            )?;
         }
-        self.trailing.as_str().fmt(f)
+        self.trailing()
+            .encode_with_default(f, self.original.as_deref(), "")
     }
 }
 
@@ -202,6 +261,7 @@ where
 
 fn visit_table(
     buf: &mut dyn Write,
+    input: Option<&str>,
     table: &Table,
     path: &[&Key],
     is_array_of_tables: bool,
@@ -231,11 +291,11 @@ fn visit_table(
         } else {
             DEFAULT_TABLE_DECOR
         };
-        table.decor.prefix_encode(buf, default_decor.0)?;
+        table.decor.prefix_encode(buf, input, default_decor.0)?;
         write!(buf, "[[")?;
-        path.encode(buf, DEFAULT_KEY_PATH_DECOR)?;
+        path.encode(buf, input, DEFAULT_KEY_PATH_DECOR)?;
         write!(buf, "]]")?;
-        table.decor.suffix_encode(buf, default_decor.1)?;
+        table.decor.suffix_encode(buf, input, default_decor.1)?;
         writeln!(buf)?;
     } else if is_visible_std_table {
         let default_decor = if *first_table {
@@ -244,18 +304,18 @@ fn visit_table(
         } else {
             DEFAULT_TABLE_DECOR
         };
-        table.decor.prefix_encode(buf, default_decor.0)?;
+        table.decor.prefix_encode(buf, input, default_decor.0)?;
         write!(buf, "[")?;
-        path.encode(buf, DEFAULT_KEY_PATH_DECOR)?;
+        path.encode(buf, input, DEFAULT_KEY_PATH_DECOR)?;
         write!(buf, "]")?;
-        table.decor.suffix_encode(buf, default_decor.1)?;
+        table.decor.suffix_encode(buf, input, default_decor.1)?;
         writeln!(buf)?;
     }
     // print table body
     for (key_path, value) in children {
-        key_path.as_slice().encode(buf, DEFAULT_KEY_DECOR)?;
+        key_path.as_slice().encode(buf, input, DEFAULT_KEY_DECOR)?;
         write!(buf, "=")?;
-        value.encode(buf, DEFAULT_VALUE_DECOR)?;
+        value.encode(buf, input, DEFAULT_VALUE_DECOR)?;
         writeln!(buf)?;
     }
     Ok(())

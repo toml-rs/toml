@@ -22,10 +22,13 @@ pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    document::document
+    let mut doc = document::document
         .parse(b)
         .finish()
-        .map_err(|e| TomlError::new(e, b))
+        .map_err(|e| TomlError::new(e, b))?;
+    doc.original = Some(raw.to_owned());
+    doc.despan();
+    Ok(doc)
 }
 
 pub(crate) fn parse_key(raw: &str) -> Result<crate::Key, TomlError> {
@@ -49,7 +52,7 @@ pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
     match result {
         Ok(mut keys) => {
             for key in &mut keys {
-                key.despan();
+                key.despan(raw);
             }
             Ok(keys)
         }
@@ -66,7 +69,7 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
         Ok(mut value) => {
             // Only take the repr and not decor, as its probably not intended
             value.decor_mut().clear();
-            value.despan();
+            value.despan(raw);
             Ok(value)
         }
         Err(e) => Err(TomlError::new(e, b)),
@@ -170,6 +173,131 @@ pub(crate) mod prelude {
             _input: Input<'_>,
         ) -> Result<Self, nom8::Err<ParserError<'_>>> {
             Ok(self)
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn documents() {
+        let documents = [
+            "",
+            r#"
+# This is a TOML document.
+
+title = "TOML Example"
+
+    [owner]
+    name = "Tom Preston-Werner"
+    dob = 1979-05-27T07:32:00-08:00 # First class dates
+
+    [database]
+    server = "192.168.1.1"
+    ports = [ 8001, 8001, 8002 ]
+    connection_max = 5000
+    enabled = true
+
+    [servers]
+
+    # Indentation (tabs and/or spaces) is allowed but not required
+[servers.alpha]
+    ip = "10.0.0.1"
+    dc = "eqdc10"
+
+    [servers.beta]
+    ip = "10.0.0.2"
+    dc = "eqdc10"
+
+    [clients]
+    data = [ ["gamma", "delta"], [1, 2] ]
+
+    # Line breaks are OK when inside arrays
+hosts = [
+    "alpha",
+    "omega"
+]
+
+   'some.wierd .stuff'   =  """
+                         like
+                         that
+                      #   """ # this broke my sintax highlighting
+   " also. like " = '''
+that
+'''
+   double = 2e39 # this number looks familiar
+# trailing comment"#,
+            r#""#,
+            r#"  "#,
+            r#" hello = 'darkness' # my old friend
+"#,
+            r#"[parent . child]
+key = "value"
+"#,
+            r#"hello.world = "a"
+"#,
+            r#"foo = 1979-05-27 # Comment
+"#,
+        ];
+        for input in documents {
+            dbg!(input);
+            let mut parsed = parse_document(input);
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan();
+            }
+            let doc = match parsed {
+                Ok(doc) => doc,
+                Err(err) => {
+                    panic!(
+                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
+                        err, input
+                    )
+                }
+            };
+
+            snapbox::assert_eq(input, doc.to_string());
+        }
+    }
+
+    #[test]
+    fn documents_parse_only() {
+        let parse_only = ["\u{FEFF}
+[package]
+name = \"foo\"
+version = \"0.0.1\"
+authors = []
+"];
+        for input in parse_only {
+            dbg!(input);
+            let mut parsed = parse_document(input);
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan();
+            }
+            match parsed {
+                Ok(_) => (),
+                Err(err) => {
+                    panic!(
+                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
+                        err, input
+                    )
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_documents() {
+        let invalid_inputs = [r#" hello = 'darkness' # my old friend
+$"#];
+        for input in invalid_inputs {
+            dbg!(input);
+            let mut parsed = parse_document(input);
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan();
+            }
+            assert!(parsed.is_err(), "Input: {:?}", input);
         }
     }
 }

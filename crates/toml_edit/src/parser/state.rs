@@ -6,8 +6,7 @@ use crate::{ArrayOfTables, Document, InternalString, Item, RawString, Table};
 
 pub(crate) struct ParseState {
     document: Document,
-    trailing: String,
-    trailing_span: Option<std::ops::Range<usize>>,
+    trailing: Option<std::ops::Range<usize>>,
     current_table_position: usize,
     current_table: Table,
     current_is_array: bool,
@@ -17,30 +16,25 @@ pub(crate) struct ParseState {
 impl ParseState {
     pub(crate) fn into_document(mut self) -> Result<Document, CustomError> {
         self.finalize_table()?;
-        let mut trailing = RawString::new(self.trailing.as_str());
-        if let Some(span) = self.trailing_span {
-            trailing = trailing.with_span(span);
-        }
-        self.document.trailing = trailing;
+        let trailing = self.trailing.map(RawString::with_span);
+        self.document.trailing = trailing.unwrap_or_default();
         Ok(self.document)
     }
 
-    pub(crate) fn on_ws(&mut self, w: &str, span: std::ops::Range<usize>) {
-        if let Some(old) = self.trailing_span.take() {
-            self.trailing_span = Some(old.start..span.end);
+    pub(crate) fn on_ws(&mut self, span: std::ops::Range<usize>) {
+        if let Some(old) = self.trailing.take() {
+            self.trailing = Some(old.start..span.end);
         } else {
-            self.trailing_span = Some(span);
+            self.trailing = Some(span);
         }
-        self.trailing.push_str(w);
     }
 
-    pub(crate) fn on_comment(&mut self, c: &str, e: &str, span: std::ops::Range<usize>) {
-        if let Some(old) = self.trailing_span.take() {
-            self.trailing_span = Some(old.start..span.end);
+    pub(crate) fn on_comment(&mut self, span: std::ops::Range<usize>) {
+        if let Some(old) = self.trailing.take() {
+            self.trailing = Some(old.start..span.end);
         } else {
-            self.trailing_span = Some(span);
+            self.trailing = Some(span);
         }
-        self.trailing = [&self.trailing, c, e].concat();
     }
 
     pub(crate) fn on_keyval(
@@ -49,33 +43,23 @@ impl ParseState {
         mut kv: TableKeyValue,
     ) -> Result<(), CustomError> {
         {
-            let prefix = std::mem::take(&mut self.trailing);
-            let mut prefix_span = self.trailing_span.take();
+            let mut prefix = self.trailing.take();
             let first_key = if path.is_empty() {
                 &mut kv.key
             } else {
                 &mut path[0]
             };
-            let mut prefix = RawString::new(
-                prefix
-                    + first_key
-                        .decor
-                        .prefix()
-                        .map(|s| s.as_str())
-                        .unwrap_or_default(),
-            );
-            prefix_span = match (
-                prefix_span.take(),
+            let prefix = match (
+                prefix.take(),
                 first_key.decor.prefix().and_then(|d| d.span()),
             ) {
                 (Some(p), Some(k)) => Some(p.start..k.end),
                 (Some(p), None) | (None, Some(p)) => Some(p),
                 (None, None) => None,
             };
-            if let Some(prefix_span) = prefix_span {
-                prefix = prefix.with_span(prefix_span);
-            }
-            first_key.decor.set_prefix(prefix);
+            first_key
+                .decor
+                .set_prefix(prefix.map(RawString::with_span).unwrap_or_default());
         }
 
         let table = &mut self.current_table;
@@ -261,22 +245,17 @@ impl ParseState {
     pub(crate) fn on_std_header(
         &mut self,
         path: Vec<Key>,
-        trailing: &str,
-        trailing_span: std::ops::Range<usize>,
+        trailing: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
-        let leading = std::mem::take(&mut self.trailing);
-        let leading_span = self.trailing_span.take();
-        let mut leading = RawString::new(leading);
-        if let Some(leading_span) = leading_span {
-            leading = leading.with_span(leading_span);
-        }
-        self.start_table(
-            path,
-            Decor::new(leading, RawString::new(trailing).with_span(trailing_span)),
-        )?;
+        let leading = self
+            .trailing
+            .take()
+            .map(RawString::with_span)
+            .unwrap_or_default();
+        self.start_table(path, Decor::new(leading, RawString::with_span(trailing)))?;
 
         Ok(())
     }
@@ -284,22 +263,17 @@ impl ParseState {
     pub(crate) fn on_array_header(
         &mut self,
         path: Vec<Key>,
-        trailing: &str,
-        trailing_span: std::ops::Range<usize>,
+        trailing: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
-        let leading = std::mem::take(&mut self.trailing);
-        let leading_span = self.trailing_span.take();
-        let mut leading = RawString::new(leading);
-        if let Some(leading_span) = leading_span {
-            leading = leading.with_span(leading_span);
-        }
-        self.start_aray_table(
-            path,
-            Decor::new(leading, RawString::new(trailing).with_span(trailing_span)),
-        )?;
+        let leading = self
+            .trailing
+            .take()
+            .map(RawString::with_span)
+            .unwrap_or_default();
+        self.start_aray_table(path, Decor::new(leading, RawString::with_span(trailing)))?;
 
         Ok(())
     }
@@ -309,8 +283,7 @@ impl Default for ParseState {
     fn default() -> Self {
         Self {
             document: Document::new(),
-            trailing: String::new(),
-            trailing_span: None,
+            trailing: None,
             current_table_position: 0,
             current_table: Table::new(),
             current_is_array: false,

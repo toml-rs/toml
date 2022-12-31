@@ -31,9 +31,9 @@ impl ArrayOfTables {
         a
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
         for value in &mut self.values {
-            value.despan();
+            value.despan(input);
         }
     }
 }

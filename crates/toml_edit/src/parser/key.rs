@@ -19,12 +19,12 @@ use crate::RawString;
 pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<'_>> {
     separated_list1(
         DOT_SEP,
-        (ws.with_span(), simple_key, ws.with_span()).map(|(pre, (raw, key), suffix)| {
+        (ws.span(), simple_key, ws.span()).map(|(pre, (raw, key), suffix)| {
             Key::new(key)
                 .with_repr_unchecked(Repr::new_unchecked(raw))
                 .with_decor(Decor::new(
-                    RawString::new(pre.0).with_span(pre.1),
-                    RawString::new(suffix.0).with_span(suffix.1),
+                    RawString::with_span(pre),
+                    RawString::with_span(suffix),
                 ))
         }),
     )
@@ -48,14 +48,12 @@ pub(crate) fn simple_key(
         crate::parser::strings::APOSTROPHE => literal_string.map(|s: &str| s.into()),
         _ => unquoted_key.map(|s: &str| s.into()),
     }
-        .with_recognized()
-        .with_span()
-        .map(|((k, raw), span)| {
-            let raw = unsafe { from_utf8_unchecked(raw, "If `quoted_key` or `unquoted_key` are valid, then their `recognize`d value is valid") };
-            let raw = RawString::new(raw).with_span(span);
-            (raw, k)
-        })
-        .parse(input)
+    .with_span()
+    .map(|(k, span)| {
+        let raw = RawString::with_span(span);
+        (raw, k)
+    })
+    .parse(input)
 }
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
@@ -98,10 +96,7 @@ mod test {
             let parsed = simple_key.parse(new_input(input)).finish();
             assert_eq!(
                 parsed,
-                Ok((
-                    RawString::new(input).with_span(0..(input.len())),
-                    expected.into()
-                )),
+                Ok((RawString::with_span(0..(input.len())), expected.into())),
                 "Parsing {input:?}"
             );
         }

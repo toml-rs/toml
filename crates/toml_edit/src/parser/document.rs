@@ -69,11 +69,9 @@ pub(crate) fn parse_comment<'s, 'i>(
 ) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'_>> + 's {
     move |i| {
         (comment, line_ending)
-            .with_span()
-            .map_res::<_, _, std::str::Utf8Error>(|((c, e), span)| {
-                let c = std::str::from_utf8(c)?;
-                state.borrow_mut().on_comment(c, e, span);
-                Ok(())
+            .span()
+            .map(|span| {
+                state.borrow_mut().on_comment(span);
             })
             .parse(i)
     }
@@ -83,8 +81,8 @@ pub(crate) fn parse_ws<'s, 'i>(
     state: &'s RefCell<ParseState>,
 ) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
     move |i| {
-        ws.with_span()
-            .map(|(w, span)| state.borrow_mut().on_ws(w, span))
+        ws.span()
+            .map(|span| state.borrow_mut().on_ws(span))
             .parse(i)
     }
 }
@@ -94,8 +92,8 @@ pub(crate) fn parse_newline<'s, 'i>(
 ) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
     move |i| {
         newline
-            .with_span()
-            .map(|(_, span)| state.borrow_mut().on_ws("\n", span))
+            .span()
+            .map(|span| state.borrow_mut().on_ws(span))
             .parse(i)
     }
 }
@@ -121,10 +119,9 @@ pub(crate) fn parse_keyval(
                 .context(Context::Expected(ParserValue::CharLiteral('.')))
                 .context(Context::Expected(ParserValue::CharLiteral('='))),
             (
-                ws.with_span(),
+                ws.span(),
                 value(RecursionCheck::default()),
                 line_trailing
-                    .with_span()
                     .context(Context::Expected(ParserValue::CharLiteral('\n')))
                     .context(Context::Expected(ParserValue::CharLiteral('#'))),
             ),
@@ -135,8 +132,8 @@ pub(crate) fn parse_keyval(
             let key = path.pop().expect("grammar ensures at least 1");
 
             let (pre, v, suf) = v;
-            let pre = RawString::new(pre.0).with_span(pre.1);
-            let suf = RawString::new(std::str::from_utf8(suf.0)?).with_span(suf.1);
+            let pre = RawString::with_span(pre);
+            let suf = RawString::with_span(suf);
             let v = v.decorated(pre, suf);
             Ok((
                 path,
@@ -147,120 +144,4 @@ pub(crate) fn parse_keyval(
             ))
         })
         .parse(input)
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn documents() {
-        let documents = [
-            "",
-            r#"
-# This is a TOML document.
-
-title = "TOML Example"
-
-    [owner]
-    name = "Tom Preston-Werner"
-    dob = 1979-05-27T07:32:00-08:00 # First class dates
-
-    [database]
-    server = "192.168.1.1"
-    ports = [ 8001, 8001, 8002 ]
-    connection_max = 5000
-    enabled = true
-
-    [servers]
-
-    # Indentation (tabs and/or spaces) is allowed but not required
-[servers.alpha]
-    ip = "10.0.0.1"
-    dc = "eqdc10"
-
-    [servers.beta]
-    ip = "10.0.0.2"
-    dc = "eqdc10"
-
-    [clients]
-    data = [ ["gamma", "delta"], [1, 2] ]
-
-    # Line breaks are OK when inside arrays
-hosts = [
-    "alpha",
-    "omega"
-]
-
-   'some.wierd .stuff'   =  """
-                         like
-                         that
-                      #   """ # this broke my sintax highlighting
-   " also. like " = '''
-that
-'''
-   double = 2e39 # this number looks familiar
-# trailing comment"#,
-            r#""#,
-            r#"  "#,
-            r#" hello = 'darkness' # my old friend
-"#,
-            r#"[parent . child]
-key = "value"
-"#,
-            r#"hello.world = "a"
-"#,
-            r#"foo = 1979-05-27 # Comment
-"#,
-        ];
-        for input in documents {
-            dbg!(input);
-            let parsed = document.parse(new_input(input)).finish();
-            let doc = match parsed {
-                Ok(doc) => doc,
-                Err(err) => {
-                    panic!(
-                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
-                        err, input
-                    )
-                }
-            };
-
-            snapbox::assert_eq(input, doc.to_string());
-        }
-    }
-
-    #[test]
-    fn documents_parse_only() {
-        let parse_only = ["\u{FEFF}
-[package]
-name = \"foo\"
-version = \"0.0.1\"
-authors = []
-"];
-        for input in parse_only {
-            dbg!(input);
-            let parsed = document.parse(new_input(input)).finish();
-            match parsed {
-                Ok(_) => (),
-                Err(err) => {
-                    panic!(
-                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
-                        err, input
-                    )
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn invalid_documents() {
-        let invalid_inputs = [r#" hello = 'darkness' # my old friend
-$"#];
-        for input in invalid_inputs {
-            dbg!(input);
-            let parsed = document.parse(new_input(input)).finish();
-            assert!(parsed.is_err(), "Input: {:?}", input);
-        }
-    }
 }

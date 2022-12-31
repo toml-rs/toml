@@ -306,12 +306,12 @@ impl Item {
         }
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
         match self {
             Item::None => {}
-            Item::Value(v) => v.despan(),
-            Item::Table(v) => v.despan(),
-            Item::ArrayOfTables(v) => v.despan(),
+            Item::Value(v) => v.despan(input),
+            Item::Table(v) => v.despan(input),
+            Item::ArrayOfTables(v) => v.despan(input),
         }
     }
 }

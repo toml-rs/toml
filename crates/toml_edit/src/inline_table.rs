@@ -178,11 +178,13 @@ impl InlineTable {
         self.span.clone()
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
         self.span = None;
+        self.decor.despan(input);
+        self.preamble.despan(input);
         for kv in self.items.values_mut() {
-            kv.key.despan();
-            kv.value.despan();
+            kv.key.despan(input);
+            kv.value.despan(input);
         }
     }
 }
@@ -365,7 +367,7 @@ impl InlineTable {
 
 impl std::fmt::Display for InlineTable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 

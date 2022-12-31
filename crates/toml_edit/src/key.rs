@@ -91,8 +91,11 @@ impl Key {
     /// Returns a raw representation.
     pub fn display_repr(&self) -> Cow<'_, str> {
         self.as_repr()
-            .map(|r| Cow::Borrowed(r.as_raw().as_str()))
-            .unwrap_or_else(|| Cow::Owned(self.default_repr().as_raw().as_str().to_owned()))
+            .and_then(|r| r.as_raw().as_str())
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| {
+                Cow::Owned(self.default_repr().as_raw().as_str().unwrap().to_owned())
+            })
     }
 
     /// Returns the surrounding whitespace
@@ -110,9 +113,10 @@ impl Key {
         self.repr.as_ref().and_then(|r| r.span())
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
+        self.decor.despan(input);
         if let Some(repr) = &mut self.repr {
-            repr.despan()
+            repr.despan(input)
         }
     }
 
@@ -189,7 +193,7 @@ impl PartialEq<String> for Key {
 
 impl std::fmt::Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 

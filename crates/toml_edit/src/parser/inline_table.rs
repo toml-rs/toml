@@ -105,8 +105,7 @@ fn inline_table_keyvals(
         let check = check.recursing(input)?;
         (
             separated_list0(INLINE_TABLE_SEP, keyval(check)),
-            ws.with_span()
-                .map(|(ws, span)| RawString::new(ws).with_span(span)),
+            ws.span().map(RawString::with_span),
         )
             .parse(input)
     }
@@ -122,7 +121,7 @@ fn keyval(
                 one_of(KEYVAL_SEP)
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::CharLiteral('='))),
-                (ws.with_span(), value(check), ws.with_span()),
+                (ws.span(), value(check), ws.span()),
             )),
         )
             .map(|(key, (_, v))| {
@@ -130,8 +129,8 @@ fn keyval(
                 let key = path.pop().expect("grammar ensures at least 1");
 
                 let (pre, v, suf) = v;
-                let pre = RawString::new(pre.0).with_span(pre.1);
-                let suf = RawString::new(suf.0).with_span(suf.1);
+                let pre = RawString::with_span(pre);
+                let suf = RawString::with_span(suf);
                 let v = v.decorated(pre, suf);
                 (
                     path,
@@ -160,9 +159,12 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let parsed = inline_table(Default::default())
+            let mut parsed = inline_table(Default::default())
                 .parse(new_input(input))
                 .finish();
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
     }
@@ -172,9 +174,12 @@ mod test {
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
             dbg!(input);
-            let parsed = inline_table(Default::default())
+            let mut parsed = inline_table(Default::default())
                 .parse(new_input(input))
                 .finish();
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
             assert!(parsed.is_err());
         }
     }

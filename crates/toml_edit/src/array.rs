@@ -92,10 +92,12 @@ impl Array {
         self.span.clone()
     }
 
-    pub(crate) fn despan(&mut self) {
+    pub(crate) fn despan(&mut self, input: &str) {
         self.span = None;
+        self.decor.despan(input);
+        self.trailing.despan(input);
         for value in &mut self.values {
-            value.despan();
+            value.despan(input);
         }
     }
 }
@@ -319,7 +321,7 @@ impl Array {
 
 impl std::fmt::Display for Array {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 
