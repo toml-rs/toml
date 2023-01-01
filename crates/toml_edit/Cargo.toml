@@ -55,13 +55,13 @@ kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.5.0", path = "../toml_datetime" }
 
 [dev-dependencies]
-serde_json = "1.0.89"
+serde_json = "1.0.91"
 toml-test-harness = "0.4.2"
-toml-test-data = "1.1.0"
+toml-test-data = "1.1.1"
 libtest-mimic = "0.5.2"
 snapbox = { version = "0.4.3", features = ["harness"] }
 criterion = "0.4.0"
-toml = "0.5.9"
+toml = "0.5.10"
 
 [[test]]
 name = "decoder_compliance"
