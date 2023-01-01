@@ -124,13 +124,28 @@ checksum = "86447ad904c7fb335a790c9d7fe3d0d971dc523b8ccd1561a520de9a85302750"
 dependencies = [
  "atty",
  "bitflags",
- "clap_derive",
- "clap_lex",
+ "clap_derive 3.2.18",
+ "clap_lex 0.2.4",
  "indexmap",
  "once_cell",
  "strsim",
  "termcolor",
  "textwrap",
+]
+
+[[package]]
+name = "clap"
+version = "4.0.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7db700bc935f9e43e88d00b0850dae18a63773cfbec6d8e070fccf7fef89a39"
+dependencies = [
+ "bitflags",
+ "clap_derive 4.0.21",
+ "clap_lex 0.3.0",
+ "is-terminal",
+ "once_cell",
+ "strsim",
+ "termcolor",
 ]
 
 [[package]]
@@ -147,10 +162,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap_derive"
+version = "4.0.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0177313f9f02afc995627906bbd8967e2be069f5261954222dac78290c2b9014"
+dependencies = [
+ "heck",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "clap_lex"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
+dependencies = [
+ "os_str_bytes",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
 dependencies = [
  "os_str_bytes",
 ]
@@ -182,7 +219,7 @@ dependencies = [
  "atty",
  "cast",
  "ciborium",
- "clap",
+ "clap 3.2.22",
  "criterion-plot",
  "itertools",
  "lazy_static",
@@ -464,7 +501,18 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79529479c298f5af41375b0c1a77ef670d450b4c9cd7949d2b43af08121b20ec"
 dependencies = [
- "clap",
+ "clap 3.2.22",
+ "termcolor",
+ "threadpool",
+]
+
+[[package]]
+name = "libtest-mimic"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7b603516767d1ab23d0de09d023e62966c3322f7148297c35cf3d97aa8b37fa"
+dependencies = [
+ "clap 4.0.32",
  "termcolor",
  "threadpool",
 ]
@@ -752,7 +800,7 @@ checksum = "efbd7b250c7243273b5aec4ca366fced84ad716d110bb7baae4814678952ebde"
 dependencies = [
  "concolor",
  "ignore",
- "libtest-mimic",
+ "libtest-mimic 0.5.2",
  "normalize-line-endings",
  "similar",
  "snapbox-macros",
@@ -878,7 +926,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9dd8f1792ea1c5f58d0ff04297bfea7df05dc0d7924e7db7c72360058def550e"
 dependencies = [
  "ignore",
- "libtest-mimic",
+ "libtest-mimic 0.5.2",
  "toml-test",
  "toml-test-data",
 ]
@@ -898,7 +946,7 @@ dependencies = [
  "indexmap",
  "itertools",
  "kstring",
- "libtest-mimic",
+ "libtest-mimic 0.6.0",
  "nom8",
  "serde",
  "serde_json",
