@@ -19,9 +19,9 @@ pub(crate) mod value;
 pub use errors::TomlError;
 
 pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
-    use nom8::prelude::*;
+    use prelude::*;
 
-    let b = raw.as_bytes();
+    let b = new_input(raw);
     document::document
         .parse(b)
         .finish()
@@ -29,9 +29,9 @@ pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
 }
 
 pub(crate) fn parse_key(raw: &str) -> Result<crate::Key, TomlError> {
-    use nom8::prelude::*;
+    use prelude::*;
 
-    let b = raw.as_bytes();
+    let b = new_input(raw);
     let result = key::simple_key.parse(b).finish();
     match result {
         Ok((raw, key)) => {
@@ -42,9 +42,9 @@ pub(crate) fn parse_key(raw: &str) -> Result<crate::Key, TomlError> {
 }
 
 pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
-    use nom8::prelude::*;
+    use prelude::*;
 
-    let b = raw.as_bytes();
+    let b = new_input(raw);
     let result = key::key.parse(b).finish();
     match result {
         Ok(keys) => Ok(keys),
@@ -53,10 +53,9 @@ pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
 }
 
 pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
-    use crate::parser::prelude::*;
-    use nom8::FinishIResult;
+    use prelude::*;
 
-    let b = raw.as_bytes();
+    let b = new_input(raw);
     let parsed = value::value(RecursionCheck::default()).parse(b).finish();
     match parsed {
         Ok(mut value) => {
@@ -75,10 +74,13 @@ pub(crate) mod prelude {
     pub(crate) use nom8::IResult;
     pub(crate) use nom8::Parser as _;
 
-    #[cfg(test)]
     pub(crate) use nom8::FinishIResult as _;
 
     pub(crate) type Input<'b> = &'b [u8];
+
+    pub(crate) fn new_input(s: &str) -> Input<'_> {
+        s.as_bytes()
+    }
 
     pub(crate) fn ok_error<I, O, E>(res: IResult<I, O, E>) -> Result<Option<(I, O)>, nom8::Err<E>> {
         match res {

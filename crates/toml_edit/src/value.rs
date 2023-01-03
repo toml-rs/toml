@@ -195,12 +195,20 @@ impl Value {
     /// let d = v.decorated(" ", " ");
     /// assert_eq!(&d.to_string(), " 42 ");
     /// ```
-    pub fn decorated(mut self, prefix: &str, suffix: &str) -> Self {
+    pub fn decorated(
+        mut self,
+        prefix: impl Into<InternalString>,
+        suffix: impl Into<InternalString>,
+    ) -> Self {
         self.decorate(prefix, suffix);
         self
     }
 
-    pub(crate) fn decorate(&mut self, prefix: &str, suffix: &str) {
+    pub(crate) fn decorate(
+        &mut self,
+        prefix: impl Into<InternalString>,
+        suffix: impl Into<InternalString>,
+    ) {
         let decor = self.decor_mut();
         *decor = Decor::new(prefix, suffix);
     }

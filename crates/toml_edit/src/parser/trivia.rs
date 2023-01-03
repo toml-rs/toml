@@ -138,7 +138,7 @@ mod test {
    "#,
         ];
         for input in inputs {
-            let parsed = ws_comment_newline.parse(input.as_bytes()).finish();
+            let parsed = ws_comment_newline.parse(new_input(input)).finish();
             assert!(parsed.is_ok(), "{:?}", parsed);
             let parsed = parsed.unwrap();
             assert_eq!(parsed, input.as_bytes());

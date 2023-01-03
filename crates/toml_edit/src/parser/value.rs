@@ -141,7 +141,7 @@ trimmed in raw strings.
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
-            let parsed = value(Default::default()).parse(input.as_bytes()).finish();
+            let parsed = value(Default::default()).parse(new_input(input)).finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
     }

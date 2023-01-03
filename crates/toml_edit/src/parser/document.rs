@@ -201,7 +201,7 @@ key = "value"
 "#,
         ];
         for input in documents {
-            let parsed = document.parse(input.as_bytes()).finish();
+            let parsed = document.parse(new_input(input)).finish();
             let doc = match parsed {
                 Ok(doc) => doc,
                 Err(err) => {
@@ -222,7 +222,7 @@ version = \"0.0.1\"
 authors = []
 "];
         for input in parse_only {
-            let parsed = document.parse(input.as_bytes()).finish();
+            let parsed = document.parse(new_input(input)).finish();
             match parsed {
                 Ok(_) => (),
                 Err(err) => {
@@ -237,7 +237,7 @@ authors = []
         let invalid_inputs = [r#" hello = 'darkness' # my old friend
 $"#];
         for input in invalid_inputs {
-            let parsed = document.parse(input.as_bytes()).finish();
+            let parsed = document.parse(new_input(input)).finish();
             assert!(parsed.is_err(), "Input: {:?}", input);
         }
     }

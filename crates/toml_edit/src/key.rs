@@ -29,7 +29,7 @@ use crate::InternalString;
 /// For details see [toml spec](https://github.com/toml-lang/toml/#keyvalue-pair).
 ///
 /// To parse a key use `FromStr` trait implementation: `"string".parse::<Key>()`.
-#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
+#[derive(Debug, Clone)]
 pub struct Key {
     key: InternalString,
     pub(crate) repr: Option<Repr>,
@@ -116,6 +116,33 @@ impl std::ops::Deref for Key {
 
     fn deref(&self) -> &Self::Target {
         self.get()
+    }
+}
+
+impl std::hash::Hash for Key {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.get().hash(state);
+    }
+}
+
+impl Ord for Key {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.get().cmp(other.get())
+    }
+}
+
+impl PartialOrd for Key {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Eq for Key {}
+
+impl PartialEq for Key {
+    #[inline]
+    fn eq(&self, other: &Key) -> bool {
+        PartialEq::eq(self.get(), other.get())
     }
 }
 
