@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(compliance)* Add more error checks for a dotted key that references an explicit table
+
 ## [0.17.0] - 2023-01-03
 
 ### Fixes
