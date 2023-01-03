@@ -202,6 +202,13 @@ impl ParseState {
                     table = last_child;
                 }
                 Item::Table(ref mut sweet_child_of_mine) => {
+                    // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
+                    if dotted && !sweet_child_of_mine.is_implicit() {
+                        return Err(CustomError::DuplicateKey {
+                            key: key.get().into(),
+                            table: None,
+                        });
+                    }
                     table = sweet_child_of_mine;
                 }
                 _ => unreachable!(),
