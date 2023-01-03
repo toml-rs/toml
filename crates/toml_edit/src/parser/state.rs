@@ -116,9 +116,10 @@ impl ParseState {
         let key = &path[path.len() - 1];
         if let Some(entry) = parent_table.remove(key.get()) {
             match entry {
-                Item::Table(t) if t.implicit => {
+                Item::Table(t) if t.implicit && !t.is_dotted() => {
                     self.current_table = t;
                 }
+                // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
                 _ => return Err(CustomError::duplicate_key(&path, path.len() - 1)),
             }
         }
@@ -202,7 +203,15 @@ impl ParseState {
                     table = last_child;
                 }
                 Item::Table(ref mut sweet_child_of_mine) => {
-                    // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
+                    // Since tables cannot be defined more than once, redefining such tables using a
+                    // [table] header is not allowed. Likewise, using dotted keys to redefine tables
+                    // already defined in [table] form is not allowed.
+                    if sweet_child_of_mine.is_dotted() && !dotted {
+                        return Err(CustomError::DuplicateKey {
+                            key: key.get().into(),
+                            table: None,
+                        });
+                    }
                     if dotted && !sweet_child_of_mine.is_implicit() {
                         return Err(CustomError::DuplicateKey {
                             key: key.get().into(),
