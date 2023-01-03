@@ -18,6 +18,56 @@ pub(crate) mod value;
 
 pub use errors::TomlError;
 
+pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
+    use nom8::prelude::*;
+
+    let b = raw.as_bytes();
+    document::document
+        .parse(b)
+        .finish()
+        .map_err(|e| TomlError::new(e, b))
+}
+
+pub(crate) fn parse_key(raw: &str) -> Result<crate::Key, TomlError> {
+    use nom8::prelude::*;
+
+    let b = raw.as_bytes();
+    let result = key::simple_key.parse(b).finish();
+    match result {
+        Ok((raw, key)) => {
+            Ok(crate::Key::new(key).with_repr_unchecked(crate::Repr::new_unchecked(raw)))
+        }
+        Err(e) => Err(TomlError::new(e, b)),
+    }
+}
+
+pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
+    use nom8::prelude::*;
+
+    let b = raw.as_bytes();
+    let result = key::key.parse(b).finish();
+    match result {
+        Ok(keys) => Ok(keys),
+        Err(e) => Err(TomlError::new(e, b)),
+    }
+}
+
+pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
+    use crate::parser::prelude::*;
+    use nom8::FinishIResult;
+
+    let b = raw.as_bytes();
+    let parsed = value::value(RecursionCheck::default()).parse(b).finish();
+    match parsed {
+        Ok(mut value) => {
+            // Only take the repr and not decor, as its probably not intended
+            value.decor_mut().clear();
+            Ok(value)
+        }
+        Err(e) => Err(TomlError::new(e, b)),
+    }
+}
+
 pub(crate) mod prelude {
     pub(crate) use super::errors::Context;
     pub(crate) use super::errors::ParserError;

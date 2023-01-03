@@ -49,7 +49,7 @@ impl Key {
     /// Parse a TOML key expression
     ///
     /// Unlike `"".parse<Key>()`, this supports dotted keys.
-    pub fn parse(repr: &str) -> Result<Vec<Self>, parser::TomlError> {
+    pub fn parse(repr: &str) -> Result<Vec<Self>, crate::TomlError> {
         Self::try_parse_path(repr)
     }
 
@@ -102,26 +102,12 @@ impl Key {
         self.decor.clear();
     }
 
-    fn try_parse_simple(s: &str) -> Result<Key, parser::TomlError> {
-        use nom8::prelude::*;
-
-        let b = s.as_bytes();
-        let result = parser::key::simple_key.parse(b).finish();
-        match result {
-            Ok((raw, key)) => Ok(Key::new(key).with_repr_unchecked(Repr::new_unchecked(raw))),
-            Err(e) => Err(parser::TomlError::new(e, b)),
-        }
+    fn try_parse_simple(s: &str) -> Result<Key, crate::TomlError> {
+        parser::parse_key(s)
     }
 
-    fn try_parse_path(s: &str) -> Result<Vec<Key>, parser::TomlError> {
-        use nom8::prelude::*;
-
-        let b = s.as_bytes();
-        let result = parser::key::key.parse(b).finish();
-        match result {
-            Ok(keys) => Ok(keys),
-            Err(e) => Err(parser::TomlError::new(e, b)),
-        }
+    fn try_parse_path(s: &str) -> Result<Vec<Key>, crate::TomlError> {
+        parser::parse_key_path(s)
     }
 }
 
@@ -161,7 +147,7 @@ impl std::fmt::Display for Key {
 }
 
 impl FromStr for Key {
-    type Err = parser::TomlError;
+    type Err = crate::TomlError;
 
     /// Tries to parse a key from a &str,
     /// if fails, tries as basic quoted key (surrounds with "")
