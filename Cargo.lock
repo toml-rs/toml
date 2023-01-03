@@ -912,9 +912,9 @@ dependencies = [
 
 [[package]]
 name = "toml-test-data"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "727e33b7f232a93b6a2c4b87ff41be5b98e0385383dbaf89d95af78c17dd33a5"
+checksum = "ffb12a952ab0d7f1d9fc67ba6ceb7736ed39628e1e843e9779dd7f5996a56ca1"
 dependencies = [
  "include_dir",
 ]

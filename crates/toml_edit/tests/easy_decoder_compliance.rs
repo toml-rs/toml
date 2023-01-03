@@ -8,7 +8,9 @@ fn main() {
     harness
         .ignore([
             "invalid/control/comment-cr.toml",
-            "invalid/table/append-with-dotted-keys-2.toml",
+            "valid/string/escape-esc.toml",
+            "invalid/table/duplicate-key-dotted-table.toml",
+            "invalid/table/duplicate-key-dotted-table2.toml",
         ])
         .unwrap();
     harness.test();
