@@ -207,25 +207,11 @@ impl Value {
 }
 
 impl FromStr for Value {
-    type Err = parser::TomlError;
+    type Err = crate::TomlError;
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use crate::parser::prelude::*;
-        use nom8::FinishIResult;
-
-        let b = s.as_bytes();
-        let parsed = parser::value::value(RecursionCheck::default())
-            .parse(b)
-            .finish();
-        match parsed {
-            Ok(mut value) => {
-                // Only take the repr and not decor, as its probably not intended
-                value.decor_mut().clear();
-                Ok(value)
-            }
-            Err(e) => Err(Self::Err::new(e, b)),
-        }
+        parser::parse_value(s)
     }
 }
 

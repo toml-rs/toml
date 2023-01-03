@@ -66,17 +66,11 @@ impl Default for Document {
 }
 
 impl FromStr for Document {
-    type Err = parser::TomlError;
+    type Err = crate::TomlError;
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use nom8::prelude::*;
-
-        let b = s.as_bytes();
-        parser::document::document
-            .parse(b)
-            .finish()
-            .map_err(|e| Self::Err::new(e, b))
+        parser::parse_document(s)
     }
 }
 
