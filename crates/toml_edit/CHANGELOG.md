@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.17.1] - 2023-01-03
+
 ### Fixes
 
 - *(compliance)* Add more error checks for a dotted key that references an explicit table
@@ -377,7 +379,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.17.1...HEAD
+[0.17.1]: https://github.com/toml-rs/toml_edit/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/toml-rs/toml_edit/compare/v0.16.2...v0.17.0
 [0.16.2]: https://github.com/toml-rs/toml_edit/compare/v0.16.1...v0.16.2
 [0.16.1]: https://github.com/toml-rs/toml_edit/compare/v0.16.0...v0.16.1
