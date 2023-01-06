@@ -2,7 +2,7 @@
 name = "toml_edit"
 version = "0.17.1"
 readme = "README.md"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Yet another format-preserving TOML parser."
