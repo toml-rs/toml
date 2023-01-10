@@ -21,7 +21,7 @@ impl Encode for Key {
         let repr = self.to_repr();
         let decor = self.decor();
         decor.prefix_encode(buf, default_decor.0)?;
-        write!(buf, "{}", repr,)?;
+        repr.as_raw().encode(buf)?;
         decor.suffix_encode(buf, default_decor.1)?;
         Ok(())
     }
@@ -61,7 +61,7 @@ where
         let repr = self.to_repr();
         let decor = self.decor();
         decor.prefix_encode(buf, default_decor.0)?;
-        write!(buf, "{}", repr,)?;
+        repr.as_raw().encode(buf)?;
         decor.suffix_encode(buf, default_decor.1)?;
         Ok(())
     }

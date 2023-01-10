@@ -115,12 +115,6 @@ impl Repr {
     }
 }
 
-impl std::fmt::Display for Repr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.as_raw().as_str().fmt(f)
-    }
-}
-
 /// A prefix and suffix,
 ///
 /// Including comments, whitespaces and newlines.
