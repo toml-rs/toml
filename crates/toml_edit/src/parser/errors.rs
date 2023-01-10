@@ -351,8 +351,10 @@ pub(crate) enum CustomError {
 impl CustomError {
     pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
         assert!(i < path.len());
+        let key = &path[i];
+        let repr = key.display_repr();
         Self::DuplicateKey {
-            key: path[i].to_repr().as_ref().as_raw().as_str().into(),
+            key: repr.into(),
             table: Some(path[..i].to_vec()),
         }
     }

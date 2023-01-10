@@ -78,12 +78,21 @@ impl Key {
         &self.key
     }
 
-    /// Returns the key raw representation.
-    pub fn to_repr(&self) -> Cow<Repr> {
-        self.repr
-            .as_ref()
-            .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(to_key_repr(&self.key)))
+    /// Returns key raw representation, if available.
+    pub fn as_repr(&self) -> Option<&Repr> {
+        self.repr.as_ref()
+    }
+
+    /// Returns the default raw representation.
+    pub fn default_repr(&self) -> Repr {
+        to_key_repr(&self.key)
+    }
+
+    /// Returns a raw representation.
+    pub fn display_repr(&self) -> Cow<'_, str> {
+        self.as_repr()
+            .map(|r| Cow::Borrowed(r.as_raw().as_str()))
+            .unwrap_or_else(|| Cow::Owned(self.default_repr().as_raw().as_str().to_owned()))
     }
 
     /// Returns the surrounding whitespace
@@ -246,9 +255,19 @@ impl<'k> KeyMut<'k> {
         self.key.get()
     }
 
-    /// Returns the key raw representation.
-    pub fn to_repr(&self) -> Cow<Repr> {
-        self.key.to_repr()
+    /// Returns the raw representation, if available.
+    pub fn as_repr(&self) -> Option<&Repr> {
+        self.key.as_repr()
+    }
+
+    /// Returns the default raw representation.
+    pub fn default_repr(&self) -> Repr {
+        self.key.default_repr()
+    }
+
+    /// Returns a raw representation.
+    pub fn display_repr(&self) -> Cow<str> {
+        self.key.display_repr()
     }
 
     /// Returns the surrounding whitespace

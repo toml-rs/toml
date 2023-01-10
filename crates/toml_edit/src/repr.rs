@@ -38,12 +38,21 @@ where
         self.value
     }
 
-    /// Returns the key raw representation.
-    pub fn to_repr(&self) -> Cow<Repr> {
-        self.repr
-            .as_ref()
-            .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(self.value.to_repr()))
+    /// Returns the raw representation, if available.
+    pub fn as_repr(&self) -> Option<&Repr> {
+        self.repr.as_ref()
+    }
+
+    /// Returns the default raw representation.
+    pub fn default_repr(&self) -> Repr {
+        self.value.to_repr()
+    }
+
+    /// Returns a raw representation.
+    pub fn display_repr(&self) -> Cow<str> {
+        self.as_repr()
+            .map(|r| Cow::Borrowed(r.as_raw().as_str()))
+            .unwrap_or_else(|| Cow::Owned(self.default_repr().as_raw().as_str().to_owned()))
     }
 
     /// Returns the location within the original document

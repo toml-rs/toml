@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt::{Display, Formatter, Result, Write};
 
 use toml_datetime::*;
@@ -18,7 +19,10 @@ pub(crate) trait Encode {
 
 impl Encode for Key {
     fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
-        let repr = self.to_repr();
+        let repr = self
+            .as_repr()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(self.default_repr()));
         let decor = self.decor();
         decor.prefix_encode(buf, default_decor.0)?;
         repr.as_raw().encode(buf)?;
@@ -58,7 +62,10 @@ where
     T: ValueRepr,
 {
     fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
-        let repr = self.to_repr();
+        let repr = self
+            .as_repr()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(self.default_repr()));
         let decor = self.decor();
         decor.prefix_encode(buf, default_decor.0)?;
         repr.as_raw().encode(buf)?;
