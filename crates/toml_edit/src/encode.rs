@@ -101,7 +101,7 @@ impl Encode for InlineTable {
             "{}{{",
             self.decor().prefix().unwrap_or(default_decor.0)
         )?;
-        write!(buf, "{}", self.preamble)?;
+        write!(buf, "{}", self.preamble())?;
 
         let children = self.get_values();
         let len = children.len();

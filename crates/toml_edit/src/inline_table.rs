@@ -10,7 +10,7 @@ use crate::{InternalString, Item, KeyMut, Table, Value};
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
-    pub(crate) preamble: InternalString,
+    preamble: InternalString,
     // prefix before `{` and suffix after `}`
     decor: Decor,
     // whether this is a proxy for dotted keys
@@ -160,6 +160,16 @@ impl InlineTable {
     /// Returns the decor associated with a given key of the table.
     pub fn key_decor(&self, key: &str) -> Option<&Decor> {
         self.items.get(key).map(|kv| &kv.key.decor)
+    }
+
+    /// Set whitespace after before element
+    pub fn set_preamble(&mut self, preamble: impl Into<InternalString>) {
+        self.preamble = preamble.into();
+    }
+
+    /// Whitespace after before element
+    pub fn preamble(&self) -> &str {
+        self.preamble.as_str()
     }
 }
 
