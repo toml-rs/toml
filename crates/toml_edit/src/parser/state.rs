@@ -56,8 +56,18 @@ impl ParseState {
             } else {
                 &mut path[0]
             };
-            let mut prefix = RawString::new(prefix + first_key.decor.prefix().unwrap_or_default());
-            prefix_span = match (prefix_span.take(), first_key.decor.prefix_span()) {
+            let mut prefix = RawString::new(
+                prefix
+                    + first_key
+                        .decor
+                        .prefix()
+                        .map(|s| s.as_str())
+                        .unwrap_or_default(),
+            );
+            prefix_span = match (
+                prefix_span.take(),
+                first_key.decor.prefix().and_then(|d| d.span()),
+            ) {
                 (Some(p), Some(k)) => Some(p.start..k.end),
                 (Some(p), None) | (None, Some(p)) => Some(p),
                 (None, None) => None,

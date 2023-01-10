@@ -169,8 +169,8 @@ impl InlineTable {
     }
 
     /// Whitespace after before element
-    pub fn preamble(&self) -> &str {
-        self.preamble.as_str()
+    pub fn preamble(&self) -> &RawString {
+        &self.preamble
     }
 
     /// Returns the location within the original document

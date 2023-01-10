@@ -352,7 +352,7 @@ impl CustomError {
     pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
         assert!(i < path.len());
         Self::DuplicateKey {
-            key: path[i].to_repr().as_ref().as_raw().into(),
+            key: path[i].to_repr().as_ref().as_raw().as_str().into(),
             table: Some(path[..i].to_vec()),
         }
     }

@@ -477,7 +477,12 @@ fn test_sort_values_by() {
         let a = as_table!(a);
         // Sort by the representation, not the value. So "\"c\"" sorts before "a" because '"' sorts
         // before 'a'.
-        a.sort_values_by(|k1, _, k2, _| k1.to_repr().as_raw().cmp(k2.to_repr().as_raw()));
+        a.sort_values_by(|k1, _, k2, _| {
+            k1.to_repr()
+                .as_raw()
+                .as_str()
+                .cmp(k2.to_repr().as_raw().as_str())
+        });
     })
     .produces_display(
         r#"

@@ -17,16 +17,22 @@ impl RawString {
         self
     }
 
-    pub(crate) fn as_str(&self) -> &str {
+    /// Access the underlying string
+    pub fn as_str(&self) -> &str {
         self.value.as_str()
     }
 
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// Access the underlying span
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
     }
 
     pub(crate) fn despan(&mut self) {
         self.span = None;
+    }
+
+    pub(crate) fn encode(&self, buf: &mut dyn std::fmt::Write) -> std::fmt::Result {
+        write!(buf, "{}", self.value)
     }
 }
 

@@ -101,8 +101,8 @@ impl Repr {
     }
 
     /// Access the underlying value
-    pub fn as_raw(&self) -> &str {
-        self.raw_value.as_str()
+    pub fn as_raw(&self) -> &RawString {
+        &self.raw_value
     }
 
     /// Returns the location within the original document
@@ -117,7 +117,7 @@ impl Repr {
 
 impl std::fmt::Display for Repr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.as_raw().fmt(f)
+        self.as_raw().as_str().fmt(f)
     }
 }
 
@@ -146,12 +146,20 @@ impl Decor {
     }
 
     /// Get the prefix.
-    pub fn prefix(&self) -> Option<&str> {
-        self.prefix.as_ref().map(|s| s.as_str())
+    pub fn prefix(&self) -> Option<&RawString> {
+        self.prefix.as_ref()
     }
 
-    pub(crate) fn prefix_span(&self) -> Option<std::ops::Range<usize>> {
-        self.prefix.as_ref().and_then(|s| s.span())
+    pub(crate) fn prefix_encode(
+        &self,
+        buf: &mut dyn std::fmt::Write,
+        default: &str,
+    ) -> std::fmt::Result {
+        if let Some(prefix) = self.prefix() {
+            prefix.encode(buf)
+        } else {
+            write!(buf, "{}", default)
+        }
     }
 
     /// Set the prefix.
@@ -160,8 +168,20 @@ impl Decor {
     }
 
     /// Get the suffix.
-    pub fn suffix(&self) -> Option<&str> {
-        self.suffix.as_ref().map(|s| s.as_str())
+    pub fn suffix(&self) -> Option<&RawString> {
+        self.suffix.as_ref()
+    }
+
+    pub(crate) fn suffix_encode(
+        &self,
+        buf: &mut dyn std::fmt::Write,
+        default: &str,
+    ) -> std::fmt::Result {
+        if let Some(suffix) = self.suffix() {
+            suffix.encode(buf)
+        } else {
+            write!(buf, "{}", default)
+        }
     }
 
     /// Set the suffix.

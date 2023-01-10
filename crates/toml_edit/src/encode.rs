@@ -19,13 +19,11 @@ pub(crate) trait Encode {
 impl Encode for Key {
     fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
         let repr = self.to_repr();
-        write!(
-            buf,
-            "{}{}{}",
-            self.decor().prefix().unwrap_or(default_decor.0),
-            repr,
-            self.decor().suffix().unwrap_or(default_decor.1)
-        )
+        let decor = self.decor();
+        decor.prefix_encode(buf, default_decor.0)?;
+        write!(buf, "{}", repr,)?;
+        decor.suffix_encode(buf, default_decor.1)?;
+        Ok(())
     }
 }
 
@@ -61,19 +59,19 @@ where
 {
     fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
         let repr = self.to_repr();
-        write!(
-            buf,
-            "{}{}{}",
-            self.decor().prefix().unwrap_or(default_decor.0),
-            repr,
-            self.decor().suffix().unwrap_or(default_decor.1)
-        )
+        let decor = self.decor();
+        decor.prefix_encode(buf, default_decor.0)?;
+        write!(buf, "{}", repr,)?;
+        decor.suffix_encode(buf, default_decor.1)?;
+        Ok(())
     }
 }
 
 impl Encode for Array {
     fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
-        write!(buf, "{}[", self.decor().prefix().unwrap_or(default_decor.0))?;
+        let decor = self.decor();
+        decor.prefix_encode(buf, default_decor.0)?;
+        write!(buf, "[")?;
 
         for (i, elem) in self.iter().enumerate() {
             let inner_decor;
@@ -89,19 +87,20 @@ impl Encode for Array {
             write!(buf, ",")?;
         }
 
-        write!(buf, "{}", self.trailing())?;
-        write!(buf, "]{}", self.decor().suffix().unwrap_or(default_decor.1))
+        self.trailing().encode(buf)?;
+        write!(buf, "]")?;
+        decor.suffix_encode(buf, default_decor.1)?;
+
+        Ok(())
     }
 }
 
 impl Encode for InlineTable {
     fn encode(&self, buf: &mut dyn Write, default_decor: (&str, &str)) -> Result {
-        write!(
-            buf,
-            "{}{{",
-            self.decor().prefix().unwrap_or(default_decor.0)
-        )?;
-        write!(buf, "{}", self.preamble())?;
+        let decor = self.decor();
+        decor.prefix_encode(buf, default_decor.0)?;
+        write!(buf, "{{")?;
+        self.preamble().encode(buf)?;
 
         let children = self.get_values();
         let len = children.len();
@@ -119,11 +118,10 @@ impl Encode for InlineTable {
             value.encode(buf, inner_decor)?;
         }
 
-        write!(
-            buf,
-            "}}{}",
-            self.decor().suffix().unwrap_or(default_decor.1)
-        )
+        write!(buf, "}}")?;
+        decor.suffix_encode(buf, default_decor.1)?;
+
+        Ok(())
     }
 }
 
@@ -226,9 +224,12 @@ fn visit_table(
         } else {
             DEFAULT_TABLE_DECOR
         };
-        write!(buf, "{}[[", table.decor.prefix().unwrap_or(default_decor.0))?;
+        table.decor.prefix_encode(buf, default_decor.0)?;
+        write!(buf, "[[")?;
         path.encode(buf, DEFAULT_KEY_PATH_DECOR)?;
-        writeln!(buf, "]]{}", table.decor.suffix().unwrap_or(default_decor.1))?;
+        write!(buf, "]]")?;
+        table.decor.suffix_encode(buf, default_decor.1)?;
+        writeln!(buf)?;
     } else if is_visible_std_table {
         let default_decor = if *first_table {
             *first_table = false;
@@ -236,9 +237,12 @@ fn visit_table(
         } else {
             DEFAULT_TABLE_DECOR
         };
-        write!(buf, "{}[", table.decor.prefix().unwrap_or(default_decor.0))?;
+        table.decor.prefix_encode(buf, default_decor.0)?;
+        write!(buf, "[")?;
         path.encode(buf, DEFAULT_KEY_PATH_DECOR)?;
-        writeln!(buf, "]{}", table.decor.suffix().unwrap_or(default_decor.1))?;
+        write!(buf, "]")?;
+        table.decor.suffix_encode(buf, default_decor.1)?;
+        writeln!(buf)?;
     }
     // print table body
     for (key_path, value) in children {

@@ -73,8 +73,8 @@ impl Array {
     }
 
     /// Whitespace after last element
-    pub fn trailing(&self) -> &str {
-        self.trailing.as_str()
+    pub fn trailing(&self) -> &RawString {
+        &self.trailing
     }
 
     /// Returns the surrounding whitespace
