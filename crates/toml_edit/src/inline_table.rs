@@ -161,6 +161,16 @@ impl InlineTable {
     pub fn key_decor(&self, key: &str) -> Option<&Decor> {
         self.items.get(key).map(|kv| &kv.key.decor)
     }
+
+    /// Set whitespace after before element
+    pub fn set_preamble(&mut self, preamble: impl Into<InternalString>) {
+        self.preamble = preamble.into();
+    }
+
+    /// Whitespace after before element
+    pub fn preamble(&self) -> &str {
+        self.preamble.as_str()
+    }
 }
 
 impl InlineTable {
