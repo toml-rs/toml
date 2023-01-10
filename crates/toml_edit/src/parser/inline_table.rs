@@ -37,7 +37,7 @@ fn table_from_pairs(
     preamble: &str,
 ) -> Result<InlineTable, CustomError> {
     let mut root = InlineTable::new();
-    root.preamble = preamble.into();
+    root.set_preamble(preamble);
     // Assuming almost all pairs will be directly in `root`
     root.items.reserve(v.len());
 
