@@ -282,6 +282,7 @@ mod test {
             (&std::i64::MAX.to_string()[..], std::i64::MAX),
         ];
         for &(input, expected) in &cases {
+            dbg!(input);
             let parsed = integer.parse(new_input(input)).finish();
             assert_eq!(parsed, Ok(expected), "Parsing {input:?}");
         }
@@ -327,6 +328,7 @@ mod test {
             // ("1e+400", std::f64::INFINITY),
         ];
         for &(input, expected) in &cases {
+            dbg!(input);
             let parsed = float.parse(new_input(input)).finish().unwrap();
             assert_float_eq(parsed, expected);
         }
