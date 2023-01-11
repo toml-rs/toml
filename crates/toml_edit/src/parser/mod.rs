@@ -27,7 +27,6 @@ pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
         .finish()
         .map_err(|e| TomlError::new(e, b))?;
     doc.original = Some(raw.to_owned());
-    doc.despan();
     Ok(doc)
 }
 

@@ -80,7 +80,9 @@ impl FromStr for Document {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::parse_document(s)
+        let mut d = parser::parse_document(s)?;
+        d.despan();
+        Ok(d)
     }
 }
 
