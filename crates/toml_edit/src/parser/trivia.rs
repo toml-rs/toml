@@ -138,6 +138,7 @@ mod test {
    "#,
         ];
         for input in inputs {
+            dbg!(input);
             let parsed = ws_comment_newline.parse(new_input(input)).finish();
             assert!(parsed.is_ok(), "{:?}", parsed);
             let parsed = parsed.unwrap();

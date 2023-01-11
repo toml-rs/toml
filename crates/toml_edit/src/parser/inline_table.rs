@@ -151,13 +151,19 @@ mod test {
             r#"{ hello.world = "a" }"#,
         ];
         for input in inputs {
+            dbg!(input);
             let parsed = inline_table(Default::default())
                 .parse(new_input(input))
                 .finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
+    }
+
+    #[test]
+    fn invalid_inline_tables() {
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
+            dbg!(input);
             let parsed = inline_table(Default::default())
                 .parse(new_input(input))
                 .finish();

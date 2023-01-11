@@ -201,6 +201,7 @@ key = "value"
 "#,
         ];
         for input in documents {
+            dbg!(input);
             let parsed = document.parse(new_input(input)).finish();
             let doc = match parsed {
                 Ok(doc) => doc,
@@ -214,7 +215,10 @@ key = "value"
 
             snapbox::assert_eq(input, doc.to_string());
         }
+    }
 
+    #[test]
+    fn documents_parse_only() {
         let parse_only = ["\u{FEFF}
 [package]
 name = \"foo\"
@@ -222,6 +226,7 @@ version = \"0.0.1\"
 authors = []
 "];
         for input in parse_only {
+            dbg!(input);
             let parsed = document.parse(new_input(input)).finish();
             match parsed {
                 Ok(_) => (),
@@ -233,10 +238,14 @@ authors = []
                 }
             }
         }
+    }
 
+    #[test]
+    fn invalid_documents() {
         let invalid_inputs = [r#" hello = 'darkness' # my old friend
 $"#];
         for input in invalid_inputs {
+            dbg!(input);
             let parsed = document.parse(new_input(input)).finish();
             assert!(parsed.is_err(), "Input: {:?}", input);
         }

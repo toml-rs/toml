@@ -122,12 +122,17 @@ mod test {
             r#"[ { x = 1, a = "2" }, {a = "a",b = "b",     c =    "c"} ]"#,
         ];
         for input in inputs {
+            dbg!(input);
             let parsed = array(Default::default()).parse(new_input(input)).finish();
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
+    }
 
+    #[test]
+    fn invalid_arrays() {
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
+            dbg!(input);
             let parsed = array(Default::default()).parse(new_input(input)).finish();
             assert!(parsed.is_err());
         }
