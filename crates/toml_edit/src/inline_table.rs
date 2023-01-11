@@ -173,11 +173,6 @@ impl InlineTable {
         &self.preamble
     }
 
-    /// Returns the location within the original document
-    pub fn span(&self) -> Option<std::ops::Range<usize>> {
-        self.span.clone()
-    }
-
     pub(crate) fn despan(&mut self, input: &str) {
         self.span = None;
         self.decor.despan(input);

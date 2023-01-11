@@ -296,16 +296,6 @@ impl Item {
         self.as_table_like().is_some()
     }
 
-    /// Returns the location within the original document
-    pub fn span(&self) -> Option<std::ops::Range<usize>> {
-        match self {
-            Item::None => None,
-            Item::Value(v) => v.span(),
-            Item::Table(_) => None,
-            Item::ArrayOfTables(_) => None,
-        }
-    }
-
     pub(crate) fn despan(&mut self, input: &str) {
         match self {
             Item::None => {}

@@ -8,5 +8,4 @@ mod macros;
 mod parse;
 mod pretty;
 mod serde;
-mod span;
 mod stackoverflow;
