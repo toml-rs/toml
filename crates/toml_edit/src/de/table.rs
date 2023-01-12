@@ -57,10 +57,12 @@ impl<'de> serde::Deserializer<'de> for crate::Table {
         if self.is_empty() {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
+                None,
             ))
         } else if self.len() != 1 {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
+                None,
             ))
         } else {
             visitor.visit_enum(crate::de::TableMapAccess::new(self))
@@ -144,6 +146,7 @@ impl<'de> serde::de::EnumAccess<'de> for TableMapAccess {
             None => {
                 return Err(Error::custom(
                     "expected table with exactly 1 entry, found empty table",
+                    None,
                 ));
             }
         };

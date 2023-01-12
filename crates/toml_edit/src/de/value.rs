@@ -71,16 +71,21 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
                 if v.is_empty() {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, found 0 elements",
+                        v.span(),
                     ))
                 } else if v.len() != 1 {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, more than 1 element",
+                        v.span(),
                     ))
                 } else {
                     visitor.visit_enum(crate::de::InlineTableMapAccess::new(v))
                 }
             }
-            _ => Err(crate::de::Error::custom("wanted string or inline table")),
+            _ => Err(crate::de::Error::custom(
+                "wanted string or inline table",
+                self.span(),
+            )),
         }
     }
 

@@ -33,7 +33,7 @@ struct ErrorInner {
 }
 
 impl Error {
-    pub(crate) fn custom<T>(msg: T) -> Self
+    pub(crate) fn custom<T>(msg: T, span: Option<std::ops::Range<usize>>) -> Self
     where
         T: std::fmt::Display,
     {
@@ -41,7 +41,7 @@ impl Error {
             inner: Box::new(ErrorInner {
                 message: msg.to_string(),
                 reverse_key: Default::default(),
-                span: None,
+                span,
                 line_col: None,
             }),
         }
@@ -70,7 +70,7 @@ impl serde::de::Error for Error {
     where
         T: std::fmt::Display,
     {
-        Error::custom(msg)
+        Error::custom(msg, None)
     }
 }
 
@@ -98,9 +98,8 @@ impl From<crate::TomlError> for Error {
         #[allow(deprecated)]
         let line_col = e.line_col();
         let span = e.span();
-        let mut err = Self::custom(e);
+        let mut err = Self::custom(e, span);
         err.inner.line_col = line_col;
-        err.inner.span = span;
         err
     }
 }
@@ -127,7 +126,7 @@ pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let s = std::str::from_utf8(s).map_err(Error::custom)?;
+    let s = std::str::from_utf8(s).map_err(|e| Error::custom(e, None))?;
     from_str(s)
 }
 
@@ -252,9 +251,9 @@ pub(crate) fn validate_struct_keys(
 ) -> Result<(), Error> {
     let extra_fields = table
         .iter()
-        .filter_map(|(key, _val)| {
+        .filter_map(|(key, val)| {
             if !fields.contains(&key.as_str()) {
-                Some(key.clone())
+                Some(val.clone())
             } else {
                 None
             }
@@ -264,10 +263,13 @@ pub(crate) fn validate_struct_keys(
     if extra_fields.is_empty() {
         Ok(())
     } else {
-        Err(Error::custom(format!(
-            "unexpected keys in table: {}, available keys: {}",
-            extra_fields.iter().join(", "),
-            fields.iter().join(", "),
-        )))
+        Err(Error::custom(
+            format!(
+                "unexpected keys in table: {}, available keys: {}",
+                extra_fields.iter().map(|k| k.key.get()).join(", "),
+                fields.iter().join(", "),
+            ),
+            extra_fields[0].key.span(),
+        ))
     }
 }

@@ -144,16 +144,18 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
                 if v.is_empty() {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, found 0 elements",
+                        None,
                     ))
                 } else if v.len() != 1 {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, more than 1 element",
+                        None,
                     ))
                 } else {
                     visitor.visit_enum(crate::de::TableMapAccess::new(v))
                 }
             }
-            _ => Err(crate::de::Error::custom("wanted string or table")),
+            _ => Err(crate::de::Error::custom("wanted string or table", None)),
         }
     }
 

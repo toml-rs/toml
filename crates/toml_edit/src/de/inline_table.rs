@@ -57,10 +57,12 @@ impl<'de> serde::Deserializer<'de> for crate::InlineTable {
         if self.is_empty() {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
+                self.span(),
             ))
         } else if self.len() != 1 {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
+                self.span(),
             ))
         } else {
             visitor.visit_enum(crate::de::InlineTableMapAccess::new(self))
@@ -84,13 +86,16 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::InlineTa
 
 pub(crate) struct InlineTableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
+    span: Option<std::ops::Range<usize>>,
     value: Option<(crate::InternalString, crate::Item)>,
 }
 
 impl InlineTableMapAccess {
     pub(crate) fn new(input: crate::InlineTable) -> Self {
+        let span = input.span();
         Self {
             iter: input.items.into_iter(),
+            span,
             value: None,
         }
     }
@@ -144,6 +149,7 @@ impl<'de> serde::de::EnumAccess<'de> for InlineTableMapAccess {
             None => {
                 return Err(Error::custom(
                     "expected table with exactly 1 entry, found empty table",
+                    self.span,
                 ));
             }
         };

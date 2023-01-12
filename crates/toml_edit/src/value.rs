@@ -205,6 +205,20 @@ impl Value {
         *decor = Decor::new(prefix, suffix);
     }
 
+    /// Returns the location within the original document
+    #[cfg(feature = "serde")]
+    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+        match self {
+            Value::String(f) => f.span(),
+            Value::Integer(f) => f.span(),
+            Value::Float(f) => f.span(),
+            Value::Boolean(f) => f.span(),
+            Value::Datetime(f) => f.span(),
+            Value::Array(a) => a.span(),
+            Value::InlineTable(t) => t.span(),
+        }
+    }
+
     pub(crate) fn despan(&mut self, input: &str) {
         match self {
             Value::String(f) => f.despan(input),
