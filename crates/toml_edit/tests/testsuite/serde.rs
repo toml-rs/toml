@@ -221,7 +221,7 @@ fn type_errors() {
         r#"TOML parse error at line 1, column 7
   |
 1 | bar = "a"
-  |       ^
+  |       ^^^
 invalid type: string "a", expected isize"#,
         "invalid type: string \"a\", expected isize"
     }
@@ -242,7 +242,7 @@ invalid type: string "a", expected isize"#,
         r#"TOML parse error at line 2, column 7
   |
 2 | bar = "a"
-  |       ^
+  |       ^^^
 invalid type: string "a", expected isize"#,
         "invalid type: string \"a\", expected isize"
     }
@@ -563,7 +563,7 @@ dev = { debug = 'a' }
         r#"TOML parse error at line 8, column 17
   |
 8 | dev = { debug = 'a' }
-  |                 ^
+  |                 ^^^
 expected a boolean or an integer"#,
     );
 }

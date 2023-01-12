@@ -35,7 +35,7 @@ fn invalid_variant_returns_error_with_good_message_string() {
         r#"TOML parse error at line 1, column 7
   |
 1 | val = "NonExistent"
-  |       ^
+  |       ^^^^^^^^^^^^^
 unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
     );
 }
@@ -48,7 +48,7 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
         r#"TOML parse error at line 1, column 9
   |
 1 | val = { NonExistent = {} }
-  |         ^
+  |         ^^^^^^^^^^^
 unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
     );
 }
@@ -62,7 +62,7 @@ fn extra_field_returns_expected_empty_table_error() {
         r#"TOML parse error at line 1, column 17
   |
 1 | val = { Plain = { extra_field = 404 } }
-  |                 ^
+  |                 ^^^^^^^^^^^^^^^^^^^^^
 expected empty table"#,
     );
 }
@@ -78,7 +78,7 @@ fn extra_field_returns_expected_empty_table_error_struct_variant() {
         r#"TOML parse error at line 1, column 33
   |
 1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
-  |                                 ^
+  |                                 ^^^^^^^
 unexpected keys in table: extra_0, extra_1, available keys: value"#,
     );
 }
