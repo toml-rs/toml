@@ -40,19 +40,19 @@ fn test_spanned_field() {
     {
         let foo: Foo<T> = toml::from_str(s).unwrap();
 
-        assert_eq!(6, foo.foo.start());
+        assert_eq!(6, foo.foo.span().start);
         if let Some(end) = end {
-            assert_eq!(end, foo.foo.end());
+            assert_eq!(end, foo.foo.span().end);
         } else {
-            assert_eq!(s.len(), foo.foo.end());
+            assert_eq!(s.len(), foo.foo.span().end);
         }
-        assert_eq!(expected, &s[foo.foo.start()..foo.foo.end()]);
+        assert_eq!(expected, &s[foo.foo.span()]);
 
         // Test for Spanned<> at the top level
         let foo_outer: Spanned<BareFoo<T>> = toml::from_str(s).unwrap();
 
-        assert_eq!(0, foo_outer.start());
-        assert_eq!(s.len(), foo_outer.end());
+        assert_eq!(0, foo_outer.span().start);
+        assert_eq!(s.len(), foo_outer.span().end);
         assert_eq!(foo.foo.into_inner(), foo_outer.into_inner().foo);
     }
 
@@ -94,21 +94,21 @@ fn test_inner_spanned_table() {
         let foo: Foo = toml::from_str(s).unwrap();
 
         if zero {
-            assert_eq!(foo.foo.start(), 0);
+            assert_eq!(foo.foo.span().start, 0);
             // We'd actually have to assert equality with s.len() here,
             // but the current implementation doesn't support that,
             // and it's not possible with toml's data format to support it
             // in the general case as spans aren't always well-defined.
             // So this check mainly serves as a reminder that this test should
             // be updated *if* one day there is support for emitting the actual span.
-            assert_eq!(foo.foo.end(), 0);
+            assert_eq!(foo.foo.span().end, 0);
         } else {
-            assert_eq!(foo.foo.start(), s.find('{').unwrap());
-            assert_eq!(foo.foo.end(), s.find('}').unwrap() + 1);
+            assert_eq!(foo.foo.span().start, s.find('{').unwrap());
+            assert_eq!(foo.foo.span().end, s.find('}').unwrap() + 1);
         }
-        for (k, v) in foo.foo.get_ref().iter() {
-            assert_eq!(&s[k.start()..k.end()], k.get_ref());
-            assert_eq!(&s[(v.start() + 1)..(v.end() - 1)], v.get_ref());
+        for (k, v) in foo.foo.as_ref().iter() {
+            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
+            assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
         }
     }
 
@@ -141,8 +141,8 @@ fn test_outer_spanned_table() {
         let foo: Foo = toml::from_str(s).unwrap();
 
         for (k, v) in foo.foo.iter() {
-            assert_eq!(&s[k.start()..k.end()], k.get_ref());
-            assert_eq!(&s[(v.start() + 1)..(v.end() - 1)], v.get_ref());
+            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
+            assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
         }
     }
 
@@ -174,10 +174,13 @@ fn test_spanned_nested() {
         let foo: Foo = toml::from_str(s).unwrap();
 
         for (k, v) in foo.foo.iter() {
-            assert_eq!(&s[k.start()..k.end()], k.get_ref());
+            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
             for (n_k, n_v) in v.iter() {
-                assert_eq!(&s[n_k.start()..n_k.end()], n_k.get_ref());
-                assert_eq!(&s[(n_v.start() + 1)..(n_v.end() - 1)], n_v.get_ref());
+                assert_eq!(&s[n_k.span().start..n_k.span().end], n_k.as_ref());
+                assert_eq!(
+                    &s[(n_v.span().start + 1)..(n_v.span().end - 1)],
+                    n_v.as_ref()
+                );
             }
         }
     }
@@ -214,17 +217,17 @@ fn test_spanned_array() {
         let foo_list: Foo = toml::from_str(s).unwrap();
 
         for foo in foo_list.foo.iter() {
-            assert_eq!(foo.start(), 0);
+            assert_eq!(foo.span().start, 0);
             // We'd actually have to assert equality with s.len() here,
             // but the current implementation doesn't support that,
             // and it's not possible with toml's data format to support it
             // in the general case as spans aren't always well-defined.
             // So this check mainly serves as a reminder that this test should
             // be updated *if* one day there is support for emitting the actual span.
-            assert_eq!(foo.end(), 0);
-            for (k, v) in foo.get_ref().iter() {
-                assert_eq!(&s[k.start()..k.end()], k.get_ref());
-                assert_eq!(&s[(v.start() + 1)..(v.end() - 1)], v.get_ref());
+            assert_eq!(foo.span().end, 0);
+            for (k, v) in foo.as_ref().iter() {
+                assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
+                assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
             }
         }
     }

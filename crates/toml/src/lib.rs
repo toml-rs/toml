@@ -161,8 +161,7 @@ mod tokens;
 #[doc(hidden)]
 pub mod macros;
 
-mod spanned;
-pub use crate::spanned::Spanned;
+pub use serde_spanned::Spanned;
 
 // Shortcuts for the module doc-comment
 #[allow(unused_imports)]

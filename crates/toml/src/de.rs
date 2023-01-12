@@ -19,7 +19,6 @@ use serde::de::value::BorrowedStrDeserializer;
 use serde::de::IntoDeserializer;
 use toml_datetime::__unstable as datetime;
 
-use crate::spanned;
 use crate::tokens::{Error as TokenError, Span, Token, Tokenizer};
 
 /// Type Alias for a TOML Table pair
@@ -295,7 +294,14 @@ impl<'de, 'b> de::Deserializer<'de> for &'b mut Deserializer<'de> {
     where
         V: de::Visitor<'de>,
     {
-        if name == spanned::NAME && fields == [spanned::START, spanned::END, spanned::VALUE] {
+        if name == serde_spanned::NAME
+            && fields
+                == [
+                    serde_spanned::START_FIELD,
+                    serde_spanned::END_FIELD,
+                    serde_spanned::VALUE_FIELD,
+                ]
+        {
             let start = 0;
             let end = self.input.len();
 
@@ -638,8 +644,13 @@ impl<'de, 'b> de::Deserializer<'de> for MapVisitor<'de, 'b> {
     where
         V: de::Visitor<'de>,
     {
-        if name == spanned::NAME
-            && fields == [spanned::START, spanned::END, spanned::VALUE]
+        if name == serde_spanned::NAME
+            && fields
+                == [
+                    serde_spanned::START_FIELD,
+                    serde_spanned::END_FIELD,
+                    serde_spanned::VALUE_FIELD,
+                ]
             && !(self.array && self.values.peek().is_some())
         {
             // TODO we can't actually emit spans here for the *entire* table/array
@@ -747,7 +758,14 @@ impl<'de> de::Deserializer<'de> for StrDeserializer<'de> {
     where
         V: de::Visitor<'de>,
     {
-        if name == spanned::NAME && fields == [spanned::START, spanned::END, spanned::VALUE] {
+        if name == serde_spanned::NAME
+            && fields
+                == [
+                    serde_spanned::START_FIELD,
+                    serde_spanned::END_FIELD,
+                    serde_spanned::VALUE_FIELD,
+                ]
+        {
             if let Some(span) = self.span {
                 return visitor.visit_map(SpannedDeserializer {
                     phantom_data: PhantomData,
@@ -874,7 +892,14 @@ impl<'de> de::Deserializer<'de> for ValueDeserializer<'de> {
             }
         }
 
-        if name == spanned::NAME && fields == [spanned::START, spanned::END, spanned::VALUE] {
+        if name == serde_spanned::NAME
+            && fields
+                == [
+                    serde_spanned::START_FIELD,
+                    serde_spanned::END_FIELD,
+                    serde_spanned::VALUE_FIELD,
+                ]
+        {
             let start = self.value.start;
             let end = self.value.end;
 
@@ -999,13 +1024,13 @@ where
         K: de::DeserializeSeed<'de>,
     {
         if self.start.is_some() {
-            seed.deserialize(BorrowedStrDeserializer::new(spanned::START))
+            seed.deserialize(BorrowedStrDeserializer::new(serde_spanned::START_FIELD))
                 .map(Some)
         } else if self.end.is_some() {
-            seed.deserialize(BorrowedStrDeserializer::new(spanned::END))
+            seed.deserialize(BorrowedStrDeserializer::new(serde_spanned::END_FIELD))
                 .map(Some)
         } else if self.value.is_some() {
-            seed.deserialize(BorrowedStrDeserializer::new(spanned::VALUE))
+            seed.deserialize(BorrowedStrDeserializer::new(serde_spanned::VALUE_FIELD))
                 .map(Some)
         } else {
             Ok(None)
