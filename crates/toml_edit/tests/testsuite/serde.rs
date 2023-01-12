@@ -30,14 +30,14 @@ macro_rules! equivalent {
 
         // Through a string equivalent
         println!("to_string(literal)");
-        assert_eq!(
+        snapbox::assert_eq(
             t!(toml_edit::easy::to_string_pretty(&literal)),
-            toml.to_string()
+            toml.to_string(),
         );
         println!("to_string(toml)");
-        assert_eq!(
+        snapbox::assert_eq(
             t!(toml_edit::easy::to_string_pretty(&toml)),
-            toml.to_string()
+            toml.to_string(),
         );
         println!("literal, from_str(toml)");
         assert_eq!(literal, t!(toml_edit::easy::from_str(&toml.to_string())));
@@ -51,13 +51,13 @@ macro_rules! error {
         println!("attempting parsing");
         match toml_edit::easy::from_str::<$ty>(&$toml.to_string()) {
             Ok(_) => panic!("successful"),
-            Err(e) => assert_eq!(e.to_string(), $msg_parse),
+            Err(e) => snapbox::assert_eq(e.to_string(), $msg_parse),
         }
 
         println!("attempting toml decoding");
         match $toml.try_into::<$ty>() {
             Ok(_) => panic!("successful"),
-            Err(e) => assert_eq!(e.to_string(), $msg_decode),
+            Err(e) => snapbox::assert_eq(e.to_string(), $msg_decode),
         }
     }};
 }
@@ -442,7 +442,7 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_string(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    assert_eq!(toml_edit::ser::to_string(&value).unwrap(), text);
+    snapbox::assert_eq(toml_edit::ser::to_string(&value).unwrap(), text);
 }
 
 #[test]
@@ -536,9 +536,9 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    assert_eq!(
+    snapbox::assert_eq(
         err.to_string(),
-        "expected a boolean or an integer for key `profile.dev.debug`"
+        "expected a boolean or an integer for key `profile.dev.debug`",
     );
 
     let res: Result<Package, _> = toml_edit::de::from_str(
@@ -553,9 +553,9 @@ dev = { debug = 'a' }
 "#,
     );
     let err = res.unwrap_err();
-    assert_eq!(
+    snapbox::assert_eq(
         err.to_string(),
-        "expected a boolean or an integer for key `profile.dev.debug`"
+        "expected a boolean or an integer for key `profile.dev.debug`",
     );
 }
 
