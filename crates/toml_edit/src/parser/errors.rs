@@ -39,11 +39,11 @@ impl TomlError {
     }
 
     #[cfg(feature = "serde")]
-    pub(crate) fn custom(message: String) -> Self {
+    pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,
             original: None,
-            span: None,
+            span,
         }
     }
 

@@ -55,7 +55,7 @@ impl From<crate::TomlError> for Error {
 
 impl From<Error> for crate::TomlError {
     fn from(e: Error) -> crate::TomlError {
-        Self::custom(e.to_string())
+        Self::custom(e.to_string(), None)
     }
 }
 
