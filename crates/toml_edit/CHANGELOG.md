@@ -356,11 +356,11 @@ Changes include:
 
 ## [0.3.0] - 2021-09-13
 
-- Added support for TOML 1.0, with [one functional caveat](https://github.com/toml-rs/toml_edit/issues/128) and [one format-preserving caveat](https://github.com/toml-rs/toml_edit/issues/163)
+- Added support for TOML 1.0, with [one functional caveat](https://github.com/toml-rs/toml/issues/128) and [one format-preserving caveat](https://github.com/toml-rs/toml/issues/163)
 - Added `Item::into_value`
 - Changed `Table` and `InlineTable` to be more Map-like
 - Expanded support in `TableLike`
-- Added [toml-rs](https://docs.rs/toml)-compatible API via the `toml_edit::easy` module for when developers want to ensure consistency between format-preserving and general TOML work, with [one caveat](https://github.com/toml-rs/toml_edit/issues/192).
+- Added [toml-rs](https://docs.rs/toml)-compatible API via the `toml_edit::easy` module for when developers want to ensure consistency between format-preserving and general TOML work, with [one caveat](https://github.com/toml-rs/toml/issues/192).
 - Exposed more control over formatting, with ability to modify any key or value whitespace.
 - Fixed it so we preserve formatting on dotted keys in standard table headers
 - Dropped `chrono` dependency
@@ -368,51 +368,51 @@ Changes include:
 This release was sponsored by Futurewei
 
 ## [0.2.1] - 2021-06-07
-- Added `Table::decor`. [#97](https://github.com/toml-rs/toml_edit/pull/97)
-- Added `IterMut` for `Table`. [#100](https://github.com/toml-rs/toml_edit/pull/100)
-- Added `Table::get_mut`. [#106](https://github.com/toml-rs/toml_edit/pull/106)
-- Updated `combine` to 4.5. [#107](https://github.com/toml-rs/toml_edit/pull/107)
+- Added `Table::decor`. [#97](https://github.com/toml-rs/toml/pull/97)
+- Added `IterMut` for `Table`. [#100](https://github.com/toml-rs/toml/pull/100)
+- Added `Table::get_mut`. [#106](https://github.com/toml-rs/toml/pull/106)
+- Updated `combine` to 4.5. [#107](https://github.com/toml-rs/toml/pull/107)
 
 ## 0.2.0 - 2020-06-18
-- Added format preserving mutation functions for `Array`. [#88](https://github.com/toml-rs/toml_edit/pull/88)
+- Added format preserving mutation functions for `Array`. [#88](https://github.com/toml-rs/toml/pull/88)
 ### Breaking
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml_edit/compare/v0.17.1...HEAD
-[0.17.1]: https://github.com/toml-rs/toml_edit/compare/v0.17.0...v0.17.1
-[0.17.0]: https://github.com/toml-rs/toml_edit/compare/v0.16.2...v0.17.0
-[0.16.2]: https://github.com/toml-rs/toml_edit/compare/v0.16.1...v0.16.2
-[0.16.1]: https://github.com/toml-rs/toml_edit/compare/v0.16.0...v0.16.1
-[0.16.0]: https://github.com/toml-rs/toml_edit/compare/v0.15.0...v0.16.0
-[0.15.0]: https://github.com/toml-rs/toml_edit/compare/v0.14.4...v0.15.0
-[0.14.4]: https://github.com/toml-rs/toml_edit/compare/v0.14.3...v0.14.4
-[0.14.3]: https://github.com/toml-rs/toml_edit/compare/v0.14.2...v0.14.3
-[0.14.2]: https://github.com/toml-rs/toml_edit/compare/v0.14.1...v0.14.2
-[0.14.1]: https://github.com/toml-rs/toml_edit/compare/v0.14.0...v0.14.1
-[0.14.0]: https://github.com/toml-rs/toml_edit/compare/v0.13.4...v0.14.0
-[0.13.4]: https://github.com/toml-rs/toml_edit/compare/v0.13.3...v0.13.4
-[0.13.3]: https://github.com/toml-rs/toml_edit/compare/v0.13.2...v0.13.3
-[0.13.2]: https://github.com/toml-rs/toml_edit/compare/v0.13.1...v0.13.2
-[0.13.1]: https://github.com/toml-rs/toml_edit/compare/v0.13.0...v0.13.1
-[0.13.0]: https://github.com/toml-rs/toml_edit/compare/v0.12.6...v0.13.0
-[0.12.6]: https://github.com/toml-rs/toml_edit/compare/v0.12.5...v0.12.6
-[0.12.5]: https://github.com/toml-rs/toml_edit/compare/v0.12.4...v0.12.5
-[0.12.4]: https://github.com/toml-rs/toml_edit/compare/v0.12.3...v0.12.4
-[0.12.3]: https://github.com/toml-rs/toml_edit/compare/v0.12.2...v0.12.3
-[0.12.2]: https://github.com/toml-rs/toml_edit/compare/v0.12.1...v0.12.2
-[0.12.1]: https://github.com/toml-rs/toml_edit/compare/v0.12.0...v0.12.1
-[0.12.0]: https://github.com/toml-rs/toml_edit/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/toml-rs/toml_edit/compare/v0.10.1...v0.11.0
-[0.10.1]: https://github.com/toml-rs/toml_edit/compare/v0.10.0...v0.10.1
-[0.10.0]: https://github.com/toml-rs/toml_edit/compare/v0.9.1...v0.10.0
-[0.9.1]: https://github.com/toml-rs/toml_edit/compare/v0.9.0...v0.9.1
-[0.9.0]: https://github.com/toml-rs/toml_edit/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/toml-rs/toml_edit/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/toml-rs/toml_edit/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/toml-rs/toml_edit/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/toml-rs/toml_edit/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/toml-rs/toml_edit/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/toml-rs/toml_edit/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/toml-rs/toml_edit/compare/v0.2.1...v0.3.0
-[0.2.1]: https://github.com/toml-rs/toml_edit/compare/v0.2.0...v0.2.1
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.17.1...HEAD
+[0.17.1]: https://github.com/toml-rs/toml/compare/v0.17.0...v0.17.1
+[0.17.0]: https://github.com/toml-rs/toml/compare/v0.16.2...v0.17.0
+[0.16.2]: https://github.com/toml-rs/toml/compare/v0.16.1...v0.16.2
+[0.16.1]: https://github.com/toml-rs/toml/compare/v0.16.0...v0.16.1
+[0.16.0]: https://github.com/toml-rs/toml/compare/v0.15.0...v0.16.0
+[0.15.0]: https://github.com/toml-rs/toml/compare/v0.14.4...v0.15.0
+[0.14.4]: https://github.com/toml-rs/toml/compare/v0.14.3...v0.14.4
+[0.14.3]: https://github.com/toml-rs/toml/compare/v0.14.2...v0.14.3
+[0.14.2]: https://github.com/toml-rs/toml/compare/v0.14.1...v0.14.2
+[0.14.1]: https://github.com/toml-rs/toml/compare/v0.14.0...v0.14.1
+[0.14.0]: https://github.com/toml-rs/toml/compare/v0.13.4...v0.14.0
+[0.13.4]: https://github.com/toml-rs/toml/compare/v0.13.3...v0.13.4
+[0.13.3]: https://github.com/toml-rs/toml/compare/v0.13.2...v0.13.3
+[0.13.2]: https://github.com/toml-rs/toml/compare/v0.13.1...v0.13.2
+[0.13.1]: https://github.com/toml-rs/toml/compare/v0.13.0...v0.13.1
+[0.13.0]: https://github.com/toml-rs/toml/compare/v0.12.6...v0.13.0
+[0.12.6]: https://github.com/toml-rs/toml/compare/v0.12.5...v0.12.6
+[0.12.5]: https://github.com/toml-rs/toml/compare/v0.12.4...v0.12.5
+[0.12.4]: https://github.com/toml-rs/toml/compare/v0.12.3...v0.12.4
+[0.12.3]: https://github.com/toml-rs/toml/compare/v0.12.2...v0.12.3
+[0.12.2]: https://github.com/toml-rs/toml/compare/v0.12.1...v0.12.2
+[0.12.1]: https://github.com/toml-rs/toml/compare/v0.12.0...v0.12.1
+[0.12.0]: https://github.com/toml-rs/toml/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/toml-rs/toml/compare/v0.10.1...v0.11.0
+[0.10.1]: https://github.com/toml-rs/toml/compare/v0.10.0...v0.10.1
+[0.10.0]: https://github.com/toml-rs/toml/compare/v0.9.1...v0.10.0
+[0.9.1]: https://github.com/toml-rs/toml/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/toml-rs/toml/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/toml-rs/toml/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/toml-rs/toml/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/toml-rs/toml/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/toml-rs/toml/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/toml-rs/toml/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/toml-rs/toml/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/toml-rs/toml/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/toml-rs/toml/compare/v0.2.0...v0.2.1
