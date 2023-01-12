@@ -10,13 +10,22 @@ use crate::Key;
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,
-    line_col: Option<(usize, usize)>,
+    original: Option<String>,
+    span: Option<std::ops::Range<usize>>,
 }
 
 impl TomlError {
     pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
+        use nom8::input::IntoOutput;
         use nom8::input::Offset;
+
         let offset = original.offset(&error.input);
+        let span = if offset == original.len() {
+            offset..offset
+        } else {
+            offset..(offset + 1)
+        };
+
         let position = translate_position(&original, offset);
         let message = ParserErrorDisplay {
             error: &error,
@@ -24,23 +33,40 @@ impl TomlError {
             position,
         }
         .to_string();
-        let line_col = Some(position);
-        Self { message, line_col }
+
+        Self {
+            message,
+            original: Some(
+                String::from_utf8(original.into_output().to_owned())
+                    .expect("original document was utf8"),
+            ),
+            span: Some(span),
+        }
     }
 
     #[cfg(feature = "serde")]
     pub(crate) fn custom(message: String) -> Self {
         Self {
             message,
-            line_col: None,
+            original: None,
+            span: None,
         }
+    }
+
+    /// The start/end index into the original document where the error occurred
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span.clone()
     }
 
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.
     pub fn line_col(&self) -> Option<(usize, usize)> {
-        self.line_col
+        if let (Some(original), Some(span)) = (&self.original, self.span()) {
+            Some(translate_position(original.as_bytes(), span.start))
+        } else {
+            None
+        }
     }
 }
 
