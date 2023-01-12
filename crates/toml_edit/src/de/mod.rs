@@ -28,6 +28,7 @@ pub struct Error {
 struct ErrorInner {
     message: String,
     reverse_key: Vec<crate::InternalString>,
+    span: Option<std::ops::Range<usize>>,
     line_col: Option<(usize, usize)>,
 }
 
@@ -40,6 +41,7 @@ impl Error {
             inner: Box::new(ErrorInner {
                 message: msg.to_string(),
                 reverse_key: Default::default(),
+                span: None,
                 line_col: None,
             }),
         }
@@ -47,6 +49,11 @@ impl Error {
 
     pub(crate) fn parent_key(&mut self, key: crate::InternalString) {
         self.inner.reverse_key.push(key);
+    }
+
+    /// The start/end index into the original document where the error occurred
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.inner.span.clone()
     }
 
     /// Produces a (line, column) pair of the position of the error if available
@@ -89,8 +96,10 @@ impl From<crate::TomlError> for Error {
     fn from(e: crate::TomlError) -> Error {
         #[allow(deprecated)]
         let line_col = e.line_col();
+        let span = e.span();
         let mut err = Self::custom(e);
         err.inner.line_col = line_col;
+        err.inner.span = span;
         err
     }
 }
