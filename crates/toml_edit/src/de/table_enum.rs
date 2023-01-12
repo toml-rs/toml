@@ -20,7 +20,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                 if values.is_empty() {
                     Ok(())
                 } else {
-                    Err(Error::custom("expected empty table", None))
+                    Err(Error::custom("expected empty table", values.span()))
                 }
             }
             crate::Item::Value(crate::Value::InlineTable(values)) => {
@@ -50,6 +50,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
     {
         match self.value {
             crate::Item::Table(values) => {
+                let values_span = values.span();
                 let tuple_values = values
                     .items
                     .into_iter()
@@ -87,7 +88,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                 } else {
                     Err(Error::custom(
                         format!("expected tuple with length {}", len),
-                        None,
+                        values_span,
                     ))
                 }
             }

@@ -120,7 +120,6 @@ impl Repr {
     }
 
     /// Returns the location within the original document
-    #[cfg(feature = "serde")]
     pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
         self.raw_value.span()
     }
