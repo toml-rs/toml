@@ -20,20 +20,20 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                 if values.is_empty() {
                     Ok(())
                 } else {
-                    Err(Error::custom("expected empty table"))
+                    Err(Error::custom("expected empty table", values.span()))
                 }
             }
             crate::Item::Value(crate::Value::InlineTable(values)) => {
                 if values.is_empty() {
                     Ok(())
                 } else {
-                    Err(Error::custom("expected empty table"))
+                    Err(Error::custom("expected empty table", values.span()))
                 }
             }
-            e => Err(Error::custom(format!(
-                "expected table, found {}",
-                e.type_name()
-            ))),
+            e => Err(Error::custom(
+                format!("expected table, found {}", e.type_name()),
+                e.span(),
+            )),
         }
     }
 
@@ -50,16 +50,24 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
     {
         match self.value {
             crate::Item::Table(values) => {
+                let values_span = values.span();
                 let tuple_values = values
+                    .items
                     .into_iter()
                     .enumerate()
-                    .map(|(index, (key, value))| match key.parse::<usize>() {
-                        Ok(key_index) if key_index == index => Ok(value),
-                        Ok(_) | Err(_) => Err(Error::custom(format!(
-                            "expected table key `{}`, but was `{}`",
-                            index, key
-                        ))),
-                    })
+                    .map(
+                        |(index, (_, value))| match value.key.get().parse::<usize>() {
+                            Ok(key_index) if key_index == index => Ok(value.value),
+                            Ok(_) | Err(_) => Err(Error::custom(
+                                format!(
+                                    "expected table key `{}`, but was `{}`",
+                                    index,
+                                    value.key.get()
+                                ),
+                                value.key.span(),
+                            )),
+                        },
+                    )
                     // Fold all values into a `Vec`, or return the first error.
                     .fold(Ok(Vec::with_capacity(len)), |result, value_result| {
                         result.and_then(move |mut tuple_values| match value_result {
@@ -78,25 +86,36 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                         visitor,
                     )
                 } else {
-                    Err(Error::custom(format!("expected tuple with length {}", len)))
+                    Err(Error::custom(
+                        format!("expected tuple with length {}", len),
+                        values_span,
+                    ))
                 }
             }
             crate::Item::Value(crate::Value::InlineTable(values)) => {
+                let values_span = values.span();
                 let tuple_values = values
+                    .items
                     .into_iter()
                     .enumerate()
-                    .map(|(index, (key, value))| match key.parse::<usize>() {
-                        Ok(key_index) if key_index == index => Ok(value),
-                        Ok(_) | Err(_) => Err(Error::custom(format!(
-                            "expected table key `{}`, but was `{}`",
-                            index, key
-                        ))),
-                    })
+                    .map(
+                        |(index, (_, value))| match value.key.get().parse::<usize>() {
+                            Ok(key_index) if key_index == index => Ok(value.value),
+                            Ok(_) | Err(_) => Err(Error::custom(
+                                format!(
+                                    "expected table key `{}`, but was `{}`",
+                                    index,
+                                    value.key.get()
+                                ),
+                                value.key.span(),
+                            )),
+                        },
+                    )
                     // Fold all values into a `Vec`, or return the first error.
                     .fold(Ok(Vec::with_capacity(len)), |result, value_result| {
                         result.and_then(move |mut tuple_values| match value_result {
                             Ok(value) => {
-                                tuple_values.push(crate::Item::Value(value));
+                                tuple_values.push(value);
                                 Ok(tuple_values)
                             }
                             // `Result<de::Value, Self::Error>` to `Result<Vec<_>, Self::Error>`
@@ -110,13 +129,16 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                         visitor,
                     )
                 } else {
-                    Err(Error::custom(format!("expected tuple with length {}", len)))
+                    Err(Error::custom(
+                        format!("expected tuple with length {}", len),
+                        values_span,
+                    ))
                 }
             }
-            e => Err(Error::custom(format!(
-                "expected table, found {}",
-                e.type_name()
-            ))),
+            e => Err(Error::custom(
+                format!("expected table, found {}", e.type_name()),
+                e.span(),
+            )),
         }
     }
 

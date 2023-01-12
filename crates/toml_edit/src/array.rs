@@ -87,6 +87,12 @@ impl Array {
         &self.decor
     }
 
+    /// Returns the location within the original document
+    #[cfg(feature = "serde")]
+    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span.clone()
+    }
+
     pub(crate) fn despan(&mut self, input: &str) {
         self.span = None;
         self.decor.despan(input);

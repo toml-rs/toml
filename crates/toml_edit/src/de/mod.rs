@@ -21,39 +21,35 @@ use table_enum::*;
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error {
-    inner: Box<ErrorInner>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-struct ErrorInner {
-    message: String,
-    reverse_key: Vec<crate::InternalString>,
-    line_col: Option<(usize, usize)>,
+    inner: crate::TomlError,
 }
 
 impl Error {
-    pub(crate) fn custom<T>(msg: T) -> Self
+    pub(crate) fn custom<T>(msg: T, span: Option<std::ops::Range<usize>>) -> Self
     where
         T: std::fmt::Display,
     {
         Error {
-            inner: Box::new(ErrorInner {
-                message: msg.to_string(),
-                reverse_key: Default::default(),
-                line_col: None,
-            }),
+            inner: crate::TomlError::custom(msg.to_string(), span),
         }
     }
 
-    pub(crate) fn parent_key(&mut self, key: crate::InternalString) {
-        self.inner.reverse_key.push(key);
+    /// The start/end index into the original document where the error occurred
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.inner.span()
+    }
+
+    pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
+        self.inner.set_span(span);
     }
 
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.
+    #[deprecated(since = "0.18.0", note = "See instead `Error::span`")]
     pub fn line_col(&self) -> Option<(usize, usize)> {
-        self.inner.line_col
+        #[allow(deprecated)]
+        self.inner.line_col()
     }
 }
 
@@ -62,41 +58,25 @@ impl serde::de::Error for Error {
     where
         T: std::fmt::Display,
     {
-        Error::custom(msg)
+        Error::custom(msg, None)
     }
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.inner.message.fmt(f)?;
-
-        if !self.inner.reverse_key.is_empty() {
-            write!(f, " for key `")?;
-            for (i, k) in self.inner.reverse_key.iter().rev().enumerate() {
-                if i > 0 {
-                    write!(f, ".")?;
-                }
-                write!(f, "{}", k)?;
-            }
-            write!(f, "`")?;
-        }
-
-        Ok(())
+        self.inner.fmt(f)
     }
 }
 
 impl From<crate::TomlError> for Error {
     fn from(e: crate::TomlError) -> Error {
-        let line_col = e.line_col();
-        let mut err = Self::custom(e);
-        err.inner.line_col = line_col;
-        err
+        Self { inner: e }
     }
 }
 
 impl From<Error> for crate::TomlError {
     fn from(e: Error) -> crate::TomlError {
-        Self::custom(e.to_string())
+        e.inner
     }
 }
 
@@ -116,7 +96,7 @@ pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let s = std::str::from_utf8(s).map_err(Error::custom)?;
+    let s = std::str::from_utf8(s).map_err(|e| Error::custom(e, None))?;
     from_str(s)
 }
 
@@ -195,7 +175,13 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.root.deserialize_any(visitor)
+        let original = self.original;
+        self.root
+            .deserialize_any(visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -204,7 +190,13 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.root.deserialize_option(visitor)
+        let original = self.original;
+        self.root
+            .deserialize_option(visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
@@ -217,7 +209,13 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.root.deserialize_enum(name, variants, visitor)
+        let original = self.original;
+        self.root
+            .deserialize_enum(name, variants, visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     serde::forward_to_deserialize_any! {
@@ -241,9 +239,9 @@ pub(crate) fn validate_struct_keys(
 ) -> Result<(), Error> {
     let extra_fields = table
         .iter()
-        .filter_map(|(key, _val)| {
+        .filter_map(|(key, val)| {
             if !fields.contains(&key.as_str()) {
-                Some(key.clone())
+                Some(val.clone())
             } else {
                 None
             }
@@ -253,10 +251,13 @@ pub(crate) fn validate_struct_keys(
     if extra_fields.is_empty() {
         Ok(())
     } else {
-        Err(Error::custom(format!(
-            "unexpected keys in table: {}, available keys: {}",
-            extra_fields.iter().join(", "),
-            fields.iter().join(", "),
-        )))
+        Err(Error::custom(
+            format!(
+                "unexpected keys in table: {}, available keys: {}",
+                extra_fields.iter().map(|k| k.key.get()).join(", "),
+                fields.iter().join(", "),
+            ),
+            extra_fields[0].key.span(),
+        ))
     }
 }

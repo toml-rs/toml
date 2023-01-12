@@ -30,14 +30,14 @@ macro_rules! equivalent {
 
         // Through a string equivalent
         println!("to_string(literal)");
-        assert_eq!(
+        snapbox::assert_eq(
             t!(toml_edit::easy::to_string_pretty(&literal)),
-            toml.to_string()
+            toml.to_string(),
         );
         println!("to_string(toml)");
-        assert_eq!(
+        snapbox::assert_eq(
             t!(toml_edit::easy::to_string_pretty(&toml)),
-            toml.to_string()
+            toml.to_string(),
         );
         println!("literal, from_str(toml)");
         assert_eq!(literal, t!(toml_edit::easy::from_str(&toml.to_string())));
@@ -51,13 +51,13 @@ macro_rules! error {
         println!("attempting parsing");
         match toml_edit::easy::from_str::<$ty>(&$toml.to_string()) {
             Ok(_) => panic!("successful"),
-            Err(e) => assert_eq!(e.to_string(), $msg_parse),
+            Err(e) => snapbox::assert_eq(e.to_string(), $msg_parse),
         }
 
         println!("attempting toml decoding");
         match $toml.try_into::<$ty>() {
             Ok(_) => panic!("successful"),
-            Err(e) => assert_eq!(e.to_string(), $msg_decode),
+            Err(e) => snapbox::assert_eq(e.to_string(), $msg_decode),
         }
     }};
 }
@@ -218,8 +218,12 @@ fn type_errors() {
         Table(map! {
             bar: Value::String("a".to_string())
         }),
-        "invalid type: string \"a\", expected isize for key `bar`",
-        "invalid type: string \"a\", expected isize for key `bar`"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | bar = "a"
+  |       ^^^
+invalid type: string "a", expected isize"#,
+        "invalid type: string \"a\", expected isize"
     }
 
     #[derive(Deserialize)]
@@ -235,8 +239,12 @@ fn type_errors() {
                 bar: Value::String("a".to_string())
             })
         }),
-        "invalid type: string \"a\", expected isize for key `foo.bar`",
-        "invalid type: string \"a\", expected isize for key `foo.bar`"
+        r#"TOML parse error at line 2, column 7
+  |
+2 | bar = "a"
+  |       ^^^
+invalid type: string "a", expected isize"#,
+        "invalid type: string \"a\", expected isize"
     }
 }
 
@@ -442,7 +450,7 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_string(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    assert_eq!(toml_edit::ser::to_string(&value).unwrap(), text);
+    snapbox::assert_eq(toml_edit::ser::to_string(&value).unwrap(), text);
 }
 
 #[test]
@@ -536,10 +544,7 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    assert_eq!(
-        err.to_string(),
-        "expected a boolean or an integer for key `profile.dev.debug`"
-    );
+    snapbox::assert_eq(err.to_string(), "expected a boolean or an integer");
 
     let res: Result<Package, _> = toml_edit::de::from_str(
         r#"
@@ -553,9 +558,13 @@ dev = { debug = 'a' }
 "#,
     );
     let err = res.unwrap_err();
-    assert_eq!(
+    snapbox::assert_eq(
         err.to_string(),
-        "expected a boolean or an integer for key `profile.dev.debug`"
+        r#"TOML parse error at line 8, column 17
+  |
+8 | dev = { debug = 'a' }
+  |                 ^^^
+expected a boolean or an integer"#,
     );
 }
 

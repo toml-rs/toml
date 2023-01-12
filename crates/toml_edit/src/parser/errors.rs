@@ -10,37 +10,68 @@ use crate::Key;
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,
-    line_col: Option<(usize, usize)>,
+    original: Option<String>,
+    span: Option<std::ops::Range<usize>>,
 }
 
 impl TomlError {
     pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
+        use nom8::input::IntoOutput;
         use nom8::input::Offset;
+
         let offset = original.offset(&error.input);
-        let position = translate_position(&original, offset);
-        let message = ParserErrorDisplay {
-            error: &error,
-            original,
-            position,
+        let span = if offset == original.len() {
+            offset..offset
+        } else {
+            offset..(offset + 1)
+        };
+
+        let message = error.to_string();
+
+        Self {
+            message,
+            original: Some(
+                String::from_utf8(original.into_output().to_owned())
+                    .expect("original document was utf8"),
+            ),
+            span: Some(span),
         }
-        .to_string();
-        let line_col = Some(position);
-        Self { message, line_col }
     }
 
     #[cfg(feature = "serde")]
-    pub(crate) fn custom(message: String) -> Self {
+    pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,
-            line_col: None,
+            original: None,
+            span,
         }
+    }
+
+    /// The start/end index into the original document where the error occurred
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span.clone()
+    }
+
+    #[cfg(feature = "serde")]
+    pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
+        self.span = span;
+    }
+
+    #[cfg(feature = "serde")]
+    pub(crate) fn set_original(&mut self, original: Option<String>) {
+        self.original = original;
     }
 
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.
+    #[deprecated(since = "0.18.0", note = "See instead `TomlError::span`")]
     pub fn line_col(&self) -> Option<(usize, usize)> {
-        self.line_col
+        if let (Some(original), Some(span)) = (&self.original, self.span()) {
+            Some(translate_position(original.as_bytes(), span.start))
+        } else {
+            None
+        }
     }
 }
 
@@ -58,7 +89,47 @@ impl TomlError {
 /// While parsing a Date-Time
 impl Display for TomlError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.message)
+        if let (Some(original), Some(span)) = (&self.original, self.span()) {
+            let (line, column) = translate_position(original.as_bytes(), span.start);
+            let line_num = line + 1;
+            let col_num = column + 1;
+            let gutter = line_num.to_string().len();
+            let content = original.split('\n').nth(line).expect("valid line number");
+
+            writeln!(
+                f,
+                "TOML parse error at line {}, column {}",
+                line_num, col_num
+            )?;
+            //   |
+            for _ in 0..=gutter {
+                write!(f, " ")?;
+            }
+            writeln!(f, "|")?;
+
+            // 1 | 00:32:00.a999999
+            write!(f, "{} | ", line_num)?;
+            writeln!(f, "{}", content)?;
+
+            //   |          ^
+            for _ in 0..=gutter {
+                write!(f, " ")?;
+            }
+            write!(f, "|")?;
+            for _ in 0..=column {
+                write!(f, " ")?;
+            }
+            // The span will be empty at eof, so we need to make sure we always print at least
+            // one `^`
+            write!(f, "^")?;
+            for _ in (span.start + 1)..(span.end.min(span.start + content.len())) {
+                write!(f, "^")?;
+            }
+            writeln!(f)?;
+        }
+        write!(f, "{}", self.message)?;
+
+        Ok(())
     }
 }
 
@@ -126,31 +197,13 @@ impl<'b> std::cmp::PartialEq for ParserError<'b> {
     }
 }
 
-struct ParserErrorDisplay<'a> {
-    error: &'a ParserError<'a>,
-    original: Input<'a>,
-    position: (usize, usize),
-}
-
-impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
+impl<'a> std::fmt::Display for ParserError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (line, column) = self.position;
-        let line_num = line + 1;
-        let col_num = column + 1;
-        let gutter = line_num.to_string().len();
-        let content = self
-            .original
-            .split(|b| *b == b'\n')
-            .nth(line)
-            .expect("valid line number");
-        let content = String::from_utf8_lossy(content);
-
-        let expression = self.error.context.iter().find_map(|c| match c {
+        let expression = self.context.iter().find_map(|c| match c {
             Context::Expression(c) => Some(c),
             _ => None,
         });
         let expected = self
-            .error
             .context
             .iter()
             .filter_map(|c| match c {
@@ -158,31 +211,6 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
                 _ => None,
             })
             .collect::<Vec<_>>();
-
-        writeln!(
-            f,
-            "TOML parse error at line {}, column {}",
-            line_num, col_num
-        )?;
-        //   |
-        for _ in 0..=gutter {
-            write!(f, " ")?;
-        }
-        writeln!(f, "|")?;
-
-        // 1 | 00:32:00.a999999
-        write!(f, "{} | ", line_num)?;
-        writeln!(f, "{}", content)?;
-
-        //   |          ^
-        for _ in 0..=gutter {
-            write!(f, " ")?;
-        }
-        write!(f, "|")?;
-        for _ in 0..=column {
-            write!(f, " ")?;
-        }
-        writeln!(f, "^")?;
 
         if let Some(expression) = expression {
             writeln!(f, "Invalid {}", expression)?;
@@ -198,7 +226,7 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
             }
             writeln!(f)?;
         }
-        if let Some(cause) = &self.error.cause {
+        if let Some(cause) = &self.cause {
             write!(f, "{}", cause)?;
         }
 

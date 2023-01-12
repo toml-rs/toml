@@ -57,10 +57,12 @@ impl<'de> serde::Deserializer<'de> for crate::Table {
         if self.is_empty() {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
+                self.span(),
             ))
         } else if self.len() != 1 {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
+                self.span(),
             ))
         } else {
             visitor.visit_enum(crate::de::TableMapAccess::new(self))
@@ -84,13 +86,16 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Table {
 
 pub(crate) struct TableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
+    span: Option<std::ops::Range<usize>>,
     value: Option<(crate::InternalString, crate::Item)>,
 }
 
 impl TableMapAccess {
     pub(crate) fn new(input: crate::Table) -> Self {
+        let span = input.span();
         Self {
             iter: input.items.into_iter(),
+            span,
             value: None,
         }
     }
@@ -105,7 +110,14 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
     {
         match self.iter.next() {
             Some((k, v)) => {
-                let ret = seed.deserialize(k.into_deserializer()).map(Some);
+                let ret = seed.deserialize(k.into_deserializer()).map(Some).map_err(
+                    |mut e: Self::Error| {
+                        if e.span().is_none() {
+                            e.set_span(v.key.span());
+                        }
+                        e
+                    },
+                );
                 self.value = Some((k, v.value));
                 ret
             }
@@ -118,12 +130,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some((k, v)) => seed
-                .deserialize(crate::de::ItemDeserializer::new(v))
-                .map_err(|mut err| {
-                    err.parent_key(k);
-                    err
-                }),
+            Some((_k, v)) => seed.deserialize(crate::de::ItemDeserializer::new(v)),
             None => {
                 panic!("no more values in next_value_seed, internal error in ItemDeserializer")
             }
@@ -144,6 +151,7 @@ impl<'de> serde::de::EnumAccess<'de> for TableMapAccess {
             None => {
                 return Err(Error::custom(
                     "expected table with exactly 1 entry, found empty table",
+                    self.span,
                 ));
             }
         };

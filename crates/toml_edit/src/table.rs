@@ -21,6 +21,7 @@ pub struct Table {
     // `None` for user created tables (can be overridden with `set_position`)
     doc_position: Option<usize>,
     pub(crate) items: KeyValuePairs,
+    pub(crate) span: Option<std::ops::Range<usize>>,
 }
 
 /// Constructors
@@ -223,7 +224,14 @@ impl Table {
         self.items.get(key).map(|kv| &kv.key.decor)
     }
 
+    /// Returns the location within the original document
+    #[cfg(feature = "serde")]
+    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span.clone()
+    }
+
     pub(crate) fn despan(&mut self, input: &str) {
+        self.span = None;
         for kv in self.items.values_mut() {
             kv.key.despan(input);
             kv.value.despan(input);
