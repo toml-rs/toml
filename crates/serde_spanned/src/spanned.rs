@@ -123,19 +123,16 @@ where
                 if visitor.next_key()? != Some(START_FIELD) {
                     return Err(serde::de::Error::custom("spanned start key not found"));
                 }
-
                 let start: usize = visitor.next_value()?;
 
                 if visitor.next_key()? != Some(END_FIELD) {
                     return Err(serde::de::Error::custom("spanned end key not found"));
                 }
-
                 let end: usize = visitor.next_value()?;
 
                 if visitor.next_key()? != Some(VALUE_FIELD) {
                     return Err(serde::de::Error::custom("spanned value key not found"));
                 }
-
                 let value: T = visitor.next_value()?;
 
                 Ok(Spanned {

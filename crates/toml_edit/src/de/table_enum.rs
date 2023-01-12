@@ -82,7 +82,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
 
                 if tuple_values.len() == len {
                     serde::de::Deserializer::deserialize_seq(
-                        super::ArrayDeserializer::new(tuple_values),
+                        super::ArrayDeserializer::new(tuple_values, values_span),
                         visitor,
                     )
                 } else {
@@ -125,7 +125,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
 
                 if tuple_values.len() == len {
                     serde::de::Deserializer::deserialize_seq(
-                        super::ArrayDeserializer::new(tuple_values),
+                        super::ArrayDeserializer::new(tuple_values, values_span),
                         visitor,
                     )
                 } else {
