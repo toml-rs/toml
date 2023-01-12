@@ -3,7 +3,7 @@ use std::mem;
 
 use crate::repr::Decor;
 use crate::value::{DEFAULT_LEADING_VALUE_DECOR, DEFAULT_VALUE_DECOR};
-use crate::{InternalString, Item, Value};
+use crate::{Item, RawString, Value};
 
 /// Type representing a TOML array,
 /// payload of the `Value::Array` variant's value
@@ -11,10 +11,11 @@ use crate::{InternalString, Item, Value};
 pub struct Array {
     // `trailing` represents whitespaces, newlines
     // and comments in an empty array or after the trailing comma
-    trailing: InternalString,
+    trailing: RawString,
     trailing_comma: bool,
     // prefix before `[` and suffix after `]`
     decor: Decor,
+    pub(crate) span: Option<std::ops::Range<usize>>,
     // always Vec<Item::Value>
     pub(crate) values: Vec<Item>,
 }
@@ -67,13 +68,13 @@ impl Array {
     }
 
     /// Set whitespace after last element
-    pub fn set_trailing(&mut self, trailing: impl Into<InternalString>) {
+    pub fn set_trailing(&mut self, trailing: impl Into<RawString>) {
         self.trailing = trailing.into();
     }
 
     /// Whitespace after last element
-    pub fn trailing(&self) -> &str {
-        self.trailing.as_str()
+    pub fn trailing(&self) -> &RawString {
+        &self.trailing
     }
 
     /// Returns the surrounding whitespace
@@ -84,6 +85,15 @@ impl Array {
     /// Returns the surrounding whitespace
     pub fn decor(&self) -> &Decor {
         &self.decor
+    }
+
+    pub(crate) fn despan(&mut self, input: &str) {
+        self.span = None;
+        self.decor.despan(input);
+        self.trailing.despan(input);
+        for value in &mut self.values {
+            value.despan(input);
+        }
     }
 }
 
@@ -306,7 +316,7 @@ impl Array {
 
 impl std::fmt::Display for Array {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 

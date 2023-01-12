@@ -37,7 +37,7 @@ pub(crate) fn std_table<'s, 'i>(
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::StringLiteral("]"))),
             ),
-            cut(line_trailing.map_res(std::str::from_utf8))
+            cut(line_trailing)
                 .context(Context::Expected(ParserValue::CharLiteral('\n')))
                 .context(Context::Expected(ParserValue::CharLiteral('#'))),
         )
@@ -61,7 +61,7 @@ pub(crate) fn array_table<'s, 'i>(
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::StringLiteral("]]"))),
             ),
-            cut(line_trailing.map_res(std::str::from_utf8))
+            cut(line_trailing)
                 .context(Context::Expected(ParserValue::CharLiteral('\n')))
                 .context(Context::Expected(ParserValue::CharLiteral('#'))),
         )

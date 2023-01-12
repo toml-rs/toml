@@ -12,16 +12,20 @@ use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::{from_utf8_unchecked, ws};
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
+use crate::RawString;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
 pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<'_>> {
     separated_list1(
         DOT_SEP,
-        (ws, simple_key, ws).map(|(pre, (raw, key), suffix)| {
+        (ws.span(), simple_key, ws.span()).map(|(pre, (raw, key), suffix)| {
             Key::new(key)
                 .with_repr_unchecked(Repr::new_unchecked(raw))
-                .with_decor(Decor::new(pre, suffix))
+                .with_decor(Decor::new(
+                    RawString::with_span(pre),
+                    RawString::with_span(suffix),
+                ))
         }),
     )
     .context(Context::Expression("key"))
@@ -37,19 +41,19 @@ pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<
 // quoted-key = basic-string / literal-string
 pub(crate) fn simple_key(
     input: Input<'_>,
-) -> IResult<Input<'_>, (&str, InternalString), ParserError<'_>> {
+) -> IResult<Input<'_>, (RawString, InternalString), ParserError<'_>> {
     dispatch! {peek(any);
         crate::parser::strings::QUOTATION_MARK => basic_string
             .map(|s: std::borrow::Cow<'_, str>| s.as_ref().into()),
         crate::parser::strings::APOSTROPHE => literal_string.map(|s: &str| s.into()),
         _ => unquoted_key.map(|s: &str| s.into()),
     }
-        .with_recognized()
-        .map(|(k, b)| {
-            let s = unsafe { from_utf8_unchecked(b, "If `quoted_key` or `unquoted_key` are valid, then their `recognize`d value is valid") };
-            (s, k)
-        })
-        .parse(input)
+    .with_span()
+    .map(|(k, span)| {
+        let raw = RawString::with_span(span);
+        (raw, k)
+    })
+    .parse(input)
 }
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
@@ -90,7 +94,11 @@ mod test {
         for (input, expected) in cases {
             dbg!(input);
             let parsed = simple_key.parse(new_input(input)).finish();
-            assert_eq!(parsed, Ok((input, expected.into())), "Parsing {input:?}");
+            assert_eq!(
+                parsed,
+                Ok((RawString::with_span(0..(input.len())), expected.into())),
+                "Parsing {input:?}"
+            );
         }
     }
 }

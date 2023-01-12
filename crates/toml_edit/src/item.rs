@@ -295,6 +295,15 @@ impl Item {
     pub fn is_table_like(&self) -> bool {
         self.as_table_like().is_some()
     }
+
+    pub(crate) fn despan(&mut self, input: &str) {
+        match self {
+            Item::None => {}
+            Item::Value(v) => v.despan(input),
+            Item::Table(v) => v.despan(input),
+            Item::ArrayOfTables(v) => v.despan(input),
+        }
+    }
 }
 
 impl Default for Item {

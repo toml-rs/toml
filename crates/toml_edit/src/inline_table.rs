@@ -3,16 +3,17 @@ use std::iter::FromIterator;
 use crate::key::Key;
 use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableKeyValue, TableLike};
-use crate::{InternalString, Item, KeyMut, Table, Value};
+use crate::{InternalString, Item, KeyMut, RawString, Table, Value};
 
 /// Type representing a TOML inline table,
 /// payload of the `Value::InlineTable` variant
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
-    preamble: InternalString,
+    preamble: RawString,
     // prefix before `{` and suffix after `}`
     decor: Decor,
+    pub(crate) span: Option<std::ops::Range<usize>>,
     // whether this is a proxy for dotted keys
     dotted: bool,
     pub(crate) items: KeyValuePairs,
@@ -163,13 +164,23 @@ impl InlineTable {
     }
 
     /// Set whitespace after before element
-    pub fn set_preamble(&mut self, preamble: impl Into<InternalString>) {
+    pub fn set_preamble(&mut self, preamble: impl Into<RawString>) {
         self.preamble = preamble.into();
     }
 
     /// Whitespace after before element
-    pub fn preamble(&self) -> &str {
-        self.preamble.as_str()
+    pub fn preamble(&self) -> &RawString {
+        &self.preamble
+    }
+
+    pub(crate) fn despan(&mut self, input: &str) {
+        self.span = None;
+        self.decor.despan(input);
+        self.preamble.despan(input);
+        for kv in self.items.values_mut() {
+            kv.key.despan(input);
+            kv.value.despan(input);
+        }
     }
 }
 
@@ -351,7 +362,7 @@ impl InlineTable {
 
 impl std::fmt::Display for InlineTable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 

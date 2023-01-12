@@ -5,7 +5,7 @@ use nom8::sequence::delimited;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::{Array, Item, Value};
+use crate::{Array, Item, RawString, Value};
 
 use crate::parser::prelude::*;
 
@@ -55,12 +55,12 @@ pub(crate) fn array_values(
                         trailing.is_some(),
                     )
                 })),
-            ws_comment_newline,
+            ws_comment_newline.span(),
         )
             .map_res::<_, _, std::str::Utf8Error>(|(array, trailing)| {
                 let (mut array, comma) = array.unwrap_or_default();
                 array.set_trailing_comma(comma);
-                array.set_trailing(std::str::from_utf8(trailing)?);
+                array.set_trailing(RawString::with_span(trailing));
                 Ok(array)
             })
             .parse(input)
@@ -71,11 +71,12 @@ pub(crate) fn array_value(
     check: RecursionCheck,
 ) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, Value, ParserError<'_>> {
     move |input| {
-        (ws_comment_newline, value(check), ws_comment_newline)
-            .map_res::<_, _, std::str::Utf8Error>(|(ws1, v, ws2)| {
-                let v = v.decorated(std::str::from_utf8(ws1)?, std::str::from_utf8(ws2)?);
-                Ok(v)
-            })
+        (
+            ws_comment_newline.span(),
+            value(check),
+            ws_comment_newline.span(),
+        )
+            .map(|(ws1, v, ws2)| v.decorated(RawString::with_span(ws1), RawString::with_span(ws2)))
             .parse(input)
     }
 }
@@ -123,7 +124,10 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let parsed = array(Default::default()).parse(new_input(input)).finish();
+            let mut parsed = array(Default::default()).parse(new_input(input)).finish();
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
     }
@@ -133,7 +137,10 @@ mod test {
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
             dbg!(input);
-            let parsed = array(Default::default()).parse(new_input(input)).finish();
+            let mut parsed = array(Default::default()).parse(new_input(input)).finish();
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
             assert!(parsed.is_err());
         }
     }

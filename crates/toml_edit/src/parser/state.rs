@@ -2,11 +2,11 @@ use crate::key::Key;
 use crate::parser::errors::CustomError;
 use crate::repr::Decor;
 use crate::table::TableKeyValue;
-use crate::{ArrayOfTables, Document, InternalString, Item, Table};
+use crate::{ArrayOfTables, Document, InternalString, Item, RawString, Table};
 
 pub(crate) struct ParseState {
     document: Document,
-    trailing: String,
+    trailing: Option<std::ops::Range<usize>>,
     current_table_position: usize,
     current_table: Table,
     current_is_array: bool,
@@ -16,17 +16,25 @@ pub(crate) struct ParseState {
 impl ParseState {
     pub(crate) fn into_document(mut self) -> Result<Document, CustomError> {
         self.finalize_table()?;
-        let trailing = self.trailing.as_str().into();
-        self.document.trailing = trailing;
+        let trailing = self.trailing.map(RawString::with_span);
+        self.document.trailing = trailing.unwrap_or_default();
         Ok(self.document)
     }
 
-    pub(crate) fn on_ws(&mut self, w: &str) {
-        self.trailing.push_str(w);
+    pub(crate) fn on_ws(&mut self, span: std::ops::Range<usize>) {
+        if let Some(old) = self.trailing.take() {
+            self.trailing = Some(old.start..span.end);
+        } else {
+            self.trailing = Some(span);
+        }
     }
 
-    pub(crate) fn on_comment(&mut self, c: &str, e: &str) {
-        self.trailing = [&self.trailing, c, e].concat();
+    pub(crate) fn on_comment(&mut self, span: std::ops::Range<usize>) {
+        if let Some(old) = self.trailing.take() {
+            self.trailing = Some(old.start..span.end);
+        } else {
+            self.trailing = Some(span);
+        }
     }
 
     pub(crate) fn on_keyval(
@@ -35,15 +43,23 @@ impl ParseState {
         mut kv: TableKeyValue,
     ) -> Result<(), CustomError> {
         {
-            let prefix = std::mem::take(&mut self.trailing);
+            let mut prefix = self.trailing.take();
             let first_key = if path.is_empty() {
                 &mut kv.key
             } else {
                 &mut path[0]
             };
+            let prefix = match (
+                prefix.take(),
+                first_key.decor.prefix().and_then(|d| d.span()),
+            ) {
+                (Some(p), Some(k)) => Some(p.start..k.end),
+                (Some(p), None) | (None, Some(p)) => Some(p),
+                (None, None) => None,
+            };
             first_key
                 .decor
-                .set_prefix(prefix + first_key.decor.prefix().unwrap_or_default());
+                .set_prefix(prefix.map(RawString::with_span).unwrap_or_default());
         }
 
         let table = &mut self.current_table;
@@ -229,13 +245,17 @@ impl ParseState {
     pub(crate) fn on_std_header(
         &mut self,
         path: Vec<Key>,
-        trailing: &str,
+        trailing: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
-        let leading = std::mem::take(&mut self.trailing);
-        self.start_table(path, Decor::new(leading, trailing))?;
+        let leading = self
+            .trailing
+            .take()
+            .map(RawString::with_span)
+            .unwrap_or_default();
+        self.start_table(path, Decor::new(leading, RawString::with_span(trailing)))?;
 
         Ok(())
     }
@@ -243,13 +263,17 @@ impl ParseState {
     pub(crate) fn on_array_header(
         &mut self,
         path: Vec<Key>,
-        trailing: &str,
+        trailing: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
         self.finalize_table()?;
-        let leading = std::mem::take(&mut self.trailing);
-        self.start_aray_table(path, Decor::new(leading, trailing))?;
+        let leading = self
+            .trailing
+            .take()
+            .map(RawString::with_span)
+            .unwrap_or_default();
+        self.start_aray_table(path, Decor::new(leading, RawString::with_span(trailing)))?;
 
         Ok(())
     }
@@ -259,7 +283,7 @@ impl Default for ParseState {
     fn default() -> Self {
         Self {
             document: Document::new(),
-            trailing: String::new(),
+            trailing: None,
             current_table_position: 0,
             current_table: Table::new(),
             current_is_array: false,

@@ -107,8 +107,10 @@ pub(crate) fn line_ending(input: Input<'_>) -> IResult<Input<'_>, &str, ParserEr
 
 // note: this rule is not present in the original grammar
 // line-trailing = ws [comment] skip-line-ending
-pub(crate) fn line_trailing(input: Input<'_>) -> IResult<Input<'_>, &[u8], ParserError<'_>> {
-    terminated((ws, opt(comment)).recognize(), line_ending).parse(input)
+pub(crate) fn line_trailing(
+    input: Input<'_>,
+) -> IResult<Input<'_>, std::ops::Range<usize>, ParserError<'_>> {
+    terminated((ws, opt(comment)).span(), line_ending).parse(input)
 }
 
 #[cfg(test)]

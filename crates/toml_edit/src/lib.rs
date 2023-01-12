@@ -74,6 +74,7 @@ mod internal_string;
 mod item;
 mod key;
 mod parser;
+mod raw_string;
 mod repr;
 mod table;
 mod value;
@@ -102,6 +103,7 @@ pub use crate::internal_string::InternalString;
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::{Key, KeyMut};
 pub use crate::parser::TomlError;
+pub use crate::raw_string::RawString;
 pub use crate::repr::{Decor, Formatted, Repr};
 pub use crate::table::{
     Entry, IntoIter, Iter, IterMut, OccupiedEntry, Table, TableLike, VacantEntry,

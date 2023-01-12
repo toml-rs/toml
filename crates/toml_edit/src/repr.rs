@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::InternalString;
+use crate::RawString;
 
 /// A value together with its `to_string` representation,
 /// including surrounding it whitespaces and comments.
@@ -38,12 +38,31 @@ where
         self.value
     }
 
-    /// Returns the key raw representation.
-    pub fn to_repr(&self) -> Cow<Repr> {
-        self.repr
-            .as_ref()
+    /// Returns the raw representation, if available.
+    pub fn as_repr(&self) -> Option<&Repr> {
+        self.repr.as_ref()
+    }
+
+    /// Returns the default raw representation.
+    pub fn default_repr(&self) -> Repr {
+        self.value.to_repr()
+    }
+
+    /// Returns a raw representation.
+    pub fn display_repr(&self) -> Cow<str> {
+        self.as_repr()
+            .and_then(|r| r.as_raw().as_str())
             .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(self.value.to_repr()))
+            .unwrap_or_else(|| {
+                Cow::Owned(self.default_repr().as_raw().as_str().unwrap().to_owned())
+            })
+    }
+
+    pub(crate) fn despan(&mut self, input: &str) {
+        self.decor.despan(input);
+        if let Some(repr) = &mut self.repr {
+            repr.despan(input);
+        }
     }
 
     /// Returns the surrounding whitespace
@@ -67,7 +86,7 @@ where
     T: ValueRepr,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 
@@ -77,42 +96,44 @@ pub trait ValueRepr: crate::private::Sealed {
 }
 
 /// TOML-encoded value
-#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Debug, Hash)]
 pub struct Repr {
-    raw_value: InternalString,
+    raw_value: RawString,
 }
 
 impl Repr {
-    pub(crate) fn new_unchecked(raw: impl Into<InternalString>) -> Self {
+    pub(crate) fn new_unchecked(raw: impl Into<RawString>) -> Self {
         Repr {
             raw_value: raw.into(),
         }
     }
 
     /// Access the underlying value
-    pub fn as_raw(&self) -> &str {
+    pub fn as_raw(&self) -> &RawString {
         &self.raw_value
     }
-}
 
-impl std::fmt::Display for Repr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.as_raw().fmt(f)
+    pub(crate) fn despan(&mut self, input: &str) {
+        self.raw_value.despan(input)
+    }
+
+    pub(crate) fn encode(&self, buf: &mut dyn std::fmt::Write, input: &str) -> std::fmt::Result {
+        self.as_raw().encode(buf, input)
     }
 }
 
 /// A prefix and suffix,
 ///
 /// Including comments, whitespaces and newlines.
-#[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Default, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
 pub struct Decor {
-    prefix: Option<InternalString>,
-    suffix: Option<InternalString>,
+    prefix: Option<RawString>,
+    suffix: Option<RawString>,
 }
 
 impl Decor {
     /// Creates a new decor from the given prefix and suffix.
-    pub fn new(prefix: impl Into<InternalString>, suffix: impl Into<InternalString>) -> Self {
+    pub fn new(prefix: impl Into<RawString>, suffix: impl Into<RawString>) -> Self {
         Self {
             prefix: Some(prefix.into()),
             suffix: Some(suffix.into()),
@@ -126,22 +147,57 @@ impl Decor {
     }
 
     /// Get the prefix.
-    pub fn prefix(&self) -> Option<&str> {
-        self.prefix.as_deref()
+    pub fn prefix(&self) -> Option<&RawString> {
+        self.prefix.as_ref()
+    }
+
+    pub(crate) fn prefix_encode(
+        &self,
+        buf: &mut dyn std::fmt::Write,
+        input: Option<&str>,
+        default: &str,
+    ) -> std::fmt::Result {
+        if let Some(prefix) = self.prefix() {
+            prefix.encode_with_default(buf, input, default)
+        } else {
+            write!(buf, "{}", default)
+        }
     }
 
     /// Set the prefix.
-    pub fn set_prefix(&mut self, prefix: impl Into<InternalString>) {
+    pub fn set_prefix(&mut self, prefix: impl Into<RawString>) {
         self.prefix = Some(prefix.into());
     }
 
     /// Get the suffix.
-    pub fn suffix(&self) -> Option<&str> {
-        self.suffix.as_deref()
+    pub fn suffix(&self) -> Option<&RawString> {
+        self.suffix.as_ref()
+    }
+
+    pub(crate) fn suffix_encode(
+        &self,
+        buf: &mut dyn std::fmt::Write,
+        input: Option<&str>,
+        default: &str,
+    ) -> std::fmt::Result {
+        if let Some(suffix) = self.suffix() {
+            suffix.encode_with_default(buf, input, default)
+        } else {
+            write!(buf, "{}", default)
+        }
     }
 
     /// Set the suffix.
-    pub fn set_suffix(&mut self, suffix: impl Into<InternalString>) {
+    pub fn set_suffix(&mut self, suffix: impl Into<RawString>) {
         self.suffix = Some(suffix.into());
+    }
+
+    pub(crate) fn despan(&mut self, input: &str) {
+        if let Some(prefix) = &mut self.prefix {
+            prefix.despan(input);
+        }
+        if let Some(suffix) = &mut self.suffix {
+            suffix.despan(input);
+        }
     }
 }

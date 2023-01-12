@@ -10,7 +10,7 @@ use crate::parser::prelude::*;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
 use crate::table::TableKeyValue;
-use crate::{InlineTable, InternalString, Item, Value};
+use crate::{InlineTable, InternalString, Item, RawString, Value};
 
 use indexmap::map::Entry;
 
@@ -34,7 +34,7 @@ pub(crate) fn inline_table(
 
 fn table_from_pairs(
     v: Vec<(Vec<Key>, TableKeyValue)>,
-    preamble: &str,
+    preamble: RawString,
 ) -> Result<InlineTable, CustomError> {
     let mut root = InlineTable::new();
     root.set_preamble(preamble);
@@ -98,11 +98,16 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 fn inline_table_keyvals(
     check: RecursionCheck,
-) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, &str), ParserError<'_>>
-{
+) -> impl FnMut(
+    Input<'_>,
+) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ParserError<'_>> {
     move |input| {
         let check = check.recursing(input)?;
-        (separated_list0(INLINE_TABLE_SEP, keyval(check)), ws).parse(input)
+        (
+            separated_list0(INLINE_TABLE_SEP, keyval(check)),
+            ws.span().map(RawString::with_span),
+        )
+            .parse(input)
     }
 }
 
@@ -116,7 +121,7 @@ fn keyval(
                 one_of(KEYVAL_SEP)
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::CharLiteral('='))),
-                (ws, value(check), ws),
+                (ws.span(), value(check), ws.span()),
             )),
         )
             .map(|(key, (_, v))| {
@@ -124,6 +129,8 @@ fn keyval(
                 let key = path.pop().expect("grammar ensures at least 1");
 
                 let (pre, v, suf) = v;
+                let pre = RawString::with_span(pre);
+                let suf = RawString::with_span(suf);
                 let v = v.decorated(pre, suf);
                 (
                     path,
@@ -152,9 +159,12 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let parsed = inline_table(Default::default())
+            let mut parsed = inline_table(Default::default())
                 .parse(new_input(input))
                 .finish();
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
             assert_eq!(parsed.map(|a| a.to_string()), Ok(input.to_owned()));
         }
     }
@@ -164,9 +174,12 @@ mod test {
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
             dbg!(input);
-            let parsed = inline_table(Default::default())
+            let mut parsed = inline_table(Default::default())
                 .parse(new_input(input))
                 .finish();
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
             assert!(parsed.is_err());
         }
     }

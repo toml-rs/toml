@@ -78,12 +78,24 @@ impl Key {
         &self.key
     }
 
-    /// Returns the key raw representation.
-    pub fn to_repr(&self) -> Cow<Repr> {
-        self.repr
-            .as_ref()
+    /// Returns key raw representation, if available.
+    pub fn as_repr(&self) -> Option<&Repr> {
+        self.repr.as_ref()
+    }
+
+    /// Returns the default raw representation.
+    pub fn default_repr(&self) -> Repr {
+        to_key_repr(&self.key)
+    }
+
+    /// Returns a raw representation.
+    pub fn display_repr(&self) -> Cow<'_, str> {
+        self.as_repr()
+            .and_then(|r| r.as_raw().as_str())
             .map(Cow::Borrowed)
-            .unwrap_or_else(|| Cow::Owned(to_key_repr(&self.key)))
+            .unwrap_or_else(|| {
+                Cow::Owned(self.default_repr().as_raw().as_str().unwrap().to_owned())
+            })
     }
 
     /// Returns the surrounding whitespace
@@ -94,6 +106,13 @@ impl Key {
     /// Returns the surrounding whitespace
     pub fn decor(&self) -> &Decor {
         &self.decor
+    }
+
+    pub(crate) fn despan(&mut self, input: &str) {
+        self.decor.despan(input);
+        if let Some(repr) = &mut self.repr {
+            repr.despan(input)
+        }
     }
 
     /// Auto formats the key.
@@ -169,7 +188,7 @@ impl PartialEq<String> for Key {
 
 impl std::fmt::Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, ("", ""))
+        crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 
@@ -235,9 +254,19 @@ impl<'k> KeyMut<'k> {
         self.key.get()
     }
 
-    /// Returns the key raw representation.
-    pub fn to_repr(&self) -> Cow<Repr> {
-        self.key.to_repr()
+    /// Returns the raw representation, if available.
+    pub fn as_repr(&self) -> Option<&Repr> {
+        self.key.as_repr()
+    }
+
+    /// Returns the default raw representation.
+    pub fn default_repr(&self) -> Repr {
+        self.key.default_repr()
+    }
+
+    /// Returns a raw representation.
+    pub fn display_repr(&self) -> Cow<str> {
+        self.key.display_repr()
     }
 
     /// Returns the surrounding whitespace

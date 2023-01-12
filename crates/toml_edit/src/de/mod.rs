@@ -107,7 +107,7 @@ pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let d = s.parse::<crate::Document>()?;
+    let d = crate::parser::parse_document(s)?;
     from_document(d)
 }
 

@@ -16,8 +16,8 @@ pub struct TomlError {
 impl TomlError {
     pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
         use nom8::input::Offset;
-        let offset = original.offset(error.input);
-        let position = translate_position(original, offset);
+        let offset = original.offset(&error.input);
+        let position = translate_position(&original, offset);
         let message = ParserErrorDisplay {
             error: &error,
             original,
@@ -351,8 +351,10 @@ pub(crate) enum CustomError {
 impl CustomError {
     pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
         assert!(i < path.len());
+        let key = &path[i];
+        let repr = key.display_repr();
         Self::DuplicateKey {
-            key: path[i].to_repr().as_ref().as_raw().into(),
+            key: repr.into(),
             table: Some(path[..i].to_vec()),
         }
     }
