@@ -26,6 +26,6 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml_edit/compare/70caf40...HEAD
-[0.5.9]: https://github.com/toml-rs/toml_edit/compare/94b319f...70caf40
-[0.5.8]: https://github.com/toml-rs/toml_edit/compare/9a94610...94b319f
+[Unreleased]: https://github.com/toml-rs/toml/compare/70caf40...HEAD
+[0.5.9]: https://github.com/toml-rs/toml/compare/94b319f...70caf40
+[0.5.8]: https://github.com/toml-rs/toml/compare/9a94610...94b319f
