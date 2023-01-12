@@ -26,13 +26,7 @@ impl TomlError {
             offset..(offset + 1)
         };
 
-        let position = translate_position(&original, offset);
-        let message = ParserErrorDisplay {
-            error: &error,
-            original,
-            position,
-        }
-        .to_string();
+        let message = error.to_string();
 
         Self {
             message,
@@ -85,7 +79,41 @@ impl TomlError {
 /// While parsing a Date-Time
 impl Display for TomlError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.message)
+        if let (Some(original), Some(span)) = (&self.original, self.span()) {
+            let (line, column) = translate_position(original.as_bytes(), span.start);
+            let line_num = line + 1;
+            let col_num = column + 1;
+            let gutter = line_num.to_string().len();
+            let content = original.split('\n').nth(line).expect("valid line number");
+
+            writeln!(
+                f,
+                "TOML parse error at line {}, column {}",
+                line_num, col_num
+            )?;
+            //   |
+            for _ in 0..=gutter {
+                write!(f, " ")?;
+            }
+            writeln!(f, "|")?;
+
+            // 1 | 00:32:00.a999999
+            write!(f, "{} | ", line_num)?;
+            writeln!(f, "{}", content)?;
+
+            //   |          ^
+            for _ in 0..=gutter {
+                write!(f, " ")?;
+            }
+            write!(f, "|")?;
+            for _ in 0..=column {
+                write!(f, " ")?;
+            }
+            writeln!(f, "^")?;
+        }
+        write!(f, "{}", self.message)?;
+
+        Ok(())
     }
 }
 
@@ -153,31 +181,13 @@ impl<'b> std::cmp::PartialEq for ParserError<'b> {
     }
 }
 
-struct ParserErrorDisplay<'a> {
-    error: &'a ParserError<'a>,
-    original: Input<'a>,
-    position: (usize, usize),
-}
-
-impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
+impl<'a> std::fmt::Display for ParserError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let (line, column) = self.position;
-        let line_num = line + 1;
-        let col_num = column + 1;
-        let gutter = line_num.to_string().len();
-        let content = self
-            .original
-            .split(|b| *b == b'\n')
-            .nth(line)
-            .expect("valid line number");
-        let content = String::from_utf8_lossy(content);
-
-        let expression = self.error.context.iter().find_map(|c| match c {
+        let expression = self.context.iter().find_map(|c| match c {
             Context::Expression(c) => Some(c),
             _ => None,
         });
         let expected = self
-            .error
             .context
             .iter()
             .filter_map(|c| match c {
@@ -185,31 +195,6 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
                 _ => None,
             })
             .collect::<Vec<_>>();
-
-        writeln!(
-            f,
-            "TOML parse error at line {}, column {}",
-            line_num, col_num
-        )?;
-        //   |
-        for _ in 0..=gutter {
-            write!(f, " ")?;
-        }
-        writeln!(f, "|")?;
-
-        // 1 | 00:32:00.a999999
-        write!(f, "{} | ", line_num)?;
-        writeln!(f, "{}", content)?;
-
-        //   |          ^
-        for _ in 0..=gutter {
-            write!(f, " ")?;
-        }
-        write!(f, "|")?;
-        for _ in 0..=column {
-            write!(f, " ")?;
-        }
-        writeln!(f, "^")?;
 
         if let Some(expression) = expression {
             writeln!(f, "Invalid {}", expression)?;
@@ -225,7 +210,7 @@ impl<'a> std::fmt::Display for ParserErrorDisplay<'a> {
             }
             writeln!(f)?;
         }
-        if let Some(cause) = &self.error.cause {
+        if let Some(cause) = &self.cause {
             write!(f, "{}", cause)?;
         }
 
