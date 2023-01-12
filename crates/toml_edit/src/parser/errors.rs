@@ -61,6 +61,7 @@ impl TomlError {
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.
+    #[deprecated(since = "0.18.0", note = "See instead `TomlError::span`")]
     pub fn line_col(&self) -> Option<(usize, usize)> {
         if let (Some(original), Some(span)) = (&self.original, self.span()) {
             Some(translate_position(original.as_bytes(), span.start))

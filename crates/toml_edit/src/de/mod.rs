@@ -87,6 +87,7 @@ impl std::fmt::Display for Error {
 
 impl From<crate::TomlError> for Error {
     fn from(e: crate::TomlError) -> Error {
+        #[allow(deprecated)]
         let line_col = e.line_col();
         let mut err = Self::custom(e);
         err.inner.line_col = line_col;
