@@ -56,6 +56,10 @@ impl Error {
         self.inner.span.clone()
     }
 
+    pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
+        self.inner.span = span;
+    }
+
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.

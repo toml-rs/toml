@@ -110,7 +110,14 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
     {
         match self.iter.next() {
             Some((k, v)) => {
-                let ret = seed.deserialize(k.into_deserializer()).map(Some);
+                let ret = seed.deserialize(k.into_deserializer()).map(Some).map_err(
+                    |mut e: Self::Error| {
+                        if e.span().is_none() {
+                            e.set_span(v.key.span());
+                        }
+                        e
+                    },
+                );
                 self.value = Some((k, v.value));
                 ret
             }

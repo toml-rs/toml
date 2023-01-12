@@ -46,7 +46,15 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_newtype_struct(self)
+        let span = self.input.span();
+        visitor
+            .visit_newtype_struct(self)
+            .map_err(|mut e: Self::Error| {
+                if e.span().is_none() {
+                    e.set_span(span);
+                }
+                e
+            })
     }
 
     fn deserialize_struct<V>(
@@ -98,10 +106,28 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     where
         V: serde::de::Visitor<'de>,
     {
+        let span = self.span();
         match self {
-            crate::Item::None => visitor.visit_none(),
-            crate::Item::Value(v) => v.deserialize_any(visitor),
-            crate::Item::Table(v) => visitor.visit_map(crate::de::TableMapAccess::new(v)),
+            crate::Item::None => visitor.visit_none().map_err(|mut e: Self::Error| {
+                if e.span().is_none() {
+                    e.set_span(span);
+                }
+                e
+            }),
+            crate::Item::Value(v) => v.deserialize_any(visitor).map_err(|mut e: Self::Error| {
+                if e.span().is_none() {
+                    e.set_span(span);
+                }
+                e
+            }),
+            crate::Item::Table(v) => visitor
+                .visit_map(crate::de::TableMapAccess::new(v))
+                .map_err(|mut e: Self::Error| {
+                    if e.span().is_none() {
+                        e.set_span(span);
+                    }
+                    e
+                }),
             crate::Item::ArrayOfTables(v) => {
                 visitor.visit_seq(crate::de::ArraySeqAccess::with_array_of_tables(v))
             }
@@ -114,7 +140,13 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_some(self)
+        let span = self.span();
+        visitor.visit_some(self).map_err(|mut e: Self::Error| {
+            if e.span().is_none() {
+                e.set_span(span);
+            }
+            e
+        })
     }
 
     fn deserialize_newtype_struct<V>(
@@ -125,7 +157,15 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     where
         V: serde::de::Visitor<'de>,
     {
-        visitor.visit_newtype_struct(self)
+        let span = self.span();
+        visitor
+            .visit_newtype_struct(self)
+            .map_err(|mut e: Self::Error| {
+                if e.span().is_none() {
+                    e.set_span(span);
+                }
+                e
+            })
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
@@ -138,8 +178,17 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     where
         V: serde::de::Visitor<'de>,
     {
+        let span = self.span();
         match self {
-            crate::Item::Value(v) => v.deserialize_enum(name, variants, visitor),
+            crate::Item::Value(v) => {
+                v.deserialize_enum(name, variants, visitor)
+                    .map_err(|mut e: Self::Error| {
+                        if e.span().is_none() {
+                            e.set_span(span);
+                        }
+                        e
+                    })
+            }
             crate::Item::Table(v) => {
                 if v.is_empty() {
                     Err(crate::de::Error::custom(
@@ -152,7 +201,14 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
                         v.span(),
                     ))
                 } else {
-                    visitor.visit_enum(crate::de::TableMapAccess::new(v))
+                    visitor
+                        .visit_enum(crate::de::TableMapAccess::new(v))
+                        .map_err(|mut e: Self::Error| {
+                            if e.span().is_none() {
+                                e.set_span(span);
+                            }
+                            e
+                        })
                 }
             }
             e => Err(crate::de::Error::custom("wanted string or table", e.span())),

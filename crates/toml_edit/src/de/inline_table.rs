@@ -110,7 +110,14 @@ impl<'de> serde::de::MapAccess<'de> for InlineTableMapAccess {
     {
         match self.iter.next() {
             Some((k, v)) => {
-                let ret = seed.deserialize(k.into_deserializer()).map(Some);
+                let ret = seed.deserialize(k.into_deserializer()).map(Some).map_err(
+                    |mut e: Self::Error| {
+                        if e.span().is_none() {
+                            e.set_span(v.key.span());
+                        }
+                        e
+                    },
+                );
                 self.value = Some((k, v.value));
                 ret
             }
@@ -123,12 +130,17 @@ impl<'de> serde::de::MapAccess<'de> for InlineTableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some((k, v)) => seed
-                .deserialize(crate::de::ItemDeserializer::new(v))
-                .map_err(|mut err| {
-                    err.parent_key(k);
-                    err
-                }),
+            Some((k, v)) => {
+                let span = v.span();
+                seed.deserialize(crate::de::ItemDeserializer::new(v))
+                    .map_err(|mut err| {
+                        if err.span().is_none() {
+                            err.set_span(span);
+                        }
+                        err.parent_key(k);
+                        err
+                    })
+            }
             None => {
                 panic!("no more values in next_value_seed, internal error in ValueDeserializer")
             }
@@ -155,6 +167,12 @@ impl<'de> serde::de::EnumAccess<'de> for InlineTableMapAccess {
         };
 
         seed.deserialize(key.into_deserializer())
+            .map_err(|mut e: Self::Error| {
+                if e.span().is_none() {
+                    e.set_span(value.key.span());
+                }
+                e
+            })
             .map(|val| (val, super::TableEnumDeserializer::new(value.value)))
     }
 }
