@@ -130,14 +130,13 @@ impl<'de> serde::de::MapAccess<'de> for InlineTableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some((k, v)) => {
+            Some((_k, v)) => {
                 let span = v.span();
                 seed.deserialize(crate::de::ItemDeserializer::new(v))
                     .map_err(|mut err| {
                         if err.span().is_none() {
                             err.set_span(span);
                         }
-                        err.parent_key(k);
                         err
                     })
             }

@@ -52,6 +52,16 @@ impl TomlError {
         self.span.clone()
     }
 
+    #[cfg(feature = "serde")]
+    pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
+        self.span = span;
+    }
+
+    #[cfg(feature = "serde")]
+    pub(crate) fn set_original(&mut self, original: Option<String>) {
+        self.original = original;
+    }
+
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.

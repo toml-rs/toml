@@ -218,8 +218,12 @@ fn type_errors() {
         Table(map! {
             bar: Value::String("a".to_string())
         }),
-        "invalid type: string \"a\", expected isize for key `bar`",
-        "invalid type: string \"a\", expected isize for key `bar`"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | bar = "a"
+  |       ^
+invalid type: string "a", expected isize"#,
+        "invalid type: string \"a\", expected isize"
     }
 
     #[derive(Deserialize)]
@@ -235,8 +239,12 @@ fn type_errors() {
                 bar: Value::String("a".to_string())
             })
         }),
-        "invalid type: string \"a\", expected isize for key `foo.bar`",
-        "invalid type: string \"a\", expected isize for key `foo.bar`"
+        r#"TOML parse error at line 2, column 7
+  |
+2 | bar = "a"
+  |       ^
+invalid type: string "a", expected isize"#,
+        "invalid type: string \"a\", expected isize"
     }
 }
 
@@ -536,10 +544,7 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    snapbox::assert_eq(
-        err.to_string(),
-        "expected a boolean or an integer for key `profile.dev.debug`",
-    );
+    snapbox::assert_eq(err.to_string(), "expected a boolean or an integer");
 
     let res: Result<Package, _> = toml_edit::de::from_str(
         r#"
@@ -555,7 +560,11 @@ dev = { debug = 'a' }
     let err = res.unwrap_err();
     snapbox::assert_eq(
         err.to_string(),
-        "expected a boolean or an integer for key `profile.dev.debug`",
+        r#"TOML parse error at line 8, column 17
+  |
+8 | dev = { debug = 'a' }
+  |                 ^
+expected a boolean or an integer"#,
     );
 }
 

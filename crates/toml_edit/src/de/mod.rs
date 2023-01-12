@@ -21,15 +21,7 @@ use table_enum::*;
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error {
-    inner: Box<ErrorInner>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-struct ErrorInner {
-    message: String,
-    reverse_key: Vec<crate::InternalString>,
-    span: Option<std::ops::Range<usize>>,
-    line_col: Option<(usize, usize)>,
+    inner: crate::TomlError,
 }
 
 impl Error {
@@ -38,34 +30,26 @@ impl Error {
         T: std::fmt::Display,
     {
         Error {
-            inner: Box::new(ErrorInner {
-                message: msg.to_string(),
-                reverse_key: Default::default(),
-                span,
-                line_col: None,
-            }),
+            inner: crate::TomlError::custom(msg.to_string(), span),
         }
-    }
-
-    pub(crate) fn parent_key(&mut self, key: crate::InternalString) {
-        self.inner.reverse_key.push(key);
     }
 
     /// The start/end index into the original document where the error occurred
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
-        self.inner.span.clone()
+        self.inner.span()
     }
 
     pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
-        self.inner.span = span;
+        self.inner.set_span(span);
     }
 
     /// Produces a (line, column) pair of the position of the error if available
     ///
     /// All indexes are 0-based.
-    #[deprecated(since = "0.18.0", note = "See instead `TomlError::span`")]
+    #[deprecated(since = "0.18.0", note = "See instead `Error::span`")]
     pub fn line_col(&self) -> Option<(usize, usize)> {
-        self.inner.line_col
+        #[allow(deprecated)]
+        self.inner.line_col()
     }
 }
 
@@ -80,37 +64,19 @@ impl serde::de::Error for Error {
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.inner.message.fmt(f)?;
-
-        if !self.inner.reverse_key.is_empty() {
-            write!(f, " for key `")?;
-            for (i, k) in self.inner.reverse_key.iter().rev().enumerate() {
-                if i > 0 {
-                    write!(f, ".")?;
-                }
-                write!(f, "{}", k)?;
-            }
-            write!(f, "`")?;
-        }
-
-        Ok(())
+        self.inner.fmt(f)
     }
 }
 
 impl From<crate::TomlError> for Error {
     fn from(e: crate::TomlError) -> Error {
-        #[allow(deprecated)]
-        let line_col = e.line_col();
-        let span = e.span();
-        let mut err = Self::custom(e, span);
-        err.inner.line_col = line_col;
-        err
+        Self { inner: e }
     }
 }
 
 impl From<Error> for crate::TomlError {
     fn from(e: Error) -> crate::TomlError {
-        Self::custom(e.to_string(), e.span())
+        e.inner
     }
 }
 
@@ -209,7 +175,13 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.root.deserialize_any(visitor)
+        let original = self.original;
+        self.root
+            .deserialize_any(visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -218,7 +190,13 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.root.deserialize_option(visitor)
+        let original = self.original;
+        self.root
+            .deserialize_option(visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
@@ -231,7 +209,13 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.root.deserialize_enum(name, variants, visitor)
+        let original = self.original;
+        self.root
+            .deserialize_enum(name, variants, visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     serde::forward_to_deserialize_any! {

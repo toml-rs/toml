@@ -32,7 +32,11 @@ fn invalid_variant_returns_error_with_good_message_string() {
 
     snapbox::assert_eq(
         error.to_string(),
-        "unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct` for key `val`"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | val = "NonExistent"
+  |       ^
+unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
     );
 }
 
@@ -41,7 +45,11 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
     let error = toml::from_str::<Val>("val = { NonExistent = {} }").unwrap_err();
     snapbox::assert_eq(
         error.to_string(),
-        "unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct` for key `val`"
+        r#"TOML parse error at line 1, column 9
+  |
+1 | val = { NonExistent = {} }
+  |         ^
+unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
     );
 }
 
@@ -49,7 +57,14 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
 fn extra_field_returns_expected_empty_table_error() {
     let error = toml::from_str::<Val>("val = { Plain = { extra_field = 404 } }").unwrap_err();
 
-    snapbox::assert_eq(error.to_string(), "expected empty table for key `val`");
+    snapbox::assert_eq(
+        error.to_string(),
+        r#"TOML parse error at line 1, column 17
+  |
+1 | val = { Plain = { extra_field = 404 } }
+  |                 ^
+expected empty table"#,
+    );
 }
 
 #[test]
@@ -60,7 +75,11 @@ fn extra_field_returns_expected_empty_table_error_struct_variant() {
 
     snapbox::assert_eq(
         error.to_string(),
-        r#"unexpected keys in table: extra_0, extra_1, available keys: value for key `val`"#,
+        r#"TOML parse error at line 1, column 33
+  |
+1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
+  |                                 ^
+unexpected keys in table: extra_0, extra_1, available keys: value"#,
     );
 }
 

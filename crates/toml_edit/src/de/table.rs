@@ -130,12 +130,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some((k, v)) => seed
-                .deserialize(crate::de::ItemDeserializer::new(v))
-                .map_err(|mut err| {
-                    err.parent_key(k);
-                    err
-                }),
+            Some((_k, v)) => seed.deserialize(crate::de::ItemDeserializer::new(v)),
             None => {
                 panic!("no more values in next_value_seed, internal error in ItemDeserializer")
             }
