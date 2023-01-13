@@ -43,6 +43,12 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
             }
         }
 
+        if super::is_spanned(name, fields) {
+            if let Some(span) = self.span() {
+                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
+            }
+        }
+
         self.deserialize_any(visitor)
     }
 

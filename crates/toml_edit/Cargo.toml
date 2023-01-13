@@ -38,7 +38,7 @@ pre-release-replacements = [
 default = []
 easy = ["serde"]
 perf = ["dep:kstring"]
-serde = ["dep:serde", "toml_datetime/serde"]
+serde = ["dep:serde", "toml_datetime/serde", "serde_spanned"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
 # without any consideration for overflowing the stack. Additionally you will
 # need to be careful around other recursive operations on the parsed result
@@ -53,6 +53,7 @@ itertools = "0.10.5"
 serde = { version = "1.0.145", features = ["derive"], optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.5.0", path = "../toml_datetime" }
+serde_spanned = { version = "0.5.0", path = "../serde_spanned", features = ["serde"], optional = true }
 
 [dev-dependencies]
 serde_json = "1.0.91"

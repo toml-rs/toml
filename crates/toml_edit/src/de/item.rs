@@ -66,6 +66,12 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
+        if super::is_spanned(name, fields) {
+            if let Some(span) = self.input.span() {
+                return visitor.visit_map(super::SpannedDeserializer::new(self.input, span));
+            }
+        }
+
         if self.validate_struct_keys {
             match &self.input {
                 crate::Item::Table(values) => super::validate_struct_keys(&values.items, fields)?,
@@ -96,6 +102,14 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ItemDeserializer {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self {
+        self
     }
 }
 
@@ -168,6 +182,24 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
             })
     }
 
+    fn deserialize_struct<V>(
+        self,
+        name: &'static str,
+        fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        if super::is_spanned(name, fields) {
+            if let Some(span) = self.span() {
+                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
+            }
+        }
+
+        self.deserialize_any(visitor)
+    }
+
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
     fn deserialize_enum<V>(
         self,
@@ -217,7 +249,7 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit struct
+        bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }

@@ -34,13 +34,19 @@ impl<'de> serde::Deserializer<'de> for crate::Table {
 
     fn deserialize_struct<V>(
         self,
-        _name: &'static str,
-        _fields: &'static [&'static str],
+        name: &'static str,
+        fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Error>
     where
         V: serde::de::Visitor<'de>,
     {
+        if super::is_spanned(name, fields) {
+            if let Some(span) = self.span() {
+                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
+            }
+        }
+
         self.deserialize_any(visitor)
     }
 
@@ -87,7 +93,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Table {
 pub(crate) struct TableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
     span: Option<std::ops::Range<usize>>,
-    value: Option<(crate::InternalString, crate::Item)>,
+    value: Option<crate::Item>,
 }
 
 impl TableMapAccess {
@@ -110,15 +116,16 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
     {
         match self.iter.next() {
             Some((k, v)) => {
-                let ret = seed.deserialize(k.into_deserializer()).map(Some).map_err(
-                    |mut e: Self::Error| {
+                let ret = seed
+                    .deserialize(super::KeyDeserializer::new(k, v.key.span()))
+                    .map(Some)
+                    .map_err(|mut e: Self::Error| {
                         if e.span().is_none() {
                             e.set_span(v.key.span());
                         }
                         e
-                    },
-                );
-                self.value = Some((k, v.value));
+                    });
+                self.value = Some(v.value);
                 ret
             }
             None => Ok(None),
@@ -130,7 +137,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some((_k, v)) => seed.deserialize(crate::de::ItemDeserializer::new(v)),
+            Some(v) => seed.deserialize(crate::de::ItemDeserializer::new(v)),
             None => {
                 panic!("no more values in next_value_seed, internal error in ItemDeserializer")
             }

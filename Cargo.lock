@@ -958,6 +958,7 @@ dependencies = [
  "nom8",
  "serde",
  "serde_json",
+ "serde_spanned",
  "snapbox",
  "toml 0.5.10",
  "toml-test-data",
