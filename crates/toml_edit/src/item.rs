@@ -301,8 +301,8 @@ impl Item {
         match self {
             Item::None => None,
             Item::Value(v) => v.span(),
-            Item::Table(_) => None,
-            Item::ArrayOfTables(_) => None,
+            Item::Table(v) => v.span(),
+            Item::ArrayOfTables(v) => v.span(),
         }
     }
 

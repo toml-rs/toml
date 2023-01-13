@@ -98,6 +98,7 @@ impl ParseState {
         &mut self,
         path: Vec<Key>,
         decor: Decor,
+        span: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
         debug_assert!(self.current_table.is_empty());
@@ -114,26 +115,22 @@ impl ParseState {
             .as_array_of_tables()
             .ok_or_else(|| CustomError::duplicate_key(&path, path.len() - 1))?;
 
-        let span = if let (Some(prefix), Some(suffix)) = (
-            decor.prefix().and_then(|r| r.span()),
-            decor.suffix().and_then(|r| r.span()),
-        ) {
-            Some((prefix.end)..(suffix.start))
-        } else {
-            None
-        };
-
         self.current_table_position += 1;
         self.current_table.decor = decor;
         self.current_table.set_position(self.current_table_position);
-        self.current_table.span = span;
+        self.current_table.span = Some(span);
         self.current_is_array = true;
         self.current_table_path = path;
 
         Ok(())
     }
 
-    pub(crate) fn start_table(&mut self, path: Vec<Key>, decor: Decor) -> Result<(), CustomError> {
+    pub(crate) fn start_table(
+        &mut self,
+        path: Vec<Key>,
+        decor: Decor,
+        span: std::ops::Range<usize>,
+    ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
         debug_assert!(self.current_table.is_empty());
         debug_assert!(self.current_table_path.is_empty());
@@ -153,19 +150,10 @@ impl ParseState {
             }
         }
 
-        let span = if let (Some(prefix), Some(suffix)) = (
-            decor.prefix().and_then(|r| r.span()),
-            decor.suffix().and_then(|r| r.span()),
-        ) {
-            Some((prefix.end)..(suffix.start))
-        } else {
-            None
-        };
-
         self.current_table_position += 1;
         self.current_table.decor = decor;
         self.current_table.set_position(self.current_table_position);
-        self.current_table.span = span;
+        self.current_table.span = Some(span);
         self.current_is_array = false;
         self.current_table_path = path;
 
@@ -278,6 +266,7 @@ impl ParseState {
         &mut self,
         path: Vec<Key>,
         trailing: std::ops::Range<usize>,
+        span: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
@@ -287,7 +276,11 @@ impl ParseState {
             .take()
             .map(RawString::with_span)
             .unwrap_or_default();
-        self.start_table(path, Decor::new(leading, RawString::with_span(trailing)))?;
+        self.start_table(
+            path,
+            Decor::new(leading, RawString::with_span(trailing)),
+            span,
+        )?;
 
         Ok(())
     }
@@ -296,6 +289,7 @@ impl ParseState {
         &mut self,
         path: Vec<Key>,
         trailing: std::ops::Range<usize>,
+        span: std::ops::Range<usize>,
     ) -> Result<(), CustomError> {
         debug_assert!(!path.is_empty());
 
@@ -305,7 +299,11 @@ impl ParseState {
             .take()
             .map(RawString::with_span)
             .unwrap_or_default();
-        self.start_aray_table(path, Decor::new(leading, RawString::with_span(trailing)))?;
+        self.start_aray_table(
+            path,
+            Decor::new(leading, RawString::with_span(trailing)),
+            span,
+        )?;
 
         Ok(())
     }
