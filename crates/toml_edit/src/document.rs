@@ -11,6 +11,7 @@ pub struct Document {
     // Trailing comments and whitespaces
     pub(crate) trailing: RawString,
     pub(crate) original: Option<String>,
+    pub(crate) span: Option<std::ops::Range<usize>>,
 }
 
 impl Document {
@@ -72,6 +73,7 @@ impl Default for Document {
             root: Item::Table(Table::with_pos(Some(0))),
             trailing: Default::default(),
             original: Default::default(),
+            span: Default::default(),
         }
     }
 }
