@@ -61,8 +61,6 @@ toml-test-harness = "0.4.2"
 toml-test-data = "1.2.0"
 libtest-mimic = "0.6.0"
 snapbox = { version = "0.4.3", features = ["harness"] }
-criterion = "0.4.0"
-toml = "0.5.10"
 
 [[test]]
 name = "decoder_compliance"
@@ -82,14 +80,6 @@ harness = false
 
 [[test]]
 name = "invalid"
-harness = false
-
-[[bench]]
-name = "cargo"
-harness = false
-
-[[bench]]
-name = "linear"
 harness = false
 
 [[example]]

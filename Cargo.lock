@@ -950,7 +950,6 @@ dependencies = [
 name = "toml_edit"
 version = "0.17.1"
 dependencies = [
- "criterion",
  "indexmap",
  "itertools",
  "kstring",
@@ -960,7 +959,6 @@ dependencies = [
  "serde_json",
  "serde_spanned",
  "snapbox",
- "toml 0.5.10",
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
@@ -982,8 +980,10 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "toml 0.5.10",
  "toml 0.5.9",
  "toml-test-harness",
+ "toml_edit",
 ]
 
 [[package]]
