@@ -36,12 +36,13 @@ pub(crate) fn std_table<'s, 'i>(
                 cut(STD_TABLE_CLOSE)
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::StringLiteral("]"))),
-            ),
+            )
+            .with_span(),
             cut(line_trailing)
                 .context(Context::Expected(ParserValue::CharLiteral('\n')))
                 .context(Context::Expected(ParserValue::CharLiteral('#'))),
         )
-            .map_res(|(h, t)| state.borrow_mut().deref_mut().on_std_header(h, t))
+            .map_res(|((h, span), t)| state.borrow_mut().deref_mut().on_std_header(h, t, span))
             .parse(i)
     }
 }
@@ -60,12 +61,13 @@ pub(crate) fn array_table<'s, 'i>(
                 cut(ARRAY_TABLE_CLOSE)
                     .context(Context::Expected(ParserValue::CharLiteral('.')))
                     .context(Context::Expected(ParserValue::StringLiteral("]]"))),
-            ),
+            )
+            .with_span(),
             cut(line_trailing)
                 .context(Context::Expected(ParserValue::CharLiteral('\n')))
                 .context(Context::Expected(ParserValue::CharLiteral('#'))),
         )
-            .map_res(|(h, t)| state.borrow_mut().deref_mut().on_array_header(h, t))
+            .map_res(|((h, span), t)| state.borrow_mut().deref_mut().on_array_header(h, t, span))
             .parse(i)
     }
 }

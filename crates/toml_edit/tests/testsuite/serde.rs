@@ -258,7 +258,11 @@ fn missing_errors() {
     error! {
         Foo,
         Table(map! { }),
-        "missing field `bar`",
+        r#"TOML parse error at line 1, column 1
+  |
+1 | 
+  | ^
+missing field `bar`"#,
         "missing field `bar`"
     }
 }
@@ -544,7 +548,14 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    snapbox::assert_eq(err.to_string(), "expected a boolean or an integer");
+    snapbox::assert_eq(
+        err.to_string(),
+        r#"TOML parse error at line 7, column 1
+  |
+7 | [profile.dev]
+  | ^^^^^^^^^^^^^
+expected a boolean or an integer"#,
+    );
 
     let res: Result<Package, _> = toml_edit::de::from_str(
         r#"
