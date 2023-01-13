@@ -191,6 +191,15 @@ impl ParseState {
                 .as_array_of_tables_mut()
                 .ok_or_else(|| CustomError::duplicate_key(&path, path.len() - 1))?;
             array.push(table);
+            let span = if let (Some(first), Some(last)) = (
+                array.values.first().and_then(|t| t.span()),
+                array.values.last().and_then(|t| t.span()),
+            ) {
+                Some((first.start)..(last.end))
+            } else {
+                None
+            };
+            array.span = span;
         } else {
             let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
             let key = &path[path.len() - 1];

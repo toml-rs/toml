@@ -7,6 +7,7 @@ use crate::{Array, Item, Table};
 pub struct ArrayOfTables {
     // Always Vec<Item::Table>, just `Item` to make `Index` work
     pub(crate) values: Vec<Item>,
+    pub(crate) span: Option<std::ops::Range<usize>>,
 }
 
 /// Constructors
@@ -32,6 +33,7 @@ impl ArrayOfTables {
     }
 
     pub(crate) fn despan(&mut self, input: &str) {
+        self.span = None;
         for value in &mut self.values {
             value.despan(input);
         }
@@ -109,6 +111,7 @@ impl FromIterator<Table> for ArrayOfTables {
         let v = iter.into_iter().map(Item::Table);
         ArrayOfTables {
             values: v.collect(),
+            span: None,
         }
     }
 }
