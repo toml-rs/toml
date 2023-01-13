@@ -10,27 +10,21 @@ fn cargo_manifest(c: &mut Criterion) {
             sample.parse::<toml_edit::Document>().unwrap();
             b.iter(|| sample.parse::<toml_edit::Document>());
         });
-        #[cfg(feature = "easy")]
-        group.bench_with_input(
-            BenchmarkId::new("toml_edit::easy::de", name),
-            &len,
-            |b, _| {
-                toml_edit::easy::from_str::<manifest::Manifest>(sample).unwrap();
-                b.iter(|| toml_edit::easy::from_str::<manifest::Manifest>(sample).unwrap())
-            },
-        );
-        #[cfg(feature = "easy")]
-        group.bench_with_input(
-            BenchmarkId::new("toml_edit::easy::Value", name),
-            &len,
-            |b, _| {
-                sample.parse::<toml_edit::easy::Value>().unwrap();
-                b.iter(|| sample.parse::<toml_edit::easy::Value>());
-            },
-        );
-        group.bench_with_input(BenchmarkId::new("toml", name), &len, |b, _| {
+        group.bench_with_input(BenchmarkId::new("toml::Value", name), &len, |b, _| {
             sample.parse::<toml::Value>().unwrap();
             b.iter(|| sample.parse::<toml::Value>());
+        });
+        group.bench_with_input(BenchmarkId::new("toml::de", name), &len, |b, _| {
+            toml::from_str::<manifest::Manifest>(sample).unwrap();
+            b.iter(|| toml::from_str::<manifest::Manifest>(sample));
+        });
+        group.bench_with_input(BenchmarkId::new("toml_old::Value", name), &len, |b, _| {
+            sample.parse::<toml_old::Value>().unwrap();
+            b.iter(|| sample.parse::<toml_old::Value>());
+        });
+        group.bench_with_input(BenchmarkId::new("toml_old::de", name), &len, |b, _| {
+            toml_old::from_str::<manifest::Manifest>(sample).unwrap();
+            b.iter(|| toml_old::from_str::<manifest::Manifest>(sample));
         });
     }
     group.finish();
@@ -172,7 +166,6 @@ vendored-openssl = ["openssl/vendored"]
 pretty-env-logger = ["pretty_env_logger"]
 "#;
 
-#[cfg(feature = "easy")]
 mod manifest {
     use std::collections::HashMap;
 
