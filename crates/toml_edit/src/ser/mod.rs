@@ -131,7 +131,7 @@ where
 ///     },
 /// };
 ///
-/// let toml = toml::to_string(&config).unwrap();
+/// let toml = toml_edit::ser::to_string(&config).unwrap();
 /// println!("{}", toml)
 /// ```
 pub fn to_string<T: ?Sized>(value: &T) -> Result<String, Error>
