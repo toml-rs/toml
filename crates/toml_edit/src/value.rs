@@ -206,7 +206,6 @@ impl Value {
     }
 
     /// Returns the location within the original document
-    #[cfg(feature = "serde")]
     pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
         match self {
             Value::String(f) => f.span(),

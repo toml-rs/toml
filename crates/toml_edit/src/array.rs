@@ -88,7 +88,6 @@ impl Array {
     }
 
     /// Returns the location within the original document
-    #[cfg(feature = "serde")]
     pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
     }

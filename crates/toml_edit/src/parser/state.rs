@@ -62,6 +62,9 @@ impl ParseState {
                 .set_prefix(prefix.map(RawString::with_span).unwrap_or_default());
         }
 
+        if let (Some(existing), Some(value)) = (self.current_table.span(), kv.value.span()) {
+            self.current_table.span = Some((existing.start)..(value.end));
+        }
         let table = &mut self.current_table;
         let table = Self::descend_path(table, &path, true)?;
 
@@ -111,10 +114,19 @@ impl ParseState {
             .as_array_of_tables()
             .ok_or_else(|| CustomError::duplicate_key(&path, path.len() - 1))?;
 
+        let span = if let (Some(prefix), Some(suffix)) = (
+            decor.prefix().and_then(|r| r.span()),
+            decor.suffix().and_then(|r| r.span()),
+        ) {
+            Some((prefix.end)..(suffix.start))
+        } else {
+            None
+        };
+
         self.current_table_position += 1;
         self.current_table.decor = decor;
         self.current_table.set_position(self.current_table_position);
-        self.current_table.span = path.last().unwrap().span();
+        self.current_table.span = span;
         self.current_is_array = true;
         self.current_table_path = path;
 
@@ -141,10 +153,19 @@ impl ParseState {
             }
         }
 
+        let span = if let (Some(prefix), Some(suffix)) = (
+            decor.prefix().and_then(|r| r.span()),
+            decor.suffix().and_then(|r| r.span()),
+        ) {
+            Some((prefix.end)..(suffix.start))
+        } else {
+            None
+        };
+
         self.current_table_position += 1;
         self.current_table.decor = decor;
         self.current_table.set_position(self.current_table_position);
-        self.current_table.span = path.last().unwrap().span();
+        self.current_table.span = span;
         self.current_is_array = false;
         self.current_table_path = path;
 
@@ -283,11 +304,13 @@ impl ParseState {
 
 impl Default for ParseState {
     fn default() -> Self {
+        let mut root = Table::new();
+        root.span = Some(0..0);
         Self {
             document: Document::new(),
             trailing: None,
             current_table_position: 0,
-            current_table: Table::new(),
+            current_table: root,
             current_is_array: false,
             current_table_path: Vec::new(),
         }
