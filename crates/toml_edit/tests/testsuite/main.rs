@@ -4,6 +4,7 @@ mod convert;
 mod edit;
 mod enum_external_deserialize;
 mod formatter;
+mod invalid;
 mod macros;
 mod parse;
 mod pretty;
