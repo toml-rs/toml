@@ -693,14 +693,11 @@ impl<'de> de::MapAccess<'de> for MapDeserializer {
     where
         T: de::DeserializeSeed<'de>,
     {
-        let (key, res) = match self.value.take() {
+        let (_key, res) = match self.value.take() {
             Some((key, value)) => (key, seed.deserialize(value)),
             None => return Err(de::Error::custom("value is missing")),
         };
-        res.map_err(|mut error| {
-            error.add_key_context(&key);
-            error
-        })
+        res
     }
 
     fn size_hint(&self) -> Option<usize> {

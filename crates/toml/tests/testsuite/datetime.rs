@@ -42,91 +42,214 @@ fn times() {
 fn bad_times() {
     bad!(
         "foo = 199-09-09",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | foo = 199-09-09
+  |          ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = 199709-09",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 13
+  |
+1 | foo = 199709-09
+  |             ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = 1997-9-09",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 12
+  |
+1 | foo = 1997-9-09
+  |            ^
+invalid date-time
+"
     );
     bad!(
         "foo = 1997-09-9",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 15
+  |
+1 | foo = 1997-09-9
+  |               ^
+invalid date-time
+"
     );
     bad!(
         "foo = 1997-09-0909:09:09",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 17
+  |
+1 | foo = 1997-09-0909:09:09
+  |                 ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = 1997-09-09T09:09:09.",
-        "invalid date at line 1 column 7"
+        "\
+TOML parse error at line 1, column 26
+  |
+1 | foo = 1997-09-09T09:09:09.
+  |                          ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = T",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | foo = T
+  |       ^
+invalid string
+expected `"`, `'`
+"#
     );
     bad!(
         "foo = T.",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | foo = T.
+  |       ^
+invalid string
+expected `"`, `'`
+"#
     );
     bad!(
         "foo = TZ",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | foo = TZ
+  |       ^
+invalid string
+expected `"`, `'`
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+",
-        "invalid date at line 1 column 7"
+        r#"TOML parse error at line 1, column 30
+  |
+1 | foo = 1997-09-09T09:09:09.09+
+  |                              ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+09",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 32
+  |
+1 | foo = 1997-09-09T09:09:09.09+09
+  |                                ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+09:9",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 33
+  |
+1 | foo = 1997-09-09T09:09:09.09+09:9
+  |                                 ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+0909",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 32
+  |
+1 | foo = 1997-09-09T09:09:09.09+0909
+  |                                ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 30
+  |
+1 | foo = 1997-09-09T09:09:09.09-
+  |                              ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-09",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 32
+  |
+1 | foo = 1997-09-09T09:09:09.09-09
+  |                                ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-09:9",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 33
+  |
+1 | foo = 1997-09-09T09:09:09.09-09:9
+  |                                 ^
+invalid time offset
+"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-0909",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 32
+  |
+1 | foo = 1997-09-09T09:09:09.09-0909
+  |                                ^
+invalid time offset
+"#
     );
 
     bad!(
         "foo = 1997-00-09T09:09:09.09Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 12
+  |
+1 | foo = 1997-00-09T09:09:09.09Z
+  |            ^
+invalid date-time
+value is out of range
+"#
     );
     bad!(
         "foo = 1997-09-00T09:09:09.09Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 15
+  |
+1 | foo = 1997-09-00T09:09:09.09Z
+  |               ^
+invalid date-time
+value is out of range
+"#
     );
     bad!(
         "foo = 1997-09-09T30:09:09.09Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 17
+  |
+1 | foo = 1997-09-09T30:09:09.09Z
+  |                 ^
+expected newline, `#`
+"#
     );
     bad!(
         "foo = 1997-09-09T12:69:09.09Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 21
+  |
+1 | foo = 1997-09-09T12:69:09.09Z
+  |                     ^
+invalid date-time
+value is out of range
+"#
     );
     bad!(
         "foo = 1997-09-09T12:09:69.09Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        r#"TOML parse error at line 1, column 24
+  |
+1 | foo = 1997-09-09T12:09:69.09Z
+  |                        ^
+invalid date-time
+value is out of range
+"#
     );
 }

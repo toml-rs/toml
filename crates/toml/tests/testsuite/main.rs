@@ -1,6 +1,5 @@
 #![recursion_limit = "256"]
 
-mod backcompat;
 mod datetime;
 mod de_errors;
 mod display;

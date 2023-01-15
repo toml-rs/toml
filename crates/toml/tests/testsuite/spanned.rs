@@ -34,9 +34,9 @@ fn test_spanned_field() {
         foo: T,
     }
 
-    fn good<'de, T>(s: &'de str, expected: &str, end: Option<usize>)
+    fn good<T>(s: &str, expected: &str, end: Option<usize>)
     where
-        T: serde::Deserialize<'de> + Debug + PartialEq,
+        T: serde::de::DeserializeOwned + Debug + PartialEq,
     {
         let foo: Foo<T> = toml::from_str(s).unwrap();
 
@@ -95,13 +95,7 @@ fn test_inner_spanned_table() {
 
         if zero {
             assert_eq!(foo.foo.span().start, 0);
-            // We'd actually have to assert equality with s.len() here,
-            // but the current implementation doesn't support that,
-            // and it's not possible with toml's data format to support it
-            // in the general case as spans aren't always well-defined.
-            // So this check mainly serves as a reminder that this test should
-            // be updated *if* one day there is support for emitting the actual span.
-            assert_eq!(foo.foo.span().end, 0);
+            assert_eq!(foo.foo.span().end, 73);
         } else {
             assert_eq!(foo.foo.span().start, s.find('{').unwrap());
             assert_eq!(foo.foo.span().end, s.find('}').unwrap() + 1);
@@ -113,7 +107,7 @@ fn test_inner_spanned_table() {
     }
 
     good(
-        "
+        "\
         [foo]
         a = 'b'
         bar = 'baz'
@@ -213,27 +207,7 @@ fn test_spanned_array() {
         foo: Vec<Spanned<HashMap<Spanned<String>, Spanned<String>>>>,
     }
 
-    fn good(s: &str) {
-        let foo_list: Foo = toml::from_str(s).unwrap();
-
-        for foo in foo_list.foo.iter() {
-            assert_eq!(foo.span().start, 0);
-            // We'd actually have to assert equality with s.len() here,
-            // but the current implementation doesn't support that,
-            // and it's not possible with toml's data format to support it
-            // in the general case as spans aren't always well-defined.
-            // So this check mainly serves as a reminder that this test should
-            // be updated *if* one day there is support for emitting the actual span.
-            assert_eq!(foo.span().end, 0);
-            for (k, v) in foo.as_ref().iter() {
-                assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
-                assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
-            }
-        }
-    }
-
-    good(
-        "
+    let toml = "\
         [[foo]]
         a = 'b'
         bar = 'baz'
@@ -244,6 +218,14 @@ fn test_spanned_array() {
         bar = 'baz'
         c = 'g'
         e = \"h\"
-    ",
-    );
+    ";
+    let foo_list: Foo = toml::from_str(toml).unwrap();
+
+    for (foo, expected) in foo_list.foo.iter().zip([0..75, 84..159]) {
+        assert_eq!(foo.span(), expected);
+        for (k, v) in foo.as_ref().iter() {
+            assert_eq!(&toml[k.span().start..k.span().end], k.as_ref());
+            assert_eq!(&toml[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
+        }
+    }
 }
