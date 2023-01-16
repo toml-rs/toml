@@ -20,6 +20,9 @@ labels:
   - name: "A-parse"
     description: "Area: Parsing TOML"
     color: '#f7e101'
+  - name: "A-edit"
+    description: "Area: TOML editing API"
+    color: '#f7e101'
   - name: "A-output"
     description: "Area: Outputting TOML"
     color: '#f7e101'
