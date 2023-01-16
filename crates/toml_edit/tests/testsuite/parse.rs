@@ -18,7 +18,7 @@ macro_rules! parse_value {
 macro_rules! test_key {
     ($s:expr, $expected:expr) => {{
         let key = parse!($s, Key);
-        assert_eq!(key.get(), $expected, "");
+        assert_eq!($expected, key.get(), "");
     }};
 }
 
@@ -91,5 +91,5 @@ fn test_key_unification() {
     assert!(doc.is_ok());
     let doc = doc.unwrap();
 
-    assert_eq(doc.to_string(), expected);
+    assert_eq(expected, doc.to_string());
 }

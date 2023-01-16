@@ -31,13 +31,13 @@ macro_rules! equivalent {
         // Through a string equivalent
         println!("to_string(literal)");
         snapbox::assert_eq(
-            t!(toml_edit::easy::to_string_pretty(&literal)),
             toml.to_string(),
+            t!(toml_edit::easy::to_string_pretty(&literal)),
         );
         println!("to_string(toml)");
         snapbox::assert_eq(
-            t!(toml_edit::easy::to_string_pretty(&toml)),
             toml.to_string(),
+            t!(toml_edit::easy::to_string_pretty(&toml)),
         );
         println!("literal, from_str(toml)");
         assert_eq!(literal, t!(toml_edit::easy::from_str(&toml.to_string())));
@@ -51,13 +51,13 @@ macro_rules! error {
         println!("attempting parsing");
         match toml_edit::easy::from_str::<$ty>(&$toml.to_string()) {
             Ok(_) => panic!("successful"),
-            Err(e) => snapbox::assert_eq(e.to_string(), $msg_parse),
+            Err(e) => snapbox::assert_eq($msg_parse, e.to_string()),
         }
 
         println!("attempting toml decoding");
         match $toml.try_into::<$ty>() {
             Ok(_) => panic!("successful"),
-            Err(e) => snapbox::assert_eq(e.to_string(), $msg_decode),
+            Err(e) => snapbox::assert_eq($msg_decode, e.to_string()),
         }
     }};
 }
@@ -453,8 +453,8 @@ fn table_structs_empty() {
         },
     );
     expected.insert("foo".to_string(), CanBeEmpty::default());
-    assert_eq!(value, expected);
-    snapbox::assert_eq(toml_edit::ser::to_string(&value).unwrap(), text);
+    assert_eq!(expected, value);
+    snapbox::assert_eq(text, toml_edit::ser::to_string(&value).unwrap());
 }
 
 #[test]
@@ -549,12 +549,12 @@ debug = 'a'
     );
     let err = res.unwrap_err();
     snapbox::assert_eq(
-        err.to_string(),
         r#"TOML parse error at line 7, column 1
   |
 7 | [profile.dev]
   | ^^^^^^^^^^^^^
 expected a boolean or an integer"#,
+        err.to_string(),
     );
 
     let res: Result<Package, _> = toml_edit::de::from_str(
@@ -570,12 +570,12 @@ dev = { debug = 'a' }
     );
     let err = res.unwrap_err();
     snapbox::assert_eq(
-        err.to_string(),
         r#"TOML parse error at line 8, column 17
   |
 8 | dev = { debug = 'a' }
   |                 ^^^
 expected a boolean or an integer"#,
+        err.to_string(),
     );
 }
 
