@@ -49,7 +49,7 @@ impl<'de> serde::Deserializer<'de> for ArrayDeserializer {
 impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ArrayDeserializer {
     type Deserializer = Self;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
     }
 }
@@ -92,7 +92,7 @@ impl<'de> serde::Deserializer<'de> for crate::Array {
 impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Array {
     type Deserializer = Self;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
     }
 }
@@ -135,7 +135,7 @@ impl<'de> serde::Deserializer<'de> for crate::ArrayOfTables {
 impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::ArrayOfTables {
     type Deserializer = Self;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
     }
 }

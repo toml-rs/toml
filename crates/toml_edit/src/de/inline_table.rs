@@ -85,7 +85,7 @@ impl<'de> serde::Deserializer<'de> for crate::InlineTable {
 impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::InlineTable {
     type Deserializer = Self;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
     }
 }

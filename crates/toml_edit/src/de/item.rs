@@ -122,7 +122,7 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
 impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ItemDeserializer {
     type Deserializer = Self;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
     }
 }
@@ -276,7 +276,7 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
 impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Item {
     type Deserializer = Self;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
     }
 }
