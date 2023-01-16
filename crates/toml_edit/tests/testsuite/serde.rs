@@ -724,3 +724,55 @@ debug = true
         raw,
     );
 }
+
+#[test]
+fn integer_min() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: i64,
+    }
+
+    equivalent! {
+        Foo { a_b: i64::MIN },
+        Table(map! { a_b: Integer(i64::MIN) }),
+    }
+}
+
+#[test]
+fn integer_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: i64,
+    }
+
+    equivalent! {
+        Foo { a_b: i64::MAX },
+        Table(map! { a_b: Integer(i64::MAX) }),
+    }
+}
+
+#[test]
+fn float_min() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: f64,
+    }
+
+    equivalent! {
+        Foo { a_b: f64::MIN },
+        Table(map! { a_b: Float(f64::MIN) }),
+    }
+}
+
+#[test]
+fn float_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: f64,
+    }
+
+    equivalent! {
+        Foo { a_b: f64::MAX },
+        Table(map! { a_b: Float(f64::MAX) }),
+    }
+}
