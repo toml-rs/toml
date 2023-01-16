@@ -148,59 +148,9 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.input.deserialize_any(visitor)
-    }
-
-    // `None` is interpreted as a missing field so be sure to implement `Some`
-    // as a present field.
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.input.deserialize_option(visitor)
-    }
-
-    fn deserialize_struct<V>(
-        self,
-        name: &'static str,
-        fields: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.input.deserialize_struct(name, fields, visitor)
-    }
-
-    // Called when the type to deserialize is an enum, as opposed to a field in the type.
-    fn deserialize_enum<V>(
-        self,
-        name: &'static str,
-        variants: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.input.deserialize_enum(name, variants, visitor)
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct
-        ignored_any unit_struct tuple_struct tuple identifier
-    }
-}
-
-impl<'de> serde::Deserializer<'de> for crate::Document {
-    type Error = Error;
-
-    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        let original = self.original;
-        self.root
+        let original = self.input.original;
+        self.input
+            .root
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -214,8 +164,9 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.original;
-        self.root
+        let original = self.input.original;
+        self.input
+            .root
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -233,7 +184,7 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
         V: serde::de::Visitor<'de>,
     {
         if is_spanned(name, fields) {
-            if let Some(span) = self.span() {
+            if let Some(span) = self.input.span() {
                 return visitor.visit_map(SpannedDeserializer::new(self, span));
             }
         }
@@ -251,8 +202,9 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.original;
-        self.root
+        let original = self.input.original;
+        self.input
+            .root
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -267,11 +219,19 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document {
-    type Deserializer = Self;
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for Deserializer {
+    type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
         self
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document {
+    type Deserializer = Deserializer;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        Deserializer::new(self)
     }
 }
 
