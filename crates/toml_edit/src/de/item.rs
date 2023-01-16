@@ -148,14 +148,16 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
                 }
                 e
             }),
-            crate::Item::Table(v) => visitor
-                .visit_map(crate::de::TableMapAccess::new(v))
-                .map_err(|mut e: Self::Error| {
-                    if e.span().is_none() {
-                        e.set_span(span);
-                    }
-                    e
-                }),
+            crate::Item::Table(v) => {
+                v.into_deserializer()
+                    .deserialize_any(visitor)
+                    .map_err(|mut e: Self::Error| {
+                        if e.span().is_none() {
+                            e.set_span(span);
+                        }
+                        e
+                    })
+            }
             crate::Item::ArrayOfTables(v) => v
                 .into_deserializer()
                 .deserialize_any(visitor)
@@ -241,28 +243,9 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
                         e
                     })
             }
-            crate::Item::Table(v) => {
-                if v.is_empty() {
-                    Err(crate::de::Error::custom(
-                        "wanted exactly 1 element, found 0 elements",
-                        v.span(),
-                    ))
-                } else if v.len() != 1 {
-                    Err(crate::de::Error::custom(
-                        "wanted exactly 1 element, more than 1 element",
-                        v.span(),
-                    ))
-                } else {
-                    visitor
-                        .visit_enum(crate::de::TableMapAccess::new(v))
-                        .map_err(|mut e: Self::Error| {
-                            if e.span().is_none() {
-                                e.set_span(span);
-                            }
-                            e
-                        })
-                }
-            }
+            crate::Item::Table(v) => v
+                .into_deserializer()
+                .deserialize_enum(name, variants, visitor),
             e => Err(crate::de::Error::custom("wanted string or table", e.span())),
         }
     }

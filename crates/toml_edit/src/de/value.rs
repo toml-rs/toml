@@ -19,9 +19,7 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
                 visited: false,
             }),
             crate::Value::Array(v) => v.into_deserializer().deserialize_any(visitor),
-            crate::Value::InlineTable(v) => {
-                visitor.visit_map(crate::de::InlineTableMapAccess::new(v))
-            }
+            crate::Value::InlineTable(v) => v.into_deserializer().deserialize_any(visitor),
         }
     }
 
@@ -64,8 +62,8 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
     fn deserialize_enum<V>(
         self,
-        _name: &'static str,
-        _variants: &'static [&'static str],
+        name: &'static str,
+        variants: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Error>
     where
@@ -85,7 +83,8 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
                         v.span(),
                     ))
                 } else {
-                    visitor.visit_enum(crate::de::InlineTableMapAccess::new(v))
+                    v.into_deserializer()
+                        .deserialize_enum(name, variants, visitor)
                 }
             }
             _ => Err(crate::de::Error::custom(

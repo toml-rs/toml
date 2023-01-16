@@ -549,10 +549,10 @@ debug = 'a'
     );
     let err = res.unwrap_err();
     snapbox::assert_eq(
-        r#"TOML parse error at line 7, column 1
+        r#"TOML parse error at line 8, column 9
   |
-7 | [profile.dev]
-  | ^^^^^^^^^^^^^
+8 | debug = 'a'
+  |         ^^^
 expected a boolean or an integer"#,
         err.to_string(),
     );
