@@ -133,6 +133,16 @@ impl Deserializer {
     }
 }
 
+impl std::str::FromStr for Deserializer {
+    type Err = Error;
+
+    /// Parses a document from a &str
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let d = crate::parser::parse_document(s).map_err(Error::from)?;
+        Ok(Self::new(d))
+    }
+}
+
 impl<'de> serde::Deserializer<'de> for Deserializer {
     type Error = Error;
 
