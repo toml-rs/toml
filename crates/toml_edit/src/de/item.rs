@@ -73,10 +73,24 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
         }
 
         if self.validate_struct_keys {
+            let span = self.input.span();
             match &self.input {
-                crate::Item::Table(values) => super::validate_struct_keys(&values.items, fields)?,
+                crate::Item::Table(values) => super::validate_struct_keys(&values.items, fields)
+                    .map_err(|mut e: Self::Error| {
+                        if e.span().is_none() {
+                            e.set_span(span);
+                        }
+                        e
+                    })?,
                 crate::Item::Value(crate::Value::InlineTable(values)) => {
-                    super::validate_struct_keys(&values.items, fields)?
+                    super::validate_struct_keys(&values.items, fields).map_err(
+                        |mut e: Self::Error| {
+                            if e.span().is_none() {
+                                e.set_span(span);
+                            }
+                            e
+                        },
+                    )?
                 }
                 _ => {}
             }
@@ -142,9 +156,14 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
                     }
                     e
                 }),
-            crate::Item::ArrayOfTables(v) => {
-                visitor.visit_seq(crate::de::ArraySeqAccess::with_array_of_tables(v))
-            }
+            crate::Item::ArrayOfTables(v) => visitor
+                .visit_seq(crate::de::ArraySeqAccess::with_array_of_tables(v))
+                .map_err(|mut e: Self::Error| {
+                    if e.span().is_none() {
+                        e.set_span(span);
+                    }
+                    e
+                }),
         }
     }
 
