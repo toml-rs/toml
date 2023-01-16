@@ -54,89 +54,15 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ArrayDeserializ
     }
 }
 
-impl<'de> serde::Deserializer<'de> for crate::Array {
-    type Error = Error;
-
-    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        visitor.visit_seq(ArraySeqAccess::with_array(self))
-    }
-
-    fn deserialize_struct<V>(
-        self,
-        name: &'static str,
-        fields: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if super::is_spanned(name, fields) {
-            if let Some(span) = self.span() {
-                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
-            }
-        }
-
-        self.deserialize_any(visitor)
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map option unit newtype_struct
-        ignored_any unit_struct tuple_struct tuple enum identifier
+impl crate::Array {
+    pub(crate) fn into_deserializer(self) -> ArrayDeserializer {
+        ArrayDeserializer::new(self.values, self.span)
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Array {
-    type Deserializer = Self;
-
-    fn into_deserializer(self) -> Self::Deserializer {
-        self
-    }
-}
-
-impl<'de> serde::Deserializer<'de> for crate::ArrayOfTables {
-    type Error = Error;
-
-    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        visitor.visit_seq(ArraySeqAccess::with_array_of_tables(self))
-    }
-
-    fn deserialize_struct<V>(
-        self,
-        name: &'static str,
-        fields: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if super::is_spanned(name, fields) {
-            if let Some(span) = self.span() {
-                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
-            }
-        }
-
-        self.deserialize_any(visitor)
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map option unit newtype_struct
-        ignored_any unit_struct tuple_struct tuple enum identifier
-    }
-}
-
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::ArrayOfTables {
-    type Deserializer = Self;
-
-    fn into_deserializer(self) -> Self::Deserializer {
-        self
+impl crate::ArrayOfTables {
+    pub(crate) fn into_deserializer(self) -> ArrayDeserializer {
+        ArrayDeserializer::new(self.values, self.span)
     }
 }
 
@@ -149,14 +75,6 @@ impl ArraySeqAccess {
         Self {
             iter: input.into_iter(),
         }
-    }
-
-    pub(crate) fn with_array(input: crate::Array) -> Self {
-        Self::new(input.values)
-    }
-
-    pub(crate) fn with_array_of_tables(input: crate::ArrayOfTables) -> Self {
-        Self::new(input.values)
     }
 }
 

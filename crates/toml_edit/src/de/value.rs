@@ -18,7 +18,7 @@ impl<'de> serde::Deserializer<'de> for crate::Value {
                 date: v.into_value(),
                 visited: false,
             }),
-            crate::Value::Array(v) => visitor.visit_seq(crate::de::ArraySeqAccess::with_array(v)),
+            crate::Value::Array(v) => v.into_deserializer().deserialize_any(visitor),
             crate::Value::InlineTable(v) => {
                 visitor.visit_map(crate::de::InlineTableMapAccess::new(v))
             }

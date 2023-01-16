@@ -156,8 +156,9 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
                     }
                     e
                 }),
-            crate::Item::ArrayOfTables(v) => visitor
-                .visit_seq(crate::de::ArraySeqAccess::with_array_of_tables(v))
+            crate::Item::ArrayOfTables(v) => v
+                .into_deserializer()
+                .deserialize_any(visitor)
                 .map_err(|mut e: Self::Error| {
                     if e.span().is_none() {
                         e.set_span(span);
