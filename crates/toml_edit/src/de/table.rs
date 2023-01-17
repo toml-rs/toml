@@ -7,6 +7,8 @@ pub(crate) struct TableDeserializer {
     items: crate::table::KeyValuePairs,
 }
 
+// Note: this is wrapped by `Deserializer` and `ValueDeserializer` and any trait methods
+// implemented here need to be wrapped there
 impl<'de> serde::Deserializer<'de> for TableDeserializer {
     type Error = Error;
 

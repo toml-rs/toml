@@ -11,6 +11,8 @@ impl ArrayDeserializer {
     }
 }
 
+// Note: this is wrapped by `ValueDeserializer` and any trait methods
+// implemented here need to be wrapped there
 impl<'de> serde::Deserializer<'de> for ArrayDeserializer {
     type Error = Error;
 
