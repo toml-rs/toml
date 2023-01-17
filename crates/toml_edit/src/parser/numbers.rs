@@ -155,7 +155,9 @@ const DIGIT0_1: RangeInclusive<u8> = b'0'..=b'1';
 // float-int-part = dec-int
 pub(crate) fn float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
     alt((
-        float_.map_res(|s| s.replace('_', "").parse()),
+        float_
+            .map_res(|s| s.replace('_', "").parse())
+            .verify(|f| *f != f64::INFINITY),
         special_float,
     ))
     .context(Context::Expression("floating-point number"))
@@ -331,6 +333,10 @@ mod test {
             dbg!(input);
             let parsed = float.parse(new_input(input)).finish().unwrap();
             assert_float_eq(parsed, expected);
+
+            let overflow = "9e99999";
+            let parsed = float.parse(new_input(overflow)).finish();
+            assert!(parsed.is_err(), "{:?}", parsed);
         }
     }
 }
