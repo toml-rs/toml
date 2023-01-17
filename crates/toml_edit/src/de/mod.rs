@@ -118,7 +118,7 @@ pub fn from_item<T>(d: crate::Item) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    T::deserialize(d)
+    T::deserialize(d.into_deserializer())
 }
 
 /// Deserialization implementation for TOML.
@@ -153,6 +153,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
         let original = self.input.original;
         self.input
             .root
+            .into_deserializer()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -169,6 +170,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
         let original = self.input.original;
         self.input
             .root
+            .into_deserializer()
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -207,6 +209,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
         let original = self.input.original;
         self.input
             .root
+            .into_deserializer()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
