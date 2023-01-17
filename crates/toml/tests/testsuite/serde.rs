@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 
 use toml::map::Map;
 use toml::Value;
@@ -205,6 +205,8 @@ fn inner_structs_with_options() {
 #[test]
 #[cfg(feature = "preserve_order")]
 fn hashmap() {
+    use std::collections::HashSet;
+
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
         set: HashSet<char>,
