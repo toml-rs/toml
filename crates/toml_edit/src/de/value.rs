@@ -3,12 +3,12 @@ use serde::de::IntoDeserializer as _;
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
 
-pub(crate) struct ItemDeserializer {
+pub(crate) struct ValueDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
 }
 
-impl ItemDeserializer {
+impl ValueDeserializer {
     pub(crate) fn new(input: crate::Item) -> Self {
         Self {
             input,
@@ -22,7 +22,7 @@ impl ItemDeserializer {
     }
 }
 
-impl<'de> serde::Deserializer<'de> for ItemDeserializer {
+impl<'de> serde::Deserializer<'de> for ValueDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -190,7 +190,7 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ItemDeserializer {
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ValueDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -199,7 +199,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ItemDeserialize
 }
 
 impl crate::Item {
-    pub(crate) fn into_deserializer(self) -> ItemDeserializer {
-        ItemDeserializer::new(self)
+    pub(crate) fn into_deserializer(self) -> ValueDeserializer {
+        ValueDeserializer::new(self)
     }
 }

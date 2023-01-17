@@ -161,7 +161,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         match self.value.take() {
             Some(v) => {
                 let span = v.span();
-                seed.deserialize(crate::de::ItemDeserializer::new(v))
+                seed.deserialize(crate::de::ValueDeserializer::new(v))
                     .map_err(|mut e: Self::Error| {
                         if e.span().is_none() {
                             e.set_span(span);
@@ -170,7 +170,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
                     })
             }
             None => {
-                panic!("no more values in next_value_seed, internal error in ItemDeserializer")
+                panic!("no more values in next_value_seed, internal error in ValueDeserializer")
             }
         }
     }

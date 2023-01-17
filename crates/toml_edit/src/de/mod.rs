@@ -7,20 +7,20 @@ use serde::de::DeserializeOwned;
 
 mod array;
 mod datetime;
-mod item;
 mod key;
 mod spanned;
 mod table;
 mod table_enum;
+mod value;
 
 use array::ArrayDeserializer;
 use datetime::DatetimeDeserializer;
-use item::ItemDeserializer;
 use key::KeyDeserializer;
 use spanned::is_spanned;
 use spanned::SpannedDeserializer;
 use table::TableMapAccess;
 use table_enum::TableEnumDeserializer;
+use value::ValueDeserializer;
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
