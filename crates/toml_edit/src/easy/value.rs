@@ -6,6 +6,9 @@ use std::mem::discriminant;
 use std::ops;
 use std::str::FromStr;
 
+use serde::de::IntoDeserializer as _;
+use serde::Deserialize as _;
+
 pub use crate::easy::datetime::*;
 use crate::easy::map::Entry;
 pub use crate::easy::map::Map;
@@ -49,8 +52,10 @@ impl Value {
         T: serde::ser::Serialize,
     {
         let item = super::ser::to_item(&value)?;
-        let value = super::de::from_item(item)?;
-        Ok(value)
+        let value = item.into_value().expect("`to_item` only generates values");
+        let value = value.into_deserializer();
+        let target = Self::deserialize(value)?;
+        Ok(target)
     }
 
     /// Interpret a `toml::Value` as an instance of type `T`.
@@ -67,8 +72,10 @@ impl Value {
         T: serde::de::DeserializeOwned,
     {
         let item = super::ser::to_item(&self)?;
-        let value = super::de::from_item(item)?;
-        Ok(value)
+        let value = item.into_value().expect("`to_item` only generates values");
+        let value = value.into_deserializer();
+        let target = T::deserialize(value)?;
+        Ok(target)
     }
 
     /// Index into a TOML array or map. A string index can be used to access a

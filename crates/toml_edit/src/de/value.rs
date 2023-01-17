@@ -199,6 +199,14 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ValueDeserializ
     }
 }
 
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Value {
+    type Deserializer = ValueDeserializer;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        ValueDeserializer::new(crate::Item::Value(self))
+    }
+}
+
 impl crate::Item {
     pub(crate) fn into_deserializer(self) -> ValueDeserializer {
         ValueDeserializer::new(self)
@@ -211,6 +219,6 @@ impl std::str::FromStr for ValueDeserializer {
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let v = crate::parser::parse_value(s).map_err(Error::from)?;
-        Ok(Self::new(crate::Item::Value(v)))
+        Ok(v.into_deserializer())
     }
 }

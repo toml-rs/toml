@@ -114,14 +114,6 @@ where
     T::deserialize(deserializer)
 }
 
-/// Convert an item into `T`.
-pub fn from_item<T>(d: crate::Item) -> Result<T, Error>
-where
-    T: DeserializeOwned,
-{
-    T::deserialize(d.into_deserializer())
-}
-
 /// Deserialization implementation for TOML.
 pub struct Deserializer {
     input: crate::Document,
