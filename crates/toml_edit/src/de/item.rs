@@ -75,25 +75,18 @@ impl<'de> serde::Deserializer<'de> for ItemDeserializer {
         if self.validate_struct_keys {
             let span = self.input.span();
             match &self.input {
-                crate::Item::Table(values) => super::validate_struct_keys(&values.items, fields)
-                    .map_err(|mut e: Self::Error| {
-                        if e.span().is_none() {
-                            e.set_span(span);
-                        }
-                        e
-                    })?,
+                crate::Item::Table(values) => super::validate_struct_keys(&values.items, fields),
                 crate::Item::Value(crate::Value::InlineTable(values)) => {
-                    super::validate_struct_keys(&values.items, fields).map_err(
-                        |mut e: Self::Error| {
-                            if e.span().is_none() {
-                                e.set_span(span);
-                            }
-                            e
-                        },
-                    )?
+                    super::validate_struct_keys(&values.items, fields)
                 }
-                _ => {}
+                _ => Ok(()),
             }
+            .map_err(|mut e: Self::Error| {
+                if e.span().is_none() {
+                    e.set_span(span);
+                }
+                e
+            })?
         }
 
         self.input.deserialize_struct(name, fields, visitor)
@@ -136,38 +129,17 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     {
         let span = self.span();
         match self {
-            crate::Item::None => visitor.visit_none().map_err(|mut e: Self::Error| {
-                if e.span().is_none() {
-                    e.set_span(span);
-                }
-                e
-            }),
-            crate::Item::Value(v) => v.deserialize_any(visitor).map_err(|mut e: Self::Error| {
-                if e.span().is_none() {
-                    e.set_span(span);
-                }
-                e
-            }),
-            crate::Item::Table(v) => {
-                v.into_deserializer()
-                    .deserialize_any(visitor)
-                    .map_err(|mut e: Self::Error| {
-                        if e.span().is_none() {
-                            e.set_span(span);
-                        }
-                        e
-                    })
-            }
-            crate::Item::ArrayOfTables(v) => v
-                .into_deserializer()
-                .deserialize_any(visitor)
-                .map_err(|mut e: Self::Error| {
-                    if e.span().is_none() {
-                        e.set_span(span);
-                    }
-                    e
-                }),
+            crate::Item::None => visitor.visit_none(),
+            crate::Item::Value(v) => v.deserialize_any(visitor),
+            crate::Item::Table(v) => v.into_deserializer().deserialize_any(visitor),
+            crate::Item::ArrayOfTables(v) => v.into_deserializer().deserialize_any(visitor),
         }
+        .map_err(|mut e: Self::Error| {
+            if e.span().is_none() {
+                e.set_span(span);
+            }
+            e
+        })
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
@@ -234,20 +206,18 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     {
         let span = self.span();
         match self {
-            crate::Item::Value(v) => {
-                v.deserialize_enum(name, variants, visitor)
-                    .map_err(|mut e: Self::Error| {
-                        if e.span().is_none() {
-                            e.set_span(span);
-                        }
-                        e
-                    })
-            }
+            crate::Item::Value(v) => v.deserialize_enum(name, variants, visitor),
             crate::Item::Table(v) => v
                 .into_deserializer()
                 .deserialize_enum(name, variants, visitor),
             e => Err(crate::de::Error::custom("wanted string or table", e.span())),
         }
+        .map_err(|mut e: Self::Error| {
+            if e.span().is_none() {
+                e.set_span(span);
+            }
+            e
+        })
     }
 
     serde::forward_to_deserialize_any! {
