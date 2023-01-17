@@ -2,5 +2,5 @@ TOML parse error at line 1, column 13
   |
 1 | wrong = [ 1 2 3 ]
   |             ^
-Invalid array
-Expected `]`
+invalid array
+expected `]`

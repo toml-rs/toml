@@ -2,5 +2,5 @@ TOML parse error at line 1, column 9
   |
 1 | t = {a=1,
   |         ^
-Invalid inline table
-Expected `}`
+invalid inline table
+expected `}`

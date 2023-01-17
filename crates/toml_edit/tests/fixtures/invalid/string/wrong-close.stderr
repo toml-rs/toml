@@ -2,4 +2,4 @@ TOML parse error at line 1, column 39
   |
 1 | bad-ending-quote = "double and single'
   |                                       ^
-Invalid basic string
+invalid basic string

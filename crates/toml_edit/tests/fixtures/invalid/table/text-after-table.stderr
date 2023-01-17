@@ -2,5 +2,5 @@ TOML parse error at line 1, column 9
   |
 1 | [error] this shouldn't be here
   |         ^
-Invalid table header
-Expected newline, `#`
+invalid table header
+expected newline, `#`

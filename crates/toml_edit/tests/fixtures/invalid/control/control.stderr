@@ -2,5 +2,5 @@ TOML parse error at line 9, column 22
   |
 9 | string-null = "null\x00"
   |                      ^
-Invalid escape sequence
-Expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+invalid escape sequence
+expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`

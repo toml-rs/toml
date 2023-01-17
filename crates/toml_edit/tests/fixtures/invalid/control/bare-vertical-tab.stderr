@@ -2,5 +2,5 @@ TOML parse error at line 1, column 21
   |
 1 | bare-vertical-tab = 
   |                     ^
-Invalid string
-Expected `"`, `'`
+invalid string
+expected `"`, `'`

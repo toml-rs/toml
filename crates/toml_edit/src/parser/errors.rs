@@ -246,21 +246,33 @@ impl<'a> std::fmt::Display for ParserError<'a> {
             })
             .collect::<Vec<_>>();
 
+        let mut newline = false;
+
         if let Some(expression) = expression {
-            writeln!(f, "Invalid {}", expression)?;
+            newline = true;
+
+            write!(f, "invalid {}", expression)?;
         }
 
         if !expected.is_empty() {
-            write!(f, "Expected ")?;
+            if newline {
+                writeln!(f)?;
+            }
+            newline = true;
+
+            write!(f, "expected ")?;
             for (i, expected) in expected.iter().enumerate() {
                 if i != 0 {
                     write!(f, ", ")?;
                 }
                 write!(f, "{}", expected)?;
             }
-            writeln!(f)?;
         }
         if let Some(cause) = &self.cause {
+            if newline {
+                writeln!(f)?;
+            }
+
             write!(f, "{}", cause)?;
         }
 
@@ -442,25 +454,25 @@ impl Display for CustomError {
             CustomError::DuplicateKey { key, table } => {
                 if let Some(table) = table {
                     if table.is_empty() {
-                        writeln!(f, "Duplicate key `{}` in document root", key)
+                        writeln!(f, "duplicate key `{}` in document root", key)
                     } else {
                         let path = table.iter().join(".");
-                        writeln!(f, "Duplicate key `{}` in table `{}`", key, path)
+                        writeln!(f, "duplicate key `{}` in table `{}`", key, path)
                     }
                 } else {
-                    writeln!(f, "Duplicate key `{}`", key)
+                    writeln!(f, "duplicate key `{}`", key)
                 }
             }
             CustomError::DottedKeyExtendWrongType { key, actual } => {
                 let path = key.iter().join(".");
                 writeln!(
                     f,
-                    "Dotted key `{}` attempted to extend non-table type ({})",
+                    "dotted key `{}` attempted to extend non-table type ({})",
                     path, actual
                 )
             }
-            CustomError::OutOfRange => writeln!(f, "Value is out of range"),
-            CustomError::RecursionLimitExceeded => writeln!(f, "Recursion limit exceded"),
+            CustomError::OutOfRange => writeln!(f, "value is out of range"),
+            CustomError::RecursionLimitExceeded => writeln!(f, "recursion limit exceded"),
         }
     }
 }

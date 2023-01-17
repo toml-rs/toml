@@ -2,4 +2,4 @@ TOML parse error at line 1, column 5
   |
 1 | "key
   |     ^
-Invalid basic string
+invalid basic string

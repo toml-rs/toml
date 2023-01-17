@@ -6,9 +6,8 @@ fn incomplete_inline_table_issue_296() {
   |
 1 | native = {
   |           ^
-Invalid inline table
-Expected `}`
-"#,
+invalid inline table
+expected `}`"#,
         err.to_string(),
     );
 }
@@ -21,9 +20,8 @@ fn bare_value_disallowed_issue_293() {
   |
 1 | value=zzz
   |       ^
-Invalid string
-Expected `"`, `'`
-"#,
+invalid string
+expected `"`, `'`"#,
         err.to_string(),
     );
 }
@@ -36,9 +34,8 @@ fn bare_value_in_array_disallowed_issue_293() {
   |
 1 | value=[zzz]
   |        ^
-Invalid array
-Expected `]`
-"#,
+invalid array
+expected `]`"#,
         err.to_string(),
     );
 }

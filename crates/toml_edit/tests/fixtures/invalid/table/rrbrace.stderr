@@ -2,5 +2,5 @@ TOML parse error at line 1, column 8
   |
 1 | [[table] ]
   |        ^
-Invalid table header
-Expected `.`, `]]`
+invalid table header
+expected `.`, `]]`
