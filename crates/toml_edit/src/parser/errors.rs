@@ -168,6 +168,28 @@ impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
     }
 }
 
+impl<'b> nom8::error::ParseError<&'b str> for ParserError<'b> {
+    fn from_error_kind(input: &'b str, _kind: nom8::error::ErrorKind) -> Self {
+        Self {
+            input: Input::new(input.as_bytes()),
+            context: Default::default(),
+            cause: Default::default(),
+        }
+    }
+
+    fn append(_input: &'b str, _kind: nom8::error::ErrorKind, other: Self) -> Self {
+        other
+    }
+
+    fn from_char(_input: &'b str, _: char) -> Self {
+        unimplemented!("this shouldn't be called with a binary parser")
+    }
+
+    fn or(self, other: Self) -> Self {
+        other
+    }
+}
+
 impl<'b> nom8::error::ContextError<Input<'b>, Context> for ParserError<'b> {
     fn add_context(_input: Input<'b>, ctx: Context, mut other: Self) -> Self {
         other.context.push(ctx);
@@ -181,6 +203,18 @@ impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternal
     fn from_external_error(input: Input<'b>, _kind: nom8::error::ErrorKind, e: E) -> Self {
         Self {
             input,
+            context: Default::default(),
+            cause: Some(Box::new(e)),
+        }
+    }
+}
+
+impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternalError<&'b str, E>
+    for ParserError<'b>
+{
+    fn from_external_error(input: &'b str, _kind: nom8::error::ErrorKind, e: E) -> Self {
+        Self {
+            input: Input::new(input.as_bytes()),
             context: Default::default(),
             cause: Some(Box::new(e)),
         }
