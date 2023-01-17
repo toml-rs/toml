@@ -1,4 +1,5 @@
 use serde::ser::Serialize;
+use snapbox::assert_eq;
 
 const NO_PRETTY: &str = "\
 [example]
@@ -62,7 +63,7 @@ fn pretty_std() {
         .unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 const PRETTY_INDENT_2: &str = "\
@@ -261,7 +262,7 @@ fn table_array() {
         .unwrap();
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }
 
 const PRETTY_TRICKY_NON_LITERAL: &str = r##"[example]
@@ -307,5 +308,5 @@ fn pretty_tricky_non_literal() {
     }
     println!("EXPECTED:\n{}", toml);
     println!("\nRESULT:\n{}", result);
-    assert_eq!(toml, &result);
+    assert_eq(toml, &result);
 }

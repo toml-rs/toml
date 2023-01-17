@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 
 use toml::map::Map;
 use toml::Value;
@@ -29,9 +29,9 @@ macro_rules! equivalent {
 
         // Through a string equivalent
         println!("to_string(literal)");
-        assert_eq!(t!(toml::to_string(&literal)), toml.to_string());
+        snapbox::assert_eq(toml.to_string(), t!(toml::to_string(&literal)));
         println!("to_string(toml)");
-        assert_eq!(t!(toml::to_string(&toml)), toml.to_string());
+        snapbox::assert_eq(toml.to_string(), t!(toml::to_string(&toml)));
         println!("literal, from_str(toml)");
         assert_eq!(literal, t!(toml::from_str(&toml.to_string())));
         println!("toml, from_str(toml)");
@@ -44,13 +44,13 @@ macro_rules! error {
         println!("attempting parsing");
         match toml::from_str::<$ty>(&$toml.to_string()) {
             Ok(_) => panic!("successful"),
-            Err(e) => assert_eq!(e.to_string(), $msg_parse),
+            Err(e) => snapbox::assert_eq($msg_parse, e.to_string()),
         }
 
         println!("attempting toml decoding");
         match $toml.try_into::<$ty>() {
             Ok(_) => panic!("successful"),
-            Err(e) => assert_eq!(e.to_string(), $msg_decode),
+            Err(e) => snapbox::assert_eq($msg_decode, e.to_string()),
         }
     }};
 }
@@ -205,6 +205,8 @@ fn inner_structs_with_options() {
 #[test]
 #[cfg(feature = "preserve_order")]
 fn hashmap() {
+    use std::collections::HashSet;
+
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
         set: HashSet<char>,
@@ -600,7 +602,7 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_string(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    assert_eq!(toml::to_string(&value).unwrap(), text);
+    snapbox::assert_eq(text, toml::to_string(&value).unwrap());
 }
 
 #[test]

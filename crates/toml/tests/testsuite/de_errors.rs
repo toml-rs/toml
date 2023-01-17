@@ -5,7 +5,7 @@ macro_rules! bad {
     ($toml:expr, $ty:ty, $msg:expr) => {
         match toml::from_str::<$ty>($toml) {
             Ok(s) => panic!("parsed to: {:#?}", s),
-            Err(e) => assert_eq!(e.to_string(), $msg),
+            Err(e) => snapbox::assert_eq($msg, e.to_string()),
         }
     };
 }

@@ -894,6 +894,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_spanned",
+ "snapbox",
  "toml-test-harness",
  "toml_datetime",
 ]
