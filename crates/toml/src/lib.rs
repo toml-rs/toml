@@ -73,7 +73,7 @@
 //! An example of deserializing with TOML is:
 //!
 //! ```rust
-//! use serde_derive::Deserialize;
+//! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
 //! struct Config {
@@ -105,7 +105,7 @@
 //! You can serialize types in a similar fashion:
 //!
 //! ```rust
-//! use serde_derive::Serialize;
+//! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
 //! struct Config {

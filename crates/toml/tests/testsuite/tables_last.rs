@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde_derive::Serialize;
+use serde::Serialize;
 
 #[derive(Serialize)]
 struct A {

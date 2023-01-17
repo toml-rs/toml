@@ -50,5 +50,14 @@ toml_datetime = { version = "0.5.0", path = "../toml_datetime", features = ["ser
 serde_spanned = { version = "0.5.0", path = "../serde_spanned", features = ["serde"] }
 
 [dev-dependencies]
-serde_derive = "1.0.152"
+serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
+toml-test-harness = "0.4.2"
+
+[[test]]
+name = "decoder_compliance"
+harness = false
+
+[[test]]
+name = "encoder_compliance"
+harness = false

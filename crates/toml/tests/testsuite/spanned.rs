@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use toml::value::Datetime;
 use toml::Spanned;
 

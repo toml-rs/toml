@@ -892,9 +892,9 @@ version = "0.5.9"
 dependencies = [
  "indexmap",
  "serde",
- "serde_derive",
  "serde_json",
  "serde_spanned",
+ "toml-test-harness",
  "toml_datetime",
 ]
 
@@ -978,11 +978,9 @@ version = "0.0.0"
 dependencies = [
  "criterion",
  "serde",
- "serde_derive",
  "serde_json",
  "toml 0.5.10",
  "toml 0.5.9",
- "toml-test-harness",
  "toml_edit",
 ]
 

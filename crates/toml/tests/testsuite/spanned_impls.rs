@@ -1,6 +1,6 @@
 use std::cmp::{Ord, Ordering, PartialOrd};
 
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use toml::{from_str, Spanned};
 
 #[test]

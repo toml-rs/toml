@@ -1,5 +1,5 @@
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde::Deserialize;
+use serde::Serialize;
 use toml::Value;
 
 #[rustfmt::skip] // appears to be a bug in rustfmt to make this converge...

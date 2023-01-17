@@ -1,6 +1,6 @@
+use serde::Deserialize;
 use serde::Deserializer;
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde::Serialize;
 use std::collections::{BTreeMap, HashSet};
 
 use toml::map::Map;
