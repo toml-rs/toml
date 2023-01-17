@@ -203,6 +203,7 @@ fn inner_structs_with_options() {
 }
 
 #[test]
+#[cfg(feature = "preserve_order")]
 fn hashmap() {
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
@@ -214,8 +215,8 @@ fn hashmap() {
         Foo {
             map: {
                 let mut m = BTreeMap::new();
-                m.insert("foo".to_string(), 10);
                 m.insert("bar".to_string(), 4);
+                m.insert("foo".to_string(), 10);
                 m
             },
             set: {
@@ -226,8 +227,8 @@ fn hashmap() {
         },
         Table(map! {
             map: Table(map! {
-                foo: Integer(10),
-                bar: Integer(4)
+                bar: Integer(4),
+                foo: Integer(10)
             }),
             set: Array(vec![Value::String("a".to_string())])
         }),

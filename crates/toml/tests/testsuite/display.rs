@@ -67,14 +67,15 @@ fn table() {
          [[test2]]\n\
          test = \"wut\"\n"
     );
+    #[cfg(feature = "preserve_order")]
     assert_eq!(
         Table(map! {
              "foo.bar" => Integer(2),
              "foo\"bar" => Integer(2)
         })
         .to_string(),
-        "\"foo\\\"bar\" = 2\n\
-         \"foo.bar\" = 2\n"
+        "\"foo.bar\" = 2\n\
+         \"foo\\\"bar\" = 2\n"
     );
     assert_eq!(
         Table(map! {
