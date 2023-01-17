@@ -41,7 +41,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
     where
         T: serde::de::DeserializeSeed<'de>,
     {
-        seed.deserialize(super::ItemDeserializer::new(self.value))
+        seed.deserialize(super::ValueDeserializer::new(self.value))
     }
 
     fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
@@ -151,7 +151,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
         V: serde::de::Visitor<'de>,
     {
         serde::de::Deserializer::deserialize_struct(
-            super::ItemDeserializer::new(self.value).with_struct_key_validation(),
+            super::ValueDeserializer::new(self.value).with_struct_key_validation(),
             "", // TODO: this should be the variant name
             fields,
             visitor,

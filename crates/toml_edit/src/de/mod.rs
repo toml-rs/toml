@@ -6,21 +6,22 @@ use itertools::Itertools;
 use serde::de::DeserializeOwned;
 
 mod array;
-mod inline_table;
-mod item;
+mod datetime;
 mod key;
 mod spanned;
 mod table;
 mod table_enum;
 mod value;
 
-use array::*;
-use inline_table::*;
-use item::*;
-use key::*;
-use spanned::*;
-use table::*;
-use table_enum::*;
+use array::ArrayDeserializer;
+use datetime::DatetimeDeserializer;
+use key::KeyDeserializer;
+use spanned::is_spanned;
+use spanned::SpannedDeserializer;
+use table::TableMapAccess;
+use table_enum::TableEnumDeserializer;
+
+pub use value::ValueDeserializer;
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -91,8 +92,8 @@ pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let d = crate::parser::parse_document(s)?;
-    from_document(d)
+    let de = s.parse::<Deserializer>()?;
+    T::deserialize(de)
 }
 
 /// Convert a value into `T`.
@@ -113,14 +114,6 @@ where
     T::deserialize(deserializer)
 }
 
-/// Convert an item into `T`.
-pub fn from_item<T>(d: crate::Item) -> Result<T, Error>
-where
-    T: DeserializeOwned,
-{
-    T::deserialize(d)
-}
-
 /// Deserialization implementation for TOML.
 pub struct Deserializer {
     input: crate::Document,
@@ -133,6 +126,16 @@ impl Deserializer {
     }
 }
 
+impl std::str::FromStr for Deserializer {
+    type Err = Error;
+
+    /// Parses a document from a &str
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let d = crate::parser::parse_document(s).map_err(Error::from)?;
+        Ok(Self::new(d))
+    }
+}
+
 impl<'de> serde::Deserializer<'de> for Deserializer {
     type Error = Error;
 
@@ -140,59 +143,10 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        self.input.deserialize_any(visitor)
-    }
-
-    // `None` is interpreted as a missing field so be sure to implement `Some`
-    // as a present field.
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.input.deserialize_option(visitor)
-    }
-
-    fn deserialize_struct<V>(
-        self,
-        name: &'static str,
-        fields: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.input.deserialize_struct(name, fields, visitor)
-    }
-
-    // Called when the type to deserialize is an enum, as opposed to a field in the type.
-    fn deserialize_enum<V>(
-        self,
-        name: &'static str,
-        variants: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.input.deserialize_enum(name, variants, visitor)
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct
-        ignored_any unit_struct tuple_struct tuple identifier
-    }
-}
-
-impl<'de> serde::Deserializer<'de> for crate::Document {
-    type Error = Error;
-
-    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        let original = self.original;
-        self.root
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -206,9 +160,30 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.original;
-        self.root
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
             .deserialize_option(visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
+    }
+
+    fn deserialize_newtype_struct<V>(
+        self,
+        name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
+            .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
                 e
@@ -224,13 +199,15 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        if is_spanned(name, fields) {
-            if let Some(span) = self.span() {
-                return visitor.visit_map(SpannedDeserializer::new(self, span));
-            }
-        }
-
-        self.deserialize_any(visitor)
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
+            .deserialize_struct(name, fields, visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
@@ -243,8 +220,10 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.original;
-        self.root
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
                 e.inner.set_original(original);
@@ -254,16 +233,24 @@ impl<'de> serde::Deserializer<'de> for crate::Document {
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct
+        bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document {
-    type Deserializer = Self;
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for Deserializer {
+    type Deserializer = Deserializer;
 
-    fn into_deserializer(self) -> Self {
+    fn into_deserializer(self) -> Self::Deserializer {
         self
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document {
+    type Deserializer = Deserializer;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        Deserializer::new(self)
     }
 }
 

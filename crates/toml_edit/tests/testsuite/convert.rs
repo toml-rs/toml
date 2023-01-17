@@ -21,7 +21,7 @@ other = "world"
     // `table=` is because we didn't re-format the table key, only the value
     let expected = r#"table= { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }
 "#;
-    assert_eq(actual, expected);
+    assert_eq(expected, actual);
 }
 
 #[test]
@@ -45,7 +45,7 @@ array = [1, 2, 3]
 inline = { "1" = 1, "2" = 2 }
 child = { other = "world" }
 "#;
-    assert_eq(actual, expected);
+    assert_eq(expected, actual);
 }
 
 #[test]
@@ -75,5 +75,5 @@ other = "world"
     // `table=` is because we didn't re-format the table key, only the value
     let expected = r#"table= [{ string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }, { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }]
 "#;
-    assert_eq(actual, expected);
+    assert_eq(expected, actual);
 }
