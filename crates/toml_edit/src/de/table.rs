@@ -70,12 +70,12 @@ impl<'de> serde::Deserializer<'de> for TableDeserializer {
         if self.items.is_empty() {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, found 0 elements",
-                self.span.clone(),
+                self.span,
             ))
         } else if self.items.len() != 1 {
             Err(crate::de::Error::custom(
                 "wanted exactly 1 element, more than 1 element",
-                self.span.clone(),
+                self.span,
             ))
         } else {
             visitor.visit_enum(crate::de::TableMapAccess::new(self))
