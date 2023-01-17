@@ -222,8 +222,9 @@ fn type_errors() {
   |
 1 | bar = "a"
   |       ^^^
-invalid type: string "a", expected isize"#,
-        "invalid type: string \"a\", expected isize"
+invalid type: string "a", expected isize
+"#,
+        "invalid type: string \"a\", expected isize\n"
     }
 
     #[derive(Deserialize)]
@@ -243,8 +244,9 @@ invalid type: string "a", expected isize"#,
   |
 2 | bar = "a"
   |       ^^^
-invalid type: string "a", expected isize"#,
-        "invalid type: string \"a\", expected isize"
+invalid type: string "a", expected isize
+"#,
+        "invalid type: string \"a\", expected isize\n"
     }
 }
 
@@ -262,8 +264,9 @@ fn missing_errors() {
   |
 1 | 
   | ^
-missing field `bar`"#,
-        "missing field `bar`"
+missing field `bar`
+"#,
+        "missing field `bar`\n"
     }
 }
 
@@ -553,7 +556,8 @@ debug = 'a'
   |
 8 | debug = 'a'
   |         ^^^
-expected a boolean or an integer"#,
+expected a boolean or an integer
+"#,
         err.to_string(),
     );
 
@@ -574,7 +578,8 @@ dev = { debug = 'a' }
   |
 8 | dev = { debug = 'a' }
   |                 ^^^
-expected a boolean or an integer"#,
+expected a boolean or an integer
+"#,
         err.to_string(),
     );
 }

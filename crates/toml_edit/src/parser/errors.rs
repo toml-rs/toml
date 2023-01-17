@@ -127,7 +127,7 @@ impl Display for TomlError {
             }
             writeln!(f)?;
         }
-        write!(f, "{}", self.message)?;
+        writeln!(f, "{}", self.message)?;
 
         Ok(())
     }
@@ -272,7 +272,6 @@ impl<'a> std::fmt::Display for ParserError<'a> {
             if newline {
                 writeln!(f)?;
             }
-
             write!(f, "{}", cause)?;
         }
 
@@ -454,25 +453,25 @@ impl Display for CustomError {
             CustomError::DuplicateKey { key, table } => {
                 if let Some(table) = table {
                     if table.is_empty() {
-                        writeln!(f, "duplicate key `{}` in document root", key)
+                        write!(f, "duplicate key `{}` in document root", key)
                     } else {
                         let path = table.iter().join(".");
-                        writeln!(f, "duplicate key `{}` in table `{}`", key, path)
+                        write!(f, "duplicate key `{}` in table `{}`", key, path)
                     }
                 } else {
-                    writeln!(f, "duplicate key `{}`", key)
+                    write!(f, "duplicate key `{}`", key)
                 }
             }
             CustomError::DottedKeyExtendWrongType { key, actual } => {
                 let path = key.iter().join(".");
-                writeln!(
+                write!(
                     f,
                     "dotted key `{}` attempted to extend non-table type ({})",
                     path, actual
                 )
             }
-            CustomError::OutOfRange => writeln!(f, "value is out of range"),
-            CustomError::RecursionLimitExceeded => writeln!(f, "recursion limit exceded"),
+            CustomError::OutOfRange => write!(f, "value is out of range"),
+            CustomError::RecursionLimitExceeded => write!(f, "recursion limit exceded"),
         }
     }
 }
