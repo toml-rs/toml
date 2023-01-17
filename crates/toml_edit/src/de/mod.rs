@@ -13,13 +13,14 @@ mod spanned;
 mod table;
 mod table_enum;
 
-use array::*;
-use datetime::*;
-use item::*;
-use key::*;
-use spanned::*;
-use table::*;
-use table_enum::*;
+use array::ArrayDeserializer;
+use datetime::DatetimeDeserializer;
+use item::ItemDeserializer;
+use key::KeyDeserializer;
+use spanned::is_spanned;
+use spanned::SpannedDeserializer;
+use table::TableMapAccess;
+use table_enum::TableEnumDeserializer;
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
