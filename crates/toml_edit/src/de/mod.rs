@@ -6,6 +6,7 @@ use itertools::Itertools;
 use serde::de::DeserializeOwned;
 
 mod array;
+mod datetime;
 mod item;
 mod key;
 mod spanned;
@@ -14,6 +15,7 @@ mod table_enum;
 mod value;
 
 use array::*;
+use datetime::*;
 use item::*;
 use key::*;
 use spanned::*;
