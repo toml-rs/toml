@@ -2,5 +2,5 @@ TOML parse error at line 5, column 1
   |
 5 | [a.c]
   | ^
-Invalid table header
-Dotted key `a` attempted to extend non-table type (array)
+invalid table header
+dotted key `a` attempted to extend non-table type (array)

@@ -2,5 +2,5 @@ TOML parse error at line 9, column 3
   |
 9 |   [fruit.variety]
   |   ^
-Invalid table header
-Duplicate key `variety` in table `fruit`
+invalid table header
+duplicate key `variety` in table `fruit`

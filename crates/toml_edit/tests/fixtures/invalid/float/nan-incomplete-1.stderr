@@ -2,5 +2,5 @@ TOML parse error at line 1, column 20
   |
 1 | nan-incomplete-1 = na
   |                    ^
-Invalid string
-Expected `"`, `'`
+invalid string
+expected `"`, `'`

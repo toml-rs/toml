@@ -2,5 +2,5 @@ TOML parse error at line 1, column 10
   |
 1 | a = """\@"""
   |          ^
-Invalid escape sequence
-Expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+invalid escape sequence
+expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`

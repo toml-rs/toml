@@ -2,4 +2,4 @@ TOML parse error at line 1, column 21
   |
 1 | exp-trailing-us = 1e_23_
   |                     ^
-Invalid floating-point number
+invalid floating-point number

@@ -2,5 +2,5 @@ TOML parse error at line 1, column 10
   |
 1 | [invalid key]
   |          ^
-Invalid table header
-Expected `.`, `]`
+invalid table header
+expected `.`, `]`

@@ -2,4 +2,4 @@ TOML parse error at line 1, column 20
   |
 1 | invalid-hex = 0xaafz
   |                    ^
-Expected newline, `#`
+expected newline, `#`

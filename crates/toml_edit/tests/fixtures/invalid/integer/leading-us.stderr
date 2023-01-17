@@ -2,5 +2,5 @@ TOML parse error at line 1, column 14
   |
 1 | leading-us = _123
   |              ^
-Invalid integer
-Expected leading digit
+invalid integer
+expected leading digit

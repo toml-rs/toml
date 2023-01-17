@@ -2,5 +2,5 @@ TOML parse error at line 1, column 5
   |
 1 | a = t
   |     ^
-Invalid string
-Expected `"`, `'`
+invalid string
+expected `"`, `'`

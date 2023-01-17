@@ -2,5 +2,5 @@ TOML parse error at line 1, column 5
   |
 1 | [key#group]
   |     ^
-Invalid table header
-Expected `.`, `]`
+invalid table header
+expected `.`, `]`
