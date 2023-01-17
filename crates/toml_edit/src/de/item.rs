@@ -1,3 +1,6 @@
+use serde::de::IntoDeserializer as _;
+
+use crate::de::DatetimeDeserializer;
 use crate::de::Error;
 
 pub(crate) struct ItemDeserializer {
@@ -130,7 +133,19 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
         let span = self.span();
         match self {
             crate::Item::None => visitor.visit_none(),
-            crate::Item::Value(v) => v.deserialize_any(visitor),
+            crate::Item::Value(crate::Value::String(v)) => visitor.visit_string(v.into_value()),
+            crate::Item::Value(crate::Value::Integer(v)) => visitor.visit_i64(v.into_value()),
+            crate::Item::Value(crate::Value::Float(v)) => visitor.visit_f64(v.into_value()),
+            crate::Item::Value(crate::Value::Boolean(v)) => visitor.visit_bool(v.into_value()),
+            crate::Item::Value(crate::Value::Datetime(v)) => {
+                visitor.visit_map(DatetimeDeserializer::new(v.into_value()))
+            }
+            crate::Item::Value(crate::Value::Array(v)) => {
+                v.into_deserializer().deserialize_any(visitor)
+            }
+            crate::Item::Value(crate::Value::InlineTable(v)) => {
+                v.into_deserializer().deserialize_any(visitor)
+            }
             crate::Item::Table(v) => v.into_deserializer().deserialize_any(visitor),
             crate::Item::ArrayOfTables(v) => v.into_deserializer().deserialize_any(visitor),
         }
@@ -185,6 +200,12 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     where
         V: serde::de::Visitor<'de>,
     {
+        if name == toml_datetime::__unstable::NAME && fields == [toml_datetime::__unstable::FIELD] {
+            if let crate::Item::Value(crate::Value::Datetime(d)) = self {
+                return visitor.visit_map(DatetimeDeserializer::new(d.into_value()));
+            }
+        }
+
         if super::is_spanned(name, fields) {
             if let Some(span) = self.span() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self, span));
@@ -206,7 +227,25 @@ impl<'de> serde::Deserializer<'de> for crate::Item {
     {
         let span = self.span();
         match self {
-            crate::Item::Value(v) => v.deserialize_enum(name, variants, visitor),
+            crate::Item::Value(crate::Value::String(v)) => {
+                visitor.visit_enum(v.into_value().into_deserializer())
+            }
+            crate::Item::Value(crate::Value::InlineTable(v)) => {
+                if v.is_empty() {
+                    Err(crate::de::Error::custom(
+                        "wanted exactly 1 element, found 0 elements",
+                        v.span(),
+                    ))
+                } else if v.len() != 1 {
+                    Err(crate::de::Error::custom(
+                        "wanted exactly 1 element, more than 1 element",
+                        v.span(),
+                    ))
+                } else {
+                    v.into_deserializer()
+                        .deserialize_enum(name, variants, visitor)
+                }
+            }
             crate::Item::Table(v) => v
                 .into_deserializer()
                 .deserialize_enum(name, variants, visitor),

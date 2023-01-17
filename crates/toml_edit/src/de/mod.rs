@@ -12,7 +12,6 @@ mod key;
 mod spanned;
 mod table;
 mod table_enum;
-mod value;
 
 use array::*;
 use datetime::*;
