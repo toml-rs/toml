@@ -3,7 +3,8 @@ use serde::de::IntoDeserializer as _;
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
 
-pub(crate) struct ValueDeserializer {
+/// Deserialization implementation for TOML.
+pub struct ValueDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
 }
@@ -201,5 +202,15 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ValueDeserializ
 impl crate::Item {
     pub(crate) fn into_deserializer(self) -> ValueDeserializer {
         ValueDeserializer::new(self)
+    }
+}
+
+impl std::str::FromStr for ValueDeserializer {
+    type Err = Error;
+
+    /// Parses a value from a &str
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let v = crate::parser::parse_value(s).map_err(Error::from)?;
+        Ok(Self::new(crate::Item::Value(v)))
     }
 }
