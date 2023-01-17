@@ -171,6 +171,25 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
             })
     }
 
+    fn deserialize_newtype_struct<V>(
+        self,
+        name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
+            .deserialize_newtype_struct(name, visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
+    }
+
     fn deserialize_struct<V>(
         self,
         name: &'static str,
@@ -180,13 +199,15 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        if is_spanned(name, fields) {
-            if let Some(span) = self.input.span() {
-                return visitor.visit_map(SpannedDeserializer::new(self, span));
-            }
-        }
-
-        self.deserialize_any(visitor)
+        let original = self.input.original;
+        self.input
+            .root
+            .into_deserializer()
+            .deserialize_struct(name, fields, visitor)
+            .map_err(|mut e: Self::Error| {
+                e.inner.set_original(original);
+                e
+            })
     }
 
     // Called when the type to deserialize is an enum, as opposed to a field in the type.
@@ -212,7 +233,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
 
     serde::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
-        bytes byte_buf map unit newtype_struct
+        bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
