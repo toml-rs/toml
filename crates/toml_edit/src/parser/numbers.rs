@@ -1,12 +1,13 @@
 use std::ops::RangeInclusive;
 
 use nom8::branch::alt;
-use nom8::bytes::any;
 use nom8::bytes::one_of;
 use nom8::bytes::tag;
+use nom8::bytes::take;
 use nom8::combinator::cut;
 use nom8::combinator::opt;
 use nom8::combinator::peek;
+use nom8::combinator::rest;
 use nom8::multi::many0_count;
 use nom8::sequence::preceded;
 
@@ -35,11 +36,12 @@ const FALSE: &[u8] = b"false";
 
 // integer = dec-int / hex-int / oct-int / bin-int
 pub(crate) fn integer(input: Input<'_>) -> IResult<Input<'_>, i64, ParserError<'_>> {
-    dispatch! {peek(opt((any, any)));
-        Some((b'0', b'x')) => hex_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 16)),
-        Some((b'0', b'o')) => oct_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 8)),
-        Some((b'0', b'b')) => bin_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 2)),
-        _ => dec_int.map_res(|s| s.replace('_', "").parse()),
+    dispatch! {peek(opt::<_, &[u8], _, _>(take(2usize)));
+        Some(b"0x") => cut(hex_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 16))),
+        Some(b"0o") => cut(oct_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 8))),
+        Some(b"0b") => cut(bin_int.map_res(|s| i64::from_str_radix(&s.replace('_', ""), 2))),
+        _ => dec_int.and_then(cut(rest
+            .map_res(|s: &str| s.replace('_', "").parse())))
     }
     .parse(input)
 }
@@ -155,9 +157,9 @@ const DIGIT0_1: RangeInclusive<u8> = b'0'..=b'1';
 // float-int-part = dec-int
 pub(crate) fn float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
     alt((
-        float_
-            .map_res(|s| s.replace('_', "").parse())
-            .verify(|f| *f != f64::INFINITY),
+        float_.and_then(cut(rest
+            .map_res(|s: &str| s.replace('_', "").parse())
+            .verify(|f: &f64| *f != f64::INFINITY))),
         special_float,
     ))
     .context(Context::Expression("floating-point number"))
