@@ -1,0 +1,22 @@
+[package]
+name = "toml_benchmarks"
+version = "0.0.0"
+publish = false
+edition = "2021"
+rust-version = "1.60.0"  # MSRV
+
+[dev-dependencies]
+criterion = "0.4.0"
+toml = { path = "../toml" }
+toml_edit = { path = "../toml_edit" }
+toml_old = { version = "0.5.10", package = "toml" }
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
+
+[[bench]]
+name = "cargo"
+harness = false
+
+[[bench]]
+name = "linear"
+harness = false

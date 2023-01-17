@@ -12,7 +12,7 @@
 //! may use the `tables_last` function in this module like so:
 //!
 //! ```rust
-//! # use serde_derive::Serialize;
+//! # use serde::Serialize;
 //! # use std::collections::HashMap;
 //! #[derive(Serialize)]
 //! struct Manifest {
@@ -55,7 +55,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use serde_derive::Serialize;
+/// use serde::Serialize;
 ///
 /// #[derive(Serialize)]
 /// struct Config {
@@ -1564,7 +1564,7 @@ enum Category {
 /// helper can be used like so:
 ///
 /// ```rust
-/// # use serde_derive::Serialize;
+/// # use serde::Serialize;
 /// # use std::collections::HashMap;
 /// #[derive(Serialize)]
 /// struct Manifest {

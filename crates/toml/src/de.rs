@@ -46,7 +46,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use serde_derive::Deserialize;
+/// use serde::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct Config {
