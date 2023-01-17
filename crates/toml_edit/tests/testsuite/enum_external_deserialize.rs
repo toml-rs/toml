@@ -35,7 +35,8 @@ fn invalid_variant_returns_error_with_good_message_string() {
   |
 1 | val = "NonExistent"
   |       ^^^^^^^^^^^^^
-unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
+unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
+"#,
         error.to_string(),
     );
 }
@@ -48,7 +49,8 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
   |
 1 | val = { NonExistent = {} }
   |         ^^^^^^^^^^^
-unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
+unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
+"#,
         error.to_string(),
     );
 }
@@ -62,7 +64,8 @@ fn extra_field_returns_expected_empty_table_error() {
   |
 1 | val = { Plain = { extra_field = 404 } }
   |                 ^^^^^^^^^^^^^^^^^^^^^
-expected empty table"#,
+expected empty table
+"#,
         error.to_string(),
     );
 }
@@ -78,7 +81,8 @@ fn extra_field_returns_expected_empty_table_error_struct_variant() {
   |
 1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
   |                                 ^^^^^^^
-unexpected keys in table: extra_0, extra_1, available keys: value"#,
+unexpected keys in table: extra_0, extra_1, available keys: value
+"#,
         error.to_string(),
     );
 }
