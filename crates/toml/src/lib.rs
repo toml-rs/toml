@@ -153,13 +153,15 @@ pub use crate::value::Value;
 
 pub mod ser;
 #[doc(no_inline)]
-pub use crate::ser::{to_string, to_string_pretty, to_vec, Serializer};
+pub use crate::ser::{to_string, to_string_pretty, Serializer};
 pub mod de;
 #[doc(no_inline)]
 pub use crate::de::{from_str, Deserializer, ValueDeserializer};
 
 #[doc(hidden)]
 pub mod macros;
+
+mod fmt;
 
 pub use serde_spanned::Spanned;
 

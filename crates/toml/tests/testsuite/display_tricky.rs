@@ -50,6 +50,6 @@ fn both_ends() {
     )
     .unwrap();
 
-    let recipe_toml = toml::Value::try_from(recipe_fails).unwrap();
+    let recipe_toml = toml::Table::try_from(recipe_fails).unwrap();
     recipe_toml.to_string();
 }
