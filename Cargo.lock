@@ -897,6 +897,7 @@ dependencies = [
  "snapbox",
  "toml-test-harness",
  "toml_datetime",
+ "toml_edit",
 ]
 
 [[package]]

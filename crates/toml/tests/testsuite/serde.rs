@@ -272,8 +272,13 @@ fn type_errors() {
         Table(map! {
             bar: Value::String("a".to_string())
         }),
-        "invalid type: string \"a\", expected isize for key `bar` at line 1 column 7",
-        "invalid type: string \"a\", expected isize for key `bar`"
+        r#"TOML parse error at line 1, column 7
+  |
+1 | bar = "a"
+  |       ^^^
+invalid type: string "a", expected isize
+"#,
+        "invalid type: string \"a\", expected isize\n"
     }
 
     #[derive(Deserialize)]
@@ -289,8 +294,13 @@ fn type_errors() {
                 bar: Value::String("a".to_string())
             })
         }),
-        "invalid type: string \"a\", expected isize for key `foo.bar` at line 2 column 7",
-        "invalid type: string \"a\", expected isize for key `foo.bar`"
+        r#"TOML parse error at line 2, column 7
+  |
+2 | bar = "a"
+  |       ^^^
+invalid type: string "a", expected isize
+"#,
+        "invalid type: string \"a\", expected isize\n"
     }
 }
 
@@ -304,8 +314,13 @@ fn missing_errors() {
     error! {
         Foo,
         Table(map! { }),
-        "missing field `bar`",
-        "missing field `bar`"
+        r#"TOML parse error at line 1, column 1
+  |
+1 | 
+  | ^
+missing field `bar`
+"#,
+        "missing field `bar`\n"
     }
 }
 

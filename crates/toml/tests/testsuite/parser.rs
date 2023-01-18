@@ -184,30 +184,83 @@ name = "plantain"
 
 #[test]
 fn stray_cr() {
-    bad!("\r", "unexpected character found: `\\r` at line 1 column 1");
+    bad!(
+        "\r",
+        "\
+TOML parse error at line 1, column 1
+  |
+1 | \r
+  | ^
+
+"
+    );
     bad!(
         "a = [ \r ]",
-        "unexpected character found: `\\r` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = [ \r
+ ]
+  |       ^
+invalid array
+expected `]`
+"
     );
     bad!(
         "a = \"\"\"\r\"\"\"",
-        "invalid character in string: `\\r` at line 1 column 8"
+        "\
+TOML parse error at line 1, column 8
+  |
+1 | a = \"\"\"\r
+\"\"\"
+  |        ^
+invalid multiline basic string
+"
     );
     bad!(
         "a = \"\"\"\\  \r  \"\"\"",
-        "invalid escape character in string: ` ` at line 1 column 9"
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | a = \"\"\"\\  \r
+  \"\"\"
+  |          ^
+invalid escape sequence
+expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\\`, `\"`
+"
     );
     bad!(
         "a = '''\r'''",
-        "invalid character in string: `\\r` at line 1 column 8"
+        "\
+TOML parse error at line 1, column 8
+  |
+1 | a = '''\r
+'''
+  |        ^
+invalid multiline literal string
+"
     );
     bad!(
         "a = '\r'",
-        "invalid character in string: `\\r` at line 1 column 6"
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = '\r
+'
+  |      ^
+invalid literal string
+"
     );
     bad!(
         "a = \"\r\"",
-        "invalid character in string: `\\r` at line 1 column 6"
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = \"\r
+\"
+  |      ^
+invalid basic string
+"
     );
 }
 
@@ -237,37 +290,187 @@ fn literal_eats_crlf() {
 
 #[test]
 fn string_no_newline() {
-    bad!("a = \"\n\"", "newline in string found at line 1 column 6");
-    bad!("a = '\n'", "newline in string found at line 1 column 6");
+    bad!(
+        "a = \"\n\"",
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = \"
+  |      ^
+invalid basic string
+"
+    );
+    bad!(
+        "a = '\n'",
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = '
+  |      ^
+invalid literal string
+"
+    );
 }
 
 #[test]
 fn bad_leading_zeros() {
-    bad!("a = 00", "invalid number at line 1 column 6");
-    bad!("a = -00", "invalid number at line 1 column 7");
-    bad!("a = +00", "invalid number at line 1 column 7");
-    bad!("a = 00.0", "invalid number at line 1 column 6");
-    bad!("a = -00.0", "invalid number at line 1 column 7");
-    bad!("a = +00.0", "invalid number at line 1 column 7");
+    bad!(
+        "a = 00",
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = 00
+  |      ^
+expected newline, `#`
+"
+    );
+    bad!(
+        "a = -00",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = -00
+  |       ^
+expected newline, `#`
+"
+    );
+    bad!(
+        "a = +00",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = +00
+  |       ^
+expected newline, `#`
+"
+    );
+    bad!(
+        "a = 00.0",
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = 00.0
+  |      ^
+expected newline, `#`
+"
+    );
+    bad!(
+        "a = -00.0",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = -00.0
+  |       ^
+expected newline, `#`
+"
+    );
+    bad!(
+        "a = +00.0",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = +00.0
+  |       ^
+expected newline, `#`
+"
+    );
     bad!(
         "a = 9223372036854775808",
-        "invalid number at line 1 column 5"
+        "\
+TOML parse error at line 1, column 5
+  |
+1 | a = 9223372036854775808
+  |     ^
+number too large to fit in target type
+"
     );
     bad!(
         "a = -9223372036854775809",
-        "invalid number at line 1 column 5"
+        "\
+TOML parse error at line 1, column 5
+  |
+1 | a = -9223372036854775809
+  |     ^
+number too small to fit in target type
+"
     );
 }
 
 #[test]
 fn bad_floats() {
-    bad!("a = 0.", "invalid number at line 1 column 7");
-    bad!("a = 0.e", "invalid number at line 1 column 7");
-    bad!("a = 0.E", "invalid number at line 1 column 7");
-    bad!("a = 0.0E", "invalid number at line 1 column 5");
-    bad!("a = 0.0e", "invalid number at line 1 column 5");
-    bad!("a = 0.0e-", "invalid number at line 1 column 9");
-    bad!("a = 0.0e+", "invalid number at line 1 column 5");
+    bad!(
+        "a = 0.",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = 0.
+  |       ^
+invalid floating-point number
+expected digit
+"
+    );
+    bad!(
+        "a = 0.e",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = 0.e
+  |       ^
+invalid floating-point number
+expected digit
+"
+    );
+    bad!(
+        "a = 0.E",
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | a = 0.E
+  |       ^
+invalid floating-point number
+expected digit
+"
+    );
+    bad!(
+        "a = 0.0E",
+        "\
+TOML parse error at line 1, column 9
+  |
+1 | a = 0.0E
+  |         ^
+invalid floating-point number
+"
+    );
+    bad!(
+        "a = 0.0e",
+        "\
+TOML parse error at line 1, column 9
+  |
+1 | a = 0.0e
+  |         ^
+invalid floating-point number
+"
+    );
+    bad!(
+        "a = 0.0e-",
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | a = 0.0e-
+  |          ^
+invalid floating-point number
+"
+    );
+    bad!(
+        "a = 0.0e+",
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | a = 0.0e+
+  |          ^
+invalid floating-point number
+"
+    );
 }
 
 #[test]
@@ -330,44 +533,114 @@ fn bare_key_names() {
 fn bad_keys() {
     bad!(
         "key\n=3",
-        "expected an equals, found a newline at line 1 column 4"
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | key
+  |    ^
+expected `.`, `=`
+"
     );
     bad!(
         "key=\n3",
-        "expected a value, found a newline at line 1 column 5"
+        "\
+TOML parse error at line 1, column 5
+  |
+1 | key=
+  |     ^
+invalid string
+expected `\"`, `'`
+"
     );
     bad!(
         "key|=3",
-        "unexpected character found: `|` at line 1 column 4"
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | key|=3
+  |    ^
+expected `.`, `=`
+"
     );
     bad!(
         "=3",
-        "expected a table key, found an equals at line 1 column 1"
+        "\
+TOML parse error at line 1, column 1
+  |
+1 | =3
+  | ^
+invalid key
+"
     );
     bad!(
         "\"\"|=3",
-        "unexpected character found: `|` at line 1 column 3"
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | \"\"|=3
+  |   ^
+expected `.`, `=`
+"
     );
-    bad!("\"\n\"|=3", "newline in string found at line 1 column 2");
+    bad!(
+        "\"\n\"|=3",
+        "\
+TOML parse error at line 1, column 2
+  |
+1 | \"
+  |  ^
+invalid basic string
+"
+    );
     bad!(
         "\"\r\"|=3",
-        "invalid character in string: `\\r` at line 1 column 2"
+        "\
+TOML parse error at line 1, column 2
+  |
+1 | \"\r\"|=3
+  |  ^
+invalid basic string
+"
     );
     bad!(
         "''''''=3",
-        "multiline strings are not allowed for key at line 1 column 1"
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | ''''''=3
+  |   ^
+expected `.`, `=`
+"
     );
     bad!(
         "\"\"\"\"\"\"=3",
-        "multiline strings are not allowed for key at line 1 column 1"
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | \"\"\"\"\"\"=3
+  |   ^
+expected `.`, `=`
+"
     );
     bad!(
         "'''key'''=3",
-        "multiline strings are not allowed for key at line 1 column 1"
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | '''key'''=3
+  |   ^
+expected `.`, `=`
+"
     );
     bad!(
         "\"\"\"key\"\"\"=3",
-        "multiline strings are not allowed for key at line 1 column 1"
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | \"\"\"key\"\"\"=3
+  |   ^
+expected `.`, `=`
+"
     );
 }
 
@@ -375,38 +648,140 @@ fn bad_keys() {
 fn bad_table_names() {
     bad!(
         "[]",
-        "expected a table key, found a right bracket at line 1 column 2"
+        "\
+TOML parse error at line 1, column 2
+  |
+1 | []
+  |  ^
+invalid key
+"
     );
     bad!(
         "[.]",
-        "expected a table key, found a period at line 1 column 2"
+        "\
+TOML parse error at line 1, column 2
+  |
+1 | [.]
+  |  ^
+invalid key
+"
     );
     bad!(
         "[a.]",
-        "expected a table key, found a right bracket at line 1 column 4"
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | [a.]
+  |   ^
+invalid table header
+expected `.`, `]`
+"
     );
-    bad!("[!]", "unexpected character found: `!` at line 1 column 2");
-    bad!("[\"\n\"]", "newline in string found at line 1 column 3");
+    bad!(
+        "[!]",
+        "\
+TOML parse error at line 1, column 2
+  |
+1 | [!]
+  |  ^
+invalid key
+"
+    );
+    bad!(
+        "[\"\n\"]",
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | [\"
+  |   ^
+invalid basic string
+"
+    );
     bad!(
         "[a.b]\n[a.\"b\"]",
-        "redefinition of table `a.b` for key `a.b` at line 2 column 1"
+        "\
+TOML parse error at line 2, column 1
+  |
+2 | [a.\"b\"]
+  | ^
+invalid table header
+duplicate key `b` in table `a`
+"
     );
-    bad!("[']", "unterminated string at line 1 column 2");
-    bad!("[''']", "unterminated string at line 1 column 2");
+    bad!(
+        "[']",
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | [']
+  |    ^
+invalid literal string
+"
+    );
+    bad!(
+        "[''']",
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | [''']
+  |    ^
+invalid table header
+expected `.`, `]`
+"
+    );
     bad!(
         "['''''']",
-        "multiline strings are not allowed for key at line 1 column 2"
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | ['''''']
+  |    ^
+invalid table header
+expected `.`, `]`
+"
     );
     bad!(
         "['''foo''']",
-        "multiline strings are not allowed for key at line 1 column 2"
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | ['''foo''']
+  |    ^
+invalid table header
+expected `.`, `]`
+"
     );
     bad!(
         "[\"\"\"bar\"\"\"]",
-        "multiline strings are not allowed for key at line 1 column 2"
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | [\"\"\"bar\"\"\"]
+  |    ^
+invalid table header
+expected `.`, `]`
+"
     );
-    bad!("['\n']", "newline in string found at line 1 column 3");
-    bad!("['\r\n']", "newline in string found at line 1 column 3");
+    bad!(
+        "['\n']",
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | ['
+  |   ^
+invalid literal string
+"
+    );
+    bad!(
+        "['\r\n']",
+        "\
+TOML parse error at line 1, column 3
+  |
+1 | ['
+  |   ^
+invalid literal string
+"
+    );
 }
 
 #[test]
@@ -431,7 +806,16 @@ fn table_names() {
 
 #[test]
 fn invalid_bare_numeral() {
-    bad!("4", "expected an equals, found eof at line 1 column 2");
+    bad!(
+        "4",
+        "\
+TOML parse error at line 1, column 2
+  |
+1 | 4
+  |  ^
+expected `.`, `=`
+"
+    );
 }
 
 #[test]
@@ -444,23 +828,57 @@ fn inline_tables() {
 
     bad!(
         "a = {a=1,}",
-        "expected a table key, found a right brace at line 1 column 10"
+        "\
+TOML parse error at line 1, column 9
+  |
+1 | a = {a=1,}
+  |         ^
+invalid inline table
+expected `}`
+"
     );
     bad!(
         "a = {,}",
-        "expected a table key, found a comma at line 1 column 6"
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = {,}
+  |      ^
+invalid inline table
+expected `}`
+"
     );
     bad!(
         "a = {a=1,a=1}",
-        "duplicate key: `a` for key `a` at line 1 column 5"
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = {a=1,a=1}
+  |      ^
+duplicate key `a`
+"
     );
     bad!(
         "a = {\n}",
-        "expected a table key, found a newline at line 1 column 6"
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = {
+  |      ^
+invalid inline table
+expected `}`
+"
     );
     bad!(
         "a = {",
-        "expected a table key, found eof at line 1 column 6"
+        "\
+TOML parse error at line 1, column 6
+  |
+1 | a = {
+  |      ^
+invalid inline table
+expected `}`
+"
     );
 
     "a = {a=[\n]}".parse::<Value>().unwrap();
@@ -487,20 +905,62 @@ fn number_underscores() {
 
 #[test]
 fn bad_underscores() {
-    bad!("foo = 0_", "invalid number at line 1 column 7");
-    bad!("foo = 0__0", "invalid number at line 1 column 7");
+    bad!(
+        "foo = 0_",
+        "\
+TOML parse error at line 1, column 8
+  |
+1 | foo = 0_
+  |        ^
+expected newline, `#`
+"
+    );
+    bad!(
+        "foo = 0__0",
+        "\
+TOML parse error at line 1, column 8
+  |
+1 | foo = 0__0
+  |        ^
+expected newline, `#`
+"
+    );
     bad!(
         "foo = __0",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | foo = __0
+  |       ^
+invalid integer
+expected leading digit
+"
     );
-    bad!("foo = 1_0_", "invalid number at line 1 column 7");
+    bad!(
+        "foo = 1_0_",
+        "\
+TOML parse error at line 1, column 11
+  |
+1 | foo = 1_0_
+  |           ^
+invalid integer
+expected digit
+"
+    );
 }
 
 #[test]
 fn bad_unicode_codepoint() {
     bad!(
         "foo = \"\\uD800\"",
-        "invalid escape value: `55296` at line 1 column 9"
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | foo = \"\\uD800\"
+  |          ^
+invalid unicode 4-digit hex code
+value is out of range
+"
     );
 }
 
@@ -508,14 +968,44 @@ fn bad_unicode_codepoint() {
 fn bad_strings() {
     bad!(
         "foo = \"\\uxx\"",
-        "invalid hex escape character in string: `x` at line 1 column 10"
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | foo = \"\\uxx\"
+  |          ^
+invalid unicode 4-digit hex code
+"
     );
     bad!(
         "foo = \"\\u\"",
-        "invalid hex escape character in string: `\\\"` at line 1 column 10"
+        "\
+TOML parse error at line 1, column 10
+  |
+1 | foo = \"\\u\"
+  |          ^
+invalid unicode 4-digit hex code
+"
     );
-    bad!("foo = \"\\", "unterminated string at line 1 column 7");
-    bad!("foo = '", "unterminated string at line 1 column 7");
+    bad!(
+        "foo = \"\\",
+        "\
+TOML parse error at line 1, column 8
+  |
+1 | foo = \"\\
+  |        ^
+invalid basic string
+"
+    );
+    bad!(
+        "foo = '",
+        "\
+TOML parse error at line 1, column 8
+  |
+1 | foo = '
+  |        ^
+invalid literal string
+"
+    );
 }
 
 #[test]
@@ -538,19 +1028,45 @@ fn booleans() {
 
     bad!(
         "foo = true2",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        "\
+TOML parse error at line 1, column 11
+  |
+1 | foo = true2
+  |           ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = false2",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        "\
+TOML parse error at line 1, column 12
+  |
+1 | foo = false2
+  |            ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = t1",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | foo = t1
+  |       ^
+invalid string
+expected `\"`, `'`
+"
     );
     bad!(
         "foo = f2",
-        "invalid TOML value, did you mean to use a quoted string? at line 1 column 7"
+        "\
+TOML parse error at line 1, column 7
+  |
+1 | foo = f2
+  |       ^
+invalid string
+expected `\"`, `'`
+"
     );
 }
 
@@ -562,28 +1078,56 @@ fn bad_nesting() {
         [[a]]
         b = 5
         ",
-        "duplicate key: `a` at line 3 column 9"
+        "\
+TOML parse error at line 3, column 9
+  |
+3 |         [[a]]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+"
     );
     bad!(
         "
         a = 1
         [a.b]
         ",
-        "duplicate key: `a` at line 3 column 9"
+        "\
+TOML parse error at line 3, column 9
+  |
+3 |         [a.b]
+  |         ^
+invalid table header
+dotted key `a` attempted to extend non-table type (integer)
+"
     );
     bad!(
         "
         a = []
         [a.b]
         ",
-        "duplicate key: `a` at line 3 column 9"
+        "\
+TOML parse error at line 3, column 9
+  |
+3 |         [a.b]
+  |         ^
+invalid table header
+dotted key `a` attempted to extend non-table type (array)
+"
     );
     bad!(
         "
         a = []
         [[a.b]]
         ",
-        "duplicate key: `a` at line 3 column 9"
+        "\
+TOML parse error at line 3, column 9
+  |
+3 |         [[a.b]]
+  |         ^
+invalid table header
+dotted key `a` attempted to extend non-table type (array)
+"
     );
     bad!(
         "
@@ -592,7 +1136,14 @@ fn bad_nesting() {
         [a.b]
         c = 2
         ",
-        "duplicate key: `b` for key `a` at line 4 column 9"
+        "\
+TOML parse error at line 4, column 9
+  |
+4 |         [a.b]
+  |         ^
+invalid table header
+duplicate key `b` in table `a`
+"
     );
 }
 
@@ -606,7 +1157,14 @@ fn bad_table_redefine() {
         foo=\"bar\"
         [a]
         ",
-        "redefinition of table `a` for key `a` at line 6 column 9"
+        "\
+TOML parse error at line 6, column 9
+  |
+6 |         [a]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+"
     );
     bad!(
         "
@@ -615,7 +1173,14 @@ fn bad_table_redefine() {
         b = { foo = \"bar\" }
         [a]
         ",
-        "redefinition of table `a` for key `a` at line 5 column 9"
+        "\
+TOML parse error at line 5, column 9
+  |
+5 |         [a]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+"
     );
     bad!(
         "
@@ -623,7 +1188,14 @@ fn bad_table_redefine() {
         b = {}
         [a.b]
         ",
-        "duplicate key: `b` for key `a` at line 4 column 9"
+        "\
+TOML parse error at line 4, column 9
+  |
+4 |         [a.b]
+  |         ^
+invalid table header
+duplicate key `b` in table `a`
+"
     );
 
     bad!(
@@ -632,7 +1204,14 @@ fn bad_table_redefine() {
         b = {}
         [a]
         ",
-        "redefinition of table `a` for key `a` at line 4 column 9"
+        "\
+TOML parse error at line 4, column 9
+  |
+4 |         [a]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+"
     );
 }
 
@@ -652,34 +1231,78 @@ fn datetimes() {
     t!("2016-09-09T09:09:09.123456789-02:00");
     bad!(
         "foo = 2016-09-09T09:09:09.Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 26
+  |
+1 | foo = 2016-09-09T09:09:09.Z
+  |                          ^
+expected newline, `#`
+"
     );
     bad!(
         "foo = 2016-9-09T09:09:09Z",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 12
+  |
+1 | foo = 2016-9-09T09:09:09Z
+  |            ^
+invalid date-time
+"
     );
     bad!(
         "foo = 2016-09-09T09:09:09+2:00",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 27
+  |
+1 | foo = 2016-09-09T09:09:09+2:00
+  |                           ^
+invalid time offset
+"
     );
     bad!(
         "foo = 2016-09-09T09:09:09-2:00",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 27
+  |
+1 | foo = 2016-09-09T09:09:09-2:00
+  |                           ^
+invalid time offset
+"
     );
     bad!(
         "foo = 2016-09-09T09:09:09Z-2:00",
-        "failed to parse datetime for key `foo` at line 1 column 7"
+        "\
+TOML parse error at line 1, column 27
+  |
+1 | foo = 2016-09-09T09:09:09Z-2:00
+  |                           ^
+expected newline, `#`
+"
     );
 }
 
 #[test]
 fn require_newline_after_value() {
-    bad!("0=0r=false", "invalid number at line 1 column 3");
+    bad!(
+        "0=0r=false",
+        "\
+TOML parse error at line 1, column 4
+  |
+1 | 0=0r=false
+  |    ^
+expected newline, `#`
+"
+    );
     bad!(
         r#"
 0=""o=""m=""r=""00="0"q="""0"""e="""0"""
 "#,
-        "expected newline, found an identifier at line 2 column 5"
+        r#"TOML parse error at line 2, column 5
+  |
+2 | 0=""o=""m=""r=""00="0"q="""0"""e="""0"""
+  |     ^
+expected newline, `#`
+"#
     );
     bad!(
         r#"
@@ -688,24 +1311,44 @@ fn require_newline_after_value() {
 0="0"[[0000l0]]
 0="0"l="0"
 "#,
-        "expected newline, found a left bracket at line 3 column 6"
+        r#"TOML parse error at line 3, column 6
+  |
+3 | 0="0"[[0000l0]]
+  |      ^
+expected newline, `#`
+"#
     );
     bad!(
         r#"
 0=[0]00=[0,0,0]t=["0","0","0"]s=[1000-00-00T00:00:00Z,2000-00-00T00:00:00Z]
 "#,
-        "expected newline, found an identifier at line 2 column 6"
+        r#"TOML parse error at line 2, column 6
+  |
+2 | 0=[0]00=[0,0,0]t=["0","0","0"]s=[1000-00-00T00:00:00Z,2000-00-00T00:00:00Z]
+  |      ^
+expected newline, `#`
+"#
     );
     bad!(
         r#"
 0=0r0=0r=false
 "#,
-        "invalid number at line 2 column 3"
+        r#"TOML parse error at line 2, column 4
+  |
+2 | 0=0r0=0r=false
+  |    ^
+expected newline, `#`
+"#
     );
     bad!(
         r#"
 0=0r0=0r=falsefal=false
 "#,
-        "invalid number at line 2 column 3"
+        r#"TOML parse error at line 2, column 4
+  |
+2 | 0=0r0=0r=falsefal=false
+  |    ^
+expected newline, `#`
+"#
     );
 }
