@@ -53,7 +53,7 @@ serde_spanned = { version = "0.5.0", path = "../serde_spanned", features = ["ser
 [dev-dependencies]
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
-toml-test-harness = "0.4.2"
+toml-test-harness = "0.4.3"
 snapbox = "0.4.3"
 
 [[test]]
