@@ -118,5 +118,7 @@ deny-warnings = []
 vendored-openssl = ["openssl/vendored"]
 pretty-env-logger = ["pretty_env_logger"]
 "#;
-    let _ = CARGO_MANIFEST.parse::<toml_edit::Document>().unwrap();
+    let _doc = CARGO_MANIFEST.parse::<toml_edit::Document>().unwrap();
+    #[cfg(debug_assertions)] // Don't interefere with profiling
+    dbg!(_doc);
 }
