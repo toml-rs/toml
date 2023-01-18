@@ -232,3 +232,30 @@ fn test_spanned_array() {
         }
     }
 }
+
+#[test]
+fn deny_unknown_fields() {
+    #[derive(Debug, serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Example {
+        #[allow(dead_code)]
+        real: u32,
+    }
+
+    let error = toml::from_str::<Example>(
+        r#"# my comment
+# bla bla bla
+fake = 1"#,
+    )
+    .unwrap_err();
+    snapbox::assert_eq(
+        "\
+TOML parse error at line 3, column 1
+  |
+3 | fake = 1
+  | ^^^^
+unknown field `fake`, expected `real`
+",
+        error.to_string(),
+    );
+}
