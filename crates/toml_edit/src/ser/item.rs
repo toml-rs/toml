@@ -101,11 +101,11 @@ impl serde::ser::Serializer for ItemSerializer {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        Err(ErrorKind::UnsupportedType.into())
+        Err(ErrorKind::UnsupportedType(Some("unit")).into())
     }
 
-    fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Err(ErrorKind::UnsupportedType.into())
+    fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
+        Err(ErrorKind::UnsupportedType(Some(name)).into())
     }
 
     fn serialize_unit_variant(
@@ -130,7 +130,7 @@ impl serde::ser::Serializer for ItemSerializer {
 
     fn serialize_newtype_variant<T: ?Sized>(
         self,
-        _name: &'static str,
+        name: &'static str,
         _variant_index: u32,
         _variant: &'static str,
         _value: &T,
@@ -138,7 +138,7 @@ impl serde::ser::Serializer for ItemSerializer {
     where
         T: serde::ser::Serialize,
     {
-        Err(ErrorKind::UnsupportedType.into())
+        Err(ErrorKind::UnsupportedType(Some(name)).into())
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
@@ -189,11 +189,11 @@ impl serde::ser::Serializer for ItemSerializer {
 
     fn serialize_struct_variant(
         self,
-        _name: &'static str,
+        name: &'static str,
         _variant_index: u32,
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(ErrorKind::UnsupportedType.into())
+        Err(ErrorKind::UnsupportedType(Some(name)).into())
     }
 }

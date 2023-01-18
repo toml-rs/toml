@@ -69,7 +69,7 @@ impl From<ErrorKind> for Error {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum ErrorKind {
-    UnsupportedType,
+    UnsupportedType(Option<&'static str>),
     UnsupportedNone,
     KeyNotString,
     Custom(String),
@@ -78,7 +78,8 @@ enum ErrorKind {
 impl std::fmt::Display for ErrorKind {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            ErrorKind::UnsupportedType => "unsupported Rust type".fmt(formatter),
+            ErrorKind::UnsupportedType(Some(t)) => write!(formatter, "unsupported {t} type"),
+            ErrorKind::UnsupportedType(None) => write!(formatter, "unsupported rust type"),
             ErrorKind::UnsupportedNone => "unsupported None value".fmt(formatter),
             ErrorKind::KeyNotString => "map key was not a string".fmt(formatter),
             ErrorKind::Custom(s) => s.fmt(formatter),
@@ -162,7 +163,9 @@ where
     T: serde::ser::Serialize,
 {
     let item = to_item(value)?;
-    let root = item.into_table().map_err(|_| ErrorKind::UnsupportedType)?;
+    let root = item
+        .into_table()
+        .map_err(|_| ErrorKind::UnsupportedType(None))?;
     Ok(root.into())
 }
 
