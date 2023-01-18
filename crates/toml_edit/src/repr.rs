@@ -4,7 +4,7 @@ use crate::RawString;
 
 /// A value together with its `to_string` representation,
 /// including surrounding it whitespaces and comments.
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Hash)]
 pub struct Formatted<T> {
     value: T,
     repr: Option<Repr>,
@@ -86,6 +86,23 @@ where
     }
 }
 
+impl<T> std::fmt::Debug for Formatted<T>
+where
+    T: std::fmt::Debug,
+{
+    #[inline]
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        let mut d = formatter.debug_struct("Formatted");
+        d.field("value", &self.value);
+        match &self.repr {
+            Some(r) => d.field("repr", r),
+            None => d.field("repr", &"default"),
+        };
+        d.field("decor", &self.decor);
+        d.finish()
+    }
+}
+
 impl<T> std::fmt::Display for Formatted<T>
 where
     T: ValueRepr,
@@ -101,7 +118,7 @@ pub trait ValueRepr: crate::private::Sealed {
 }
 
 /// TOML-encoded value
-#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Hash)]
 pub struct Repr {
     raw_value: RawString,
 }
@@ -132,10 +149,17 @@ impl Repr {
     }
 }
 
+impl std::fmt::Debug for Repr {
+    #[inline]
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        self.raw_value.fmt(formatter)
+    }
+}
+
 /// A prefix and suffix,
 ///
 /// Including comments, whitespaces and newlines.
-#[derive(Eq, PartialEq, Clone, Default, Debug, Hash)]
+#[derive(Eq, PartialEq, Clone, Default, Hash)]
 pub struct Decor {
     prefix: Option<RawString>,
     suffix: Option<RawString>,
@@ -209,5 +233,21 @@ impl Decor {
         if let Some(suffix) = &mut self.suffix {
             suffix.despan(input);
         }
+    }
+}
+
+impl std::fmt::Debug for Decor {
+    #[inline]
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        let mut d = formatter.debug_struct("Decor");
+        match &self.prefix {
+            Some(r) => d.field("prefix", r),
+            None => d.field("prefix", &"default"),
+        };
+        match &self.suffix {
+            Some(r) => d.field("suffix", r),
+            None => d.field("suffix", &"default"),
+        };
+        d.finish()
     }
 }

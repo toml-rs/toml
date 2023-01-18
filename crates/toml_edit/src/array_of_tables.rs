@@ -6,8 +6,8 @@ use crate::{Array, Item, Table};
 #[derive(Clone, Debug, Default)]
 pub struct ArrayOfTables {
     // Always Vec<Item::Table>, just `Item` to make `Index` work
-    pub(crate) values: Vec<Item>,
     pub(crate) span: Option<std::ops::Range<usize>>,
+    pub(crate) values: Vec<Item>,
 }
 
 /// Constructors

@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::str::FromStr;
 
 /// Opaque string storage internal to `toml_edit`
-#[derive(Default, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct InternalString(Inner);
 
 #[cfg(feature = "kstring")]
@@ -20,6 +20,13 @@ impl InternalString {
     #[inline]
     pub fn as_str(&self) -> &str {
         self.0.as_str()
+    }
+}
+
+impl std::fmt::Debug for InternalString {
+    #[inline]
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        self.0.fmt(formatter)
     }
 }
 
