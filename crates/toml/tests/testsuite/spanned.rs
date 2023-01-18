@@ -1,3 +1,6 @@
+#![allow(renamed_and_removed_lints)]
+#![allow(clippy::blacklisted_name)]
+
 use std::collections::HashMap;
 use std::fmt::Debug;
 
