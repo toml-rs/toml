@@ -231,6 +231,7 @@ impl Table {
 
     pub(crate) fn despan(&mut self, input: &str) {
         self.span = None;
+        self.decor.despan(input);
         for kv in self.items.values_mut() {
             kv.key.despan(input);
             kv.value.despan(input);
