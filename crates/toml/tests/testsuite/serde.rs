@@ -695,3 +695,27 @@ fn json_interoperability() {
     )
     .unwrap();
 }
+
+#[test]
+fn table_type_enum_regression_issue_388() {
+    #[derive(Deserialize)]
+    struct DataFile {
+        #[allow(dead_code)]
+        data: Compare,
+    }
+
+    #[derive(Deserialize)]
+    enum Compare {
+        Gt(u32),
+    }
+
+    let dotted_table = r#"
+        data.Gt = 5
+        "#;
+    assert!(toml::from_str::<DataFile>(dotted_table).is_ok());
+
+    let inline_table = r#"
+        data = { Gt = 5 }
+        "#;
+    assert!(toml::from_str::<DataFile>(inline_table).is_ok());
+}
