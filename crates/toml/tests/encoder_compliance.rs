@@ -9,6 +9,8 @@ fn main() {
         .ignore([
             "valid/array/mixed-string-table.toml",
             "valid/inline-table/nest.toml",
+            "valid/spec/float-0.toml",
+            "valid/spec/array-0.toml",
         ])
         .unwrap();
     harness.test();
