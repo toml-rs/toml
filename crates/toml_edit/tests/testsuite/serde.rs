@@ -781,3 +781,22 @@ fn float_max() {
         Table(map! { a_b: Float(f64::MAX) }),
     }
 }
+
+#[test]
+fn unsupported_root_type() {
+    let native = "value";
+    let err = toml_edit::ser::to_string_pretty(&native).unwrap_err();
+    snapbox::assert_eq("unsupported rust type", err.to_string());
+}
+
+#[test]
+fn unsupported_nested_type() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Foo {
+        unused: (),
+    }
+
+    let native = Foo { unused: () };
+    let err = toml_edit::ser::to_string_pretty(&native).unwrap_err();
+    snapbox::assert_eq("unsupported unit type", err.to_string());
+}
