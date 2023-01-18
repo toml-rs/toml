@@ -242,12 +242,6 @@ impl ParseState {
                     // Since tables cannot be defined more than once, redefining such tables using a
                     // [table] header is not allowed. Likewise, using dotted keys to redefine tables
                     // already defined in [table] form is not allowed.
-                    if sweet_child_of_mine.is_dotted() && !dotted {
-                        return Err(CustomError::DuplicateKey {
-                            key: key.get().into(),
-                            table: None,
-                        });
-                    }
                     if dotted && !sweet_child_of_mine.is_implicit() {
                         return Err(CustomError::DuplicateKey {
                             key: key.get().into(),
