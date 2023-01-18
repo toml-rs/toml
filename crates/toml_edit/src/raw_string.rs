@@ -1,10 +1,10 @@
 use crate::InternalString;
 
 /// Opaque string storage for raw TOML; internal to `toml_edit`
-#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+#[derive(PartialEq, Eq, Clone, Hash)]
 pub struct RawString(RawStringInner);
 
-#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+#[derive(PartialEq, Eq, Clone, Hash)]
 enum RawStringInner {
     Empty,
     Explicit(InternalString),
@@ -105,6 +105,17 @@ impl RawString {
 impl Default for RawString {
     fn default() -> Self {
         Self(RawStringInner::Empty)
+    }
+}
+
+impl std::fmt::Debug for RawString {
+    #[inline]
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match &self.0 {
+            RawStringInner::Empty => write!(formatter, "empty"),
+            RawStringInner::Explicit(s) => write!(formatter, "{:?}", s),
+            RawStringInner::Spanned(s) => write!(formatter, "{:?}", s),
+        }
     }
 }
 

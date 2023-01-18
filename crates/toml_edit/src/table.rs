@@ -20,8 +20,8 @@ pub struct Table {
     //
     // `None` for user created tables (can be overridden with `set_position`)
     doc_position: Option<usize>,
-    pub(crate) items: KeyValuePairs,
     pub(crate) span: Option<std::ops::Range<usize>>,
+    pub(crate) items: KeyValuePairs,
 }
 
 /// Constructors
