@@ -64,7 +64,7 @@
 //!
 //! This means that you can use Serde to deserialize/serialize the
 //! [`Value`] type as well as the [`Datetime`][crate::Datetime] type in this crate. You can also
-//! use the [`Deserializer`], [`Serializer`], or [`Value`] type itself to act as
+//! use the [`Deserializer`], [`ValueSerializer`], or [`Value`] type itself to act as
 //! a deserializer/serializer for arbitrary types.
 //!
 //! An example of deserializing with TOML is:
@@ -146,7 +146,7 @@ pub use crate::toml;
 #[doc(no_inline)]
 pub use de::{from_document, from_slice, from_str, Deserializer};
 #[doc(no_inline)]
-pub use ser::{to_document, to_string, to_string_pretty, to_vec, Serializer};
+pub use ser::{to_document, to_string, to_string_pretty, to_vec, ValueSerializer};
 pub use serde_spanned::Spanned;
 #[doc(no_inline)]
 pub use value::Value;

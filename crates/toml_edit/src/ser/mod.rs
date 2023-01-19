@@ -3,13 +3,12 @@
 //! This module contains all the Serde support for serializing Rust structures into TOML.
 
 mod array;
-mod item;
 mod key;
 mod pretty;
 mod table;
+mod value;
 
 pub(crate) use array::*;
-pub(crate) use item::*;
 pub(crate) use key::*;
 pub(crate) use table::*;
 
@@ -145,7 +144,7 @@ where
 /// Serialize the given data structure as a "pretty" String of TOML.
 ///
 /// This is identical to `to_string` except the output string has a more
-/// "pretty" output. See `Serializer::pretty` for more details.
+/// "pretty" output. See `ValueSerializer::pretty` for more details.
 pub fn to_string_pretty<T: ?Sized>(value: &T) -> Result<String, Error>
 where
     T: serde::ser::Serialize,
@@ -162,22 +161,12 @@ pub fn to_document<T: ?Sized>(value: &T) -> Result<crate::Document, Error>
 where
     T: serde::ser::Serialize,
 {
-    let item = to_item(value)?;
+    let value = value.serialize(ValueSerializer::new())?;
+    let item = crate::Item::Value(value);
     let root = item
         .into_table()
         .map_err(|_| ErrorKind::UnsupportedType(None))?;
     Ok(root.into())
 }
 
-/// Serialize the given data structure into a TOML data structure
-///
-/// This would allow custom formatting to be applied, mixing with format preserving edits, etc.
-pub fn to_item<T: ?Sized>(value: &T) -> Result<crate::Item, Error>
-where
-    T: serde::ser::Serialize,
-{
-    let item = value.serialize(Serializer::new())?;
-    Ok(item)
-}
-
-pub use item::ItemSerializer as Serializer;
+pub use value::ValueSerializer;

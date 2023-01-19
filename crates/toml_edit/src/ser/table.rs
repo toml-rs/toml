@@ -1,11 +1,11 @@
 use super::{Error, ErrorKind, KeySerializer};
 
 #[doc(hidden)]
-pub struct SerializeItemTable {
+pub struct SerializeValueTable {
     inner: SerializeKeyValuePairs,
 }
 
-impl SerializeItemTable {
+impl SerializeValueTable {
     pub(crate) fn new() -> Self {
         Self {
             inner: SerializeKeyValuePairs::new(),
@@ -19,8 +19,8 @@ impl SerializeItemTable {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeItemTable {
-    type Ok = crate::Item;
+impl serde::ser::SerializeMap for SerializeValueTable {
+    type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_key<T: ?Sized>(&mut self, input: &T) -> Result<(), Self::Error>
@@ -38,16 +38,14 @@ impl serde::ser::SerializeMap for SerializeItemTable {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        self.inner.end().map(|items| {
-            crate::Item::Value(crate::Value::InlineTable(crate::InlineTable::with_pairs(
-                items,
-            )))
-        })
+        self.inner
+            .end()
+            .map(|items| crate::Value::InlineTable(crate::InlineTable::with_pairs(items)))
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeItemTable {
-    type Ok = crate::Item;
+impl serde::ser::SerializeStruct for SerializeValueTable {
+    type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(
@@ -62,11 +60,9 @@ impl serde::ser::SerializeStruct for SerializeItemTable {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        self.inner.end().map(|items| {
-            crate::Item::Value(crate::Value::InlineTable(crate::InlineTable::with_pairs(
-                items,
-            )))
-        })
+        self.inner
+            .end()
+            .map(|items| crate::Value::InlineTable(crate::InlineTable::with_pairs(items)))
     }
 }
 
@@ -107,20 +103,21 @@ impl serde::ser::SerializeMap for SerializeKeyValuePairs {
     where
         T: serde::ser::Serialize,
     {
-        let res = value.serialize(super::ItemSerializer {});
-        let item = match res {
-            Ok(item) => item,
+        let res = value.serialize(super::ValueSerializer {});
+        match res {
+            Ok(item) => {
+                let key = self.key.take().unwrap();
+                let kv = crate::table::TableKeyValue::new(
+                    crate::Key::new(&key),
+                    crate::Item::Value(item),
+                );
+                self.items.insert(key, kv);
+            }
             Err(e) => {
                 if e.kind != ErrorKind::UnsupportedNone {
                     return Err(e);
                 }
-                crate::Item::None
             }
-        };
-        if !item.is_none() {
-            let key = self.key.take().unwrap();
-            let kv = crate::table::TableKeyValue::new(crate::Key::new(&key), item);
-            self.items.insert(key, kv);
         }
         Ok(())
     }
@@ -142,20 +139,21 @@ impl serde::ser::SerializeStruct for SerializeKeyValuePairs {
     where
         T: serde::ser::Serialize,
     {
-        let res = value.serialize(super::ItemSerializer {});
-        let item = match res {
-            Ok(item) => item,
+        let res = value.serialize(super::ValueSerializer {});
+        match res {
+            Ok(item) => {
+                let kv = crate::table::TableKeyValue::new(
+                    crate::Key::new(key),
+                    crate::Item::Value(item),
+                );
+                self.items.insert(crate::InternalString::from(key), kv);
+            }
             Err(e) => {
                 if e.kind != ErrorKind::UnsupportedNone {
                     return Err(e);
                 }
-                crate::Item::None
             }
         };
-        if !item.is_none() {
-            let kv = crate::table::TableKeyValue::new(crate::Key::new(key), item);
-            self.items.insert(crate::InternalString::from(key), kv);
-        }
         Ok(())
     }
 
