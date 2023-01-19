@@ -22,6 +22,21 @@ pub use crate::map::{Entry, Map};
 /// to use a LinkedHashMap instead.
 pub type Table = Map<String, Value>;
 
+impl fmt::Display for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        crate::ser::to_string(self)
+            .expect("Unable to represent value as string")
+            .fmt(f)
+    }
+}
+
+impl FromStr for Table {
+    type Err = crate::de::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::from_str(s)
+    }
+}
+
 /// Type representing a TOML array, payload of the `Value::Array` variant
 pub type Array = Vec<Value>;
 
