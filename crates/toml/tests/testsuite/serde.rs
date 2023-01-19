@@ -28,14 +28,12 @@ macro_rules! equivalent {
         assert_eq!(literal, t!(toml.clone().try_into()));
 
         // Through a string equivalent
-        println!("to_string(literal)");
-        snapbox::assert_eq(toml.to_string(), t!(toml::to_string(&literal)));
-        println!("to_string(toml)");
-        snapbox::assert_eq(toml.to_string(), t!(toml::to_string(&toml)));
+        println!("to_string");
+        snapbox::assert_eq(t!(toml::to_string(&toml)), t!(toml::to_string(&literal)));
         println!("literal, from_str(toml)");
-        assert_eq!(literal, t!(toml::from_str(&toml.to_string())));
+        assert_eq!(literal, t!(toml::from_str(&t!(toml::to_string(&toml)))));
         println!("toml, from_str(toml)");
-        assert_eq!(toml, t!(toml::from_str(&toml.to_string())));
+        assert_eq!(toml, t!(toml::from_str(&t!(toml::to_string(&toml)))));
     }};
 }
 

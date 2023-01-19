@@ -2,21 +2,21 @@ use std::collections::HashMap;
 
 use serde::Serialize;
 
-#[derive(Serialize)]
-struct A {
-    #[serde(serialize_with = "toml::ser::tables_last")]
-    vals: HashMap<&'static str, Value>,
-}
-
-#[derive(Serialize)]
-#[serde(untagged)]
-enum Value {
-    Map(HashMap<&'static str, &'static str>),
-    Int(i32),
-}
-
 #[test]
 fn always_works() {
+    // Ensure this works without the removed "toml::ser::tables_last"
+    #[derive(Serialize)]
+    struct A {
+        vals: HashMap<&'static str, Value>,
+    }
+
+    #[derive(Serialize)]
+    #[serde(untagged)]
+    enum Value {
+        Map(HashMap<&'static str, &'static str>),
+        Int(i32),
+    }
+
     let mut a = A {
         vals: HashMap::new(),
     };
