@@ -162,22 +162,11 @@ pub fn to_document<T: ?Sized>(value: &T) -> Result<crate::Document, Error>
 where
     T: serde::ser::Serialize,
 {
-    let item = to_item(value)?;
+    let item = value.serialize(Serializer::new())?;
     let root = item
         .into_table()
         .map_err(|_| ErrorKind::UnsupportedType(None))?;
     Ok(root.into())
-}
-
-/// Serialize the given data structure into a TOML data structure
-///
-/// This would allow custom formatting to be applied, mixing with format preserving edits, etc.
-pub fn to_item<T: ?Sized>(value: &T) -> Result<crate::Item, Error>
-where
-    T: serde::ser::Serialize,
-{
-    let item = value.serialize(Serializer::new())?;
-    Ok(item)
 }
 
 pub use item::ItemSerializer as Serializer;
