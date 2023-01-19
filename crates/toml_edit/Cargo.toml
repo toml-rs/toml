@@ -71,14 +71,6 @@ name = "encoder_compliance"
 harness = false
 
 [[test]]
-name = "easy_decoder_compliance"
-harness = false
-
-[[test]]
-name = "easy_encoder_compliance"
-harness = false
-
-[[test]]
 name = "invalid"
 harness = false
 
