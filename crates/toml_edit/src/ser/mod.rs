@@ -4,13 +4,13 @@
 
 mod array;
 mod key;
+mod map;
 mod pretty;
-mod table;
 mod value;
 
 pub(crate) use array::*;
 pub(crate) use key::*;
-pub(crate) use table::*;
+pub(crate) use map::*;
 
 use crate::visit_mut::VisitMut;
 

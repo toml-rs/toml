@@ -1,11 +1,11 @@
 use super::{Error, KeySerializer};
 
 #[doc(hidden)]
-pub struct SerializeValueTable {
+pub struct SerializeMap {
     inner: SerializeKeyValuePairs,
 }
 
-impl SerializeValueTable {
+impl SerializeMap {
     pub(crate) fn new() -> Self {
         Self {
             inner: SerializeKeyValuePairs::new(),
@@ -19,7 +19,7 @@ impl SerializeValueTable {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeValueTable {
+impl serde::ser::SerializeMap for SerializeMap {
     type Ok = crate::Value;
     type Error = Error;
 
@@ -44,7 +44,7 @@ impl serde::ser::SerializeMap for SerializeValueTable {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeValueTable {
+impl serde::ser::SerializeStruct for SerializeMap {
     type Ok = crate::Value;
     type Error = Error;
 
