@@ -69,7 +69,7 @@ impl Value {
     where
         T: ser::Serialize,
     {
-        value.serialize(Serializer)
+        value.serialize(ValueSerializer)
     }
 
     /// Interpret a `toml::Value` as an instance of type `T`.
@@ -731,18 +731,18 @@ impl<'de> de::IntoDeserializer<'de, crate::de::Error> for Value {
     }
 }
 
-struct Serializer;
+struct ValueSerializer;
 
-impl ser::Serializer for Serializer {
+impl ser::Serializer for ValueSerializer {
     type Ok = Value;
     type Error = crate::ser::Error;
 
-    type SerializeSeq = SerializeVec;
-    type SerializeTuple = SerializeVec;
-    type SerializeTupleStruct = SerializeVec;
-    type SerializeTupleVariant = SerializeVec;
-    type SerializeMap = SerializeMap;
-    type SerializeStruct = SerializeMap;
+    type SerializeSeq = ValueSerializeVec;
+    type SerializeTuple = ValueSerializeVec;
+    type SerializeTupleStruct = ValueSerializeVec;
+    type SerializeTupleVariant = ValueSerializeVec;
+    type SerializeMap = ValueSerializeMap;
+    type SerializeStruct = ValueSerializeMap;
     type SerializeStructVariant = ser::Impossible<Value, crate::ser::Error>;
 
     fn serialize_bool(self, value: bool) -> Result<Value, crate::ser::Error> {
@@ -861,7 +861,7 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, crate::ser::Error> {
-        Ok(SerializeVec {
+        Ok(ValueSerializeVec {
             vec: Vec::with_capacity(len.unwrap_or(0)),
         })
     }
@@ -889,7 +889,7 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, crate::ser::Error> {
-        Ok(SerializeMap {
+        Ok(ValueSerializeMap {
             map: Map::new(),
             next_key: None,
         })
@@ -914,11 +914,11 @@ impl ser::Serializer for Serializer {
     }
 }
 
-struct SerializeVec {
+struct ValueSerializeVec {
     vec: Vec<Value>,
 }
 
-impl ser::SerializeSeq for SerializeVec {
+impl ser::SerializeSeq for ValueSerializeVec {
     type Ok = Value;
     type Error = crate::ser::Error;
 
@@ -935,7 +935,7 @@ impl ser::SerializeSeq for SerializeVec {
     }
 }
 
-impl ser::SerializeTuple for SerializeVec {
+impl ser::SerializeTuple for ValueSerializeVec {
     type Ok = Value;
     type Error = crate::ser::Error;
 
@@ -951,7 +951,7 @@ impl ser::SerializeTuple for SerializeVec {
     }
 }
 
-impl ser::SerializeTupleStruct for SerializeVec {
+impl ser::SerializeTupleStruct for ValueSerializeVec {
     type Ok = Value;
     type Error = crate::ser::Error;
 
@@ -967,7 +967,7 @@ impl ser::SerializeTupleStruct for SerializeVec {
     }
 }
 
-impl ser::SerializeTupleVariant for SerializeVec {
+impl ser::SerializeTupleVariant for ValueSerializeVec {
     type Ok = Value;
     type Error = crate::ser::Error;
 
@@ -983,12 +983,12 @@ impl ser::SerializeTupleVariant for SerializeVec {
     }
 }
 
-struct SerializeMap {
+struct ValueSerializeMap {
     map: Map<String, Value>,
     next_key: Option<String>,
 }
 
-impl ser::SerializeMap for SerializeMap {
+impl ser::SerializeMap for ValueSerializeMap {
     type Ok = Value;
     type Error = crate::ser::Error;
 
@@ -1024,7 +1024,7 @@ impl ser::SerializeMap for SerializeMap {
     }
 }
 
-impl ser::SerializeStruct for SerializeMap {
+impl ser::SerializeStruct for ValueSerializeMap {
     type Ok = Value;
     type Error = crate::ser::Error;
 
