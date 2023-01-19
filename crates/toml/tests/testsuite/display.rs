@@ -20,21 +20,21 @@ fn simple_show() {
 
 #[test]
 fn table() {
-    assert_eq!(Table(map! {}).to_string(), "");
+    assert_eq!(map! {}.to_string(), "");
     assert_eq!(
-        Table(map! {
+        map! {
         "test" => Integer(2),
-        "test2" => Integer(3) })
+        "test2" => Integer(3) }
         .to_string(),
         "test = 2\ntest2 = 3\n"
     );
     assert_eq!(
-        Table(map! {
+        map! {
              "test" => Integer(2),
              "test2" => Table(map! {
                  "test" => String("wut".to_string())
              })
-        })
+        }
         .to_string(),
         "test = 2\n\
          \n\
@@ -42,12 +42,12 @@ fn table() {
          test = \"wut\"\n"
     );
     assert_eq!(
-        Table(map! {
+        map! {
              "test" => Integer(2),
              "test2" => Table(map! {
                  "test" => String("wut".to_string())
              })
-        })
+        }
         .to_string(),
         "test = 2\n\
          \n\
@@ -55,12 +55,12 @@ fn table() {
          test = \"wut\"\n"
     );
     assert_eq!(
-        Table(map! {
+        map! {
              "test" => Integer(2),
              "test2" => Array(vec![Table(map! {
                  "test" => String("wut".to_string())
              })])
-        })
+        }
         .to_string(),
         "test = 2\n\
          \n\
@@ -69,34 +69,34 @@ fn table() {
     );
     #[cfg(feature = "preserve_order")]
     assert_eq!(
-        Table(map! {
+        map! {
              "foo.bar" => Integer(2),
              "foo\"bar" => Integer(2)
-        })
+        }
         .to_string(),
         "\"foo.bar\" = 2\n\
          \"foo\\\"bar\" = 2\n"
     );
     assert_eq!(
-        Table(map! {
+        map! {
              "test" => Integer(2),
              "test2" => Array(vec![Table(map! {
                  "test" => Array(vec![Integer(2)])
              })])
-        })
+        }
         .to_string(),
         "test = 2\n\
          \n\
          [[test2]]\n\
          test = [2]\n"
     );
-    let table = Table(map! {
+    let table = map! {
         "test" => Integer(2),
         "test2" => Array(vec![Table(map! {
             "test" => Array(vec![Array(vec![Integer(2), Integer(3)]),
             Array(vec![String("foo".to_string()), String("bar".to_string())])])
         })])
-    });
+    };
     assert_eq!(
         table.to_string(),
         "test = 2\n\
@@ -105,10 +105,10 @@ fn table() {
          test = [[2, 3], [\"foo\", \"bar\"]]\n"
     );
     assert_eq!(
-        Table(map! {
+        map! {
              "test" => Array(vec![Integer(2)]),
              "test2" => Integer(2)
-        })
+        }
         .to_string(),
         "test = [2]\n\
          test2 = 2\n"

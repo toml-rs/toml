@@ -4,8 +4,8 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 
 use toml::map::Map;
+use toml::Table;
 use toml::Value;
-use toml::Value::{Array, Float, Integer, Table};
 
 macro_rules! t {
     ($e:expr) => {
@@ -23,7 +23,7 @@ macro_rules! equivalent {
 
         // In/out of Value is equivalent
         println!("try_from");
-        assert_eq!(t!(Value::try_from(literal.clone())), toml);
+        assert_eq!(t!(Table::try_from(literal.clone())), toml);
         println!("try_into");
         assert_eq!(literal, t!(toml.clone().try_into()));
 
@@ -68,7 +68,7 @@ fn smoke() {
         a: isize,
     }
 
-    equivalent!(Foo { a: 2 }, Table(map! { a: Integer(2) }),);
+    equivalent!(Foo { a: 2 }, map! { a: Value::Integer(2) },);
 }
 
 #[test]
@@ -80,7 +80,7 @@ fn smoke_hyphen() {
 
     equivalent! {
         Foo { a_b: 2 },
-        Table(map! { a_b: Integer(2) }),
+        map! { a_b: Value::Integer(2)},
     }
 
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
@@ -90,10 +90,10 @@ fn smoke_hyphen() {
     }
 
     let mut m = Map::new();
-    m.insert("a-b".to_string(), Integer(2));
+    m.insert("a-b".to_string(), Value::Integer(2));
     equivalent! {
         Foo2 { a_b: 2 },
-        Table(m),
+        m,
     }
 }
 
@@ -111,12 +111,12 @@ fn nested() {
 
     equivalent! {
         Foo { a: 2, b: Bar { a: "test".to_string() } },
-        Table(map! {
-            a: Integer(2),
-            b: Table(map! {
+        map! {
+            a: Value::Integer(2),
+            b: map! {
                 a: Value::String("test".to_string())
-            })
-        }),
+            }
+        },
     }
 }
 
@@ -134,9 +134,9 @@ fn application_decode_error() {
             }
         }
     }
-    let d_good = Integer(5);
+    let d_good = Value::Integer(5);
     let d_bad1 = Value::String("not an isize".to_string());
-    let d_bad2 = Integer(11);
+    let d_bad2 = Value::Integer(11);
 
     assert_eq!(Range10(5), d_good.try_into().unwrap());
 
@@ -155,14 +155,14 @@ fn array() {
 
     equivalent! {
         Foo { a: vec![1, 2, 3, 4] },
-        Table(map! {
-            a: Array(vec![
-                Integer(1),
-                Integer(2),
-                Integer(3),
-                Integer(4)
+        map! {
+            a: Value::Array(vec![
+                Value::Integer(1),
+                Value::Integer(2),
+                Value::Integer(3),
+                Value::Integer(4)
             ])
-        }),
+        },
     };
 }
 
@@ -187,18 +187,18 @@ fn inner_structs_with_options() {
             })),
             b: Bar { a: "bar".to_string(), b: 1.0 },
         },
-        Table(map! {
-            a: Table(map! {
-                b: Table(map! {
+        map! {
+            a: map! {
+                b: map! {
                     a: Value::String("foo".to_string()),
-                    b: Float(4.5)
-                })
-            }),
-            b: Table(map! {
+                    b: Value::Float(4.5)
+                }
+            },
+            b: map! {
                 a: Value::String("bar".to_string()),
-                b: Float(1.0)
-            })
-        }),
+                b: Value::Float(1.0)
+            }
+        },
     }
 }
 
@@ -215,25 +215,25 @@ fn hashmap() {
 
     equivalent! {
         Foo {
-            map: {
-                let mut m = BTreeMap::new();
-                m.insert("bar".to_string(), 4);
-                m.insert("foo".to_string(), 10);
-                m
-            },
             set: {
                 let mut s = HashSet::new();
                 s.insert('a');
                 s
             },
+            map: {
+                let mut m = BTreeMap::new();
+                m.insert("bar".to_string(), 4);
+                m.insert("foo".to_string(), 10);
+                m
+            }
         },
-        Table(map! {
-            map: Table(map! {
-                bar: Integer(4),
-                foo: Integer(10)
-            }),
-            set: Array(vec![Value::String("a".to_string())])
-        }),
+        map! {
+            set: Value::Array(vec![Value::String("a".to_string())]),
+            map: map! {
+                bar: Value::Integer(4),
+                foo: Value::Integer(10)
+            }
+        },
     }
 }
 
@@ -250,12 +250,12 @@ fn table_array() {
 
     equivalent! {
         Foo { a: vec![Bar { a: 1 }, Bar { a: 2 }] },
-        Table(map! {
-            a: Array(vec![
-                Table(map!{ a: Integer(1) }),
-                Table(map!{ a: Integer(2) }),
+        map! {
+            a: Value::Array(vec![
+                Value::Table(map!{ a: Value::Integer(1) }),
+                Value::Table(map!{ a: Value::Integer(2) }),
             ])
-        }),
+        },
     }
 }
 
@@ -269,9 +269,9 @@ fn type_errors() {
 
     error! {
         Foo,
-        Table(map! {
+        map! {
             bar: Value::String("a".to_string())
-        }),
+        },
         r#"TOML parse error at line 1, column 7
   |
 1 | bar = "a"
@@ -289,11 +289,11 @@ invalid type: string "a", expected isize
 
     error! {
         Bar,
-        Table(map! {
-            foo: Table(map! {
+        map! {
+            foo: map! {
                 bar: Value::String("a".to_string())
-            })
-        }),
+            }
+        },
         r#"TOML parse error at line 2, column 7
   |
 2 | bar = "a"
@@ -313,7 +313,7 @@ fn missing_errors() {
 
     error! {
         Foo,
-        Table(map! { }),
+        map! { },
         r#"TOML parse error at line 1, column 1
   |
 1 | 
@@ -344,17 +344,17 @@ fn parse_enum() {
 
     equivalent! {
         Foo { a: E::Bar(10) },
-        Table(map! { a: Integer(10) }),
+        map! { a: Value::Integer(10) },
     }
 
     equivalent! {
         Foo { a: E::Baz("foo".to_string()) },
-        Table(map! { a: Value::String("foo".to_string()) }),
+        map! { a: Value::String("foo".to_string()) },
     }
 
     equivalent! {
         Foo { a: E::Last(Foo2 { test: "test".to_string() }) },
-        Table(map! { a: Table(map! { test: Value::String("test".to_string()) }) }),
+        map! { a: map! { test: Value::String("test".to_string()) } },
     }
 }
 
@@ -374,7 +374,7 @@ fn parse_enum_string() {
 
     equivalent! {
         Foo { a: Sort::Desc },
-        Table(map! { a: Value::String("desc".to_string()) }),
+        map! { a: Value::String("desc".to_string()) },
     }
 }
 
@@ -514,7 +514,7 @@ fn empty_arrays() {
 
     equivalent! {
         Foo { a: vec![] },
-        Table(map! {a: Array(Vec::new())}),
+        map! {a: Value::Array(Vec::new())},
     }
 }
 
@@ -529,12 +529,12 @@ fn empty_arrays2() {
 
     equivalent! {
         Foo { a: None },
-        Table(map! {}),
+        map! {},
     }
 
     equivalent! {
         Foo { a: Some(vec![]) },
-        Table(map! { a: Array(vec![]) }),
+        map! { a: Value::Array(vec![]) },
     }
 }
 
@@ -545,7 +545,7 @@ fn extra_keys() {
         a: isize,
     }
 
-    let toml = Table(map! { a: Integer(2), b: Integer(2) });
+    let toml = map! { a: Value::Integer(2), b: Value::Integer(2) };
     assert!(toml.clone().try_into::<Foo>().is_ok());
     assert!(toml::from_str::<Foo>(&toml.to_string()).is_ok());
 }
@@ -562,7 +562,7 @@ fn newtypes() {
 
     equivalent! {
         A { b: B(2) },
-        Table(map! { b: Integer(2) }),
+        map! { b: Value::Integer(2) },
     }
 }
 
@@ -585,13 +585,13 @@ fn newtypes2() {
 
     equivalent! {
         A { b: B(Some(C { x: 0, y: 1, z: 2 })) },
-        Table(map! {
-            b: Table(map! {
-                x: Integer(0),
-                y: Integer(1),
-                z: Integer(2)
-            })
-        }),
+        map! {
+            b: map! {
+                x: Value::Integer(0),
+                y: Value::Integer(1),
+                z: Value::Integer(2)
+            }
+        },
     }
 }
 
@@ -629,12 +629,12 @@ fn fixed_size_array() {
 
     equivalent! {
         Entity { pos: [1, 2] },
-        Table(map! {
-            pos: Array(vec![
-                Integer(1),
-                Integer(2),
+        map! {
+            pos: Value::Array(vec![
+                Value::Integer(1),
+                Value::Integer(2),
             ])
-        }),
+        },
     }
 }
 
@@ -647,13 +647,13 @@ fn homogeneous_tuple() {
 
     equivalent! {
         Collection { elems: (0, 1, 2) },
-        Table(map! {
-            elems: Array(vec![
-                Integer(0),
-                Integer(1),
-                Integer(2),
+        map! {
+            elems: Value::Array(vec![
+                Value::Integer(0),
+                Value::Integer(1),
+                Value::Integer(2),
             ])
-        }),
+        },
     }
 }
 
@@ -666,18 +666,18 @@ fn homogeneous_tuple_struct() {
         map! {
             obj: Object(vec!["foo".to_string()], vec![], vec!["bar".to_string(), "baz".to_string()])
         },
-        Table(map! {
-            obj: Array(vec![
-                Array(vec![
+        map! {
+            obj: Value::Array(vec![
+                Value::Array(vec![
                     Value::String("foo".to_string()),
                 ]),
-                Array(vec![]),
-                Array(vec![
+                Value::Array(vec![]),
+                Value::Array(vec![
                     Value::String("bar".to_string()),
                     Value::String("baz".to_string()),
                 ]),
             ])
-        }),
+        },
     }
 }
 
