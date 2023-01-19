@@ -107,3 +107,22 @@ fn vec_of_vec_issue_387() {
     let s = toml::to_string_pretty(&g1).unwrap();
     let _g2: Glyph = toml::from_str(&s).unwrap();
 }
+
+#[test]
+fn vec_order_issue_356() {
+    #[derive(Serialize, Deserialize)]
+    struct Outer {
+        v1: Vec<Inner>,
+        v2: Vec<Inner>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct Inner {}
+
+    let outer = Outer {
+        v1: vec![Inner {}],
+        v2: vec![],
+    };
+    let s = toml::to_string_pretty(&outer).unwrap();
+    let _o: Outer = toml::from_str(&s).unwrap();
+}
