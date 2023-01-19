@@ -148,6 +148,8 @@
 pub mod map;
 pub mod value;
 #[doc(no_inline)]
+pub use crate::value::Table;
+#[doc(no_inline)]
 pub use crate::value::Value;
 
 pub mod ser;

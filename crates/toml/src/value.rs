@@ -17,6 +17,29 @@ pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
 
 pub use crate::map::{Entry, Map};
 
+/// Type representing a TOML table, payload of the `Value::Table` variant.
+/// By default it is backed by a BTreeMap, enable the `preserve_order` feature
+/// to use a LinkedHashMap instead.
+pub type Table = Map<String, Value>;
+
+impl fmt::Display for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        crate::ser::to_string(self)
+            .expect("Unable to represent value as string")
+            .fmt(f)
+    }
+}
+
+impl FromStr for Table {
+    type Err = crate::de::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::from_str(s)
+    }
+}
+
+/// Type representing a TOML array, payload of the `Value::Array` variant
+pub type Array = Vec<Value>;
+
 /// Representation of a TOML value.
 #[derive(PartialEq, Clone, Debug)]
 pub enum Value {
@@ -35,14 +58,6 @@ pub enum Value {
     /// Represents a TOML table
     Table(Table),
 }
-
-/// Type representing a TOML array, payload of the `Value::Array` variant
-pub type Array = Vec<Value>;
-
-/// Type representing a TOML table, payload of the `Value::Table` variant.
-/// By default it is backed by a BTreeMap, enable the `preserve_order` feature
-/// to use a LinkedHashMap instead.
-pub type Table = Map<String, Value>;
 
 impl Value {
     /// Convert a `T` into `toml::Value` which is an enum that can represent
