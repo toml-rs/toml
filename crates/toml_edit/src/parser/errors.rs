@@ -47,6 +47,11 @@ impl TomlError {
         }
     }
 
+    /// What went wrong
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
     /// The start/end index into the original document where the error occurred
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
