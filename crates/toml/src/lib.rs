@@ -17,7 +17,7 @@
 //!
 //! ## TOML values
 //!
-//! A value in TOML is represented with the [`Value`] enum in this crate:
+//! A TOML document is represented with the [`Table`] type which maps `String` to the [`Value`] enum:
 //!
 //! ```rust,ignore
 //! pub enum Value {
@@ -31,25 +31,21 @@
 //! }
 //! ```
 //!
-//! TOML is similar to JSON with the notable addition of a [`Datetime`]
-//! type. In general, TOML and JSON are interchangeable in terms of
-//! formats.
-//!
 //! ## Parsing TOML
 //!
-//! The easiest way to parse a TOML document is via the [`Value`] type:
+//! The easiest way to parse a TOML document is via the [`Table`] type:
 //!
 //! ```rust
-//! use toml::Value;
+//! use toml::Table;
 //!
-//! let value = "foo = 'bar'".parse::<Value>().unwrap();
+//! let value = "foo = 'bar'".parse::<Table>().unwrap();
 //!
 //! assert_eq!(value["foo"].as_str(), Some("bar"));
 //! ```
 //!
-//! The [`Value`] type implements a number of convenience methods and
+//! The [`Table`] type implements a number of convenience methods and
 //! traits; the example above uses [`FromStr`] to parse a [`str`] into a
-//! [`Value`].
+//! [`Table`].
 //!
 //! ## Deserialization and Serialization
 //!
@@ -57,16 +53,19 @@
 //! implementations of the `Deserialize`, `Serialize`, `Deserializer`, and
 //! `Serializer` traits. Namely, you'll find:
 //!
+//! * `Deserialize for Table`
+//! * `Serialize for Table`
 //! * `Deserialize for Value`
 //! * `Serialize for Value`
 //! * `Deserialize for Datetime`
 //! * `Serialize for Datetime`
 //! * `Deserializer for de::Deserializer`
 //! * `Serializer for ser::Serializer`
+//! * `Deserializer for Table`
 //! * `Deserializer for Value`
 //!
 //! This means that you can use Serde to deserialize/serialize the
-//! [`Value`] type as well as the [`Datetime`] type in this crate. You can also
+//! [`Table`] type as well as [`Value`] and [`Datetime`] type in this crate. You can also
 //! use the [`Deserializer`], [`Serializer`], or [`Value`] type itself to act as
 //! a deserializer/serializer for arbitrary types.
 //!
