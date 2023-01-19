@@ -11,28 +11,28 @@ use super::{Error, ErrorKind};
 /// which is passed in when creating the serializer itself.
 #[derive(Default)]
 #[non_exhaustive]
-pub struct ItemSerializer {}
+pub struct ValueSerializer {}
 
-impl ItemSerializer {
+impl ValueSerializer {
     /// Creates a new serializer generate a TOML document.
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl serde::ser::Serializer for ItemSerializer {
-    type Ok = crate::Item;
+impl serde::ser::Serializer for ValueSerializer {
+    type Ok = crate::Value;
     type Error = Error;
-    type SerializeSeq = super::SerializeItemArray;
-    type SerializeTuple = super::SerializeItemArray;
-    type SerializeTupleStruct = super::SerializeItemArray;
-    type SerializeTupleVariant = super::SerializeItemArray;
-    type SerializeMap = super::SerializeItemTable;
-    type SerializeStruct = super::SerializeItemTable;
+    type SerializeSeq = super::SerializeValueArray;
+    type SerializeTuple = super::SerializeValueArray;
+    type SerializeTupleStruct = super::SerializeValueArray;
+    type SerializeTupleVariant = super::SerializeValueArray;
+    type SerializeMap = super::SerializeValueTable;
+    type SerializeStruct = super::SerializeValueTable;
     type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        Ok(crate::Item::Value(v.into()))
+        Ok(v.into())
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
@@ -48,7 +48,7 @@ impl serde::ser::Serializer for ItemSerializer {
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        Ok(crate::Item::Value(v.into()))
+        Ok(v.into())
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
@@ -72,7 +72,7 @@ impl serde::ser::Serializer for ItemSerializer {
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        Ok(crate::Item::Value(v.into()))
+        Ok(v.into())
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
@@ -81,7 +81,7 @@ impl serde::ser::Serializer for ItemSerializer {
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        Ok(crate::Item::Value(v.into()))
+        Ok(v.into())
     }
 
     fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
@@ -143,8 +143,8 @@ impl serde::ser::Serializer for ItemSerializer {
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         let serializer = match len {
-            Some(len) => super::SerializeItemArray::with_capacity(len),
-            None => super::SerializeItemArray::new(),
+            Some(len) => super::SerializeValueArray::with_capacity(len),
+            None => super::SerializeValueArray::new(),
         };
         Ok(serializer)
     }
@@ -173,8 +173,8 @@ impl serde::ser::Serializer for ItemSerializer {
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         let serializer = match len {
-            Some(len) => super::SerializeItemTable::with_capacity(len),
-            None => super::SerializeItemTable::new(),
+            Some(len) => super::SerializeValueTable::with_capacity(len),
+            None => super::SerializeValueTable::new(),
         };
         Ok(serializer)
     }

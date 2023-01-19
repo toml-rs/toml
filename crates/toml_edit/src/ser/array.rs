@@ -1,11 +1,11 @@
 use super::Error;
 
 #[doc(hidden)]
-pub struct SerializeItemArray {
+pub struct SerializeValueArray {
     values: Vec<crate::Item>,
 }
 
-impl SerializeItemArray {
+impl SerializeValueArray {
     pub(crate) fn new() -> Self {
         Self { values: Vec::new() }
     }
@@ -17,28 +17,26 @@ impl SerializeItemArray {
     }
 }
 
-impl serde::ser::SerializeSeq for SerializeItemArray {
-    type Ok = crate::Item;
+impl serde::ser::SerializeSeq for SerializeValueArray {
+    type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize,
     {
-        let value = value.serialize(super::ItemSerializer {})?;
-        self.values.push(value);
+        let value = value.serialize(super::ValueSerializer {})?;
+        self.values.push(crate::Item::Value(value));
         Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(crate::Item::Value(crate::Value::Array(
-            crate::Array::with_vec(self.values),
-        )))
+        Ok(crate::Value::Array(crate::Array::with_vec(self.values)))
     }
 }
 
-impl serde::ser::SerializeTuple for SerializeItemArray {
-    type Ok = crate::Item;
+impl serde::ser::SerializeTuple for SerializeValueArray {
+    type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
@@ -53,8 +51,8 @@ impl serde::ser::SerializeTuple for SerializeItemArray {
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeItemArray {
-    type Ok = crate::Item;
+impl serde::ser::SerializeTupleVariant for SerializeValueArray {
+    type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
@@ -69,8 +67,8 @@ impl serde::ser::SerializeTupleVariant for SerializeItemArray {
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeItemArray {
-    type Ok = crate::Item;
+impl serde::ser::SerializeTupleStruct for SerializeValueArray {
+    type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>

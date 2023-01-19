@@ -52,8 +52,7 @@ impl Value {
     where
         T: serde::ser::Serialize,
     {
-        let item = value.serialize(super::Serializer::new())?;
-        let value = item.into_value().expect("`to_item` only generates values");
+        let value = value.serialize(super::ValueSerializer::new())?;
         let value = value.into_deserializer();
         let target = Self::deserialize(value)?;
         Ok(target)
@@ -72,8 +71,7 @@ impl Value {
     where
         T: serde::de::DeserializeOwned,
     {
-        let item = (&self).serialize(super::Serializer::new())?;
-        let value = item.into_value().expect("`to_item` only generates values");
+        let value = (&self).serialize(super::ValueSerializer::new())?;
         let value = value.into_deserializer();
         let target = T::deserialize(value)?;
         Ok(target)
@@ -245,7 +243,7 @@ impl std::fmt::Display for Value {
             | Value::Boolean(..)
             | Value::Datetime(..)
             | Value::Array(..) => self
-                .serialize(super::Serializer::new())
+                .serialize(super::ValueSerializer::new())
                 .map_err(|_| std::fmt::Error)?
                 .fmt(f),
             Value::Table(_) => crate::ser::to_string_pretty(self)
