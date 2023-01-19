@@ -1028,7 +1028,7 @@ fn table_type_enum_regression_issue_388() {
 }
 
 #[test]
-fn datetime_issue_333() {
+fn serialize_datetime_issue_333() {
     use toml::{to_string, value::Date, value::Datetime};
 
     #[derive(Serialize)]
@@ -1048,8 +1048,5 @@ fn datetime_issue_333() {
         },
     })
     .unwrap();
-    assert_eq!(
-        toml,
-        "[date]\n\"$__toml_private_datetime\" = \"2022-01-01\"\n"
-    );
+    assert_eq!(toml, "date = 2022-01-01\n");
 }

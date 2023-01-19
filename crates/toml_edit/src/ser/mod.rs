@@ -24,6 +24,8 @@ pub enum Error {
     UnsupportedNone,
     /// Key was not convertable to `String` for serializing to TOML
     KeyNotString,
+    /// A serialized date was invalid
+    DateInvalid,
     /// Other serialization error
     Custom(String),
 }
@@ -53,6 +55,7 @@ impl std::fmt::Display for Error {
             Self::UnsupportedType(None) => write!(formatter, "unsupported rust type"),
             Self::UnsupportedNone => "unsupported None value".fmt(formatter),
             Self::KeyNotString => "map key was not a string".fmt(formatter),
+            Self::DateInvalid => "a serialized date was invalid".fmt(formatter),
             Self::Custom(s) => s.fmt(formatter),
         }
     }
