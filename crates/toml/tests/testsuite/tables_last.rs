@@ -126,3 +126,37 @@ fn vec_order_issue_356() {
     let s = toml::to_string_pretty(&outer).unwrap();
     let _o: Outer = toml::from_str(&s).unwrap();
 }
+
+#[test]
+fn values_before_tables_issue_403() {
+    #[derive(Serialize, Deserialize)]
+    struct A {
+        a: String,
+        b: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct B {
+        a: String,
+        b: Vec<String>,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct C {
+        a: A,
+        b: Vec<String>,
+        c: Vec<B>,
+    }
+    toml::to_string(&C {
+        a: A {
+            a: "aa".to_string(),
+            b: "ab".to_string(),
+        },
+        b: vec!["b".to_string()],
+        c: vec![B {
+            a: "cba".to_string(),
+            b: vec!["cbb".to_string()],
+        }],
+    })
+    .unwrap();
+}
