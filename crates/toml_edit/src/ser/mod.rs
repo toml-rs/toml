@@ -16,8 +16,16 @@ use crate::visit_mut::VisitMut;
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Error {
-    kind: ErrorKind,
+#[non_exhaustive]
+pub enum Error {
+    /// Type could not be serialized to TOML
+    UnsupportedType(Option<&'static str>),
+    /// `None` could not be serialized to TOML
+    UnsupportedNone,
+    /// Key was not convertable to `String` for serializing to TOML
+    KeyNotString,
+    /// Other serialization error
+    Custom(String),
 }
 
 impl Error {
@@ -25,9 +33,7 @@ impl Error {
     where
         T: std::fmt::Display,
     {
-        Error {
-            kind: ErrorKind::Custom(msg.to_string()),
-        }
+        Error::Custom(msg.to_string())
     }
 }
 
@@ -42,7 +48,13 @@ impl serde::ser::Error for Error {
 
 impl std::fmt::Display for Error {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.kind.fmt(formatter)
+        match self {
+            Self::UnsupportedType(Some(t)) => write!(formatter, "unsupported {t} type"),
+            Self::UnsupportedType(None) => write!(formatter, "unsupported rust type"),
+            Self::UnsupportedNone => "unsupported None value".fmt(formatter),
+            Self::KeyNotString => "map key was not a string".fmt(formatter),
+            Self::Custom(s) => s.fmt(formatter),
+        }
     }
 }
 
@@ -59,32 +71,6 @@ impl From<Error> for crate::TomlError {
 }
 
 impl std::error::Error for Error {}
-
-impl From<ErrorKind> for Error {
-    fn from(kind: ErrorKind) -> Self {
-        Self { kind }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum ErrorKind {
-    UnsupportedType(Option<&'static str>),
-    UnsupportedNone,
-    KeyNotString,
-    Custom(String),
-}
-
-impl std::fmt::Display for ErrorKind {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            ErrorKind::UnsupportedType(Some(t)) => write!(formatter, "unsupported {t} type"),
-            ErrorKind::UnsupportedType(None) => write!(formatter, "unsupported rust type"),
-            ErrorKind::UnsupportedNone => "unsupported None value".fmt(formatter),
-            ErrorKind::KeyNotString => "map key was not a string".fmt(formatter),
-            ErrorKind::Custom(s) => s.fmt(formatter),
-        }
-    }
-}
 
 /// Serialize the given data structure as a TOML byte vector.
 ///
@@ -165,7 +151,7 @@ where
     let item = crate::Item::Value(value);
     let root = item
         .into_table()
-        .map_err(|_| ErrorKind::UnsupportedType(None))?;
+        .map_err(|_| Error::UnsupportedType(None))?;
     Ok(root.into())
 }
 

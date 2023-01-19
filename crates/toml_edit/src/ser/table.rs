@@ -1,4 +1,4 @@
-use super::{Error, ErrorKind, KeySerializer};
+use super::{Error, KeySerializer};
 
 #[doc(hidden)]
 pub struct SerializeValueTable {
@@ -114,7 +114,7 @@ impl serde::ser::SerializeMap for SerializeKeyValuePairs {
                 self.items.insert(key, kv);
             }
             Err(e) => {
-                if e.kind != ErrorKind::UnsupportedNone {
+                if e != Error::UnsupportedNone {
                     return Err(e);
                 }
             }
@@ -149,7 +149,7 @@ impl serde::ser::SerializeStruct for SerializeKeyValuePairs {
                 self.items.insert(crate::InternalString::from(key), kv);
             }
             Err(e) => {
-                if e.kind != ErrorKind::UnsupportedNone {
+                if e != Error::UnsupportedNone {
                     return Err(e);
                 }
             }

@@ -1,4 +1,4 @@
-use super::{Error, ErrorKind};
+use super::Error;
 
 /// Serialization implementation for TOML.
 ///
@@ -90,7 +90,7 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Err(ErrorKind::UnsupportedNone.into())
+        Err(Error::UnsupportedNone)
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
@@ -101,11 +101,11 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        Err(ErrorKind::UnsupportedType(Some("unit")).into())
+        Err(Error::UnsupportedType(Some("unit")))
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Err(ErrorKind::UnsupportedType(Some(name)).into())
+        Err(Error::UnsupportedType(Some(name)))
     }
 
     fn serialize_unit_variant(
@@ -138,7 +138,7 @@ impl serde::ser::Serializer for ValueSerializer {
     where
         T: serde::ser::Serialize,
     {
-        Err(ErrorKind::UnsupportedType(Some(name)).into())
+        Err(Error::UnsupportedType(Some(name)))
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
@@ -194,6 +194,6 @@ impl serde::ser::Serializer for ValueSerializer {
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(ErrorKind::UnsupportedType(Some(name)).into())
+        Err(Error::UnsupportedType(Some(name)))
     }
 }
