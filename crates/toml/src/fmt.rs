@@ -1,14 +1,6 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub(crate) struct DocumentFormatter {
     pub(crate) multiline_array: bool,
-}
-
-impl Default for DocumentFormatter {
-    fn default() -> Self {
-        Self {
-            multiline_array: false,
-        }
-    }
 }
 
 impl toml_edit::visit_mut::VisitMut for DocumentFormatter {

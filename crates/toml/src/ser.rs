@@ -570,8 +570,8 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
     }
 }
 
-fn write_document<'d>(
-    dst: &'d mut String,
+fn write_document(
+    dst: &mut String,
     mut settings: DocumentFormatter,
     value: Result<toml_edit::Value, toml_edit::ser::Error>,
 ) -> Result<(), Error> {
@@ -1008,8 +1008,8 @@ impl<'d> serde::ser::SerializeStruct for SerializeValueTable<'d> {
     }
 }
 
-fn write_value<'d>(
-    dst: &'d mut String,
+fn write_value(
+    dst: &mut String,
     value: Result<toml_edit::Value, toml_edit::ser::Error>,
 ) -> Result<(), Error> {
     use std::fmt::Write;
