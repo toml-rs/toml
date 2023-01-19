@@ -918,11 +918,6 @@ struct SerializeVec {
     vec: Vec<Value>,
 }
 
-struct SerializeMap {
-    map: Map<String, Value>,
-    next_key: Option<String>,
-}
-
 impl ser::SerializeSeq for SerializeVec {
     type Ok = Value;
     type Error = crate::ser::Error;
@@ -986,6 +981,11 @@ impl ser::SerializeTupleVariant for SerializeVec {
     fn end(self) -> Result<Value, crate::ser::Error> {
         ser::SerializeSeq::end(self)
     }
+}
+
+struct SerializeMap {
+    map: Map<String, Value>,
+    next_key: Option<String>,
 }
 
 impl ser::SerializeMap for SerializeMap {
