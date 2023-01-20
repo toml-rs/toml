@@ -1026,3 +1026,30 @@ fn table_type_enum_regression_issue_388() {
         "#;
     assert!(toml::from_str::<DataFile>(inline_table).is_ok());
 }
+
+#[test]
+fn datetime_issue_333() {
+    use toml::{to_string, value::Date, value::Datetime};
+
+    #[derive(Serialize)]
+    struct Struct {
+        date: Datetime,
+    }
+
+    let toml = to_string(&Struct {
+        date: Datetime {
+            date: Some(Date {
+                year: 2022,
+                month: 1,
+                day: 1,
+            }),
+            time: None,
+            offset: None,
+        },
+    })
+    .unwrap();
+    assert_eq!(
+        toml,
+        "[date]\n\"$__toml_private_datetime\" = \"2022-01-01\"\n"
+    );
+}
