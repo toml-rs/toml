@@ -7,6 +7,44 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+Breaking changes
+- Removed `toml_edit::de::from_item` in favor of `toml_edit::de::ValueDeserializer`
+- Removed `toml_edit::ser::to_item` in favor of `toml_edit::ser::ValueSerializer`
+- Renamed `toml_edit::ser::Serializer` in favor of `toml_edit::ser::ValueSerializer`
+- Make `Key` only comparable by the value, not repr or decor
+- More consistently accept `InternalString`
+- `Repr`, `Decor`, and `Formatted` are no longer guarenteed to hold strings for easy comparison / evaluatoon
+- `Key`, `KeyMut`, `Formatted` no longer have `to_repr`, replaced by `display_repr`, see also `as_repr`, `default_repr`
+
+Deprecations
+- `toml_edit::easy` in favor of the `toml` crate that is now built on `toml_edit`
+- `toml_edit::TomlError::line_col` in favor of `span`
+- `toml_edit::de::Error::line_col` in favor of `span`
+
+### Performance
+
+- *(de)*: Remove allocations from format preserving
+
+### Features
+
+- *(edit)* Provide edit access to `InlineTable`s preamble
+- *(de)* Allow deserializing to `serde_spanned::Spanned`
+- *(de)* Track spans for errors
+- *(ser)* `toml_edit::ser::Error` exposes error cases as variants
+- *(ser)* Report the name of unsupported types on error
+- `toml_edit::TomlError::message` (and `toml_edit::de::Error`) for allowing custom error formatting
+
+### Fixes
+
+- *(parser)* Allow standard tables to append to dotted keys
+- *(parser)* Reject floating point overflow
+- *(edit)* Reduce noise in the `Debug` impls
+- *(error)* Consistently include a trailing newline
+- *(error)* Case in errors consistent
+- *(ser)* Correctly serialize `toml_datetime::Datetime`
+
 ## [0.17.1] - 2023-01-03
 
 ### Fixes
