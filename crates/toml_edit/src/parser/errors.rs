@@ -11,6 +11,7 @@ use crate::Key;
 pub struct TomlError {
     message: String,
     original: Option<String>,
+    keys: Vec<String>,
     span: Option<std::ops::Range<usize>>,
 }
 
@@ -34,6 +35,7 @@ impl TomlError {
                 String::from_utf8(original.into_output().to_owned())
                     .expect("original document was utf8"),
             ),
+            keys: Vec::new(),
             span: Some(span),
         }
     }
@@ -43,8 +45,14 @@ impl TomlError {
         Self {
             message,
             original: None,
+            keys: Vec::new(),
             span,
         }
+    }
+
+    #[cfg(feature = "serde")]
+    pub(crate) fn add_key(&mut self, key: String) {
+        self.keys.insert(0, key);
     }
 
     /// What went wrong
@@ -94,7 +102,10 @@ impl TomlError {
 /// While parsing a Date-Time
 impl Display for TomlError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let mut context = false;
         if let (Some(original), Some(span)) = (&self.original, self.span()) {
+            context = true;
+
             let (line, column) = translate_position(original.as_bytes(), span.start);
             let line_num = line + 1;
             let col_num = column + 1;
@@ -133,6 +144,9 @@ impl Display for TomlError {
             writeln!(f)?;
         }
         writeln!(f, "{}", self.message)?;
+        if !context && !self.keys.is_empty() {
+            writeln!(f, "in `{}`", self.keys.join("."))?;
+        }
 
         Ok(())
     }

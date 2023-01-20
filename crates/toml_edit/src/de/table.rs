@@ -118,7 +118,7 @@ impl crate::InlineTable {
 pub(crate) struct TableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
     span: Option<std::ops::Range<usize>>,
-    value: Option<crate::Item>,
+    value: Option<(crate::InternalString, crate::Item)>,
 }
 
 impl TableMapAccess {
@@ -149,7 +149,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
                         }
                         e
                     });
-                self.value = Some(v.value);
+                self.value = Some((v.key.into(), v.value));
                 ret
             }
             None => Ok(None),
@@ -161,13 +161,14 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
         V: serde::de::DeserializeSeed<'de>,
     {
         match self.value.take() {
-            Some(v) => {
+            Some((k, v)) => {
                 let span = v.span();
                 seed.deserialize(crate::de::ValueDeserializer::new(v))
                     .map_err(|mut e: Self::Error| {
                         if e.span().is_none() {
                             e.set_span(span);
                         }
+                        e.add_key(k.as_str().to_owned());
                         e
                     })
             }
@@ -196,13 +197,17 @@ impl<'de> serde::de::EnumAccess<'de> for TableMapAccess {
             }
         };
 
-        seed.deserialize(key.into_deserializer())
+        let val = seed
+            .deserialize(key.into_deserializer())
             .map_err(|mut e: Self::Error| {
                 if e.span().is_none() {
                     e.set_span(value.key.span());
                 }
                 e
-            })
-            .map(|val| (val, super::TableEnumDeserializer::new(value.value)))
+            })?;
+
+        let variant = super::TableEnumDeserializer::new(value.value);
+
+        Ok((val, variant))
     }
 }
