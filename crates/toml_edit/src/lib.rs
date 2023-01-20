@@ -8,9 +8,7 @@
 //! documents, while preserving comments, spaces *and
 //! relative order* or items.
 //!
-//! It is primarily tailored to the needs of [cargo-edit](https://github.com/killercup/cargo-edit/).
-//!
-//! If you also need the ease of a more traditional API, see the [`easy`] module.
+//! If you also need the ease of a more traditional API, see the [`toml`] crate.
 //!
 //! # Example
 //!
@@ -62,6 +60,7 @@
 //! * Scattered array of tables (tables are reordered by default, see [test]).
 //! * Order of dotted keys, see [issue](https://github.com/ordian/toml_edit/issues/163).
 //!
+//! [toml]: https://docs.rs/toml/latest/toml/
 //! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
 
 mod array;

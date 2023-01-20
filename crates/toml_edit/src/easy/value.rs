@@ -14,7 +14,8 @@ pub use crate::easy::datetime::*;
 use crate::easy::map::Entry;
 pub use crate::easy::map::Map;
 
-/// Representation of a TOML value.
+#[doc(hidden)]
+#[deprecated(since = "0.18.0", note = "Replaced with `toml::Value`")]
 #[derive(PartialEq, Clone, Debug, serde::Serialize)]
 #[serde(untagged)]
 pub enum Value {
@@ -34,12 +35,12 @@ pub enum Value {
     Table(Table),
 }
 
-/// Type representing a TOML array, payload of the `Value::Array` variant
+#[doc(hidden)]
+#[deprecated(since = "0.18.0", note = "Replaced with `toml::value::Array`")]
 pub type Array = Vec<Value>;
 
-/// Type representing a TOML table, payload of the `Value::Table` variant.
-/// By default it is backed by a BTreeMap, enable the `preserve_order` feature
-/// to use a LinkedHashMap instead.
+#[doc(hidden)]
+#[deprecated(since = "0.18.0", note = "Replaced with `toml::Table`")]
 pub type Table = Map<String, Value>;
 
 impl Value {

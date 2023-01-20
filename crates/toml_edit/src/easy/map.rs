@@ -19,7 +19,8 @@ use serde::{de, ser};
 
 use crate::easy::value::Value;
 
-/// Represents a TOML key/value type.
+#[doc(hidden)]
+#[deprecated(since = "0.18.0", note = "Replaced with `toml::map::Map`")]
 pub struct Map<K, V> {
     map: MapImpl<K, V>,
 }
