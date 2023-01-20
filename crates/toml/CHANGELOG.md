@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.11] - 2023-01-20
+
 ### Compatibility
 
 - Deprecated  `Deserializer::set_require_newline_after_table`
@@ -28,7 +30,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml_edit/compare/toml-v0.5.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml_edit/compare/toml-v0.5.11...HEAD
+[0.5.11]: https://github.com/toml-rs/toml_edit/compare/toml-v0.5.10...toml-v0.5.11
 [0.5.10]: https://github.com/toml-rs/toml_edit/compare/70caf40...toml-v0.5.10
 [0.5.9]: https://github.com/toml-rs/toml_edit/compare/94b319f...70caf40
 [0.5.8]: https://github.com/toml-rs/toml_edit/compare/9a94610...94b319f
