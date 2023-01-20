@@ -27,8 +27,8 @@ impl serde::ser::Serializer for ValueSerializer {
     type SerializeTuple = super::SerializeValueArray;
     type SerializeTupleStruct = super::SerializeValueArray;
     type SerializeTupleVariant = super::SerializeValueArray;
-    type SerializeMap = super::SerializeValueTable;
-    type SerializeStruct = super::SerializeValueTable;
+    type SerializeMap = super::SerializeMap;
+    type SerializeStruct = super::SerializeMap;
     type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -173,18 +173,22 @@ impl serde::ser::Serializer for ValueSerializer {
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         let serializer = match len {
-            Some(len) => super::SerializeValueTable::with_capacity(len),
-            None => super::SerializeValueTable::new(),
+            Some(len) => super::SerializeMap::table_with_capacity(len),
+            None => super::SerializeMap::table(),
         };
         Ok(serializer)
     }
 
     fn serialize_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        self.serialize_map(Some(len))
+        if name == toml_datetime::__unstable::NAME {
+            Ok(super::SerializeMap::datetime())
+        } else {
+            self.serialize_map(Some(len))
+        }
     }
 
     fn serialize_struct_variant(
