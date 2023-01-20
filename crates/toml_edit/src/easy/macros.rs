@@ -2,30 +2,8 @@ pub use serde::de::{Deserialize, IntoDeserializer};
 
 use crate::easy::value::{Array, Table, Value};
 
-/// Construct a [`toml_edit::easy::Value`] from TOML syntax.
-///
-/// [`toml_edit::easy::Value`]: value/enum.Value.html
-///
-/// ```rust
-/// let cargo_toml = toml_edit::easy::toml! {
-///     [package]
-///     name = "toml"
-///     version = "0.4.5"
-///     authors = ["Alex Crichton <alex@alexcrichton.com>"]
-///
-///     [badges]
-///     travis-ci = { repository = "alexcrichton/toml-rs" }
-///
-///     [dependencies]
-///     serde = "1.0"
-///
-///     [dev-dependencies]
-///     serde_derive = "1.0"
-///     serde_json = "1.0"
-/// };
-///
-/// println!("{:#?}", cargo_toml);
-/// ```
+#[doc(hidden)]
+#[deprecated(since = "0.18.0", note = "Replaced with `toml::toml!`")]
 #[macro_export]
 macro_rules! toml {
     ($($toml:tt)+) => {{
