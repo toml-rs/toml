@@ -52,7 +52,7 @@ nom8 = "0.2.0"
 itertools = "0.10.5"
 serde = { version = "1.0.145", features = ["derive"], optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
-toml_datetime = { version = "0.5.0", path = "../toml_datetime" }
+toml_datetime = { version = "0.5.1", path = "../toml_datetime" }
 serde_spanned = { version = "0.6.0", path = "../serde_spanned", features = ["serde"], optional = true }
 
 [dev-dependencies]
