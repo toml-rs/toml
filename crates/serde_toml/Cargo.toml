@@ -1,0 +1,22 @@
+[package]
+name = "serde_toml"
+version = "0.0.1"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["encoding", "toml"]
+categories = ["encoding", "parser-implementations", "parsing", "config"]
+description = "See instead `toml`"
+repository = "https://github.com/toml-rs/toml"
+homepage = "https://github.com/toml-rs/toml"
+documentation = "https://docs.rs/toml"
+edition = "2021"
+rust-version = "1.60.0"  # MSRV
+include = [
+  "src/**/*",
+  "Cargo.toml",
+  "LICENSE*",
+  "README.md",
+  "examples/**/*",
+  "benches/**/*",
+  "tests/**/*"
+]
