@@ -1,8 +1,6 @@
-use std::str::FromStr;
-
 macro_rules! bad {
     ($toml:expr, $msg:expr) => {
-        match $toml.parse::<toml::Value>() {
+        match $toml.parse::<toml_edit::Document>() {
             Ok(s) => panic!("parsed to: {:#?}", s),
             Err(e) => snapbox::assert_eq($msg, e.to_string()),
         }
@@ -13,8 +11,11 @@ macro_rules! bad {
 fn times() {
     fn dogood(s: &str, serialized: &str) {
         let to_parse = format!("foo = {}", s);
-        let value = toml::Value::from_str(&to_parse).unwrap();
-        assert_eq!(value["foo"].as_datetime().unwrap().to_string(), serialized);
+        let document = to_parse.parse::<toml_edit::Document>().unwrap();
+        assert_eq!(
+            document["foo"].as_datetime().unwrap().to_string(),
+            serialized
+        );
     }
     fn good(s: &str) {
         dogood(s, s);

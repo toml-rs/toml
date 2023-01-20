@@ -12,6 +12,7 @@ toml_edit = { path = "../toml_edit" }
 toml_old = { version = "0.5.10", package = "toml" }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
+lexopt = "0.3.0"
 
 [[bench]]
 name = "cargo"

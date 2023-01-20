@@ -376,6 +376,26 @@ fn parse_enum_string() {
     }
 }
 
+#[test]
+#[cfg(feature = "preserve_order")]
+fn map_key_unit_variants() {
+    #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone, PartialOrd, Ord)]
+    enum Sort {
+        #[serde(rename = "ascending")]
+        Asc,
+        Desc,
+    }
+
+    let mut map = BTreeMap::new();
+    map.insert(Sort::Asc, 1);
+    map.insert(Sort::Desc, 2);
+
+    equivalent! {
+        map,
+        map! { ascending: Value::Integer(1), Desc: Value::Integer(2) },
+    }
+}
+
 // #[test]
 // fn unused_fields() {
 //     #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -692,6 +712,295 @@ fn json_interoperability() {
     "#,
     )
     .unwrap();
+}
+
+#[test]
+fn error_includes_key() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let res: Result<Package, _> = toml::from_str(
+        r#"
+[package]
+name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile.dev]
+debug = 'a'
+"#,
+    );
+    let err = res.unwrap_err();
+    snapbox::assert_eq(
+        r#"TOML parse error at line 8, column 9
+  |
+8 | debug = 'a'
+  |         ^^^
+expected a boolean or an integer
+"#,
+        err.to_string(),
+    );
+
+    let res: Result<Package, _> = toml::from_str(
+        r#"
+[package]
+name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile]
+dev = { debug = 'a' }
+"#,
+    );
+    let err = res.unwrap_err();
+    snapbox::assert_eq(
+        r#"TOML parse error at line 8, column 17
+  |
+8 | dev = { debug = 'a' }
+  |                 ^^^
+expected a boolean or an integer
+"#,
+        err.to_string(),
+    );
+}
+
+#[test]
+fn newline_key_value() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+    }
+
+    let package = Package {
+        name: "foo".to_owned(),
+    };
+    let raw = toml::to_string_pretty(&package).unwrap();
+    snapbox::assert_eq(
+        r#"name = "foo"
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn newline_table() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Manifest {
+        package: Package,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+    }
+
+    let package = Manifest {
+        package: Package {
+            name: "foo".to_owned(),
+        },
+    };
+    let raw = toml::to_string_pretty(&package).unwrap();
+    snapbox::assert_eq(
+        r#"[package]
+name = "foo"
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn newline_dotted_table() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Manifest {
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let package = Manifest {
+        profile: Profile {
+            dev: Dev {
+                debug: U32OrBool::Bool(true),
+            },
+        },
+    };
+    let raw = toml::to_string_pretty(&package).unwrap();
+    snapbox::assert_eq(
+        r#"[profile.dev]
+debug = true
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn newline_mixed_tables() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Manifest {
+        cargo_features: Vec<String>,
+        package: Package,
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let package = Manifest {
+        cargo_features: vec![],
+        package: Package {
+            name: "foo".to_owned(),
+            version: "1.0.0".to_owned(),
+            authors: vec![],
+        },
+        profile: Profile {
+            dev: Dev {
+                debug: U32OrBool::Bool(true),
+            },
+        },
+    };
+    let raw = toml::to_string_pretty(&package).unwrap();
+    snapbox::assert_eq(
+        r#"cargo_features = []
+
+[package]
+name = "foo"
+version = "1.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+"#,
+        raw,
+    );
+}
+
+#[test]
+fn integer_min() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: i64,
+    }
+
+    equivalent! {
+        Foo { a_b: i64::MIN },
+        map! { a_b: Value::Integer(i64::MIN) },
+    }
+}
+
+#[test]
+fn integer_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: i64,
+    }
+
+    equivalent! {
+        Foo { a_b: i64::MAX },
+        map! { a_b: Value::Integer(i64::MAX) },
+    }
+}
+
+#[test]
+fn float_min() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: f64,
+    }
+
+    equivalent! {
+        Foo { a_b: f64::MIN },
+        map! { a_b: Value::Float(f64::MIN) },
+    }
+}
+
+#[test]
+fn float_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: f64,
+    }
+
+    equivalent! {
+        Foo { a_b: f64::MAX },
+        map! { a_b: Value::Float(f64::MAX) },
+    }
+}
+
+#[test]
+fn unsupported_root_type() {
+    let native = "value";
+    let err = toml::to_string_pretty(&native).unwrap_err();
+    snapbox::assert_eq("unsupported rust type", err.to_string());
+}
+
+#[test]
+fn unsupported_nested_type() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Foo {
+        unused: (),
+    }
+
+    let native = Foo { unused: () };
+    let err = toml::to_string_pretty(&native).unwrap_err();
+    snapbox::assert_eq("unsupported unit type", err.to_string());
 }
 
 #[test]

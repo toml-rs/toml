@@ -64,7 +64,7 @@ single = "this is a single line but has '' cuz it's tricky"
 single_tricky = "single line with ''' in it"
 tabs = """
 this is pretty standard
-\texcept for some   \btabs right here
+\texcept for some   \ttabs right here
 """
 text = """
 this is the first line.
@@ -129,4 +129,56 @@ fn table_array() {
     let mut result = String::with_capacity(128);
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
     assert_eq(toml, &result);
+}
+
+const PRETTY_EMPTY_TABLE: &str = r#"[example]
+"#;
+
+#[test]
+fn pretty_empty_table() {
+    let toml = PRETTY_EMPTY_TABLE;
+    let value: toml::Value = toml::from_str(toml).unwrap();
+    let mut result = String::with_capacity(128);
+    value.serialize(toml::Serializer::new(&mut result)).unwrap();
+    assert_eq(toml, &result);
+}
+
+#[test]
+fn error_includes_key() {
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+        profile: Profile,
+    }
+
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let raw = r#"name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+"#;
+
+    let pkg: Package = toml::from_str(raw).unwrap();
+    let pretty = toml::to_string_pretty(&pkg).unwrap();
+    assert_eq(raw, pretty);
 }
