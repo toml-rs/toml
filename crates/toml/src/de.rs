@@ -53,6 +53,10 @@ impl Error {
         Self { inner }
     }
 
+    pub(crate) fn add_key(&mut self, key: String) {
+        self.inner.add_key(key)
+    }
+
     /// What went wrong
     pub fn message(&self) -> &str {
         self.inner.message()

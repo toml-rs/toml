@@ -276,7 +276,7 @@ fn type_errors() {
   |       ^^^
 invalid type: string "a", expected isize
 "#,
-        "invalid type: string \"a\", expected isize\n"
+        "invalid type: string \"a\", expected isize\nin `bar`\n"
     }
 
     #[derive(Deserialize)]
@@ -298,7 +298,7 @@ invalid type: string "a", expected isize
   |       ^^^
 invalid type: string "a", expected isize
 "#,
-        "invalid type: string \"a\", expected isize\n"
+        "invalid type: string \"a\", expected isize\nin `foo.bar`\n"
     }
 }
 

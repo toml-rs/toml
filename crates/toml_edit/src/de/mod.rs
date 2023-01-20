@@ -38,6 +38,11 @@ impl Error {
         }
     }
 
+    /// Add key while unwinding
+    pub fn add_key(&mut self, key: String) {
+        self.inner.add_key(key)
+    }
+
     /// What went wrong
     pub fn message(&self) -> &str {
         self.inner.message()
