@@ -34,14 +34,20 @@ where
         K: serde::de::DeserializeSeed<'de>,
     {
         if self.start.is_some() {
-            seed.deserialize(BorrowedStrDeserializer::new(serde_spanned::START_FIELD))
-                .map(Some)
+            seed.deserialize(BorrowedStrDeserializer::new(
+                serde_spanned::__unstable::START_FIELD,
+            ))
+            .map(Some)
         } else if self.end.is_some() {
-            seed.deserialize(BorrowedStrDeserializer::new(serde_spanned::END_FIELD))
-                .map(Some)
+            seed.deserialize(BorrowedStrDeserializer::new(
+                serde_spanned::__unstable::END_FIELD,
+            ))
+            .map(Some)
         } else if self.value.is_some() {
-            seed.deserialize(BorrowedStrDeserializer::new(serde_spanned::VALUE_FIELD))
-                .map(Some)
+            seed.deserialize(BorrowedStrDeserializer::new(
+                serde_spanned::__unstable::VALUE_FIELD,
+            ))
+            .map(Some)
         } else {
             Ok(None)
         }
@@ -61,14 +67,4 @@ where
             panic!("next_value_seed called before next_key_seed")
         }
     }
-}
-
-pub(crate) fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
-    name == serde_spanned::NAME
-        && fields
-            == [
-                serde_spanned::START_FIELD,
-                serde_spanned::END_FIELD,
-                serde_spanned::VALUE_FIELD,
-            ]
 }
