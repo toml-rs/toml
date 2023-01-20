@@ -16,7 +16,6 @@ mod value;
 use array::ArrayDeserializer;
 use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
-use spanned::is_spanned;
 use spanned::SpannedDeserializer;
 use table::TableMapAccess;
 use table_enum::TableEnumDeserializer;

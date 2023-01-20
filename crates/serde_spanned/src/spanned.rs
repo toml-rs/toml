@@ -19,6 +19,11 @@ pub const END_FIELD: &str = "$__serde_spanned_private_end";
 #[doc(hidden)]
 #[cfg(feature = "serde")]
 pub const VALUE_FIELD: &str = "$__serde_spanned_private_value";
+#[doc(hidden)]
+#[cfg(feature = "serde")]
+pub fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
+    name == NAME && fields == [START_FIELD, END_FIELD, VALUE_FIELD]
+}
 
 /// A spanned value, indicating the range at which it is defined in the source.
 #[derive(Clone, Debug)]

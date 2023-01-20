@@ -48,7 +48,7 @@ impl<'de> serde::Deserializer<'de> for TableDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        if super::is_spanned(name, fields) {
+        if serde_spanned::__unstable::is_spanned(name, fields) {
             if let Some(span) = self.span.clone() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self, span));
             }

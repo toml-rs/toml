@@ -14,4 +14,14 @@
 #![forbid(unsafe_code)]
 
 mod spanned;
-pub use crate::spanned::*;
+pub use crate::spanned::Spanned;
+
+#[doc(hidden)]
+#[cfg(feature = "serde")]
+pub mod __unstable {
+    pub use crate::spanned::is_spanned;
+    pub use crate::spanned::END_FIELD;
+    pub use crate::spanned::NAME;
+    pub use crate::spanned::START_FIELD;
+    pub use crate::spanned::VALUE_FIELD;
+}
