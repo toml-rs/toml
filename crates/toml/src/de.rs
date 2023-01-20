@@ -1271,22 +1271,20 @@ impl<'a> Deserializer<'a> {
         }
     }
 
-    /// The `Deserializer::end` method should be called after a value has been
-    /// fully deserialized.  This allows the `Deserializer` to validate that the
-    /// input stream is at the end or that it only has trailing
-    /// whitespace/comments.
+    #[doc(hidden)]
+    #[deprecated(since = "0.5.11")]
     pub fn end(&mut self) -> Result<(), Error> {
         Ok(())
     }
 
     #[doc(hidden)]
-    #[deprecated(since = "0.5.10")]
+    #[deprecated(since = "0.5.11")]
     pub fn set_require_newline_after_table(&mut self, require: bool) {
         self.require_newline_after_table = require;
     }
 
     #[doc(hidden)]
-    #[deprecated(since = "0.5.10")]
+    #[deprecated(since = "0.5.11")]
     pub fn set_allow_duplicate_after_longer_table(&mut self, allow: bool) {
         self.allow_duplciate_after_longer_table = allow;
     }
