@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 
 - Deprecated  `Deserializer::set_require_newline_after_table`
 - Deprecated  `Deserializer::set_allow_duplicate_after_longer_table`
+- Deprecated  `Deserializer::end`
 
 ## [0.5.10] - 2022-12-14
 
