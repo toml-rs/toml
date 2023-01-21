@@ -7,11 +7,15 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.11] - 2023-01-20
+
 ### Compatibility
 
-- Bumped MSRV to 1.60.0
 - Deprecated  `Deserializer::set_require_newline_after_table`
 - Deprecated  `Deserializer::set_allow_duplicate_after_longer_table`
+- Deprecated  `Deserializer::end`
+
+## [0.5.10] - 2022-12-14
 
 ## [0.5.9]
 
@@ -27,5 +31,7 @@ Minor doc fix (#409)
 
 <!-- next-url -->
 [Unreleased]: https://github.com/toml-rs/toml/compare/70caf40...HEAD
-[0.5.9]: https://github.com/toml-rs/toml/compare/94b319f...70caf40
-[0.5.8]: https://github.com/toml-rs/toml/compare/9a94610...94b319f
+[0.5.11]: https://github.com/toml-rs/toml_edit/compare/toml-v0.5.10...toml-v0.5.11
+[0.5.10]: https://github.com/toml-rs/toml_edit/compare/70caf40...toml-v0.5.10
+[0.5.9]: https://github.com/toml-rs/toml_edit/compare/94b319f...70caf40
+[0.5.8]: https://github.com/toml-rs/toml_edit/compare/9a94610...94b319f
