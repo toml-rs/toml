@@ -1,6 +1,6 @@
 [package]
 name = "toml"
-version = "0.5.9"
+version = "0.5.11"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["encoding", "toml"]
