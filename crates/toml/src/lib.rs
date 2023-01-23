@@ -19,7 +19,8 @@
 //!
 //! A TOML document is represented with the [`Table`] type which maps `String` to the [`Value`] enum:
 //!
-//! ```rust,ignore
+//! ```rust
+//! # use toml::value::{Datetime, Array, Table};
 //! pub enum Value {
 //!     String(String),
 //!     Integer(i64),
