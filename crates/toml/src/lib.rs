@@ -35,7 +35,8 @@
 //!
 //! The easiest way to parse a TOML document is via the [`Table`] type:
 //!
-//! ```rust
+#![cfg_attr(not(feature = "parse"), doc = " ```ignore")]
+#![cfg_attr(feature = "parse", doc = " ```")]
 //! use toml::Table;
 //!
 //! let value = "foo = 'bar'".parse::<Table>().unwrap();
@@ -71,7 +72,8 @@
 //!
 //! An example of deserializing with TOML is:
 //!
-//! ```rust
+#![cfg_attr(not(feature = "parse"), doc = " ```ignore")]
+#![cfg_attr(feature = "parse", doc = " ```")]
 //! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
@@ -103,7 +105,8 @@
 //!
 //! You can serialize types in a similar fashion:
 //!
-//! ```rust
+#![cfg_attr(not(feature = "display"), doc = " ```ignore")]
+#![cfg_attr(feature = "display", doc = " ```")]
 //! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
@@ -153,15 +156,20 @@ pub use crate::value::Value;
 
 pub mod ser;
 #[doc(no_inline)]
+#[cfg(feature = "display")]
 pub use crate::ser::{to_string, to_string_pretty, Serializer};
 pub mod de;
 #[doc(no_inline)]
+#[cfg(feature = "parse")]
 pub use crate::de::{from_str, Deserializer, ValueDeserializer};
 
 #[doc(hidden)]
 pub mod macros;
 
+#[cfg(feature = "display")]
 mod fmt;
+
+mod edit;
 
 pub use serde_spanned::Spanned;
 

@@ -35,6 +35,7 @@
 /// assert_eq!(config.title, "TOML Example");
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
+#[cfg(feature = "parse")]
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
     T: serde::de::DeserializeOwned,
@@ -45,11 +46,11 @@ where
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Error {
-    inner: toml_edit::de::Error,
+    inner: crate::edit::de::Error,
 }
 
 impl Error {
-    fn new(inner: toml_edit::de::Error) -> Self {
+    fn new(inner: crate::edit::de::Error) -> Self {
         Self { inner }
     }
 
@@ -63,6 +64,7 @@ impl Error {
     }
 
     /// The start/end index into the original document where the error occurred
+    #[cfg(feature = "parse")]
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.inner.span()
     }
@@ -71,6 +73,7 @@ impl Error {
     ///
     /// All indexes are 0-based.
     #[deprecated(since = "0.18.0", note = "See instead `Error::span`")]
+    #[cfg(feature = "parse")]
     pub fn line_col(&self) -> Option<(usize, usize)> {
         #[allow(deprecated)]
         self.inner.line_col()
@@ -82,7 +85,7 @@ impl serde::de::Error for Error {
     where
         T: std::fmt::Display,
     {
-        Error::new(toml_edit::de::Error::custom(msg))
+        Error::new(crate::edit::de::Error::custom(msg))
     }
 }
 
@@ -95,10 +98,12 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 
 /// Deserialization TOML document
+#[cfg(feature = "parse")]
 pub struct Deserializer<'a> {
     input: &'a str,
 }
 
+#[cfg(feature = "parse")]
 impl<'a> Deserializer<'a> {
     /// Deserialization implementation for TOML.
     pub fn new(input: &'a str) -> Self {
@@ -106,6 +111,7 @@ impl<'a> Deserializer<'a> {
     }
 }
 
+#[cfg(feature = "parse")]
 impl<'de, 'a> serde::Deserializer<'de> for Deserializer<'a> {
     type Error = Error;
 
@@ -195,10 +201,12 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer<'a> {
 }
 
 /// Deserialization TOML value
+#[cfg(feature = "parse")]
 pub struct ValueDeserializer<'a> {
     input: &'a str,
 }
 
+#[cfg(feature = "parse")]
 impl<'a> ValueDeserializer<'a> {
     /// Deserialization implementation for TOML.
     pub fn new(input: &'a str) -> Self {
@@ -206,6 +214,7 @@ impl<'a> ValueDeserializer<'a> {
     }
 }
 
+#[cfg(feature = "parse")]
 impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer<'a> {
     type Error = Error;
 

@@ -5,7 +5,6 @@ use std::fmt;
 use std::hash::Hash;
 use std::mem::discriminant;
 use std::ops;
-use std::str::FromStr;
 use std::vec;
 
 use serde::de;
@@ -49,6 +48,7 @@ impl Table {
     }
 }
 
+#[cfg(feature = "display")]
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         crate::ser::to_string(self)
@@ -57,7 +57,8 @@ impl fmt::Display for Table {
     }
 }
 
-impl FromStr for Table {
+#[cfg(feature = "parse")]
+impl std::str::FromStr for Table {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         crate::from_str(s)
@@ -480,6 +481,7 @@ where
     }
 }
 
+#[cfg(feature = "display")]
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use serde::Serialize as _;
@@ -491,7 +493,8 @@ impl fmt::Display for Value {
     }
 }
 
-impl FromStr for Value {
+#[cfg(feature = "parse")]
+impl std::str::FromStr for Value {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Value, Self::Err> {
         crate::from_str(s)
@@ -1282,7 +1285,7 @@ impl ser::SerializeMap for SerializeMap {
                 self.map.insert(key, value);
             }
             Err(crate::ser::Error {
-                inner: toml_edit::ser::Error::UnsupportedNone,
+                inner: crate::edit::ser::Error::UnsupportedNone,
             }) => {}
             Err(e) => return Err(e),
         }
