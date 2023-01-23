@@ -19,7 +19,8 @@
 //!
 //! A TOML document is represented with the [`Table`] type which maps `String` to the [`Value`] enum:
 //!
-//! ```rust,ignore
+//! ```rust
+//! # use toml::value::{Datetime, Array, Table};
 //! pub enum Value {
 //!     String(String),
 //!     Integer(i64),
@@ -67,7 +68,7 @@
 //!
 //! This means that you can use Serde to deserialize/serialize the
 //! [`Table`] type as well as [`Value`] and [`Datetime`] type in this crate. You can also
-//! use the [`Deserializer`], [`Serializer`], or [`Value`] type itself to act as
+//! use the [`Deserializer`], [`Serializer`], or [`Table`] type itself to act as
 //! a deserializer/serializer for arbitrary types.
 //!
 //! An example of deserializing with TOML is:
@@ -149,29 +150,29 @@
 
 pub mod map;
 pub mod value;
-#[doc(no_inline)]
-pub use crate::value::Table;
-#[doc(no_inline)]
-pub use crate::value::Value;
 
-pub mod ser;
-#[doc(no_inline)]
-#[cfg(feature = "display")]
-pub use crate::ser::{to_string, to_string_pretty, Serializer};
 pub mod de;
-#[doc(no_inline)]
-#[cfg(feature = "parse")]
-pub use crate::de::{from_str, Deserializer, ValueDeserializer};
+pub mod ser;
 
 #[doc(hidden)]
 pub mod macros;
 
+mod edit;
 #[cfg(feature = "display")]
 mod fmt;
+mod table;
 
-mod edit;
+#[cfg(feature = "parse")]
+#[doc(inline)]
+pub use crate::de::{from_str, Deserializer};
+#[cfg(feature = "display")]
+#[doc(inline)]
+pub use crate::ser::{to_string, to_string_pretty, Serializer};
+#[doc(inline)]
+pub use crate::value::Value;
 
 pub use serde_spanned::Spanned;
+pub use table::Table;
 
 // Shortcuts for the module doc-comment
 #[allow(unused_imports)]

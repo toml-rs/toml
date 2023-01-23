@@ -68,12 +68,12 @@ harness = false
 
 [[example]]
 name = "decode"
-required-features = ["parse", "derive"]
+required-features = ["parse", "display"]
 
 [[example]]
 name = "enum_external"
-required-features = ["parse", "derive"]
+required-features = ["parse", "display"]
 
 [[example]]
 name = "toml2json"
-required-features = ["parse", "derive"]
+required-features = ["parse", "display"]

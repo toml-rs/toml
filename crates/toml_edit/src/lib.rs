@@ -60,7 +60,7 @@
 //! * Scattered array of tables (tables are reordered by default, see [test]).
 //! * Order of dotted keys, see [issue](https://github.com/ordian/toml_edit/issues/163).
 //!
-//! [toml]: https://docs.rs/toml/latest/toml/
+//! [`toml`]: https://docs.rs/toml/latest/toml/
 //! [test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
 
 mod array;

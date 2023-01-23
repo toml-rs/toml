@@ -82,7 +82,7 @@ fn test_cargo_toml() {
         },
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }
 
 #[test]
@@ -137,7 +137,7 @@ fn test_array() {
         },
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }
 
 #[test]
@@ -188,7 +188,7 @@ fn test_number() {
         "bin" => 214,
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }
 
 #[test]
@@ -278,7 +278,7 @@ fn test_datetime() {
         },
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }
 
 // This test requires rustc >= 1.20.
@@ -306,7 +306,7 @@ fn test_quoted_key() {
         },
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }
 
 #[test]
@@ -329,7 +329,7 @@ fn test_empty() {
         },
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }
 
 #[test]
@@ -364,5 +364,5 @@ fn test_dotted_keys() {
         },
     };
 
-    assert_eq!(actual, expected);
+    assert_eq!(toml::Value::Table(actual), expected);
 }

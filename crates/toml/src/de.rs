@@ -9,6 +9,8 @@
 /// This function will attempt to interpret `s` as a TOML document and
 /// deserialize `T` from the document.
 ///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
+///
 /// # Examples
 ///
 /// ```
@@ -98,6 +100,8 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {}
 
 /// Deserialization TOML document
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 #[cfg(feature = "parse")]
 pub struct Deserializer<'a> {
     input: &'a str,
@@ -200,7 +204,31 @@ impl<'de, 'a> serde::Deserializer<'de> for Deserializer<'a> {
     }
 }
 
-/// Deserialization TOML value
+/// Deserialization TOML [value][crate::Value]
+///
+/// # Example
+///
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///     title: String,
+///     owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let config = Config::deserialize(toml::de::ValueDeserializer::new(
+///     r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#
+/// )).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
 #[cfg(feature = "parse")]
 pub struct ValueDeserializer<'a> {
     input: &'a str,
