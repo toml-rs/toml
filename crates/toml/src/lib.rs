@@ -68,7 +68,7 @@
 //!
 //! This means that you can use Serde to deserialize/serialize the
 //! [`Table`] type as well as [`Value`] and [`Datetime`] type in this crate. You can also
-//! use the [`Deserializer`], [`Serializer`], or [`Value`] type itself to act as
+//! use the [`Deserializer`], [`Serializer`], or [`Table`] type itself to act as
 //! a deserializer/serializer for arbitrary types.
 //!
 //! An example of deserializing with TOML is:
