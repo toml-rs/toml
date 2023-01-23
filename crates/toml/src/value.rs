@@ -1,4 +1,4 @@
-//! Definition of a TOML value
+//! Definition of a TOML [value][Value]
 
 use std::collections::{BTreeMap, HashMap};
 use std::fmt;
