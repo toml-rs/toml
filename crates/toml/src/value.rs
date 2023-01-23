@@ -14,117 +14,11 @@ use serde::ser;
 use toml_datetime::__unstable as datetime;
 pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
 
-use crate::map::{Entry, Map};
-
-/// Type representing a TOML table, payload of the `Value::Table` variant.
-/// By default it is backed by a BTreeMap, enable the `preserve_order` feature
-/// to use a LinkedHashMap instead.
-pub type Table = Map<String, Value>;
-
-impl Table {
-    /// Convert a `T` into `toml::Table`.
-    ///
-    /// This conversion can fail if `T`'s implementation of `Serialize` decides to
-    /// fail, or if `T` contains a map with non-string keys.
-    pub fn try_from<T>(value: T) -> Result<Self, crate::ser::Error>
-    where
-        T: ser::Serialize,
-    {
-        value.serialize(TableSerializer)
-    }
-
-    /// Interpret a `toml::Table` as an instance of type `T`.
-    ///
-    /// This conversion can fail if the structure of the `Table` does not match the structure
-    /// expected by `T`, for example if `T` is a bool which can't be mapped to a `Table`. It can
-    /// also fail if the structure is correct but `T`'s implementation of `Deserialize` decides
-    /// that something is wrong with the data, for example required struct fields are missing from
-    /// the TOML map or some number is too big to fit in the expected primitive type.
-    pub fn try_into<'de, T>(self) -> Result<T, crate::de::Error>
-    where
-        T: de::Deserialize<'de>,
-    {
-        de::Deserialize::deserialize(self)
-    }
-}
-
-#[cfg(feature = "display")]
-impl fmt::Display for Table {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::ser::to_string(self)
-            .expect("Unable to represent value as string")
-            .fmt(f)
-    }
-}
-
-#[cfg(feature = "parse")]
-impl std::str::FromStr for Table {
-    type Err = crate::de::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        crate::from_str(s)
-    }
-}
-
-impl<'de> de::Deserializer<'de> for Table {
-    type Error = crate::de::Error;
-
-    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, crate::de::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        Value::Table(self).deserialize_any(visitor)
-    }
-
-    #[inline]
-    fn deserialize_enum<V>(
-        self,
-        name: &'static str,
-        variants: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, crate::de::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        Value::Table(self).deserialize_enum(name, variants, visitor)
-    }
-
-    // `None` is interpreted as a missing field so be sure to implement `Some`
-    // as a present field.
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, crate::de::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        Value::Table(self).deserialize_option(visitor)
-    }
-
-    fn deserialize_newtype_struct<V>(
-        self,
-        name: &'static str,
-        visitor: V,
-    ) -> Result<V::Value, crate::de::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        Value::Table(self).deserialize_newtype_struct(name, visitor)
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit seq
-        bytes byte_buf map unit_struct tuple_struct struct
-        tuple ignored_any identifier
-    }
-}
-
-impl<'de> de::IntoDeserializer<'de, crate::de::Error> for Table {
-    type Deserializer = Self;
-
-    fn into_deserializer(self) -> Self {
-        self
-    }
-}
-
 /// Type representing a TOML array, payload of the `Value::Array` variant
 pub type Array = Vec<Value>;
+
+#[doc(no_inline)]
+pub use crate::Table;
 
 /// Representation of a TOML value.
 #[derive(PartialEq, Clone, Debug)]
@@ -627,13 +521,13 @@ impl<'de> de::Deserialize<'de> for Value {
                         let date: datetime::DatetimeFromString = visitor.next_value()?;
                         return Ok(Value::Datetime(date.value));
                     }
-                    None => return Ok(Value::Table(Map::new())),
+                    None => return Ok(Value::Table(Table::new())),
                     Some(false) => {}
                 }
-                let mut map = Map::new();
+                let mut map = Table::new();
                 map.insert(key, visitor.next_value()?);
                 while let Some(key) = visitor.next_key::<String>()? {
-                    if let Entry::Vacant(vacant) = map.entry(&key) {
+                    if let crate::map::Entry::Vacant(vacant) = map.entry(&key) {
                         vacant.insert(visitor.next_value()?);
                     } else {
                         let msg = format!("duplicate key: `{}`", key);
@@ -986,7 +880,7 @@ impl ser::Serializer for ValueSerializer {
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, crate::ser::Error> {
         Ok(ValueSerializeMap {
             ser: SerializeMap {
-                map: Map::new(),
+                map: Table::new(),
                 next_key: None,
             },
         })
@@ -1011,7 +905,7 @@ impl ser::Serializer for ValueSerializer {
     }
 }
 
-struct TableSerializer;
+pub(crate) struct TableSerializer;
 
 impl ser::Serializer for TableSerializer {
     type Ok = Table;
@@ -1161,7 +1055,7 @@ impl ser::Serializer for TableSerializer {
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, crate::ser::Error> {
         Ok(SerializeMap {
-            map: Map::new(),
+            map: Table::new(),
             next_key: None,
         })
     }
@@ -1254,8 +1148,8 @@ impl ser::SerializeTupleVariant for ValueSerializeVec {
     }
 }
 
-struct SerializeMap {
-    map: Map<String, Value>,
+pub(crate) struct SerializeMap {
+    map: Table,
     next_key: Option<String>,
 }
 

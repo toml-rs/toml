@@ -159,6 +159,7 @@ pub mod macros;
 mod edit;
 #[cfg(feature = "display")]
 mod fmt;
+mod table;
 
 #[doc(no_inline)]
 #[cfg(feature = "parse")]
@@ -167,11 +168,10 @@ pub use crate::de::{from_str, Deserializer};
 #[cfg(feature = "display")]
 pub use crate::ser::{to_string, to_string_pretty, Serializer};
 #[doc(no_inline)]
-pub use crate::value::Table;
-#[doc(no_inline)]
 pub use crate::value::Value;
 
 pub use serde_spanned::Spanned;
+pub use table::Table;
 
 // Shortcuts for the module doc-comment
 #[allow(unused_imports)]
