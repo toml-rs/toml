@@ -14,7 +14,7 @@ use serde::ser;
 use toml_datetime::__unstable as datetime;
 pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
 
-pub use crate::map::{Entry, Map};
+use crate::map::{Entry, Map};
 
 /// Type representing a TOML table, payload of the `Value::Table` variant.
 /// By default it is backed by a BTreeMap, enable the `preserve_order` feature
