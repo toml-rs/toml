@@ -161,7 +161,7 @@ pub use crate::ser::{to_string, to_string_pretty, Serializer};
 pub mod de;
 #[doc(no_inline)]
 #[cfg(feature = "parse")]
-pub use crate::de::{from_str, Deserializer, ValueDeserializer};
+pub use crate::de::{from_str, Deserializer};
 
 #[doc(hidden)]
 pub mod macros;

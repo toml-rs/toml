@@ -27,7 +27,7 @@ fn value_from_str<T>(s: &'_ str) -> Result<T, toml::de::Error>
 where
     T: serde::de::DeserializeOwned,
 {
-    T::deserialize(toml::ValueDeserializer::new(s))
+    T::deserialize(toml::de::ValueDeserializer::new(s))
 }
 
 #[test]
