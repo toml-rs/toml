@@ -1,8 +1,6 @@
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
-use itertools::Itertools;
-
 use crate::parser::prelude::*;
 use crate::Key;
 
@@ -474,7 +472,7 @@ impl Display for CustomError {
                     if table.is_empty() {
                         write!(f, "duplicate key `{}` in document root", key)
                     } else {
-                        let path = table.iter().join(".");
+                        let path = table.iter().map(|k| k.get()).collect::<Vec<_>>().join(".");
                         write!(f, "duplicate key `{}` in table `{}`", key, path)
                     }
                 } else {
@@ -482,7 +480,7 @@ impl Display for CustomError {
                 }
             }
             CustomError::DottedKeyExtendWrongType { key, actual } => {
-                let path = key.iter().join(".");
+                let path = key.iter().map(|k| k.get()).collect::<Vec<_>>().join(".");
                 write!(
                     f,
                     "dotted key `{}` attempted to extend non-table type ({})",
