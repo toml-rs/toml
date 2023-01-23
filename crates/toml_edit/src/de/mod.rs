@@ -2,7 +2,6 @@
 //!
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
-use itertools::Itertools;
 use serde::de::DeserializeOwned;
 
 mod array;
@@ -286,8 +285,12 @@ pub(crate) fn validate_struct_keys(
         Err(Error::custom(
             format!(
                 "unexpected keys in table: {}, available keys: {}",
-                extra_fields.iter().map(|k| k.key.get()).join(", "),
-                fields.iter().join(", "),
+                extra_fields
+                    .iter()
+                    .map(|k| k.key.get())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                fields.join(", "),
             ),
             extra_fields[0].key.span(),
         ))

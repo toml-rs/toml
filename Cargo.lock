@@ -976,7 +976,6 @@ name = "toml_edit"
 version = "0.17.1"
 dependencies = [
  "indexmap",
- "itertools",
  "kstring",
  "libtest-mimic 0.6.0",
  "nom8",
