@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.0] - 2023-01-23
+
 ### Compatibility
 
 Breaking Behavior Changes
@@ -74,7 +76,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/70caf40...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.6.0...HEAD
+[0.6.0]: https://github.com/toml-rs/toml/compare/70caf40...toml-v0.6.0
 [0.5.11]: https://github.com/toml-rs/toml_edit/compare/toml-v0.5.10...toml-v0.5.11
 [0.5.10]: https://github.com/toml-rs/toml_edit/compare/70caf40...toml-v0.5.10
 [0.5.9]: https://github.com/toml-rs/toml_edit/compare/94b319f...70caf40
