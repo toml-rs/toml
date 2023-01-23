@@ -42,6 +42,14 @@ jobs:
       run: cargo test -p toml_edit --no-default-features
     - name: toml (preserve_order)
       run: cargo test -p toml --features preserve_order
+    - name: toml (all features)
+      run: cargo test -p toml --all-features
+    - name: toml (parse-only)
+      run: cargo test -p toml --no-default-features --features parse
+    - name: toml (display-only)
+      run: cargo test -p toml --no-default-features --features display
+    - name: toml (no-default features)
+      run: cargo test -p toml --no-default-features
   msrv:
     name: "Check MSRV: 1.60.0"
     runs-on: ubuntu-latest

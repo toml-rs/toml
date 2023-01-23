@@ -1,3 +1,5 @@
+#![cfg(all(feature = "parse", feature = "display"))]
+
 #[derive(Copy, Clone)]
 pub struct Encoder;
 
