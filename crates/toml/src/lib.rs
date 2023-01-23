@@ -149,27 +149,27 @@
 
 pub mod map;
 pub mod value;
-#[doc(no_inline)]
-pub use crate::value::Table;
-#[doc(no_inline)]
-pub use crate::value::Value;
 
-pub mod ser;
-#[doc(no_inline)]
-#[cfg(feature = "display")]
-pub use crate::ser::{to_string, to_string_pretty, Serializer};
 pub mod de;
-#[doc(no_inline)]
-#[cfg(feature = "parse")]
-pub use crate::de::{from_str, Deserializer};
+pub mod ser;
 
 #[doc(hidden)]
 pub mod macros;
 
+mod edit;
 #[cfg(feature = "display")]
 mod fmt;
 
-mod edit;
+#[doc(no_inline)]
+#[cfg(feature = "parse")]
+pub use crate::de::{from_str, Deserializer};
+#[doc(no_inline)]
+#[cfg(feature = "display")]
+pub use crate::ser::{to_string, to_string_pretty, Serializer};
+#[doc(no_inline)]
+pub use crate::value::Table;
+#[doc(no_inline)]
+pub use crate::value::Value;
 
 pub use serde_spanned::Spanned;
 
