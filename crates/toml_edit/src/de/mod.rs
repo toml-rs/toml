@@ -122,7 +122,7 @@ where
     T::deserialize(deserializer)
 }
 
-/// Deserialization implementation for TOML.
+/// Deserialization for TOML [documents][crate::Document].
 pub struct Deserializer {
     input: crate::Document,
 }

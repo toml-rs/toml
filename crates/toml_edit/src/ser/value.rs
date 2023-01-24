@@ -1,6 +1,6 @@
 use super::Error;
 
-/// Serialization implementation for TOML.
+/// Serialization for TOML [values][crate::Value].
 ///
 /// This structure implements serialization support for TOML to serialize an
 /// arbitrary type to TOML. Note that the TOML format does not support all
@@ -9,6 +9,40 @@ use super::Error;
 ///
 /// Currently a serializer always writes its output to an in-memory `String`,
 /// which is passed in when creating the serializer itself.
+///
+/// # Examples
+///
+/// ```
+/// use serde::Serialize;
+///
+/// #[derive(Serialize)]
+/// struct Config {
+///     database: Database,
+/// }
+///
+/// #[derive(Serialize)]
+/// struct Database {
+///     ip: String,
+///     port: Vec<u16>,
+///     connection_max: u32,
+///     enabled: bool,
+/// }
+///
+/// let config = Config {
+///     database: Database {
+///         ip: "192.168.1.1".to_string(),
+///         port: vec![8001, 8002, 8003],
+///         connection_max: 5000,
+///         enabled: false,
+///     },
+/// };
+///
+/// let value = serde::Serialize::serialize(
+///     &config,
+///     toml_edit::ser::ValueSerializer::new()
+/// ).unwrap();
+/// println!("{}", value)
+/// ```
 #[derive(Default)]
 #[non_exhaustive]
 pub struct ValueSerializer {}
