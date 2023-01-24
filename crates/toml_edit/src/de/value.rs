@@ -3,7 +3,31 @@ use serde::de::IntoDeserializer as _;
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
 
-/// Deserialization implementation for TOML.
+/// Deserialization implementation for TOML [values][crate::Value].
+///
+/// # Example
+///
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///     title: String,
+///     owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let value = r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#;
+/// let deserializer = value.parse::<toml_edit::de::ValueDeserializer>().unwrap();
+/// let config = Config::deserialize(deserializer).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
 pub struct ValueDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
