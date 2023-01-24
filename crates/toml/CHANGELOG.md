@@ -25,6 +25,7 @@ Breaking API Changes
 - `Spanned::start` removed in favor of `Spanned::span().start`
 - `Spanned::wnd` removed in favor of `Spanned::span().end`
 - `parse` and `display` default features were added
+- `toml::ser::Error`s variants are private.  For `toml::ser::Error::Custom`, you can use `serde::ser::Error::custom`
 - Deprecated items from 0.5 were removed
 
 Deprecations
