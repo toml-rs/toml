@@ -1050,3 +1050,15 @@ fn serialize_datetime_issue_333() {
     .unwrap();
     assert_eq!(toml, "date = 2022-01-01\n");
 }
+
+#[test]
+fn deserialize_borrowed_struct() {
+    #[derive(Deserialize)]
+    struct Config<'config> {
+        name: &'config str,
+    }
+    let config = r#"
+        name = "toml-rs"
+    "#;
+    assert!(toml::from_str::<Config>(config).is_ok());
+}
