@@ -20,6 +20,7 @@ Breaking Behavior Changes
 Breaking API Changes
 - `de::from_slice` and `ser::to_vec` were removed, instead use `from_str` and `to_string` and convert with bytes manually
 - `toml!` returns a `Table`, rather than a `Value`
+- `toml::de` can  no longer deserialize to borrowed types as everything becomes owned through the parsing process
 - `value` no longer re-exports `Map` and `Entry`
 - `Spanned::span`s return type changed to `std::ops::Range<usize>`
 - `Spanned::start` removed in favor of `Spanned::span().start`
