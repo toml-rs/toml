@@ -267,6 +267,26 @@ mod test {
                 },
             ),
             (
+                "1979-05-27T00:32:00-00:36",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 0,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 0,
+                    }),
+                    offset: Some(Offset::Custom {
+                        hours: 0,
+                        minutes: 36,
+                    }),
+                },
+            ),
+            (
                 "1979-05-27T00:32:00.999999",
                 Datetime {
                     date: Some(Date {
