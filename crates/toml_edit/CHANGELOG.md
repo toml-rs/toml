@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.18.1] - 2023-01-27
+
 ### Performance
 
 - *(serde)* Drop `derive` feature for better build times
@@ -423,7 +425,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/toml-rs/toml/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/toml-rs/toml/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/toml-rs/toml/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/toml-rs/toml/compare/v0.16.2...v0.17.0
