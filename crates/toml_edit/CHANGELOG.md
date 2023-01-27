@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- *(serde)* Drop `derive` feature for better build times
+
 ## [0.18.0] - 2023-01-23
 
 ### Compatibility
