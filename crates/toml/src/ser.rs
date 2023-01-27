@@ -161,51 +161,6 @@ impl<'d> Serializer<'d> {
         ser.settings.multiline_array = true;
         ser
     }
-
-    #[doc(hidden)]
-    #[deprecated(
-        since = "0.6.0",
-        note = "string behavior is now automatic; for greater control deserialize to `toml_edit::Document` and use `toml_edit::visit_mut::VisitorMut`"
-    )]
-    pub fn pretty_string(&mut self, _value: bool) -> &mut Self {
-        self
-    }
-
-    #[doc(hidden)]
-    #[deprecated(
-        since = "0.6.0",
-        note = "string behavior is now automatic; for greater control deserialize to `toml_edit::Document` and use `toml_edit::visit_mut::VisitorMut`"
-    )]
-    pub fn pretty_string_literal(&mut self, _value: bool) -> &mut Self {
-        self
-    }
-
-    #[doc(hidden)]
-    #[deprecated(
-        since = "0.6.0",
-        note = "this is bundled in with `pretty`; for greater control deserialize to `toml_edit::Document` and use `toml_edit::visit_mut::VisitorMut`"
-    )]
-    pub fn pretty_array(&mut self, _value: bool) -> &mut Self {
-        self
-    }
-
-    #[doc(hidden)]
-    #[deprecated(
-        since = "0.6.0",
-        note = "this is bundled in with `pretty`; for greater control deserialize to `toml_edit::Document` and use `toml_edit::visit_mut::VisitorMut`"
-    )]
-    pub fn pretty_array_indent(&mut self, _value: usize) -> &mut Self {
-        self
-    }
-
-    #[doc(hidden)]
-    #[deprecated(
-        since = "0.6.0",
-        note = "this is bundled in with `pretty`; for greater control deserialize to `toml_edit::Document` and use `toml_edit::visit_mut::VisitorMut`"
-    )]
-    pub fn pretty_array_trailing_comma(&mut self, _value: bool) -> &mut Self {
-        self
-    }
 }
 
 #[cfg(feature = "display")]
