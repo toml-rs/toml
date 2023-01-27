@@ -78,9 +78,6 @@ mod repr;
 mod table;
 mod value;
 
-#[cfg(feature = "easy")]
-pub mod easy;
-
 #[cfg(feature = "serde")]
 pub mod de;
 #[cfg(feature = "serde")]
