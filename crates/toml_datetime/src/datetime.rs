@@ -179,11 +179,8 @@ pub enum Offset {
 
     /// Offset between local time and UTC
     Custom {
-        /// Hours: -12 to +12
-        hours: i8,
-
-        /// Minutes: 0 to 59
-        minutes: u8,
+        /// Minutes: -1_440..1_440
+        minutes: i16,
     },
 }
 
@@ -246,7 +243,16 @@ impl fmt::Display for Offset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Offset::Z => write!(f, "Z"),
-            Offset::Custom { hours, minutes } => write!(f, "{:+03}:{:02}", hours, minutes),
+            Offset::Custom { mut minutes } => {
+                let mut sign = '+';
+                if minutes < 0 {
+                    minutes *= -1;
+                    sign = '-';
+                }
+                let hours = minutes / 60;
+                let minutes = minutes % 60;
+                write!(f, "{}{:02}:{:02}", sign, hours, minutes)
+            }
         }
     }
 }
@@ -403,18 +409,26 @@ impl FromStr for Datetime {
                     _ => return Err(DatetimeParseError {}),
                 };
                 chars.next();
-                let h1 = digit(&mut chars)? as i8;
-                let h2 = digit(&mut chars)? as i8;
+                let h1 = digit(&mut chars)? as i16;
+                let h2 = digit(&mut chars)? as i16;
                 match chars.next() {
                     Some(':') => {}
                     _ => return Err(DatetimeParseError {}),
                 }
-                let m1 = digit(&mut chars)?;
-                let m2 = digit(&mut chars)?;
+                let m1 = digit(&mut chars)? as i16;
+                let m2 = digit(&mut chars)? as i16;
+
+                let hours = h1 * 10 + h2;
+                let minutes = m1 * 10 + m2;
+
+                let total_minutes = sign * (hours * 60 + minutes);
+
+                if !((-24 * 60)..=(24 * 60)).contains(&total_minutes) {
+                    return Err(DatetimeParseError {});
+                }
 
                 Some(Offset::Custom {
-                    hours: sign * (h1 * 10 + h2),
-                    minutes: m1 * 10 + m2,
+                    minutes: total_minutes,
                 })
             }
         } else {

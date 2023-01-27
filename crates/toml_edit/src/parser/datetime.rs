@@ -75,17 +75,17 @@ pub(crate) fn partial_time(input: Input<'_>) -> IResult<Input<'_>, Time, ParserE
 pub(crate) fn time_offset(input: Input<'_>) -> IResult<Input<'_>, Offset, ParserError<'_>> {
     alt((
         one_of((b'Z', b'z')).value(Offset::Z),
-        (one_of((b'+', b'-')), cut((time_hour, b':', time_minute))).map(
-            |(sign, (hours, _, minutes))| {
-                let hours = hours as i8;
-                let hours = match sign {
-                    b'+' => hours,
-                    b'-' => -hours,
+        (one_of((b'+', b'-')), cut((time_hour, b':', time_minute)))
+            .map(|(sign, (hours, _, minutes))| {
+                let sign = match sign {
+                    b'+' => 1,
+                    b'-' => -1,
                     _ => unreachable!("Parser prevents this"),
                 };
-                Offset::Custom { hours, minutes }
-            },
-        ),
+                sign * (hours as i16 * 60 + minutes as i16)
+            })
+            .verify(|minutes| ((-24 * 60)..=(24 * 60)).contains(minutes))
+            .map(|minutes| Offset::Custom { minutes }),
     ))
     .context(Context::Expression("time offset"))
     .parse(input)
@@ -261,8 +261,7 @@ mod test {
                         nanosecond: 0,
                     }),
                     offset: Some(Offset::Custom {
-                        hours: -7,
-                        minutes: 0,
+                        minutes: -7 * 60 + 0,
                     }),
                 },
             ),
@@ -280,10 +279,7 @@ mod test {
                         second: 0,
                         nanosecond: 0,
                     }),
-                    offset: Some(Offset::Custom {
-                        hours: 0,
-                        minutes: 36,
-                    }),
+                    offset: Some(Offset::Custom { minutes: -36 }),
                 },
             ),
             (

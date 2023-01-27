@@ -1053,7 +1053,7 @@ fn serialize_datetime_issue_333() {
 
 #[test]
 fn datetime_offset_issue_496() {
-    let original = "value = 1911-01-01T10:11:12+00:36\n";
+    let original = "value = 1911-01-01T10:11:12-00:36\n";
     let toml = original.parse::<toml::Table>().unwrap();
     let output = toml.to_string();
     snapbox::assert_eq(original, output);
