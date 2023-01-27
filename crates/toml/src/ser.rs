@@ -1079,24 +1079,3 @@ mod internal {
         Ok(())
     }
 }
-
-#[doc(hidden)]
-#[deprecated(
-    since = "0.6.0",
-    note = "`tables_last` is no longer needed; things just work"
-)]
-pub fn tables_last<'a, I, K, V, S>(data: &'a I, serializer: S) -> Result<S::Ok, S::Error>
-where
-    &'a I: IntoIterator<Item = (K, V)>,
-    K: serde::ser::Serialize,
-    V: serde::ser::Serialize,
-    S: serde::ser::Serializer,
-{
-    use serde::ser::SerializeMap;
-
-    let mut map = serializer.serialize_map(None)?;
-    for (k, v) in data {
-        map.serialize_entry(&k, &v)?;
-    }
-    map.end()
-}
