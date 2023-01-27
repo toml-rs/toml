@@ -94,9 +94,8 @@ pub struct Datetime {
 
 /// Error returned from parsing a `Datetime` in the `FromStr` implementation.
 #[derive(Debug, Clone)]
-pub struct DatetimeParseError {
-    _private: (),
-}
+#[non_exhaustive]
+pub struct DatetimeParseError {}
 
 // Currently serde itself doesn't have a datetime type, so we map our `Datetime`
 // to a special value in the serde data model. Namely one with these special
@@ -180,11 +179,8 @@ pub enum Offset {
 
     /// Offset between local time and UTC
     Custom {
-        /// Hours: -12 to +12
-        hours: i8,
-
-        /// Minutes: 0 to 59
-        minutes: u8,
+        /// Minutes: -1_440..1_440
+        minutes: i16,
     },
 }
 
@@ -247,7 +243,16 @@ impl fmt::Display for Offset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Offset::Z => write!(f, "Z"),
-            Offset::Custom { hours, minutes } => write!(f, "{:+03}:{:02}", hours, minutes),
+            Offset::Custom { mut minutes } => {
+                let mut sign = '+';
+                if minutes < 0 {
+                    minutes *= -1;
+                    sign = '-';
+                }
+                let hours = minutes / 60;
+                let minutes = minutes % 60;
+                write!(f, "{}{:02}:{:02}", sign, hours, minutes)
+            }
         }
     }
 }
@@ -263,7 +268,7 @@ impl FromStr for Datetime {
         // 0000-00-00
         // 00:00:00.00
         if date.len() < 3 {
-            return Err(DatetimeParseError { _private: () });
+            return Err(DatetimeParseError {});
         }
         let mut offset_allowed = true;
         let mut chars = date.chars();
@@ -280,7 +285,7 @@ impl FromStr for Datetime {
 
             match chars.next() {
                 Some('-') => {}
-                _ => return Err(DatetimeParseError { _private: () }),
+                _ => return Err(DatetimeParseError {}),
             }
 
             let m1 = digit(&mut chars)?;
@@ -288,7 +293,7 @@ impl FromStr for Datetime {
 
             match chars.next() {
                 Some('-') => {}
-                _ => return Err(DatetimeParseError { _private: () }),
+                _ => return Err(DatetimeParseError {}),
             }
 
             let d1 = digit(&mut chars)?;
@@ -301,10 +306,10 @@ impl FromStr for Datetime {
             };
 
             if date.month < 1 || date.month > 12 {
-                return Err(DatetimeParseError { _private: () });
+                return Err(DatetimeParseError {});
             }
             if date.day < 1 || date.day > 31 {
-                return Err(DatetimeParseError { _private: () });
+                return Err(DatetimeParseError {});
             }
 
             Some(date)
@@ -326,13 +331,13 @@ impl FromStr for Datetime {
             let h2 = digit(&mut chars)?;
             match chars.next() {
                 Some(':') => {}
-                _ => return Err(DatetimeParseError { _private: () }),
+                _ => return Err(DatetimeParseError {}),
             }
             let m1 = digit(&mut chars)?;
             let m2 = digit(&mut chars)?;
             match chars.next() {
                 Some(':') => {}
-                _ => return Err(DatetimeParseError { _private: () }),
+                _ => return Err(DatetimeParseError {}),
             }
             let s1 = digit(&mut chars)?;
             let s2 = digit(&mut chars)?;
@@ -358,7 +363,7 @@ impl FromStr for Datetime {
                     }
                 }
                 if end == 0 {
-                    return Err(DatetimeParseError { _private: () });
+                    return Err(DatetimeParseError {});
                 }
                 chars = whole[end..].chars();
             }
@@ -371,16 +376,16 @@ impl FromStr for Datetime {
             };
 
             if time.hour > 24 {
-                return Err(DatetimeParseError { _private: () });
+                return Err(DatetimeParseError {});
             }
             if time.minute > 59 {
-                return Err(DatetimeParseError { _private: () });
+                return Err(DatetimeParseError {});
             }
             if time.second > 59 {
-                return Err(DatetimeParseError { _private: () });
+                return Err(DatetimeParseError {});
             }
             if time.nanosecond > 999_999_999 {
-                return Err(DatetimeParseError { _private: () });
+                return Err(DatetimeParseError {});
             }
 
             Some(time)
@@ -401,21 +406,29 @@ impl FromStr for Datetime {
                 let sign = match next {
                     Some('+') => 1,
                     Some('-') => -1,
-                    _ => return Err(DatetimeParseError { _private: () }),
+                    _ => return Err(DatetimeParseError {}),
                 };
                 chars.next();
-                let h1 = digit(&mut chars)? as i8;
-                let h2 = digit(&mut chars)? as i8;
+                let h1 = digit(&mut chars)? as i16;
+                let h2 = digit(&mut chars)? as i16;
                 match chars.next() {
                     Some(':') => {}
-                    _ => return Err(DatetimeParseError { _private: () }),
+                    _ => return Err(DatetimeParseError {}),
                 }
-                let m1 = digit(&mut chars)?;
-                let m2 = digit(&mut chars)?;
+                let m1 = digit(&mut chars)? as i16;
+                let m2 = digit(&mut chars)? as i16;
+
+                let hours = h1 * 10 + h2;
+                let minutes = m1 * 10 + m2;
+
+                let total_minutes = sign * (hours * 60 + minutes);
+
+                if !((-24 * 60)..=(24 * 60)).contains(&total_minutes) {
+                    return Err(DatetimeParseError {});
+                }
 
                 Some(Offset::Custom {
-                    hours: sign * (h1 * 10 + h2),
-                    minutes: m1 * 10 + m2,
+                    minutes: total_minutes,
                 })
             }
         } else {
@@ -425,7 +438,7 @@ impl FromStr for Datetime {
         // Return an error if we didn't hit eof, otherwise return our parsed
         // date
         if chars.next().is_some() {
-            return Err(DatetimeParseError { _private: () });
+            return Err(DatetimeParseError {});
         }
 
         Ok(Datetime {
@@ -439,7 +452,7 @@ impl FromStr for Datetime {
 fn digit(chars: &mut str::Chars<'_>) -> Result<u8, DatetimeParseError> {
     match chars.next() {
         Some(c) if ('0'..='9').contains(&c) => Ok(c as u8 - b'0'),
-        _ => Err(DatetimeParseError { _private: () }),
+        _ => Err(DatetimeParseError {}),
     }
 }
 

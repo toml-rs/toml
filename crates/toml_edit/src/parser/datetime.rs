@@ -75,17 +75,17 @@ pub(crate) fn partial_time(input: Input<'_>) -> IResult<Input<'_>, Time, ParserE
 pub(crate) fn time_offset(input: Input<'_>) -> IResult<Input<'_>, Offset, ParserError<'_>> {
     alt((
         one_of((b'Z', b'z')).value(Offset::Z),
-        (one_of((b'+', b'-')), cut((time_hour, b':', time_minute))).map(
-            |(sign, (hours, _, minutes))| {
-                let hours = hours as i8;
-                let hours = match sign {
-                    b'+' => hours,
-                    b'-' => -hours,
+        (one_of((b'+', b'-')), cut((time_hour, b':', time_minute)))
+            .map(|(sign, (hours, _, minutes))| {
+                let sign = match sign {
+                    b'+' => 1,
+                    b'-' => -1,
                     _ => unreachable!("Parser prevents this"),
                 };
-                Offset::Custom { hours, minutes }
-            },
-        ),
+                sign * (hours as i16 * 60 + minutes as i16)
+            })
+            .verify(|minutes| ((-24 * 60)..=(24 * 60)).contains(minutes))
+            .map(|minutes| Offset::Custom { minutes }),
     ))
     .context(Context::Expression("time offset"))
     .parse(input)
@@ -229,40 +229,196 @@ mod test {
     #[test]
     fn offset_date_time() {
         let inputs = [
-            "1979-05-27T07:32:00Z",
-            "1979-05-27T00:32:00-07:00",
-            "1979-05-27T00:32:00.999999-07:00",
+            (
+                "1979-05-27T07:32:00Z",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 7,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 0,
+                    }),
+                    offset: Some(Offset::Z),
+                },
+            ),
+            (
+                "1979-05-27T00:32:00-07:00",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 0,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 0,
+                    }),
+                    offset: Some(Offset::Custom { minutes: -7 * 60 }),
+                },
+            ),
+            (
+                "1979-05-27T00:32:00-00:36",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 0,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 0,
+                    }),
+                    offset: Some(Offset::Custom { minutes: -36 }),
+                },
+            ),
+            (
+                "1979-05-27T00:32:00.999999",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 0,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 999999000,
+                    }),
+                    offset: None,
+                },
+            ),
         ];
-        for input in inputs {
+        for (input, expected) in inputs {
             dbg!(input);
-            date_time.parse(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).finish().unwrap();
+            assert_eq!(expected, actual);
         }
     }
 
     #[test]
     fn local_date_time() {
-        let inputs = ["1979-05-27T07:32:00", "1979-05-27T00:32:00.999999"];
-        for input in inputs {
+        let inputs = [
+            (
+                "1979-05-27T07:32:00",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 7,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 0,
+                    }),
+                    offset: None,
+                },
+            ),
+            (
+                "1979-05-27T00:32:00.999999",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: Some(Time {
+                        hour: 0,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 999999000,
+                    }),
+                    offset: None,
+                },
+            ),
+        ];
+        for (input, expected) in inputs {
             dbg!(input);
-            date_time.parse(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).finish().unwrap();
+            assert_eq!(expected, actual);
         }
     }
 
     #[test]
     fn local_date() {
-        let inputs = ["1979-05-27", "2017-07-20"];
-        for input in inputs {
+        let inputs = [
+            (
+                "1979-05-27",
+                Datetime {
+                    date: Some(Date {
+                        year: 1979,
+                        month: 5,
+                        day: 27,
+                    }),
+                    time: None,
+                    offset: None,
+                },
+            ),
+            (
+                "2017-07-20",
+                Datetime {
+                    date: Some(Date {
+                        year: 2017,
+                        month: 7,
+                        day: 20,
+                    }),
+                    time: None,
+                    offset: None,
+                },
+            ),
+        ];
+        for (input, expected) in inputs {
             dbg!(input);
-            date_time.parse(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).finish().unwrap();
+            assert_eq!(expected, actual);
         }
     }
 
     #[test]
     fn local_time() {
-        let inputs = ["07:32:00", "00:32:00.999999"];
-        for input in inputs {
+        let inputs = [
+            (
+                "07:32:00",
+                Datetime {
+                    date: None,
+                    time: Some(Time {
+                        hour: 7,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 0,
+                    }),
+                    offset: None,
+                },
+            ),
+            (
+                "00:32:00.999999",
+                Datetime {
+                    date: None,
+                    time: Some(Time {
+                        hour: 0,
+                        minute: 32,
+                        second: 0,
+                        nanosecond: 999999000,
+                    }),
+                    offset: None,
+                },
+            ),
+        ];
+        for (input, expected) in inputs {
             dbg!(input);
-            date_time.parse(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).finish().unwrap();
+            assert_eq!(expected, actual);
         }
     }
 
