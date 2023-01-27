@@ -260,9 +260,7 @@ mod test {
                         second: 0,
                         nanosecond: 0,
                     }),
-                    offset: Some(Offset::Custom {
-                        minutes: -7 * 60 + 0,
-                    }),
+                    offset: Some(Offset::Custom { minutes: -7 * 60 }),
                 },
             ),
             (
