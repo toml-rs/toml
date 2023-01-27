@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Change
+
+- `Offset::Custom` changed from tracking hours+minutes to minutes
+- `Offset::Custom`s parser now enforces a range of minutes
+- Removed deprecated `Error::line_col` infavor of `Error::span`
+- Removed deprecated `ser::tables_last` as it isn't needed anymore
+- Removed deprecagted `Serializer::pretty_*` functions as `toml_edit` is for greater customization
+
+### Fixes
+
+- Allow negative minute `Offset`s
+
 ## [0.6.0] - 2023-01-23
 
 ### Compatibility

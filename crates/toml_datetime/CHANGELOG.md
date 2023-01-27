@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Change
+
+- `Offset::Custom` changed from tracking hours+minutes to minutes
+- `Offset::Custom`s parser now enforces a range of minutes
+
+### Fixes
+
+- Allow negative minute `Offset`s
+
 ## [0.5.1] - 2023-01-20
 
 ## [0.5.0] - 2022-10-21

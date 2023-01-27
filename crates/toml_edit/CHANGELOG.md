@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Change
+
+- `Offset::Custom` changed from tracking hours+minutes to minutes
+- `Offset::Custom`s parser now enforces a range of minutes
+- Removed deprecated `Error::line_col` infavor of `Error::span`
+- Removed deprecated `easy` API in favor of `toml` crate
+
+### Fixes
+
+- Allow negative minute `Offset`s
+
 ## [0.18.1] - 2023-01-27
 
 ### Performance
