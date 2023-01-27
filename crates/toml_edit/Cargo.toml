@@ -49,7 +49,7 @@ unbounded = []
 [dependencies]
 indexmap = "1.9.1"
 nom8 = "0.2.0"
-serde = { version = "1.0.145", features = ["derive"], optional = true }
+serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.5.1", path = "../toml_datetime" }
 serde_spanned = { version = "0.6.0", path = "../serde_spanned", features = ["serde"], optional = true }

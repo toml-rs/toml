@@ -16,8 +16,7 @@ pub use crate::easy::map::Map;
 
 #[doc(hidden)]
 #[deprecated(since = "0.18.0", note = "Replaced with `toml::Value`")]
-#[derive(PartialEq, Clone, Debug, serde::Serialize)]
-#[serde(untagged)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Value {
     /// Represents a TOML integer
     Integer(i64),
@@ -399,6 +398,23 @@ impl FromStr for Value {
     type Err = crate::easy::de::Error;
     fn from_str(s: &str) -> Result<Value, Self::Err> {
         crate::easy::from_str(s)
+    }
+}
+
+impl serde::Serialize for Value {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Value::Integer(value) => value.serialize(serializer),
+            Value::Float(value) => value.serialize(serializer),
+            Value::Boolean(value) => value.serialize(serializer),
+            Value::Datetime(value) => value.serialize(serializer),
+            Value::String(value) => value.serialize(serializer),
+            Value::Array(value) => value.serialize(serializer),
+            Value::Table(value) => value.serialize(serializer),
+        }
     }
 }
 
