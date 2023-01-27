@@ -22,7 +22,7 @@ include = [
 ]
 
 [package.metadata.docs.rs]
-features = ["easy"]
+features = ["serde"]
 
 [package.metadata.release]
 tag-name = "v{{version}}"
@@ -36,7 +36,6 @@ pre-release-replacements = [
 
 [features]
 default = []
-easy = ["serde"]
 perf = ["dep:kstring"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures

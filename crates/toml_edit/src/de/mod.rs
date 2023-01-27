@@ -55,15 +55,6 @@ impl Error {
     pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
         self.inner.set_span(span);
     }
-
-    /// Produces a (line, column) pair of the position of the error if available
-    ///
-    /// All indexes are 0-based.
-    #[deprecated(since = "0.18.0", note = "See instead `Error::span`")]
-    pub fn line_col(&self) -> Option<(usize, usize)> {
-        #[allow(deprecated)]
-        self.inner.line_col()
-    }
 }
 
 impl serde::de::Error for Error {
