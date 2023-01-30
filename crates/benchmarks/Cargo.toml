@@ -5,6 +5,9 @@ publish = false
 edition = "2021"
 rust-version = "1.60.0"  # MSRV
 
+[package.metadata.release]
+release = false
+
 [dev-dependencies]
 criterion = "0.4.0"
 toml = { path = "../toml" }
