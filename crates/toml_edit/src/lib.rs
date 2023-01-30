@@ -1,6 +1,7 @@
 #![deny(missing_docs)]
 // https://github.com/Marwes/combine/issues/172
 #![recursion_limit = "256"]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 //! # `toml_edit`
 //!

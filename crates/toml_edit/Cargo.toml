@@ -22,6 +22,7 @@ include = [
 ]
 
 [package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
 features = ["serde"]
 
 [package.metadata.release]
