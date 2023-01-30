@@ -12,6 +12,7 @@
 // and lets them ensure that there is indeed no unsafe code as opposed to
 // something they couldn't detect (e.g. unsafe added via macro expansion, etc).
 #![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 mod spanned;
 pub use crate::spanned::Spanned;
