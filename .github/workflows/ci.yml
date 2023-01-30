@@ -50,6 +50,27 @@ jobs:
       run: cargo test -p toml --no-default-features --features display
     - name: toml (no-default features)
       run: cargo test -p toml --no-default-features
+  nextest:
+    name: Nextest
+    strategy:
+      matrix:
+        os: ["ubuntu-latest"]
+        rust: ["stable"]
+    continue-on-error: ${{ matrix.rust != 'stable' }}
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1.3.5
+    - name: Install Tools
+      run: |
+        cargo install cargo-hack
+        cargo install cargo-nextest
+    - name: Test
+      run: cargo hack --feature-powerset nextest run --workspace
+    - name: Doc Test
+      run: cargo test --workspace --doc
   msrv:
     name: "Check MSRV: 1.60.0"
     runs-on: ubuntu-latest

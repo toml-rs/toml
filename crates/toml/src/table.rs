@@ -1,3 +1,4 @@
+#[cfg(feature = "display")]
 use std::fmt;
 
 use serde::de;
