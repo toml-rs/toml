@@ -59,6 +59,9 @@ where
 /// "pretty" output. See `Serializer::pretty` for more details.
 ///
 /// To serialize TOML values, instead of documents, see [`ValueSerializer`].
+///
+/// For greater customization, instead serialize to a
+/// [`toml_edit::Document`](https://docs.rs/toml_edit/latest/toml_edit/struct.Document.html).
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T: ?Sized>(value: &T) -> Result<String, Error>
 where
@@ -156,6 +159,9 @@ impl<'d> Serializer<'d> {
     }
 
     /// Apply a default "pretty" policy to the document
+    ///
+    /// For greater customization, instead serialize to a
+    /// [`toml_edit::Document`](https://docs.rs/toml_edit/latest/toml_edit/struct.Document.html).
     pub fn pretty(dst: &'d mut String) -> Self {
         let mut ser = Serializer::new(dst);
         ser.settings.multiline_array = true;
