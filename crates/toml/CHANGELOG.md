@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.1] - 2023-01-30
+
 ### Documentation
 
 - Show features on doc.rs
@@ -96,7 +98,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.1...HEAD
+[0.7.1]: https://github.com/toml-rs/toml/compare/toml-v0.7.0...toml-v0.7.1
 [0.7.0]: https://github.com/toml-rs/toml/compare/toml-v0.6.0...toml-v0.7.0
 [0.6.0]: https://github.com/toml-rs/toml/compare/70caf40...toml-v0.6.0
 [0.5.11]: https://github.com/toml-rs/toml_edit/compare/toml-v0.5.10...toml-v0.5.11
