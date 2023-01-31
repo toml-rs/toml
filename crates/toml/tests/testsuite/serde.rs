@@ -1,7 +1,7 @@
-use std::borrow::Cow;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use toml::map::Map;
@@ -1064,7 +1064,7 @@ fn datetime_offset_issue_496() {
 fn borrowed_data() {
     #[derive(Serialize, Deserialize)]
     struct Foo<'a> {
-        a: Cow<'a, str>
+        a: Cow<'a, str>,
     }
 
     let toml = map! { a: Value::String(String::from("bar")) };
