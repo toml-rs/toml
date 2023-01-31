@@ -3,6 +3,7 @@
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 
 mod array;
 mod datetime;
@@ -87,18 +88,18 @@ impl From<Error> for crate::TomlError {
 impl std::error::Error for Error {}
 
 /// Convert a value into `T`.
-pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
+pub fn from_str<'a, T>(s: &'a str) -> Result<T, Error>
 where
-    T: DeserializeOwned,
+    T: Deserialize<'a>,
 {
     let de = s.parse::<Deserializer>()?;
     T::deserialize(de)
 }
 
 /// Convert a value into `T`.
-pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
+pub fn from_slice<'a, T>(s: &'a [u8]) -> Result<T, Error>
 where
-    T: DeserializeOwned,
+    T: Deserialize<'a>,
 {
     let s = std::str::from_utf8(s).map_err(|e| Error::custom(e, None))?;
     from_str(s)
