@@ -1064,6 +1064,7 @@ fn datetime_offset_issue_496() {
 fn borrowed_data() {
     #[derive(Serialize, Deserialize)]
     struct Foo<'a> {
+        #[serde(borrow)]
         a: Cow<'a, str>,
     }
 
