@@ -23,9 +23,9 @@ struct Multi {
     enums: Vec<TheEnum>,
 }
 
-fn value_from_str<T>(s: &'_ str) -> Result<T, toml::de::Error>
+fn value_from_str<'a, T>(s: &'a str) -> Result<T, toml::de::Error>
 where
-    T: serde::de::DeserializeOwned,
+    T: serde::de::Deserialize<'a>,
 {
     T::deserialize(toml::de::ValueDeserializer::new(s))
 }

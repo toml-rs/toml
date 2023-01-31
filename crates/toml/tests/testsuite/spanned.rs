@@ -37,9 +37,9 @@ fn test_spanned_field() {
         foo: T,
     }
 
-    fn good<T>(s: &str, expected: &str, end: Option<usize>)
+    fn good<'a, T>(s: &'a str, expected: &str, end: Option<usize>)
     where
-        T: serde::de::DeserializeOwned + Debug + PartialEq,
+        T: serde::de::Deserialize<'a> + Debug + PartialEq,
     {
         let foo: Foo<T> = toml::from_str(s).unwrap();
 
