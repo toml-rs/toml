@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -1057,4 +1058,16 @@ fn datetime_offset_issue_496() {
     let toml = original.parse::<toml::Table>().unwrap();
     let output = toml.to_string();
     snapbox::assert_eq(original, output);
+}
+
+#[test]
+fn borrowed_data() {
+    #[derive(Serialize, Deserialize)]
+    struct Foo<'a> {
+        a: Cow<'a, str>
+    }
+
+    let toml = map! { a: Value::String(String::from("bar")) };
+    assert!(toml.clone().try_into::<Foo>().is_ok());
+    assert!(toml::from_str::<Foo>(&toml.to_string()).is_ok());
 }
