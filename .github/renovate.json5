@@ -2,6 +2,9 @@
   "schedule": [
     "before 3am on the first day of the month"
   ],
+  "ignoreDeps": [
+    "toml_old",
+  ],
   "semanticCommits": "enabled",
   "configMigration": true,
   "packageRules": [
