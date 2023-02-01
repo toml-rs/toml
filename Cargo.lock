@@ -122,14 +122,9 @@ version = "3.2.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86447ad904c7fb335a790c9d7fe3d0d971dc523b8ccd1561a520de9a85302750"
 dependencies = [
- "atty",
  "bitflags",
- "clap_derive 3.2.18",
  "clap_lex 0.2.4",
  "indexmap",
- "once_cell",
- "strsim",
- "termcolor",
  "textwrap",
 ]
 
@@ -140,25 +135,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7db700bc935f9e43e88d00b0850dae18a63773cfbec6d8e070fccf7fef89a39"
 dependencies = [
  "bitflags",
- "clap_derive 4.0.21",
+ "clap_derive",
  "clap_lex 0.3.0",
  "is-terminal",
  "once_cell",
  "strsim",
  "termcolor",
-]
-
-[[package]]
-name = "clap_derive"
-version = "3.2.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea0c8bce528c4be4da13ea6fead8965e95b6073585a2f05204bd8f4119f82a65"
-dependencies = [
- "heck",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -503,17 +485,6 @@ dependencies = [
 
 [[package]]
 name = "libtest-mimic"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79529479c298f5af41375b0c1a77ef670d450b4c9cd7949d2b43af08121b20ec"
-dependencies = [
- "clap 3.2.22",
- "termcolor",
- "threadpool",
-]
-
-[[package]]
-name = "libtest-mimic"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7b603516767d1ab23d0de09d023e62966c3322f7148297c35cf3d97aa8b37fa"
@@ -811,13 +782,13 @@ checksum = "62ac7f900db32bf3fd12e0117dd3dc4da74bc52ebaac97f39668446d89694803"
 
 [[package]]
 name = "snapbox"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "efbd7b250c7243273b5aec4ca366fced84ad716d110bb7baae4814678952ebde"
+checksum = "34eced5a65e76d5a00047986a83c65f80dc666faa27b5138f331659e2ca6bcf5"
 dependencies = [
  "concolor",
  "ignore",
- "libtest-mimic 0.5.2",
+ "libtest-mimic",
  "normalize-line-endings",
  "similar",
  "snapbox-macros",
@@ -946,7 +917,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e00fda5710922fe6b3005bf6a5050c303d6f9625249c37b7386e8818f4af675"
 dependencies = [
  "ignore",
- "libtest-mimic 0.6.0",
+ "libtest-mimic",
  "toml-test",
  "toml-test-data",
 ]
@@ -977,7 +948,7 @@ version = "0.19.1"
 dependencies = [
  "indexmap",
  "kstring",
- "libtest-mimic 0.6.0",
+ "libtest-mimic",
  "nom8",
  "serde",
  "serde_json",
