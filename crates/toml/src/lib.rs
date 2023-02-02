@@ -5,7 +5,7 @@
 //! ```toml
 //! [package]
 //! name = "toml"
-//! version = "0.4.2"
+//! version = "0.7.1"
 //! authors = ["Alex Crichton <alex@alexcrichton.com>"]
 //!
 //! [dependencies]
