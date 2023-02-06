@@ -44,6 +44,22 @@ expected `]`
 }
 
 #[test]
+fn duplicate_table_after_dotted_key_issue_509() {
+    "
+[dependencies.foo]
+version = \"0.16\"
+
+[dependencies]
+libc = \"0.2\"
+
+[dependencies]
+rand = \"0.3.14\"
+"
+    .parse::<toml_edit::Document>()
+    .unwrap();
+}
+
+#[test]
 fn bad() {
     let toml_input = "a = 01";
     let expected_err = "\
