@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* Error on `[dep.a]\n[dep]\n[dep]`
+
 ## [0.19.1] - 2023-01-30
 
 ### Documentation
