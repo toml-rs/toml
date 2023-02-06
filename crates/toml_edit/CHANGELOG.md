@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.2] - 2023-02-06
+
 ### Fixes
 
 - *(parser)* Error on `[dep.a]\n[dep]\n[dep]`
@@ -448,7 +450,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.2...HEAD
+[0.19.2]: https://github.com/toml-rs/toml/compare/v0.19.1...v0.19.2
 [0.19.1]: https://github.com/toml-rs/toml/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/toml-rs/toml/compare/v0.18.1...v0.19.0
 [0.18.1]: https://github.com/toml-rs/toml/compare/v0.18.0...v0.18.1
