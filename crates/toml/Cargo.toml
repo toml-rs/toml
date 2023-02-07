@@ -1,6 +1,6 @@
 [package]
 name = "toml"
-version = "0.7.1"
+version = "0.7.2"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["encoding", "toml"]
@@ -51,7 +51,7 @@ preserve_order = ["indexmap"]
 [dependencies]
 serde = "1.0.145"
 indexmap = { version = "1.9.1", optional = true }
-toml_edit = { version = "0.19.2", path = "../toml_edit", features = ["serde"], optional = true }
+toml_edit = { version = "0.19.3", path = "../toml_edit", features = ["serde"], optional = true }
 toml_datetime = { version = "0.6.1", path = "../toml_datetime", features = ["serde"] }
 serde_spanned = { version = "0.6.1", path = "../serde_spanned", features = ["serde"] }
 

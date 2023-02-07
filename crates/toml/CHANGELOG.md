@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.2] - 2023-02-07
+
 ### Fixes
 
 - *(ser)* Error on i64 overflow
@@ -102,7 +104,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.1...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.2...HEAD
+[0.7.2]: https://github.com/toml-rs/toml/compare/toml-v0.7.1...toml-v0.7.2
 [0.7.1]: https://github.com/toml-rs/toml/compare/toml-v0.7.0...toml-v0.7.1
 [0.7.0]: https://github.com/toml-rs/toml/compare/toml-v0.6.0...toml-v0.7.0
 [0.6.0]: https://github.com/toml-rs/toml/compare/70caf40...toml-v0.6.0
