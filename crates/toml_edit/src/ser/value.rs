@@ -98,7 +98,10 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        self.serialize_i64(v as i64)
+        let v: i64 = v
+            .try_into()
+            .map_err(|_err| Error::OutOfRange(Some("u64")))?;
+        self.serialize_i64(v)
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
