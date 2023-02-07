@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(ser)* Error on i64 overflow
+
 ## [0.7.1] - 2023-01-30
 
 ### Documentation
