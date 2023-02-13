@@ -47,6 +47,8 @@ Breaking API Changes
 - `de::from_slice` and `ser::to_vec` were removed, instead use `from_str` and `to_string` and convert with bytes manually
 - `toml!` returns a `Table`, rather than a `Value`
 - `toml::de` can  no longer deserialize to borrowed types as everything becomes owned through the parsing process
+- `serde::de::Deserializer` is now implemented for `toml::Deserializer`, rather than `&mut toml::Deserializer`
+- `serde::ser::Serializer` is now implemented for `toml::Serializer`, rather than `&mut toml::Serializer`
 - `value` no longer re-exports `Map` and `Entry`
 - `Spanned::span`s return type changed to `std::ops::Range<usize>`
 - `Spanned::start` removed in favor of `Spanned::span().start`
