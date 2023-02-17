@@ -1,9 +1,9 @@
 use std::ops::RangeInclusive;
 
-use nom8::bytes::any;
-use nom8::bytes::take_while1;
-use nom8::combinator::peek;
-use nom8::multi::separated_list1;
+use winnow::bytes::any;
+use winnow::bytes::take_while1;
+use winnow::combinator::peek;
+use winnow::multi::separated1;
 
 use crate::key::Key;
 use crate::parser::errors::CustomError;
@@ -17,8 +17,7 @@ use crate::RawString;
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
 pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<'_>> {
-    separated_list1(
-        DOT_SEP,
+    separated1(
         (ws.span(), simple_key, ws.span()).map(|(pre, (raw, key), suffix)| {
             Key::new(key)
                 .with_repr_unchecked(Repr::new_unchecked(raw))
@@ -27,14 +26,15 @@ pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<
                     RawString::with_span(suffix),
                 ))
         }),
+        DOT_SEP,
     )
     .context(Context::Expression("key"))
-    .map_res(|k| {
+    .map_res(|k: Vec<_>| {
         // Inserting the key will require recursion down the line
         RecursionCheck::check_depth(k.len())?;
         Ok::<_, CustomError>(k)
     })
-    .parse(input)
+    .parse_next(input)
 }
 
 // simple-key = quoted-key / unquoted-key
@@ -53,19 +53,19 @@ pub(crate) fn simple_key(
         let raw = RawString::with_span(span);
         (raw, k)
     })
-    .parse(input)
+    .parse_next(input)
 }
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 fn unquoted_key(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
     take_while1(UNQUOTED_CHAR)
         .map(|b| unsafe { from_utf8_unchecked(b, "`is_unquoted_char` filters out on-ASCII") })
-        .parse(input)
+        .parse_next(input)
 }
 
 pub(crate) fn is_unquoted_char(c: u8) -> bool {
-    use nom8::input::FindToken;
-    UNQUOTED_CHAR.find_token(c)
+    use winnow::stream::ContainsToken;
+    UNQUOTED_CHAR.contains_token(c)
 }
 
 const UNQUOTED_CHAR: (
@@ -93,7 +93,7 @@ mod test {
 
         for (input, expected) in cases {
             dbg!(input);
-            let parsed = simple_key.parse(new_input(input)).finish();
+            let parsed = simple_key.parse_next(new_input(input)).finish();
             assert_eq!(
                 parsed,
                 Ok((RawString::with_span(0..(input.len())), expected.into())),

@@ -4,6 +4,8 @@ use std::fmt::{Display, Formatter, Result};
 use crate::parser::prelude::*;
 use crate::Key;
 
+use winnow::BStr;
+
 /// Type representing a TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
@@ -15,10 +17,10 @@ pub struct TomlError {
 
 impl TomlError {
     pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
-        use nom8::input::IntoOutput;
-        use nom8::input::Offset;
+        use winnow::stream::Offset;
+        use winnow::stream::Stream;
 
-        let offset = original.offset(&error.input);
+        let offset = original.offset_to(&error.input);
         let span = if offset == original.len() {
             offset..offset
         } else {
@@ -26,12 +28,12 @@ impl TomlError {
         };
 
         let message = error.to_string();
+        let original = original.next_slice(original.eof_offset()).1;
 
         Self {
             message,
             original: Some(
-                String::from_utf8(original.into_output().to_owned())
-                    .expect("original document was utf8"),
+                String::from_utf8(original.to_owned()).expect("original document was utf8"),
             ),
             keys: Vec::new(),
             span: Some(span),
@@ -151,8 +153,8 @@ pub(crate) struct ParserError<'b> {
     cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
-impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
-    fn from_error_kind(input: Input<'b>, _kind: nom8::error::ErrorKind) -> Self {
+impl<'b> winnow::error::ParseError<Input<'b>> for ParserError<'b> {
+    fn from_error_kind(input: Input<'b>, _kind: winnow::error::ErrorKind) -> Self {
         Self {
             input,
             context: Default::default(),
@@ -160,8 +162,8 @@ impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
         }
     }
 
-    fn append(_input: Input<'b>, _kind: nom8::error::ErrorKind, other: Self) -> Self {
-        other
+    fn append(self, _input: Input<'b>, _kind: winnow::error::ErrorKind) -> Self {
+        self
     }
 
     fn from_char(_input: Input<'b>, _: char) -> Self {
@@ -173,17 +175,17 @@ impl<'b> nom8::error::ParseError<Input<'b>> for ParserError<'b> {
     }
 }
 
-impl<'b> nom8::error::ParseError<&'b str> for ParserError<'b> {
-    fn from_error_kind(input: &'b str, _kind: nom8::error::ErrorKind) -> Self {
+impl<'b> winnow::error::ParseError<&'b str> for ParserError<'b> {
+    fn from_error_kind(input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
         Self {
-            input: Input::new(input.as_bytes()),
+            input: Input::new(BStr::new(input)),
             context: Default::default(),
             cause: Default::default(),
         }
     }
 
-    fn append(_input: &'b str, _kind: nom8::error::ErrorKind, other: Self) -> Self {
-        other
+    fn append(self, _input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
+        self
     }
 
     fn from_char(_input: &'b str, _: char) -> Self {
@@ -195,17 +197,17 @@ impl<'b> nom8::error::ParseError<&'b str> for ParserError<'b> {
     }
 }
 
-impl<'b> nom8::error::ContextError<Input<'b>, Context> for ParserError<'b> {
-    fn add_context(_input: Input<'b>, ctx: Context, mut other: Self) -> Self {
-        other.context.push(ctx);
-        other
+impl<'b> winnow::error::ContextError<Input<'b>, Context> for ParserError<'b> {
+    fn add_context(mut self, _input: Input<'b>, ctx: Context) -> Self {
+        self.context.push(ctx);
+        self
     }
 }
 
-impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternalError<Input<'b>, E>
-    for ParserError<'b>
+impl<'b, E: std::error::Error + Send + Sync + 'static>
+    winnow::error::FromExternalError<Input<'b>, E> for ParserError<'b>
 {
-    fn from_external_error(input: Input<'b>, _kind: nom8::error::ErrorKind, e: E) -> Self {
+    fn from_external_error(input: Input<'b>, _kind: winnow::error::ErrorKind, e: E) -> Self {
         Self {
             input,
             context: Default::default(),
@@ -214,12 +216,12 @@ impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternal
     }
 }
 
-impl<'b, E: std::error::Error + Send + Sync + 'static> nom8::error::FromExternalError<&'b str, E>
+impl<'b, E: std::error::Error + Send + Sync + 'static> winnow::error::FromExternalError<&'b str, E>
     for ParserError<'b>
 {
-    fn from_external_error(input: &'b str, _kind: nom8::error::ErrorKind, e: E) -> Self {
+    fn from_external_error(input: &'b str, _kind: winnow::error::ErrorKind, e: E) -> Self {
         Self {
-            input: Input::new(input.as_bytes()),
+            input: Input::new(BStr::new(input)),
             context: Default::default(),
             cause: Some(Box::new(e)),
         }
