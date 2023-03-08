@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.5] - 2023-03-08
+
 ### Fixes
 
 - Ensure indexmap's build doesn't break by forcing the `std` feature
@@ -466,7 +468,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.4...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.5...HEAD
+[0.19.5]: https://github.com/toml-rs/toml/compare/v0.19.4...v0.19.5
 [0.19.4]: https://github.com/toml-rs/toml/compare/v0.19.3...v0.19.4
 [0.19.3]: https://github.com/toml-rs/toml/compare/v0.19.2...v0.19.3
 [0.19.2]: https://github.com/toml-rs/toml/compare/v0.19.1...v0.19.2
