@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Ensure indexmap's build doesn't break by forcing the `std` feature
+
 ## [0.19.4] - 2023-02-22
 
 ### Internal
