@@ -239,13 +239,9 @@ metadata.msrv = "1.65.0"
 
 [package.metadata.release.pre-release-replacements]
 "#;
-    let expected = r#"
-[package]
-metadata.msrv = "1.65.0"
-"#;
     let document = input.parse::<Document>().unwrap();
     let actual = document.to_string();
-    assert_eq(expected, actual);
+    assert_eq(input, actual);
 }
 
 #[test]

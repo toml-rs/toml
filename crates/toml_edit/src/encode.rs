@@ -237,11 +237,13 @@ fn visit_nested_tables<'t, F>(
 where
     F: FnMut(&'t Table, &Vec<&'t Key>, bool) -> Result,
 {
-    callback(table, path, is_array_of_tables)?;
+    if !table.is_dotted() {
+        callback(table, path, is_array_of_tables)?;
+    }
 
     for kv in table.items.values() {
         match kv.value {
-            Item::Table(ref t) if !t.is_dotted() => {
+            Item::Table(ref t) => {
                 path.push(&kv.key);
                 visit_nested_tables(t, path, false, callback)?;
                 path.pop();
