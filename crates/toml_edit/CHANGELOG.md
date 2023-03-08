@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Don't skip writing standard tables that are "underneath" dotted keys
+
 ## [0.19.5] - 2023-03-08
 
 ### Fixes
