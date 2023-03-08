@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.6] - 2023-03-08
+
 ### Fixes
 
 - Don't skip writing standard tables that are "underneath" dotted keys
@@ -472,7 +474,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.5...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.6...HEAD
+[0.19.6]: https://github.com/toml-rs/toml/compare/v0.19.5...v0.19.6
 [0.19.5]: https://github.com/toml-rs/toml/compare/v0.19.4...v0.19.5
 [0.19.4]: https://github.com/toml-rs/toml/compare/v0.19.3...v0.19.4
 [0.19.3]: https://github.com/toml-rs/toml/compare/v0.19.2...v0.19.3
