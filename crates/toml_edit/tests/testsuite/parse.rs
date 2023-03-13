@@ -232,6 +232,19 @@ fn empty_table() {
 }
 
 #[test]
+fn mixed_table_issue_527() {
+    let input = r#"
+[package]
+metadata.msrv = "1.65.0"
+
+[package.metadata.release.pre-release-replacements]
+"#;
+    let document = input.parse::<Document>().unwrap();
+    let actual = document.to_string();
+    assert_eq(input, actual);
+}
+
+#[test]
 fn fruit() {
     let table = r#"
 [[fruit]]
