@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Avoid newlines from dotted keys in std tables
+
 ## [0.19.6] - 2023-03-08
 
 ### Fixes
