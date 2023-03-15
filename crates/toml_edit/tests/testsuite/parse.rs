@@ -1459,3 +1459,19 @@ expected newline, `#`
 "#
     );
 }
+
+#[test]
+fn dont_use_dotted_key_prefix_on_table_fuzz_57049() {
+    // This could generate
+    // ```toml
+    // [
+    // p.o]
+    // ```
+    let input = r#"
+p.a=4
+[p.o]
+"#;
+    let document = input.parse::<Document>().unwrap();
+    let actual = document.to_string();
+    assert_eq(input, actual);
+}
