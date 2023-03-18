@@ -59,7 +59,7 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserE
         .map_err(|err| {
             winnow::error::ErrMode::Backtrack(ParserError::from_external_error(
                 i,
-                winnow::error::ErrorKind::MapRes,
+                winnow::error::ErrorKind::Verify,
                 err,
             ))
         })

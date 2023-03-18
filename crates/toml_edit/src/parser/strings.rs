@@ -357,7 +357,7 @@ mod test {
         let input =
             r#""I'm a string. \"You can quote me\". Name\tJos\u00E9\nLocation\tSF. \U0002070E""#;
         let expected = "I\'m a string. \"You can quote me\". Name\tJosé\nLocation\tSF. \u{2070E}";
-        let parsed = string.parse_next(new_input(input)).finish();
+        let parsed = string.parse(new_input(input));
         assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
     }
 
@@ -376,14 +376,14 @@ Violets are blue"#,
         ];
 
         for &(input, expected) in &cases {
-            let parsed = string.parse_next(new_input(input)).finish();
+            let parsed = string.parse(new_input(input));
             assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
 
         let invalid_cases = [r#""""  """#, r#""""  \""""#];
 
         for input in &invalid_cases {
-            let parsed = string.parse_next(new_input(input)).finish();
+            let parsed = string.parse(new_input(input));
             assert!(parsed.is_err());
         }
     }
@@ -405,7 +405,7 @@ The quick brown \
         ];
         for input in &inputs {
             let expected = "The quick brown fox jumps over the lazy dog.";
-            let parsed = string.parse_next(new_input(input)).finish();
+            let parsed = string.parse(new_input(input));
             assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
         let empties = [
@@ -418,7 +418,7 @@ The quick brown \
         ];
         for input in &empties {
             let expected = "";
-            let parsed = string.parse_next(new_input(input)).finish();
+            let parsed = string.parse(new_input(input));
             assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
     }
@@ -434,7 +434,7 @@ The quick brown \
 
         for input in &inputs {
             let expected = &input[1..input.len() - 1];
-            let parsed = string.parse_next(new_input(input)).finish();
+            let parsed = string.parse(new_input(input));
             assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
     }
@@ -447,7 +447,7 @@ The quick brown \
         ];
         for input in &inputs {
             let expected = &input[3..input.len() - 3];
-            let parsed = string.parse_next(new_input(input)).finish();
+            let parsed = string.parse(new_input(input));
             assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
         }
 
@@ -458,7 +458,7 @@ trimmed in raw strings.
    is preserved.
 '''"#;
         let expected = &input[4..input.len() - 3];
-        let parsed = string.parse_next(new_input(input)).finish();
+        let parsed = string.parse(new_input(input));
         assert_eq!(parsed.as_deref(), Ok(expected), "Parsing {input:?}");
     }
 }

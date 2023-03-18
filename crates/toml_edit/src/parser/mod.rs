@@ -23,8 +23,7 @@ pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
 
     let b = new_input(raw);
     let mut doc = document::document
-        .parse_next(b)
-        .finish()
+        .parse(b)
         .map_err(|e| TomlError::new(e, b))?;
     doc.span = Some(0..(raw.len()));
     doc.original = Some(raw.to_owned());
@@ -35,7 +34,7 @@ pub(crate) fn parse_key(raw: &str) -> Result<crate::Key, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let result = key::simple_key.parse_next(b).finish();
+    let result = key::simple_key.parse(b);
     match result {
         Ok((raw, key)) => {
             Ok(crate::Key::new(key).with_repr_unchecked(crate::Repr::new_unchecked(raw)))
@@ -48,7 +47,7 @@ pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let result = key::key.parse_next(b).finish();
+    let result = key::key.parse(b);
     match result {
         Ok(mut keys) => {
             for key in &mut keys {
@@ -64,9 +63,7 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let parsed = value::value(RecursionCheck::default())
-        .parse_next(b)
-        .finish();
+    let parsed = value::value(RecursionCheck::default()).parse(b);
     match parsed {
         Ok(mut value) => {
             // Only take the repr and not decor, as its probably not intended
@@ -84,8 +81,6 @@ pub(crate) mod prelude {
     pub(crate) use super::errors::ParserValue;
     pub(crate) use winnow::IResult;
     pub(crate) use winnow::Parser as _;
-
-    pub(crate) use winnow::FinishIResult as _;
 
     pub(crate) type Input<'b> = winnow::Located<&'b winnow::BStr>;
 
@@ -175,7 +170,7 @@ pub(crate) mod prelude {
         pub(crate) fn recursing(
             self,
             _input: Input<'_>,
-        ) -> Result<Self, winnow::Err<ParserError<'_>>> {
+        ) -> Result<Self, winnow::error::ErrMode<ParserError<'_>>> {
             Ok(self)
         }
     }

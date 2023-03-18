@@ -147,9 +147,7 @@ trimmed in raw strings.
         ];
         for input in inputs {
             dbg!(input);
-            let mut parsed = value(Default::default())
-                .parse_next(new_input(input))
-                .finish();
+            let mut parsed = value(Default::default()).parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }

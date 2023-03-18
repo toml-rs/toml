@@ -166,10 +166,6 @@ impl<'b> winnow::error::ParseError<Input<'b>> for ParserError<'b> {
         self
     }
 
-    fn from_char(_input: Input<'b>, _: char) -> Self {
-        unimplemented!("this shouldn't be called with a binary parser")
-    }
-
     fn or(self, other: Self) -> Self {
         other
     }
@@ -186,10 +182,6 @@ impl<'b> winnow::error::ParseError<&'b str> for ParserError<'b> {
 
     fn append(self, _input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
         self
-    }
-
-    fn from_char(_input: &'b str, _: char) -> Self {
-        unimplemented!("this shouldn't be called with a binary parser")
     }
 
     fn or(self, other: Self) -> Self {

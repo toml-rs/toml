@@ -143,7 +143,7 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let parsed = ws_comment_newline.parse_next(new_input(input)).finish();
+            let parsed = ws_comment_newline.parse(new_input(input));
             assert!(parsed.is_ok(), "{:?}", parsed);
             let parsed = parsed.unwrap();
             assert_eq!(parsed, input.as_bytes());

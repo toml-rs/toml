@@ -124,9 +124,7 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let mut parsed = array(Default::default())
-                .parse_next(new_input(input))
-                .finish();
+            let mut parsed = array(Default::default()).parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }
@@ -139,9 +137,7 @@ mod test {
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
             dbg!(input);
-            let mut parsed = array(Default::default())
-                .parse_next(new_input(input))
-                .finish();
+            let mut parsed = array(Default::default()).parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }
