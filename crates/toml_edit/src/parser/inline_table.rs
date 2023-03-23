@@ -159,9 +159,7 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let mut parsed = inline_table(Default::default())
-                .parse_next(new_input(input))
-                .finish();
+            let mut parsed = inline_table(Default::default()).parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }
@@ -174,9 +172,7 @@ mod test {
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
             dbg!(input);
-            let mut parsed = inline_table(Default::default())
-                .parse_next(new_input(input))
-                .finish();
+            let mut parsed = inline_table(Default::default()).parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }

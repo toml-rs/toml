@@ -48,7 +48,7 @@ unbounded = []
 
 [dependencies]
 indexmap = { version = "1.9.1", features = ["std"] }
-winnow = "0.3.0"
+winnow = "0.4.0"
 serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.6.1", path = "../toml_datetime" }

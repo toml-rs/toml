@@ -303,7 +303,7 @@ mod test {
         ];
         for (input, expected) in inputs {
             dbg!(input);
-            let actual = date_time.parse_next(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).unwrap();
             assert_eq!(expected, actual);
         }
     }
@@ -348,7 +348,7 @@ mod test {
         ];
         for (input, expected) in inputs {
             dbg!(input);
-            let actual = date_time.parse_next(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).unwrap();
             assert_eq!(expected, actual);
         }
     }
@@ -383,7 +383,7 @@ mod test {
         ];
         for (input, expected) in inputs {
             dbg!(input);
-            let actual = date_time.parse_next(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).unwrap();
             assert_eq!(expected, actual);
         }
     }
@@ -420,7 +420,7 @@ mod test {
         ];
         for (input, expected) in inputs {
             dbg!(input);
-            let actual = date_time.parse_next(new_input(input)).finish().unwrap();
+            let actual = date_time.parse(new_input(input)).unwrap();
             assert_eq!(expected, actual);
         }
     }
@@ -428,6 +428,6 @@ mod test {
     #[test]
     fn time_fraction_truncated() {
         let input = "1987-07-05T17:45:00.123456789012345Z";
-        date_time.parse_next(new_input(input)).finish().unwrap();
+        date_time.parse(new_input(input)).unwrap();
     }
 }

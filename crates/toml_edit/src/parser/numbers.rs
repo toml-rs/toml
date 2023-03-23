@@ -296,12 +296,12 @@ mod test {
         ];
         for &(input, expected) in &cases {
             dbg!(input);
-            let parsed = integer.parse_next(new_input(input)).finish();
+            let parsed = integer.parse(new_input(input));
             assert_eq!(parsed, Ok(expected), "Parsing {input:?}");
         }
 
         let overflow = "1000000000000000000000000000000000";
-        let parsed = integer.parse_next(new_input(overflow)).finish();
+        let parsed = integer.parse(new_input(overflow));
         assert!(parsed.is_err());
     }
 
@@ -342,11 +342,11 @@ mod test {
         ];
         for &(input, expected) in &cases {
             dbg!(input);
-            let parsed = float.parse_next(new_input(input)).finish().unwrap();
+            let parsed = float.parse(new_input(input)).unwrap();
             assert_float_eq(parsed, expected);
 
             let overflow = "9e99999";
-            let parsed = float.parse_next(new_input(overflow)).finish();
+            let parsed = float.parse(new_input(overflow));
             assert!(parsed.is_err(), "{:?}", parsed);
         }
     }

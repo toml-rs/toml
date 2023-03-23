@@ -93,7 +93,7 @@ mod test {
 
         for (input, expected) in cases {
             dbg!(input);
-            let parsed = simple_key.parse_next(new_input(input)).finish();
+            let parsed = simple_key.parse(new_input(input));
             assert_eq!(
                 parsed,
                 Ok((RawString::with_span(0..(input.len())), expected.into())),
