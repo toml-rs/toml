@@ -5,11 +5,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["serde", "span"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
-description = """
-A native Rust encoder and decoder of TOML-formatted files and streams. Provides
-implementations of the standard Serialize/Deserialize traits for TOML data to
-facilitate deserializing and serializing Rust structures.
-"""
+description = "Serde-compatible spanned Value"
 repository = "https://github.com/toml-rs/toml"
 homepage = "https://github.com/toml-rs/toml"
 documentation = "https://docs.rs/serde_spanned"
