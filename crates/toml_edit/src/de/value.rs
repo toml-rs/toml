@@ -34,7 +34,8 @@ pub struct ValueDeserializer {
 }
 
 impl ValueDeserializer {
-    pub(crate) fn new(input: crate::Item) -> Self {
+    /// Deserialization implementation for a valid TOML item.
+    pub fn new(input: crate::Item) -> Self {
         Self {
             input,
             validate_struct_keys: false,
