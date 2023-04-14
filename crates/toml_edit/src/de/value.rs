@@ -5,6 +5,9 @@ use crate::de::Error;
 
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
+/// Can be creater either directly from TOML strings, using [`std::str::FromStr`],
+/// or from parsed [values][crate::Value] using [`serde::de::IntoDeserializer::into_deserializer`].
+///
 /// # Example
 ///
 /// ```
@@ -24,7 +27,6 @@ use crate::de::Error;
 /// let value = r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#;
 /// let deserializer = value.parse::<toml_edit::de::ValueDeserializer>().unwrap();
 /// let config = Config::deserialize(deserializer).unwrap();
-///
 /// assert_eq!(config.title, "TOML Example");
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
