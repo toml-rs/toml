@@ -5,9 +5,13 @@ use crate::de::Error;
 
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
+/// Can be creater either directly from TOML strings, using [`std::str::FromStr`],
+/// or from parsed [values][crate::Value] using [`serde::de::IntoDeserializer::into_deserializer`].
+///
 /// # Example
 ///
 /// ```
+/// use serde::de::IntoDeserializer;
 /// use serde::Deserialize;
 ///
 /// #[derive(Deserialize)]
@@ -21,16 +25,21 @@ use crate::de::Error;
 ///     name: String,
 /// }
 ///
-/// let value = r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#;
-/// let deserializer = value.parse::<toml_edit::de::ValueDeserializer>().unwrap();
-/// let config = Config::deserialize(deserializer).unwrap();
+/// let toml_str = r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#;
 ///
+/// let deserializer = toml_str
+///     .parse::<toml_edit::de::ValueDeserializer>()
+///     .unwrap();
+/// let config = Config::deserialize(deserializer).unwrap();
 /// assert_eq!(config.title, "TOML Example");
 /// assert_eq!(config.owner.name, "Lisa");
-/// ```
 ///
-/// Already parsed [`crate::Value`] types can be turned into [`ValueDeserializer`]
-/// using [`serde::de::IntoDeserializer::into_deserializer`].
+/// let toml_item: toml_edit::Item = toml_str.parse().unwrap();
+/// let another_deserializer = toml_item.into_value().unwrap().into_deserializer();
+/// let another_config = Config::deserialize(another_deserializer).unwrap();
+/// assert_eq!(another_config.title, "TOML Example");
+/// assert_eq!(another_config.owner.name, "Lisa");
+/// ```
 pub struct ValueDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
