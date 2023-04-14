@@ -28,6 +28,9 @@ use crate::de::Error;
 /// assert_eq!(config.title, "TOML Example");
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
+///
+/// Already parsed [`crate::Value`] types can be turned into [`ValueDeserializer`]
+/// using [`serde::de::IntoDeserializer::into_deserializer`].
 pub struct ValueDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
