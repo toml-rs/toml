@@ -2,6 +2,22 @@
 members = ["crates/*"]
 resolver = "2"
 
+[workspace.package]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.64.0"  # MSRV
+include = [
+  "build.rs",
+  "src/**/*",
+  "Cargo.toml",
+  "Cargo.lock",
+  "LICENSE*",
+  "README.md",
+  "benches/**/*",
+  "examples/**/*",
+  "tests/**/*"
+]
+
 [profile.release]
 debug = 1
 
