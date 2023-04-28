@@ -2,24 +2,16 @@
 name = "toml_edit"
 version = "0.19.8"
 readme = "README.md"
-license = "MIT OR Apache-2.0"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Yet another format-preserving TOML parser."
 authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.com>"]
 repository = "https://github.com/ordian/toml_edit"
 documentation = "https://docs.rs/toml_edit"
-edition = "2021"
-rust-version = "1.64.0"  # MSRV
-include = [
-  "src/**/*",
-  "Cargo.toml",
-  "LICENSE*",
-  "README.md",
-  "examples/**/*",
-  "benches/**/*",
-  "tests/**/*"
-]
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+include.workspace = true
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]

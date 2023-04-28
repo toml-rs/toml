@@ -2,7 +2,6 @@
 name = "toml_datetime"
 version = "0.6.1"
 readme = "README.md"
-license = "MIT OR Apache-2.0"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "A TOML-compatible datetime type"
@@ -10,17 +9,10 @@ authors = ["Alex Crichton <alex@alexcrichton.com>"]
 repository = "https://github.com/toml-rs/toml"
 homepage = "https://github.com/toml-rs/toml"
 documentation = "https://docs.rs/toml_datetime"
-edition = "2021"
-rust-version = "1.64.0"  # MSRV
-include = [
-  "src/**/*",
-  "Cargo.toml",
-  "LICENSE*",
-  "README.md",
-  "examples/**/*",
-  "benches/**/*",
-  "tests/**/*"
-]
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+include.workspace = true
 
 [package.metadata.release]
 pre-release-replacements = [
