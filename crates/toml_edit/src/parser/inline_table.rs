@@ -1,7 +1,7 @@
-use winnow::bytes::one_of;
 use winnow::combinator::cut_err;
-use winnow::multi::separated0;
-use winnow::sequence::delimited;
+use winnow::combinator::delimited;
+use winnow::combinator::separated0;
+use winnow::token::one_of;
 
 use crate::key::Key;
 use crate::parser::errors::CustomError;
@@ -23,7 +23,7 @@ pub(crate) fn inline_table(
     move |input| {
         delimited(
             INLINE_TABLE_OPEN,
-            cut_err(inline_table_keyvals(check).map_res(|(kv, p)| table_from_pairs(kv, p))),
+            cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
             cut_err(INLINE_TABLE_CLOSE)
                 .context(Context::Expression("inline table"))
                 .context(Context::Expected(ParserValue::CharLiteral('}'))),

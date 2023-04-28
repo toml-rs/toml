@@ -2,25 +2,25 @@ use std::borrow::Cow;
 use std::char;
 use std::ops::RangeInclusive;
 
-use winnow::branch::alt;
-use winnow::bytes::any;
-use winnow::bytes::none_of;
-use winnow::bytes::one_of;
-use winnow::bytes::tag;
-use winnow::bytes::take_while0;
-use winnow::bytes::take_while1;
-use winnow::bytes::take_while_m_n;
+use winnow::combinator::alt;
 use winnow::combinator::cut_err;
+use winnow::combinator::delimited;
 use winnow::combinator::fail;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
+use winnow::combinator::preceded;
+use winnow::combinator::repeat0;
+use winnow::combinator::repeat1;
 use winnow::combinator::success;
-use winnow::multi::many0;
-use winnow::multi::many1;
+use winnow::combinator::terminated;
 use winnow::prelude::*;
-use winnow::sequence::delimited;
-use winnow::sequence::preceded;
-use winnow::sequence::terminated;
+use winnow::token::any;
+use winnow::token::none_of;
+use winnow::token::one_of;
+use winnow::token::tag;
+use winnow::token::take_while;
+use winnow::token::take_while0;
+use winnow::token::take_while1;
 
 use crate::parser::errors::CustomError;
 use crate::parser::numbers::HEXDIG;
@@ -72,7 +72,7 @@ fn basic_chars(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
         take_while1(BASIC_UNESCAPED)
-            .map_res(std::str::from_utf8)
+            .try_map(std::str::from_utf8)
             .map(Cow::Borrowed),
         escaped.map(|c| Cow::Owned(String::from(c))),
     ))
@@ -136,11 +136,11 @@ fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>
 pub(crate) fn hexescape<const N: usize>(
     input: Input<'_>,
 ) -> IResult<Input<'_>, char, ParserError<'_>> {
-    take_while_m_n(0, N, HEXDIG)
+    take_while(0..=N, HEXDIG)
         .verify(|b: &[u8]| b.len() == N)
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
         .verify_map(|s| u32::from_str_radix(s, 16).ok())
-        .map_res(|h| char::from_u32(h).ok_or(CustomError::OutOfRange))
+        .try_map(|h| char::from_u32(h).ok_or(CustomError::OutOfRange))
         .parse_next(input)
 }
 
@@ -204,7 +204,7 @@ fn mlb_content(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
         take_while1(MLB_UNESCAPED)
-            .map_res(std::str::from_utf8)
+            .try_map(std::str::from_utf8)
             .map(Cow::Borrowed),
         // Order changed fromg grammar so `escaped` can more easily `cut_err` on bad escape sequences
         mlb_escaped_nl.map(|_| Cow::Borrowed("")),
@@ -247,7 +247,7 @@ pub(crate) const MLB_UNESCAPED: (
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
 fn mlb_escaped_nl(input: Input<'_>) -> IResult<Input<'_>, (), ParserError<'_>> {
-    many1((ESCAPE, ws, ws_newlines))
+    repeat1((ESCAPE, ws, ws_newlines))
         .map(|()| ())
         .value(())
         .parse_next(input)
@@ -262,7 +262,7 @@ pub(crate) fn literal_string(input: Input<'_>) -> IResult<Input<'_>, &str, Parse
         cut_err(take_while0(LITERAL_CHAR)),
         cut_err(APOSTROPHE),
     )
-    .map_res(std::str::from_utf8)
+    .try_map(std::str::from_utf8)
     .context(Context::Expression("literal string"))
     .parse_next(input)
 }
@@ -304,16 +304,16 @@ pub(crate) const ML_LITERAL_STRING_DELIM: &[u8] = b"'''";
 // ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
 fn ml_literal_body(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
     (
-        many0(mll_content).map(|()| ()),
-        many0((
+        repeat0(mll_content).map(|()| ()),
+        repeat0((
             mll_quotes(none_of(APOSTROPHE).value(())),
-            many1(mll_content).map(|()| ()),
+            repeat1(mll_content).map(|()| ()),
         ))
         .map(|()| ()),
         opt(mll_quotes(tag(ML_LITERAL_STRING_DELIM).value(()))),
     )
         .recognize()
-        .map_res(std::str::from_utf8)
+        .try_map(std::str::from_utf8)
         .parse_next(input)
 }
 

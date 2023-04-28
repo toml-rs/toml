@@ -2,10 +2,10 @@ use std::cell::RefCell;
 #[allow(unused_imports)]
 use std::ops::DerefMut;
 
-use winnow::bytes::take;
 use winnow::combinator::cut_err;
+use winnow::combinator::delimited;
 use winnow::combinator::peek;
-use winnow::sequence::delimited;
+use winnow::token::take;
 
 // https://github.com/rust-lang/rust/issues/41358
 use crate::parser::key::key;
@@ -42,7 +42,7 @@ pub(crate) fn std_table<'s, 'i>(
                 .context(Context::Expected(ParserValue::CharLiteral('\n')))
                 .context(Context::Expected(ParserValue::CharLiteral('#'))),
         )
-            .map_res(|((h, span), t)| state.borrow_mut().deref_mut().on_std_header(h, t, span))
+            .try_map(|((h, span), t)| state.borrow_mut().deref_mut().on_std_header(h, t, span))
             .parse_next(i)
     }
 }
@@ -67,7 +67,7 @@ pub(crate) fn array_table<'s, 'i>(
                 .context(Context::Expected(ParserValue::CharLiteral('\n')))
                 .context(Context::Expected(ParserValue::CharLiteral('#'))),
         )
-            .map_res(|((h, span), t)| state.borrow_mut().deref_mut().on_array_header(h, t, span))
+            .try_map(|((h, span), t)| state.borrow_mut().deref_mut().on_array_header(h, t, span))
             .parse_next(i)
     }
 }
