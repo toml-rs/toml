@@ -84,7 +84,7 @@ pub(crate) fn value(
             },
     }
         .with_span()
-        .map_res(|(value, span)| apply_raw(value, span))
+        .try_map(|(value, span)| apply_raw(value, span))
         .parse_next(input)
     }
 }

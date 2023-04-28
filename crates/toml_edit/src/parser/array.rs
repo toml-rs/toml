@@ -1,7 +1,7 @@
 use winnow::combinator::cut_err;
+use winnow::combinator::delimited;
 use winnow::combinator::opt;
-use winnow::multi::separated1;
-use winnow::sequence::delimited;
+use winnow::combinator::separated1;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
@@ -57,7 +57,7 @@ pub(crate) fn array_values(
             ),
             ws_comment_newline.span(),
         )
-            .map_res::<_, _, std::str::Utf8Error>(|(array, trailing)| {
+            .try_map::<_, _, std::str::Utf8Error>(|(array, trailing)| {
                 let (mut array, comma) = array.unwrap_or_default();
                 array.set_trailing_comma(comma);
                 array.set_trailing(RawString::with_span(trailing));

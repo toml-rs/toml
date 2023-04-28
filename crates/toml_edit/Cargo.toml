@@ -10,7 +10,7 @@ authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.c
 repository = "https://github.com/ordian/toml_edit"
 documentation = "https://docs.rs/toml_edit"
 edition = "2021"
-rust-version = "1.60.0"  # MSRV
+rust-version = "1.64.0"  # MSRV
 include = [
   "src/**/*",
   "Cargo.toml",
@@ -48,7 +48,7 @@ unbounded = []
 
 [dependencies]
 indexmap = { version = "1.9.1", features = ["std"] }
-winnow = "0.4.0"
+winnow = "0.4.3"
 serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.6.1", path = "../toml_datetime" }

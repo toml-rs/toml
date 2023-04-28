@@ -1,15 +1,15 @@
 use std::ops::RangeInclusive;
 
-use winnow::branch::alt;
-use winnow::bytes::one_of;
-use winnow::bytes::take_while0;
-use winnow::bytes::take_while1;
+use winnow::combinator::alt;
 use winnow::combinator::eof;
 use winnow::combinator::opt;
-use winnow::multi::many0;
-use winnow::multi::many1;
+use winnow::combinator::repeat0;
+use winnow::combinator::repeat1;
+use winnow::combinator::terminated;
 use winnow::prelude::*;
-use winnow::sequence::terminated;
+use winnow::token::one_of;
+use winnow::token::take_while0;
+use winnow::token::take_while1;
 
 use crate::parser::prelude::*;
 
@@ -70,7 +70,7 @@ pub(crate) const CR: u8 = b'\r';
 
 // ws-newline       = *( wschar / newline )
 pub(crate) fn ws_newline(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    many0(alt((newline.value(&b"\n"[..]), take_while1(WSCHAR))))
+    repeat0(alt((newline.value(&b"\n"[..]), take_while1(WSCHAR))))
         .map(|()| ())
         .recognize()
         .map(|b| unsafe {
@@ -92,8 +92,8 @@ pub(crate) fn ws_newlines(input: Input<'_>) -> IResult<Input<'_>, &str, ParserEr
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
 pub(crate) fn ws_comment_newline(input: Input<'_>) -> IResult<Input<'_>, &[u8], ParserError<'_>> {
-    many0(alt((
-        many1(alt((take_while1(WSCHAR), newline.value(&b"\n"[..])))).map(|()| ()),
+    repeat0(alt((
+        repeat1(alt((take_while1(WSCHAR), newline.value(&b"\n"[..])))).map(|()| ()),
         comment.value(()),
     )))
     .map(|()| ())

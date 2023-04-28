@@ -5,12 +5,12 @@ use crate::parser::prelude::*;
 use crate::parser::trivia::from_utf8_unchecked;
 
 use toml_datetime::*;
-use winnow::branch::alt;
-use winnow::bytes::one_of;
-use winnow::bytes::take_while_m_n;
+use winnow::combinator::alt;
 use winnow::combinator::cut_err;
 use winnow::combinator::opt;
-use winnow::sequence::preceded;
+use winnow::combinator::preceded;
+use winnow::token::one_of;
+use winnow::token::take_while;
 
 // ;; Date and Time (as defined in RFC 3339)
 
@@ -104,7 +104,7 @@ pub(crate) fn date_fullyear(input: Input<'_>) -> IResult<Input<'_>, u16, ParserE
 // date-month     = 2DIGIT  ; 01-12
 pub(crate) fn date_month(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
     unsigned_digits::<2, 2>
-        .map_res(|s: &str| {
+        .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
             if (1..=12).contains(&d) {
                 Ok(d)
@@ -118,7 +118,7 @@ pub(crate) fn date_month(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError
 // date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
 pub(crate) fn date_mday(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
     unsigned_digits::<2, 2>
-        .map_res(|s: &str| {
+        .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
             if (1..=31).contains(&d) {
                 Ok(d)
@@ -139,7 +139,7 @@ const TIME_DELIM: (u8, u8, u8) = (b'T', b't', b' ');
 // time-hour      = 2DIGIT  ; 00-23
 pub(crate) fn time_hour(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
     unsigned_digits::<2, 2>
-        .map_res(|s: &str| {
+        .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
             if (0..=23).contains(&d) {
                 Ok(d)
@@ -153,7 +153,7 @@ pub(crate) fn time_hour(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<
 // time-minute    = 2DIGIT  ; 00-59
 pub(crate) fn time_minute(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
     unsigned_digits::<2, 2>
-        .map_res(|s: &str| {
+        .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
             if (0..=59).contains(&d) {
                 Ok(d)
@@ -167,7 +167,7 @@ pub(crate) fn time_minute(input: Input<'_>) -> IResult<Input<'_>, u8, ParserErro
 // time-second    = 2DIGIT  ; 00-58, 00-59, 00-60 based on leap second rules
 pub(crate) fn time_second(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
     unsigned_digits::<2, 2>
-        .map_res(|s: &str| {
+        .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
             if (0..=60).contains(&d) {
                 Ok(d)
@@ -194,7 +194,7 @@ pub(crate) fn time_secfrac(input: Input<'_>) -> IResult<Input<'_>, u32, ParserEr
     ];
     const INF: usize = usize::MAX;
     preceded(b'.', unsigned_digits::<1, INF>)
-        .map_res(|mut repr: &str| -> Result<u32, CustomError> {
+        .try_map(|mut repr: &str| -> Result<u32, CustomError> {
             let max_digits = SCALE.len() - 1;
             if max_digits < repr.len() {
                 // Millisecond precision is required. Further precision of fractional seconds is
@@ -217,7 +217,7 @@ pub(crate) fn time_secfrac(input: Input<'_>) -> IResult<Input<'_>, u32, ParserEr
 pub(crate) fn unsigned_digits<const MIN: usize, const MAX: usize>(
     input: Input<'_>,
 ) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    take_while_m_n(MIN, MAX, DIGIT)
+    take_while(MIN..=MAX, DIGIT)
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
         .parse_next(input)
 }
