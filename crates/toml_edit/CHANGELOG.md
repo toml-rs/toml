@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.9] - 2023-05-18
+
 ### Features
 
 - *(ser)* Newtype variant support
@@ -494,7 +496,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.8...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.9...HEAD
+[0.19.9]: https://github.com/toml-rs/toml/compare/v0.19.8...v0.19.9
 [0.19.8]: https://github.com/toml-rs/toml/compare/v0.19.7...v0.19.8
 [0.19.7]: https://github.com/toml-rs/toml/compare/v0.19.6...v0.19.7
 [0.19.6]: https://github.com/toml-rs/toml/compare/v0.19.5...v0.19.6

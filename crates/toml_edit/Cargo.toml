@@ -1,6 +1,6 @@
 [package]
 name = "toml_edit"
-version = "0.19.8"
+version = "0.19.9"
 readme = "README.md"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
@@ -43,8 +43,8 @@ indexmap = { version = "1.9.1", features = ["std"] }
 winnow = "0.4.6"
 serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
-toml_datetime = { version = "0.6.1", path = "../toml_datetime" }
-serde_spanned = { version = "0.6.1", path = "../serde_spanned", features = ["serde"], optional = true }
+toml_datetime = { version = "0.6.2", path = "../toml_datetime" }
+serde_spanned = { version = "0.6.2", path = "../serde_spanned", features = ["serde"], optional = true }
 
 [dev-dependencies]
 serde_json = "1.0.96"

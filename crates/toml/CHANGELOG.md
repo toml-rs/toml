@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.4] - 2023-05-18
+
 ### Features
 
 - *(ser)* Newtype variant support
@@ -120,7 +122,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.3...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.4...HEAD
+[0.7.4]: https://github.com/toml-rs/toml/compare/toml-v0.7.3...toml-v0.7.4
 [0.7.3]: https://github.com/toml-rs/toml/compare/toml-v0.7.2...toml-v0.7.3
 [0.7.2]: https://github.com/toml-rs/toml/compare/toml-v0.7.1...toml-v0.7.2
 [0.7.1]: https://github.com/toml-rs/toml/compare/toml-v0.7.0...toml-v0.7.1

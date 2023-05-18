@@ -1,6 +1,6 @@
 [package]
 name = "toml_datetime"
-version = "0.6.1"
+version = "0.6.2"
 readme = "README.md"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
