@@ -167,15 +167,18 @@ impl serde::ser::Serializer for ValueSerializer {
 
     fn serialize_newtype_variant<T: ?Sized>(
         self,
-        name: &'static str,
+        _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
-        _value: &T,
+        variant: &'static str,
+        value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize,
     {
-        Err(Error::UnsupportedType(Some(name)))
+        let value = value.serialize(self)?;
+        let mut table = crate::InlineTable::new();
+        table.insert(variant, value);
+        Ok(table.into())
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
