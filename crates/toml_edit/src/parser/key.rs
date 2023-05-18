@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use winnow::combinator::peek;
 use winnow::combinator::separated1;
 use winnow::token::any;
-use winnow::token::take_while1;
+use winnow::token::take_while;
 
 use crate::key::Key;
 use crate::parser::errors::CustomError;
@@ -58,7 +58,7 @@ pub(crate) fn simple_key(
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 fn unquoted_key(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    take_while1(UNQUOTED_CHAR)
+    take_while(1.., UNQUOTED_CHAR)
         .map(|b| unsafe { from_utf8_unchecked(b, "`is_unquoted_char` filters out on-ASCII") })
         .parse_next(input)
 }
