@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- *(ser)* Newtype variant support
+
+### Compatibility
+
+MSRV is now 1.64.0
+
 ## [0.7.3] - 2023-03-08
 
 ### Fixes

@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+MSRV is now 1.64.0
+
 ## [0.6.1] - 2023-01-30
 
 ### Documentation
