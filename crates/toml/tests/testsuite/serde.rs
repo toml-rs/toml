@@ -614,7 +614,6 @@ fn newtypes2() {
 }
 
 #[test]
-#[should_panic]
 fn newtype_variant() {
     #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
     struct Struct {
