@@ -613,6 +613,29 @@ fn newtypes2() {
     }
 }
 
+#[test]
+#[should_panic]
+fn newtype_variant() {
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+    struct Struct {
+        field: Enum,
+    }
+
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+    enum Enum {
+        Variant(u8),
+    }
+
+    equivalent! {
+        Struct { field: Enum::Variant(21) },
+        map! {
+            field: map! {
+                Variant: Value::Integer(21)
+            }
+        },
+    }
+}
+
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 struct CanBeEmpty {
     a: Option<String>,
