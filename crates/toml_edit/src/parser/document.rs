@@ -4,7 +4,7 @@ use winnow::combinator::cut_err;
 use winnow::combinator::eof;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
-use winnow::combinator::repeat0;
+use winnow::combinator::repeat;
 use winnow::error::FromExternalError;
 use winnow::token::any;
 use winnow::token::one_of;
@@ -38,7 +38,7 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserE
         // Remove BOM if present
         opt(b"\xEF\xBB\xBF"),
         parse_ws(state_ref),
-        repeat0((
+        repeat(0.., (
             dispatch! {peek(any);
                 crate::parser::trivia::COMMENT_START_SYMBOL => cut_err(parse_comment(state_ref)),
                 crate::parser::table::STD_TABLE_OPEN => cut_err(table(state_ref)),

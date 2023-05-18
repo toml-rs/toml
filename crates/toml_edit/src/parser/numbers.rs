@@ -5,7 +5,7 @@ use winnow::combinator::cut_err;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::preceded;
-use winnow::combinator::repeat0;
+use winnow::combinator::repeat;
 use winnow::combinator::rest;
 use winnow::token::one_of;
 use winnow::token::tag;
@@ -56,15 +56,18 @@ pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         alt((
             (
                 one_of(DIGIT1_9),
-                repeat0(alt((
-                    digit.value(()),
-                    (
-                        one_of(b'_'),
-                        cut_err(digit)
-                            .context(Context::Expected(ParserValue::Description("digit"))),
-                    )
-                        .value(()),
-                )))
+                repeat(
+                    0..,
+                    alt((
+                        digit.value(()),
+                        (
+                            one_of(b'_'),
+                            cut_err(digit)
+                                .context(Context::Expected(ParserValue::Description("digit"))),
+                        )
+                            .value(()),
+                    )),
+                )
                 .map(|()| ()),
             )
                 .value(()),
@@ -85,14 +88,18 @@ pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         HEX_PREFIX,
         cut_err((
             hexdig,
-            repeat0(alt((
-                hexdig.value(()),
-                (
-                    one_of(b'_'),
-                    cut_err(hexdig).context(Context::Expected(ParserValue::Description("digit"))),
-                )
-                    .value(()),
-            )))
+            repeat(
+                0..,
+                alt((
+                    hexdig.value(()),
+                    (
+                        one_of(b'_'),
+                        cut_err(hexdig)
+                            .context(Context::Expected(ParserValue::Description("digit"))),
+                    )
+                        .value(()),
+                )),
+            )
             .map(|()| ()),
         ))
         .recognize(),
@@ -110,15 +117,18 @@ pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         OCT_PREFIX,
         cut_err((
             one_of(DIGIT0_7),
-            repeat0(alt((
-                one_of(DIGIT0_7).value(()),
-                (
-                    one_of(b'_'),
-                    cut_err(one_of(DIGIT0_7))
-                        .context(Context::Expected(ParserValue::Description("digit"))),
-                )
-                    .value(()),
-            )))
+            repeat(
+                0..,
+                alt((
+                    one_of(DIGIT0_7).value(()),
+                    (
+                        one_of(b'_'),
+                        cut_err(one_of(DIGIT0_7))
+                            .context(Context::Expected(ParserValue::Description("digit"))),
+                    )
+                        .value(()),
+                )),
+            )
             .map(|()| ()),
         ))
         .recognize(),
@@ -137,15 +147,18 @@ pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         BIN_PREFIX,
         cut_err((
             one_of(DIGIT0_1),
-            repeat0(alt((
-                one_of(DIGIT0_1).value(()),
-                (
-                    one_of(b'_'),
-                    cut_err(one_of(DIGIT0_1))
-                        .context(Context::Expected(ParserValue::Description("digit"))),
-                )
-                    .value(()),
-            )))
+            repeat(
+                0..,
+                alt((
+                    one_of(DIGIT0_1).value(()),
+                    (
+                        one_of(b'_'),
+                        cut_err(one_of(DIGIT0_1))
+                            .context(Context::Expected(ParserValue::Description("digit"))),
+                    )
+                        .value(()),
+                )),
+            )
             .map(|()| ()),
         ))
         .recognize(),
@@ -207,14 +220,17 @@ pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>
 pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
     (
         digit,
-        repeat0(alt((
-            digit.value(()),
-            (
-                one_of(b'_'),
-                cut_err(digit).context(Context::Expected(ParserValue::Description("digit"))),
-            )
-                .value(()),
-        )))
+        repeat(
+            0..,
+            alt((
+                digit.value(()),
+                (
+                    one_of(b'_'),
+                    cut_err(digit).context(Context::Expected(ParserValue::Description("digit"))),
+                )
+                    .value(()),
+            )),
+        )
         .map(|()| ()),
     )
         .recognize()
