@@ -67,9 +67,9 @@ impl Error {
 
     /// The start/end index (byte offset) into the original document where the error occurred.
     ///
-    /// If you deserialize from a &str, you should (nearly) always get a span. Any missing span is
+    /// If you deserialize from a `&str`, you should (nearly) always get a span. Any missing span is
     /// more likely to be a bug. If you deserialize from a Document, all span information is lost
-    /// and this method will always return `None`
+    /// and this method will always return `None`.
     #[cfg(feature = "parse")]
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.inner.span()
