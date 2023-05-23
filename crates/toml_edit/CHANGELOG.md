@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.10] - 2023-05-23
+
 ### Fixes
 
 - Correctly render `Key`s in documents when they come from `Key::from_str`
@@ -500,7 +502,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.9...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.10...HEAD
+[0.19.10]: https://github.com/toml-rs/toml/compare/v0.19.9...v0.19.10
 [0.19.9]: https://github.com/toml-rs/toml/compare/v0.19.8...v0.19.9
 [0.19.8]: https://github.com/toml-rs/toml/compare/v0.19.7...v0.19.8
 [0.19.7]: https://github.com/toml-rs/toml/compare/v0.19.6...v0.19.7
