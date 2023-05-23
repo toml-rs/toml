@@ -1486,5 +1486,5 @@ fn despan_keys() {
         toml_edit::Item::Value(Value::Integer(toml_edit::Formatted::new(2))),
     );
 
-    assert_eq!(doc.to_string(), "aaaaaa = 1\naaa = 2\n");
+    assert_eq!(doc.to_string(), "aaaaaa = 1\nbbb = 2\n");
 }

@@ -128,11 +128,17 @@ impl Key {
     }
 
     fn try_parse_simple(s: &str) -> Result<Key, crate::TomlError> {
-        parser::parse_key(s)
+        let mut key = parser::parse_key(s)?;
+        key.despan(s);
+        Ok(key)
     }
 
     fn try_parse_path(s: &str) -> Result<Vec<Key>, crate::TomlError> {
-        parser::parse_key_path(s)
+        let mut keys = parser::parse_key_path(s)?;
+        for key in &mut keys {
+            key.despan(s);
+        }
+        Ok(keys)
     }
 }
 
