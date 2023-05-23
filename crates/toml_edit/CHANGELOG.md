@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Correctly render `Key`s in documents when they come from `Key::from_str`
+
 ## [0.19.9] - 2023-05-18
 
 ### Features
