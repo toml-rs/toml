@@ -396,6 +396,7 @@ pub(crate) fn to_string_repr(
                 },
                 '\u{c}' => output.push_str("\\f"),
                 '\u{d}' => output.push_str("\\r"),
+                '\u{1b}' => output.push_str("\\e"),
                 '\u{22}' => output.push_str("\\\""),
                 '\u{5c}' => output.push_str("\\\\"),
                 c if c <= '\u{1f}' || c == '\u{7f}' => {

@@ -96,19 +96,23 @@ pub(crate) const ESCAPE: u8 = b'\\';
 // escape-seq-char =  %x22         ; "    quotation mark  U+0022
 // escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
 // escape-seq-char =/ %x62         ; b    backspace       U+0008
+// escape-seq-char =/ %x65         ; e    escape          U+001B
 // escape-seq-char =/ %x66         ; f    form feed       U+000C
 // escape-seq-char =/ %x6E         ; n    line feed       U+000A
 // escape-seq-char =/ %x72         ; r    carriage return U+000D
 // escape-seq-char =/ %x74         ; t    tab             U+0009
+// escape-seq-char =/ %x78 2HEXDIG ; xHH                  U+00HH
 // escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
 fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>> {
     dispatch! {any;
         b'b' => success('\u{8}'),
+        b'e' => success('\u{1b}'),
         b'f' => success('\u{c}'),
         b'n' => success('\n'),
         b'r' => success('\r'),
         b't' => success('\t'),
+        b'x' => cut_err(hexescape::<2>).context(Context::Expression("unicode 2-digit hex code")),
         b'u' => cut_err(hexescape::<4>).context(Context::Expression("unicode 4-digit hex code")),
         b'U' => cut_err(hexescape::<8>).context(Context::Expression("unicode 8-digit hex code")),
         b'\\' => success('\\'),
@@ -117,10 +121,12 @@ fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>
             cut_err(fail::<_, char, _>)
             .context(Context::Expression("escape sequence"))
             .context(Context::Expected(ParserValue::CharLiteral('b')))
+            .context(Context::Expected(ParserValue::CharLiteral('e')))
             .context(Context::Expected(ParserValue::CharLiteral('f')))
             .context(Context::Expected(ParserValue::CharLiteral('n')))
             .context(Context::Expected(ParserValue::CharLiteral('r')))
             .context(Context::Expected(ParserValue::CharLiteral('t')))
+            .context(Context::Expected(ParserValue::CharLiteral('x')))
             .context(Context::Expected(ParserValue::CharLiteral('u')))
             .context(Context::Expected(ParserValue::CharLiteral('U')))
             .context(Context::Expected(ParserValue::CharLiteral('\\')))
