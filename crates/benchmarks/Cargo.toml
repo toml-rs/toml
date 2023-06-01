@@ -9,7 +9,7 @@ rust-version.workspace = true
 release = false
 
 [dev-dependencies]
-criterion = "0.4.0"
+criterion = "0.5.1"
 toml = { path = "../toml" }
 toml_edit = { path = "../toml_edit" }
 toml_old = { version = "0.5.10", package = "toml" }
