@@ -48,8 +48,7 @@ TOML parse error at line 1, column 10
   |
 1 | foo = 199-09-09
   |          ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = 199709-09",
@@ -58,8 +57,7 @@ TOML parse error at line 1, column 13
   |
 1 | foo = 199709-09
   |             ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = 1997-9-09",
@@ -68,8 +66,7 @@ TOML parse error at line 1, column 12
   |
 1 | foo = 1997-9-09
   |            ^
-invalid date-time
-"
+invalid date-time"
     );
     bad!(
         "foo = 1997-09-9",
@@ -78,8 +75,7 @@ TOML parse error at line 1, column 15
   |
 1 | foo = 1997-09-9
   |               ^
-invalid date-time
-"
+invalid date-time"
     );
     bad!(
         "foo = 1997-09-0909:09:09",
@@ -88,8 +84,7 @@ TOML parse error at line 1, column 17
   |
 1 | foo = 1997-09-0909:09:09
   |                 ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = 1997-09-09T09:09:09.",
@@ -98,8 +93,7 @@ TOML parse error at line 1, column 26
   |
 1 | foo = 1997-09-09T09:09:09.
   |                          ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = T",
@@ -108,8 +102,7 @@ expected newline, `#`
 1 | foo = T
   |       ^
 invalid string
-expected `"`, `'`
-"#
+expected `"`, `'`"#
     );
     bad!(
         "foo = T.",
@@ -118,8 +111,7 @@ expected `"`, `'`
 1 | foo = T.
   |       ^
 invalid string
-expected `"`, `'`
-"#
+expected `"`, `'`"#
     );
     bad!(
         "foo = TZ",
@@ -128,8 +120,7 @@ expected `"`, `'`
 1 | foo = TZ
   |       ^
 invalid string
-expected `"`, `'`
-"#
+expected `"`, `'`"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+",
@@ -137,8 +128,7 @@ expected `"`, `'`
   |
 1 | foo = 1997-09-09T09:09:09.09+
   |                              ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+09",
@@ -146,8 +136,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09+09
   |                                ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+09:9",
@@ -155,8 +144,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09+09:9
   |                                 ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09+0909",
@@ -164,8 +152,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09+0909
   |                                ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-",
@@ -173,8 +160,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09-
   |                              ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-09",
@@ -182,8 +168,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09-09
   |                                ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-09:9",
@@ -191,8 +176,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09-09:9
   |                                 ^
-invalid time offset
-"#
+invalid time offset"#
     );
     bad!(
         "foo = 1997-09-09T09:09:09.09-0909",
@@ -200,8 +184,7 @@ invalid time offset
   |
 1 | foo = 1997-09-09T09:09:09.09-0909
   |                                ^
-invalid time offset
-"#
+invalid time offset"#
     );
 
     bad!(
@@ -211,8 +194,7 @@ invalid time offset
 1 | foo = 1997-00-09T09:09:09.09Z
   |            ^
 invalid date-time
-value is out of range
-"#
+value is out of range"#
     );
     bad!(
         "foo = 1997-09-00T09:09:09.09Z",
@@ -221,8 +203,7 @@ value is out of range
 1 | foo = 1997-09-00T09:09:09.09Z
   |               ^
 invalid date-time
-value is out of range
-"#
+value is out of range"#
     );
     bad!(
         "foo = 1997-09-09T30:09:09.09Z",
@@ -230,8 +211,7 @@ value is out of range
   |
 1 | foo = 1997-09-09T30:09:09.09Z
   |                 ^
-expected newline, `#`
-"#
+expected newline, `#`"#
     );
     bad!(
         "foo = 1997-09-09T12:69:09.09Z",
@@ -240,8 +220,7 @@ expected newline, `#`
 1 | foo = 1997-09-09T12:69:09.09Z
   |                     ^
 invalid date-time
-value is out of range
-"#
+value is out of range"#
     );
     bad!(
         "foo = 1997-09-09T12:09:69.09Z",
@@ -250,7 +229,6 @@ value is out of range
 1 | foo = 1997-09-09T12:09:69.09Z
   |                        ^
 invalid date-time
-value is out of range
-"#
+value is out of range"#
     );
 }

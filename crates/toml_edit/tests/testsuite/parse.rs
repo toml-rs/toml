@@ -298,7 +298,6 @@ TOML parse error at line 1, column 1
   |
 1 | \r
   | ^
-
 "
     );
     bad!(
@@ -310,8 +309,7 @@ TOML parse error at line 1, column 7
  ]
   |       ^
 invalid array
-expected `]`
-"
+expected `]`"
     );
     bad!(
         "a = \"\"\"\r\"\"\"",
@@ -321,8 +319,7 @@ TOML parse error at line 1, column 8
 1 | a = \"\"\"\r
 \"\"\"
   |        ^
-invalid multiline basic string
-"
+invalid multiline basic string"
     );
     bad!(
         "a = \"\"\"\\  \r  \"\"\"",
@@ -333,8 +330,7 @@ TOML parse error at line 1, column 10
   \"\"\"
   |          ^
 invalid escape sequence
-expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\\`, `\"`
-"
+expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\\`, `\"`"
     );
     bad!(
         "a = '''\r'''",
@@ -344,8 +340,7 @@ TOML parse error at line 1, column 8
 1 | a = '''\r
 '''
   |        ^
-invalid multiline literal string
-"
+invalid multiline literal string"
     );
     bad!(
         "a = '\r'",
@@ -355,8 +350,7 @@ TOML parse error at line 1, column 6
 1 | a = '\r
 '
   |      ^
-invalid literal string
-"
+invalid literal string"
     );
     bad!(
         "a = \"\r\"",
@@ -366,8 +360,7 @@ TOML parse error at line 1, column 6
 1 | a = \"\r
 \"
   |      ^
-invalid basic string
-"
+invalid basic string"
     );
 }
 
@@ -404,8 +397,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = \"
   |      ^
-invalid basic string
-"
+invalid basic string"
     );
     bad!(
         "a = '\n'",
@@ -414,8 +406,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = '
   |      ^
-invalid literal string
-"
+invalid literal string"
     );
 }
 
@@ -428,8 +419,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = 00
   |      ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "a = -00",
@@ -438,8 +428,7 @@ TOML parse error at line 1, column 7
   |
 1 | a = -00
   |       ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "a = +00",
@@ -448,8 +437,7 @@ TOML parse error at line 1, column 7
   |
 1 | a = +00
   |       ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "a = 00.0",
@@ -458,8 +446,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = 00.0
   |      ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "a = -00.0",
@@ -468,8 +455,7 @@ TOML parse error at line 1, column 7
   |
 1 | a = -00.0
   |       ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "a = +00.0",
@@ -478,8 +464,7 @@ TOML parse error at line 1, column 7
   |
 1 | a = +00.0
   |       ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "a = 9223372036854775808",
@@ -488,8 +473,7 @@ TOML parse error at line 1, column 5
   |
 1 | a = 9223372036854775808
   |     ^
-number too large to fit in target type
-"
+number too large to fit in target type"
     );
     bad!(
         "a = -9223372036854775809",
@@ -498,8 +482,7 @@ TOML parse error at line 1, column 5
   |
 1 | a = -9223372036854775809
   |     ^
-number too small to fit in target type
-"
+number too small to fit in target type"
     );
 }
 
@@ -513,8 +496,7 @@ TOML parse error at line 1, column 7
 1 | a = 0.
   |       ^
 invalid floating-point number
-expected digit
-"
+expected digit"
     );
     bad!(
         "a = 0.e",
@@ -524,8 +506,7 @@ TOML parse error at line 1, column 7
 1 | a = 0.e
   |       ^
 invalid floating-point number
-expected digit
-"
+expected digit"
     );
     bad!(
         "a = 0.E",
@@ -535,8 +516,7 @@ TOML parse error at line 1, column 7
 1 | a = 0.E
   |       ^
 invalid floating-point number
-expected digit
-"
+expected digit"
     );
     bad!(
         "a = 0.0E",
@@ -545,8 +525,7 @@ TOML parse error at line 1, column 9
   |
 1 | a = 0.0E
   |         ^
-invalid floating-point number
-"
+invalid floating-point number"
     );
     bad!(
         "a = 0.0e",
@@ -555,8 +534,7 @@ TOML parse error at line 1, column 9
   |
 1 | a = 0.0e
   |         ^
-invalid floating-point number
-"
+invalid floating-point number"
     );
     bad!(
         "a = 0.0e-",
@@ -565,8 +543,7 @@ TOML parse error at line 1, column 10
   |
 1 | a = 0.0e-
   |          ^
-invalid floating-point number
-"
+invalid floating-point number"
     );
     bad!(
         "a = 0.0e+",
@@ -575,8 +552,7 @@ TOML parse error at line 1, column 10
   |
 1 | a = 0.0e+
   |          ^
-invalid floating-point number
-"
+invalid floating-point number"
     );
 }
 
@@ -645,8 +621,7 @@ TOML parse error at line 1, column 4
   |
 1 | key
   |    ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
     bad!(
         "key=\n3",
@@ -656,8 +631,7 @@ TOML parse error at line 1, column 5
 1 | key=
   |     ^
 invalid string
-expected `\"`, `'`
-"
+expected `\"`, `'`"
     );
     bad!(
         "key|=3",
@@ -666,8 +640,7 @@ TOML parse error at line 1, column 4
   |
 1 | key|=3
   |    ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
     bad!(
         "=3",
@@ -676,8 +649,7 @@ TOML parse error at line 1, column 1
   |
 1 | =3
   | ^
-invalid key
-"
+invalid key"
     );
     bad!(
         "\"\"|=3",
@@ -686,8 +658,7 @@ TOML parse error at line 1, column 3
   |
 1 | \"\"|=3
   |   ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
     bad!(
         "\"\n\"|=3",
@@ -696,8 +667,7 @@ TOML parse error at line 1, column 2
   |
 1 | \"
   |  ^
-invalid basic string
-"
+invalid basic string"
     );
     bad!(
         "\"\r\"|=3",
@@ -706,8 +676,7 @@ TOML parse error at line 1, column 2
   |
 1 | \"\r\"|=3
   |  ^
-invalid basic string
-"
+invalid basic string"
     );
     bad!(
         "''''''=3",
@@ -716,8 +685,7 @@ TOML parse error at line 1, column 3
   |
 1 | ''''''=3
   |   ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
     bad!(
         "\"\"\"\"\"\"=3",
@@ -726,8 +694,7 @@ TOML parse error at line 1, column 3
   |
 1 | \"\"\"\"\"\"=3
   |   ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
     bad!(
         "'''key'''=3",
@@ -736,8 +703,7 @@ TOML parse error at line 1, column 3
   |
 1 | '''key'''=3
   |   ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
     bad!(
         "\"\"\"key\"\"\"=3",
@@ -746,8 +712,7 @@ TOML parse error at line 1, column 3
   |
 1 | \"\"\"key\"\"\"=3
   |   ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
 }
 
@@ -760,8 +725,7 @@ TOML parse error at line 1, column 2
   |
 1 | []
   |  ^
-invalid key
-"
+invalid key"
     );
     bad!(
         "[.]",
@@ -770,8 +734,7 @@ TOML parse error at line 1, column 2
   |
 1 | [.]
   |  ^
-invalid key
-"
+invalid key"
     );
     bad!(
         "[a.]",
@@ -781,8 +744,7 @@ TOML parse error at line 1, column 3
 1 | [a.]
   |   ^
 invalid table header
-expected `.`, `]`
-"
+expected `.`, `]`"
     );
     bad!(
         "[!]",
@@ -791,8 +753,7 @@ TOML parse error at line 1, column 2
   |
 1 | [!]
   |  ^
-invalid key
-"
+invalid key"
     );
     bad!(
         "[\"\n\"]",
@@ -801,8 +762,7 @@ TOML parse error at line 1, column 3
   |
 1 | [\"
   |   ^
-invalid basic string
-"
+invalid basic string"
     );
     bad!(
         "[a.b]\n[a.\"b\"]",
@@ -812,8 +772,7 @@ TOML parse error at line 2, column 1
 2 | [a.\"b\"]
   | ^
 invalid table header
-duplicate key `b` in table `a`
-"
+duplicate key `b` in table `a`"
     );
     bad!(
         "[']",
@@ -822,8 +781,7 @@ TOML parse error at line 1, column 4
   |
 1 | [']
   |    ^
-invalid literal string
-"
+invalid literal string"
     );
     bad!(
         "[''']",
@@ -833,8 +791,7 @@ TOML parse error at line 1, column 4
 1 | [''']
   |    ^
 invalid table header
-expected `.`, `]`
-"
+expected `.`, `]`"
     );
     bad!(
         "['''''']",
@@ -844,8 +801,7 @@ TOML parse error at line 1, column 4
 1 | ['''''']
   |    ^
 invalid table header
-expected `.`, `]`
-"
+expected `.`, `]`"
     );
     bad!(
         "['''foo''']",
@@ -855,8 +811,7 @@ TOML parse error at line 1, column 4
 1 | ['''foo''']
   |    ^
 invalid table header
-expected `.`, `]`
-"
+expected `.`, `]`"
     );
     bad!(
         "[\"\"\"bar\"\"\"]",
@@ -866,8 +821,7 @@ TOML parse error at line 1, column 4
 1 | [\"\"\"bar\"\"\"]
   |    ^
 invalid table header
-expected `.`, `]`
-"
+expected `.`, `]`"
     );
     bad!(
         "['\n']",
@@ -876,8 +830,7 @@ TOML parse error at line 1, column 3
   |
 1 | ['
   |   ^
-invalid literal string
-"
+invalid literal string"
     );
     bad!(
         "['\r\n']",
@@ -886,8 +839,7 @@ TOML parse error at line 1, column 3
   |
 1 | ['
   |   ^
-invalid literal string
-"
+invalid literal string"
     );
 }
 
@@ -920,8 +872,7 @@ TOML parse error at line 1, column 2
   |
 1 | 4
   |  ^
-expected `.`, `=`
-"
+expected `.`, `=`"
     );
 }
 
@@ -941,8 +892,7 @@ TOML parse error at line 1, column 9
 1 | a = {a=1,}
   |         ^
 invalid inline table
-expected `}`
-"
+expected `}`"
     );
     bad!(
         "a = {,}",
@@ -952,8 +902,7 @@ TOML parse error at line 1, column 6
 1 | a = {,}
   |      ^
 invalid inline table
-expected `}`
-"
+expected `}`"
     );
     bad!(
         "a = {a=1,a=1}",
@@ -962,8 +911,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = {a=1,a=1}
   |      ^
-duplicate key `a`
-"
+duplicate key `a`"
     );
     bad!(
         "a = {\n}",
@@ -973,8 +921,7 @@ TOML parse error at line 1, column 6
 1 | a = {
   |      ^
 invalid inline table
-expected `}`
-"
+expected `}`"
     );
     bad!(
         "a = {",
@@ -984,8 +931,7 @@ TOML parse error at line 1, column 6
 1 | a = {
   |      ^
 invalid inline table
-expected `}`
-"
+expected `}`"
     );
 
     "a = {a=[\n]}".parse::<Document>().unwrap();
@@ -1019,8 +965,7 @@ TOML parse error at line 1, column 8
   |
 1 | foo = 0_
   |        ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = 0__0",
@@ -1029,8 +974,7 @@ TOML parse error at line 1, column 8
   |
 1 | foo = 0__0
   |        ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = __0",
@@ -1040,8 +984,7 @@ TOML parse error at line 1, column 7
 1 | foo = __0
   |       ^
 invalid integer
-expected leading digit
-"
+expected leading digit"
     );
     bad!(
         "foo = 1_0_",
@@ -1051,8 +994,7 @@ TOML parse error at line 1, column 11
 1 | foo = 1_0_
   |           ^
 invalid integer
-expected digit
-"
+expected digit"
     );
 }
 
@@ -1066,8 +1008,7 @@ TOML parse error at line 1, column 10
 1 | foo = \"\\uD800\"
   |          ^
 invalid unicode 4-digit hex code
-value is out of range
-"
+value is out of range"
     );
 }
 
@@ -1080,8 +1021,7 @@ TOML parse error at line 1, column 10
   |
 1 | foo = \"\\uxx\"
   |          ^
-invalid unicode 4-digit hex code
-"
+invalid unicode 4-digit hex code"
     );
     bad!(
         "foo = \"\\u\"",
@@ -1090,8 +1030,7 @@ TOML parse error at line 1, column 10
   |
 1 | foo = \"\\u\"
   |          ^
-invalid unicode 4-digit hex code
-"
+invalid unicode 4-digit hex code"
     );
     bad!(
         "foo = \"\\",
@@ -1100,8 +1039,7 @@ TOML parse error at line 1, column 8
   |
 1 | foo = \"\\
   |        ^
-invalid basic string
-"
+invalid basic string"
     );
     bad!(
         "foo = '",
@@ -1110,8 +1048,7 @@ TOML parse error at line 1, column 8
   |
 1 | foo = '
   |        ^
-invalid literal string
-"
+invalid literal string"
     );
 }
 
@@ -1140,8 +1077,7 @@ TOML parse error at line 1, column 11
   |
 1 | foo = true2
   |           ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = false2",
@@ -1150,8 +1086,7 @@ TOML parse error at line 1, column 12
   |
 1 | foo = false2
   |            ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = t1",
@@ -1161,8 +1096,7 @@ TOML parse error at line 1, column 7
 1 | foo = t1
   |       ^
 invalid string
-expected `\"`, `'`
-"
+expected `\"`, `'`"
     );
     bad!(
         "foo = f2",
@@ -1172,8 +1106,7 @@ TOML parse error at line 1, column 7
 1 | foo = f2
   |       ^
 invalid string
-expected `\"`, `'`
-"
+expected `\"`, `'`"
     );
 }
 
@@ -1191,8 +1124,7 @@ TOML parse error at line 3, column 9
 3 |         [[a]]
   |         ^
 invalid table header
-duplicate key `a` in document root
-"
+duplicate key `a` in document root"
     );
     bad!(
         "
@@ -1205,8 +1137,7 @@ TOML parse error at line 3, column 9
 3 |         [a.b]
   |         ^
 invalid table header
-dotted key `a` attempted to extend non-table type (integer)
-"
+dotted key `a` attempted to extend non-table type (integer)"
     );
     bad!(
         "
@@ -1219,8 +1150,7 @@ TOML parse error at line 3, column 9
 3 |         [a.b]
   |         ^
 invalid table header
-dotted key `a` attempted to extend non-table type (array)
-"
+dotted key `a` attempted to extend non-table type (array)"
     );
     bad!(
         "
@@ -1233,8 +1163,7 @@ TOML parse error at line 3, column 9
 3 |         [[a.b]]
   |         ^
 invalid table header
-dotted key `a` attempted to extend non-table type (array)
-"
+dotted key `a` attempted to extend non-table type (array)"
     );
     bad!(
         "
@@ -1249,8 +1178,7 @@ TOML parse error at line 4, column 9
 4 |         [a.b]
   |         ^
 invalid table header
-duplicate key `b` in table `a`
-"
+duplicate key `b` in table `a`"
     );
 }
 
@@ -1270,8 +1198,7 @@ TOML parse error at line 6, column 9
 6 |         [a]
   |         ^
 invalid table header
-duplicate key `a` in document root
-"
+duplicate key `a` in document root"
     );
     bad!(
         "
@@ -1286,8 +1213,7 @@ TOML parse error at line 5, column 9
 5 |         [a]
   |         ^
 invalid table header
-duplicate key `a` in document root
-"
+duplicate key `a` in document root"
     );
     bad!(
         "
@@ -1301,8 +1227,7 @@ TOML parse error at line 4, column 9
 4 |         [a.b]
   |         ^
 invalid table header
-duplicate key `b` in table `a`
-"
+duplicate key `b` in table `a`"
     );
 
     bad!(
@@ -1317,8 +1242,7 @@ TOML parse error at line 4, column 9
 4 |         [a]
   |         ^
 invalid table header
-duplicate key `a` in document root
-"
+duplicate key `a` in document root"
     );
 }
 
@@ -1343,8 +1267,7 @@ TOML parse error at line 1, column 26
   |
 1 | foo = 2016-09-09T09:09:09.Z
   |                          ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         "foo = 2016-9-09T09:09:09Z",
@@ -1353,8 +1276,7 @@ TOML parse error at line 1, column 12
   |
 1 | foo = 2016-9-09T09:09:09Z
   |            ^
-invalid date-time
-"
+invalid date-time"
     );
     bad!(
         "foo = 2016-09-09T09:09:09+2:00",
@@ -1363,8 +1285,7 @@ TOML parse error at line 1, column 27
   |
 1 | foo = 2016-09-09T09:09:09+2:00
   |                           ^
-invalid time offset
-"
+invalid time offset"
     );
     bad!(
         "foo = 2016-09-09T09:09:09-2:00",
@@ -1373,8 +1294,7 @@ TOML parse error at line 1, column 27
   |
 1 | foo = 2016-09-09T09:09:09-2:00
   |                           ^
-invalid time offset
-"
+invalid time offset"
     );
     bad!(
         "foo = 2016-09-09T09:09:09Z-2:00",
@@ -1383,8 +1303,7 @@ TOML parse error at line 1, column 27
   |
 1 | foo = 2016-09-09T09:09:09Z-2:00
   |                           ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
 }
 
@@ -1397,8 +1316,7 @@ TOML parse error at line 1, column 4
   |
 1 | 0=0r=false
   |    ^
-expected newline, `#`
-"
+expected newline, `#`"
     );
     bad!(
         r#"
@@ -1408,8 +1326,7 @@ expected newline, `#`
   |
 2 | 0=""o=""m=""r=""00="0"q="""0"""e="""0"""
   |     ^
-expected newline, `#`
-"#
+expected newline, `#`"#
     );
     bad!(
         r#"
@@ -1422,8 +1339,7 @@ expected newline, `#`
   |
 3 | 0="0"[[0000l0]]
   |      ^
-expected newline, `#`
-"#
+expected newline, `#`"#
     );
     bad!(
         r#"
@@ -1433,8 +1349,7 @@ expected newline, `#`
   |
 2 | 0=[0]00=[0,0,0]t=["0","0","0"]s=[1000-00-00T00:00:00Z,2000-00-00T00:00:00Z]
   |      ^
-expected newline, `#`
-"#
+expected newline, `#`"#
     );
     bad!(
         r#"
@@ -1444,8 +1359,7 @@ expected newline, `#`
   |
 2 | 0=0r0=0r=false
   |    ^
-expected newline, `#`
-"#
+expected newline, `#`"#
     );
     bad!(
         r#"
@@ -1455,8 +1369,7 @@ expected newline, `#`
   |
 2 | 0=0r0=0r=falsefal=false
   |    ^
-expected newline, `#`
-"#
+expected newline, `#`"#
     );
 }
 

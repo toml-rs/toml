@@ -254,8 +254,7 @@ TOML parse error at line 3, column 1
   |
 3 | fake = 1
   | ^^^^
-unknown field `fake`, expected `real`
-",
+unknown field `fake`, expected `real`",
         error.to_string(),
     );
 }

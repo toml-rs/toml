@@ -131,9 +131,9 @@ impl Display for TomlError {
             }
             writeln!(f)?;
         }
-        writeln!(f, "{}", self.message)?;
+        write!(f, "{}", self.message)?;
         if !context && !self.keys.is_empty() {
-            writeln!(f, "in `{}`", self.keys.join("."))?;
+            write!(f, "\nin `{}`", self.keys.join("."))?;
         }
 
         Ok(())

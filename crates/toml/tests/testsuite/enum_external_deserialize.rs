@@ -34,8 +34,7 @@ where
 fn invalid_variant_returns_error_with_good_message_string() {
     let error = value_from_str::<TheEnum>("\"NonExistent\"").unwrap_err();
     snapbox::assert_eq(
-        r#"unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
+        r#"unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
         error.to_string(),
     );
 
@@ -45,8 +44,7 @@ fn invalid_variant_returns_error_with_good_message_string() {
   |
 1 | val = "NonExistent"
   |       ^^^^^^^^^^^^^
-unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
+unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
         error.to_string(),
     );
 }
@@ -55,8 +53,7 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
 fn invalid_variant_returns_error_with_good_message_inline_table() {
     let error = value_from_str::<TheEnum>("{ NonExistent = {} }").unwrap_err();
     snapbox::assert_eq(
-        r#"unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
+        r#"unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
         error.to_string(),
     );
 
@@ -66,8 +63,7 @@ fn invalid_variant_returns_error_with_good_message_inline_table() {
   |
 1 | val = { NonExistent = {} }
   |         ^^^^^^^^^^^
-unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
+unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`"#,
         error.to_string(),
     );
 }
@@ -75,11 +71,7 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
 #[test]
 fn extra_field_returns_expected_empty_table_error() {
     let error = value_from_str::<TheEnum>("{ Plain = { extra_field = 404 } }").unwrap_err();
-    snapbox::assert_eq(
-        r#"expected empty table
-"#,
-        error.to_string(),
-    );
+    snapbox::assert_eq(r#"expected empty table"#, error.to_string());
 
     let error = toml::from_str::<Val>("val = { Plain = { extra_field = 404 } }").unwrap_err();
     snapbox::assert_eq(
@@ -87,8 +79,7 @@ fn extra_field_returns_expected_empty_table_error() {
   |
 1 | val = { Plain = { extra_field = 404 } }
   |                 ^^^^^^^^^^^^^^^^^^^^^
-expected empty table
-"#,
+expected empty table"#,
         error.to_string(),
     );
 }
@@ -99,8 +90,7 @@ fn extra_field_returns_expected_empty_table_error_struct_variant() {
         .unwrap_err();
 
     snapbox::assert_eq(
-        r#"unexpected keys in table: extra_0, extra_1, available keys: value
-"#,
+        r#"unexpected keys in table: extra_0, extra_1, available keys: value"#,
         error.to_string(),
     );
 
@@ -113,8 +103,7 @@ fn extra_field_returns_expected_empty_table_error_struct_variant() {
   |
 1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
   |                                 ^^^^^^^
-unexpected keys in table: extra_0, extra_1, available keys: value
-"#,
+unexpected keys in table: extra_0, extra_1, available keys: value"#,
         error.to_string(),
     );
 }
