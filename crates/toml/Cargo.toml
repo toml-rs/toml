@@ -9,7 +9,7 @@ implementations of the standard Serialize/Deserialize traits for TOML data to
 facilitate deserializing and serializing Rust structures.
 """
 authors = ["Alex Crichton <alex@alexcrichton.com>"]
-repository = "https://github.com/toml-rs/toml"
+repository.workspace = true
 homepage = "https://github.com/toml-rs/toml"
 license.workspace = true
 edition.workspace = true
