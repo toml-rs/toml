@@ -1,7 +1,6 @@
 [package]
 name = "toml"
 version = "0.7.4"
-readme = "README.md"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = """
