@@ -7,7 +7,6 @@ categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Yet another format-preserving TOML parser."
 authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.com>"]
 repository = "https://github.com/toml-rs/toml"
-documentation = "https://docs.rs/toml_edit"
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true

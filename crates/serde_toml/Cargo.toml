@@ -7,7 +7,6 @@ categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "See instead `toml`"
 repository = "https://github.com/toml-rs/toml"
 homepage = "https://github.com/toml-rs/toml"
-documentation = "https://docs.rs/toml"
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
