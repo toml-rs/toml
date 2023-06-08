@@ -1,13 +1,11 @@
 [package]
 name = "serde_toml"
 version = "0.0.1"
-readme = "README.md"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "See instead `toml`"
-repository = "https://github.com/toml-rs/toml"
-homepage = "https://github.com/toml-rs/toml"
-documentation = "https://docs.rs/toml"
+repository.workspace = true
+homepage.workspace = true
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true

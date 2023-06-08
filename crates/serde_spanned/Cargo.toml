@@ -1,13 +1,11 @@
 [package]
 name = "serde_spanned"
 version = "0.6.2"
-readme = "README.md"
 keywords = ["serde", "span"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Serde-compatible spanned Value"
-repository = "https://github.com/toml-rs/toml"
-homepage = "https://github.com/toml-rs/toml"
-documentation = "https://docs.rs/serde_spanned"
+repository.workspace = true
+homepage.workspace = true
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
