@@ -18,11 +18,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@v1
       with:
         toolchain: ${{ matrix.rust }}
-        profile: minimal
-        override: true
     - uses: Swatinem/rust-cache@v2
     - name: Build
       run: cargo test --no-run --workspace
@@ -47,11 +45,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@v1
       with:
         toolchain: ${{ matrix.rust }}
-        profile: minimal
-        override: true
         components: rustfmt
     - uses: Swatinem/rust-cache@v2
     - name: Check formatting
@@ -69,11 +65,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@v1
       with:
         toolchain: ${{ matrix.rust }}
-        profile: minimal
-        override: true
         components: clippy
     - uses: Swatinem/rust-cache@v2
     - uses: actions-rs/clippy-check@v1
