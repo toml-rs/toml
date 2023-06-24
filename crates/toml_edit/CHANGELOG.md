@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Internal
+
+- Update `indexmap`
+
 ## [0.19.10] - 2023-05-23
 
 ### Fixes
