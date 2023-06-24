@@ -37,7 +37,7 @@ serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 unbounded = []
 
 [dependencies]
-indexmap = { version = "1.9.1", features = ["std"] }
+indexmap = { version = "2.0.0", features = ["std"] }
 winnow = "0.4.6"
 serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
