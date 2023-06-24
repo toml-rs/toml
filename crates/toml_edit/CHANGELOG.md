@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.11] - 2023-06-24
+
 ### Internal
 
 - Update `indexmap`
@@ -506,7 +508,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.11...HEAD
+[0.19.11]: https://github.com/toml-rs/toml/compare/v0.19.10...v0.19.11
 [0.19.10]: https://github.com/toml-rs/toml/compare/v0.19.9...v0.19.10
 [0.19.9]: https://github.com/toml-rs/toml/compare/v0.19.8...v0.19.9
 [0.19.8]: https://github.com/toml-rs/toml/compare/v0.19.7...v0.19.8

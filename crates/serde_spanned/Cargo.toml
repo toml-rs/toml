@@ -1,6 +1,6 @@
 [package]
 name = "serde_spanned"
-version = "0.6.2"
+version = "0.6.3"
 keywords = ["serde", "span"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Serde-compatible spanned Value"
