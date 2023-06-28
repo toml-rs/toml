@@ -303,6 +303,20 @@ impl Array {
         }
     }
 
+    /// Retains only the values specified by the `keep` predicate.
+    ///
+    /// In other words, remove all values for which `keep(&value)` returns `false`.
+    ///
+    /// This method operates in place, visiting each element exactly once in the
+    /// original order, and preserves the order of the retained elements.
+    pub fn retain<F>(&mut self, mut keep: F)
+    where
+        F: FnMut(&Value) -> bool,
+    {
+        self.values
+            .retain(|item| item.as_value().map(&mut keep).unwrap_or(false));
+    }
+
     fn value_op<T>(
         &mut self,
         v: Value,

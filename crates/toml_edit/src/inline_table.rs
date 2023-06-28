@@ -363,6 +363,24 @@ impl InlineTable {
             kv.value.into_value().ok().map(|value| (key, value))
         })
     }
+
+    /// Retains only the elements specified by the `keep` predicate.
+    ///
+    /// In other words, remove all pairs `(key, value)` for which
+    /// `keep(&key, &mut value)` returns `false`.
+    ///
+    /// The elements are visited in iteration order.
+    pub fn retain<F>(&mut self, mut keep: F)
+    where
+        F: FnMut(&str, &mut Value) -> bool,
+    {
+        self.items.retain(|key, item| {
+            item.value
+                .as_value_mut()
+                .map(|value| keep(key, value))
+                .unwrap_or(false)
+        });
+    }
 }
 
 impl std::fmt::Display for InlineTable {
