@@ -145,11 +145,11 @@ impl Map<String, Value> {
     ///
     /// The elements are visited in iteration order.
     #[inline]
-    pub fn retain<F>(&mut self, keep: F)
+    pub fn retain<F>(&mut self, mut keep: F)
     where
-        F: FnMut(&String, &mut Value) -> bool,
+        F: FnMut(&str, &mut Value) -> bool,
     {
-        self.map.retain(keep);
+        self.map.retain(|key, value| keep(key.as_str(), value));
     }
 
     /// Gets the given key's corresponding entry in the map for in-place
