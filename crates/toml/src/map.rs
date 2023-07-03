@@ -138,6 +138,20 @@ impl Map<String, Value> {
         self.map.remove(key)
     }
 
+    /// Retains only the elements specified by the `keep` predicate.
+    ///
+    /// In other words, remove all pairs `(k, v)` for which `keep(&k, &mut v)`
+    /// returns `false`.
+    ///
+    /// The elements are visited in iteration order.
+    #[inline]
+    pub fn retain<F>(&mut self, mut keep: F)
+    where
+        F: FnMut(&str, &mut Value) -> bool,
+    {
+        self.map.retain(|key, value| keep(key.as_str(), value));
+    }
+
     /// Gets the given key's corresponding entry in the map for in-place
     /// manipulation.
     pub fn entry<S>(&mut self, key: S) -> Entry<'_>
