@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Map::retain`
+
 ## [0.7.5] - 2023-06-24
 
 ### Internal

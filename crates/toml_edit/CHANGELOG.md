@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Array::retain`, `ArrayOfTables::retain`, `InlineTable::retain`, `Table::retain`
+
 ## [0.19.11] - 2023-06-24
 
 ### Internal
