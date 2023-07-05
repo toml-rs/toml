@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.19.12] - 2023-07-05
+
 ### Features
 
 - Add `Array::retain`, `ArrayOfTables::retain`, `InlineTable::retain`, `Table::retain`
@@ -512,7 +514,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.11...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.12...HEAD
+[0.19.12]: https://github.com/toml-rs/toml/compare/v0.19.11...v0.19.12
 [0.19.11]: https://github.com/toml-rs/toml/compare/v0.19.10...v0.19.11
 [0.19.10]: https://github.com/toml-rs/toml/compare/v0.19.9...v0.19.10
 [0.19.9]: https://github.com/toml-rs/toml/compare/v0.19.8...v0.19.9
