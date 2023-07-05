@@ -397,6 +397,20 @@ impl Table {
     pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Item)> {
         self.items.shift_remove(key).map(|kv| (kv.key, kv.value))
     }
+
+    /// Retains only the elements specified by the `keep` predicate.
+    ///
+    /// In other words, remove all pairs `(key, item)` for which
+    /// `keep(&key, &mut item)` returns `false`.
+    ///
+    /// The elements are visited in iteration order.
+    pub fn retain<F>(&mut self, mut keep: F)
+    where
+        F: FnMut(&str, &mut Item) -> bool,
+    {
+        self.items
+            .retain(|key, key_value| keep(key, &mut key_value.value));
+    }
 }
 
 impl std::fmt::Display for Table {

@@ -91,6 +91,20 @@ impl ArrayOfTables {
     pub fn remove(&mut self, index: usize) {
         self.values.remove(index);
     }
+
+    /// Retains only the elements specified by the `keep` predicate.
+    ///
+    /// In other words, remove all tables for which `keep(&table)` returns `false`.
+    ///
+    /// This method operates in place, visiting each element exactly once in the
+    /// original order, and preserves the order of the retained elements.
+    pub fn retain<F>(&mut self, mut keep: F)
+    where
+        F: FnMut(&Table) -> bool,
+    {
+        self.values
+            .retain(|item| item.as_table().map(&mut keep).unwrap_or(false));
+    }
 }
 
 /// An iterator type over `ArrayOfTables`'s values.
