@@ -92,6 +92,47 @@ where
     from_str(&buffer)
 }
 
+/// Deserialize a [`Value`] into a type.
+///
+/// This function will attempt to deserialize `T` from the [`Value`].
+///
+/// # Examples
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///    title: String,
+///   owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let mut table = toml::value::Table::new();
+/// table.insert("title".to_owned(), toml::value::Value::String("TOML Example".to_owned()));
+///
+/// let mut owner = toml::value::Table::new();
+/// owner.insert("name".to_owned(), toml::value::Value::String("Lisa".to_owned()));
+/// table.insert("owner".to_owned(), toml::value::Value::Table(owner));
+///
+/// let value = toml::Value::Table(table);
+///
+/// let config: Config = toml::from_value(value).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
+#[cfg(feature = "parse")]
+pub fn from_value<T>(value: crate::Value) -> Result<T, Error>
+where
+    T: serde::de::DeserializeOwned,
+{
+    serde::Deserialize::deserialize(value)
+}
+
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Error {
