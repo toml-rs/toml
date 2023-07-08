@@ -1,8 +1,5 @@
 #![allow(clippy::type_complexity)]
 
-#[macro_use]
-pub(crate) mod macros;
-
 pub(crate) mod array;
 pub(crate) mod datetime;
 pub(crate) mod document;
@@ -79,6 +76,7 @@ pub(crate) mod prelude {
     pub(crate) use super::errors::Context;
     pub(crate) use super::errors::ParserError;
     pub(crate) use super::errors::ParserValue;
+    pub(crate) use winnow::combinator::dispatch;
     pub(crate) use winnow::IResult;
     pub(crate) use winnow::Parser;
 
