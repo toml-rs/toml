@@ -83,7 +83,7 @@ pub(crate) fn table<'s, 'i>(
             b"[[" => array_table(state),
             _ => std_table(state),
         )
-        .context(Context::Expression("table header"))
+        .context(Context::Label("table header"))
         .parse_next(i)
     }
 }

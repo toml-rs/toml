@@ -54,7 +54,7 @@ pub(crate) fn basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>,
     }
 
     let (input, _) = cut_err(one_of(QUOTATION_MARK))
-        .context(Context::Expression("basic string"))
+        .context(Context::Label("basic string"))
         .parse_next(input)?;
 
     Ok((input, c))
@@ -109,13 +109,13 @@ fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>
         b'n' => success('\n'),
         b'r' => success('\r'),
         b't' => success('\t'),
-        b'u' => cut_err(hexescape::<4>).context(Context::Expression("unicode 4-digit hex code")),
-        b'U' => cut_err(hexescape::<8>).context(Context::Expression("unicode 8-digit hex code")),
+        b'u' => cut_err(hexescape::<4>).context(Context::Label("unicode 4-digit hex code")),
+        b'U' => cut_err(hexescape::<8>).context(Context::Label("unicode 8-digit hex code")),
         b'\\' => success('\\'),
         b'"' => success('"'),
         _ => {
             cut_err(fail::<_, char, _>)
-            .context(Context::Expression("escape sequence"))
+            .context(Context::Label("escape sequence"))
             .context(Context::Expected(ParserValue::CharLiteral('b')))
             .context(Context::Expected(ParserValue::CharLiteral('f')))
             .context(Context::Expected(ParserValue::CharLiteral('n')))
@@ -151,7 +151,7 @@ fn ml_basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserE
         preceded(opt(newline), cut_err(ml_basic_body)),
         cut_err(ML_BASIC_STRING_DELIM),
     )
-    .context(Context::Expression("multiline basic string"))
+    .context(Context::Label("multiline basic string"))
     .parse_next(input)
 }
 
@@ -260,7 +260,7 @@ pub(crate) fn literal_string(input: Input<'_>) -> IResult<Input<'_>, &str, Parse
         cut_err(APOSTROPHE),
     )
     .try_map(std::str::from_utf8)
-    .context(Context::Expression("literal string"))
+    .context(Context::Label("literal string"))
     .parse_next(input)
 }
 
@@ -291,7 +291,7 @@ fn ml_literal_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, Parse
         })),
         cut_err(ML_LITERAL_STRING_DELIM),
     )
-    .context(Context::Expression("multiline literal string"))
+    .context(Context::Label("multiline literal string"))
     .parse_next(input)
 }
 

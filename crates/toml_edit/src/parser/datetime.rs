@@ -39,10 +39,10 @@ pub(crate) fn date_time(input: Input<'_>) -> IResult<Input<'_>, Datetime, Parser
                     },
                 }
             })
-            .context(Context::Expression("date-time")),
+            .context(Context::Label("date-time")),
         partial_time
             .map(|t| t.into())
-            .context(Context::Expression("time")),
+            .context(Context::Label("time")),
     ))
     .parse_next(input)
 }
@@ -90,7 +90,7 @@ pub(crate) fn time_offset(input: Input<'_>) -> IResult<Input<'_>, Offset, Parser
             .verify(|minutes| ((-24 * 60)..=(24 * 60)).contains(minutes))
             .map(|minutes| Offset::Custom { minutes }),
     ))
-    .context(Context::Expression("time offset"))
+    .context(Context::Label("time offset"))
     .parse_next(input)
 }
 

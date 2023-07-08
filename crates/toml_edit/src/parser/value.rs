@@ -54,31 +54,31 @@ pub(crate) fn value<'i>(
             },
             b't' => {
                 crate::parser::numbers::true_.map(v::Value::from)
-                    .context(Context::Expression("string"))
+                    .context(Context::Label("string"))
                     .context(Context::Expected(ParserValue::CharLiteral('"')))
                     .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             b'f' => {
                 crate::parser::numbers::false_.map(v::Value::from)
-                    .context(Context::Expression("string"))
+                    .context(Context::Label("string"))
                     .context(Context::Expected(ParserValue::CharLiteral('"')))
                     .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             b'i' => {
                 crate::parser::numbers::inf.map(v::Value::from)
-                    .context(Context::Expression("string"))
+                    .context(Context::Label("string"))
                     .context(Context::Expected(ParserValue::CharLiteral('"')))
                     .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             b'n' => {
                 crate::parser::numbers::nan.map(v::Value::from)
-                    .context(Context::Expression("string"))
+                    .context(Context::Label("string"))
                     .context(Context::Expected(ParserValue::CharLiteral('"')))
                     .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },
             _ => {
                 fail
-                    .context(Context::Expression("string"))
+                    .context(Context::Label("string"))
                     .context(Context::Expected(ParserValue::CharLiteral('"')))
                     .context(Context::Expected(ParserValue::CharLiteral('\'')))
             },

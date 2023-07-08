@@ -28,7 +28,7 @@ pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<
         }),
         DOT_SEP,
     )
-    .context(Context::Expression("key"))
+    .context(Context::Label("key"))
     .try_map(|k: Vec<_>| {
         // Inserting the key will require recursion down the line
         RecursionCheck::check_depth(k.len())?;

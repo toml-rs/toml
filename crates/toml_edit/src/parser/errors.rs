@@ -233,7 +233,7 @@ impl<'b> std::cmp::PartialEq for ParserError<'b> {
 impl<'a> std::fmt::Display for ParserError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let expression = self.context.iter().find_map(|c| match c {
-            Context::Expression(c) => Some(c),
+            Context::Label(c) => Some(c),
             _ => None,
         });
         let expected = self
@@ -280,7 +280,7 @@ impl<'a> std::fmt::Display for ParserError<'a> {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum Context {
-    Expression(&'static str),
+    Label(&'static str),
     Expected(ParserValue),
 }
 

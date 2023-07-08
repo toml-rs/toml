@@ -25,7 +25,7 @@ pub(crate) fn inline_table<'i>(
             INLINE_TABLE_OPEN,
             cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
             cut_err(INLINE_TABLE_CLOSE)
-                .context(Context::Expression("inline table"))
+                .context(Context::Label("inline table"))
                 .context(Context::Expected(ParserValue::CharLiteral('}'))),
         )
         .parse_next(input)
