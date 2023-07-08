@@ -25,8 +25,8 @@ pub(crate) fn inline_table<'i>(
             INLINE_TABLE_OPEN,
             cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
             cut_err(INLINE_TABLE_CLOSE)
-                .context(Context::Label("inline table"))
-                .context(Context::Expected(ParserValue::CharLiteral('}'))),
+                .context(StrContext::Label("inline table"))
+                .context(StrContext::Expected(ParserValue::CharLiteral('}'))),
         )
         .parse_next(input)
     }
@@ -117,8 +117,8 @@ fn keyval<'i>(
             key,
             cut_err((
                 one_of(KEYVAL_SEP)
-                    .context(Context::Expected(ParserValue::CharLiteral('.')))
-                    .context(Context::Expected(ParserValue::CharLiteral('='))),
+                    .context(StrContext::Expected(ParserValue::CharLiteral('.')))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('='))),
                 (ws.span(), value(check), ws.span()),
             )),
         )

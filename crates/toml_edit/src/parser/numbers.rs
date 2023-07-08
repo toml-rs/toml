@@ -63,7 +63,7 @@ pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                         (
                             one_of(b'_'),
                             cut_err(digit)
-                                .context(Context::Expected(ParserValue::Description("digit"))),
+                                .context(StrContext::Expected(ParserValue::Description("digit"))),
                         )
                             .value(()),
                     )),
@@ -76,7 +76,7 @@ pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
     )
         .recognize()
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") })
-        .context(Context::Label("integer"))
+        .context(StrContext::Label("integer"))
         .parse_next(input)
 }
 const DIGIT1_9: RangeInclusive<u8> = b'1'..=b'9';
@@ -95,7 +95,7 @@ pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                     (
                         one_of(b'_'),
                         cut_err(hexdig)
-                            .context(Context::Expected(ParserValue::Description("digit"))),
+                            .context(StrContext::Expected(ParserValue::Description("digit"))),
                     )
                         .value(()),
                 )),
@@ -105,7 +105,7 @@ pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         .recognize(),
     )
     .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
-    .context(Context::Label("hexadecimal integer"))
+    .context(StrContext::Label("hexadecimal integer"))
     .parse_next(input)
 }
 const HEX_PREFIX: &[u8] = b"0x";
@@ -124,7 +124,7 @@ pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                     (
                         one_of(b'_'),
                         cut_err(one_of(DIGIT0_7))
-                            .context(Context::Expected(ParserValue::Description("digit"))),
+                            .context(StrContext::Expected(ParserValue::Description("digit"))),
                     )
                         .value(()),
                 )),
@@ -134,7 +134,7 @@ pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         .recognize(),
     )
     .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
-    .context(Context::Label("octal integer"))
+    .context(StrContext::Label("octal integer"))
     .parse_next(input)
 }
 const OCT_PREFIX: &[u8] = b"0o";
@@ -154,7 +154,7 @@ pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                     (
                         one_of(b'_'),
                         cut_err(one_of(DIGIT0_1))
-                            .context(Context::Expected(ParserValue::Description("digit"))),
+                            .context(StrContext::Expected(ParserValue::Description("digit"))),
                     )
                         .value(()),
                 )),
@@ -164,7 +164,7 @@ pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
         .recognize(),
     )
     .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
-    .context(Context::Label("binary integer"))
+    .context(StrContext::Label("binary integer"))
     .parse_next(input)
 }
 const BIN_PREFIX: &[u8] = b"0b";
@@ -183,7 +183,7 @@ pub(crate) fn float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>
         )),
         special_float,
     ))
-    .context(Context::Label("floating-point number"))
+    .context(StrContext::Label("floating-point number"))
     .parse_next(input)
 }
 
@@ -204,7 +204,8 @@ pub(crate) fn float_(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'
 pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
     (
         b'.',
-        cut_err(zero_prefixable_int).context(Context::Expected(ParserValue::Description("digit"))),
+        cut_err(zero_prefixable_int)
+            .context(StrContext::Expected(ParserValue::Description("digit"))),
     )
         .recognize()
         .map(|b: &[u8]| unsafe {
@@ -226,7 +227,7 @@ pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, 
                 digit.value(()),
                 (
                     one_of(b'_'),
-                    cut_err(digit).context(Context::Expected(ParserValue::Description("digit"))),
+                    cut_err(digit).context(StrContext::Expected(ParserValue::Description("digit"))),
                 )
                     .value(()),
             )),

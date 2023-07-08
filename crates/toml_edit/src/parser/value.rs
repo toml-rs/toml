@@ -44,43 +44,43 @@ pub(crate) fn value<'i>(
             b'_' => {
                     integer
                         .map(v::Value::from)
-                .context(Context::Expected(ParserValue::Description("leading digit")))
+                .context(StrContext::Expected(ParserValue::Description("leading digit")))
             },
             // Report as if they were numbers because its most likely a typo
             b'.' =>  {
                     float
                         .map(v::Value::from)
-                .context(Context::Expected(ParserValue::Description("leading digit")))
+                .context(StrContext::Expected(ParserValue::Description("leading digit")))
             },
             b't' => {
                 crate::parser::numbers::true_.map(v::Value::from)
-                    .context(Context::Label("string"))
-                    .context(Context::Expected(ParserValue::CharLiteral('"')))
-                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
+                    .context(StrContext::Label("string"))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('"')))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('\'')))
             },
             b'f' => {
                 crate::parser::numbers::false_.map(v::Value::from)
-                    .context(Context::Label("string"))
-                    .context(Context::Expected(ParserValue::CharLiteral('"')))
-                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
+                    .context(StrContext::Label("string"))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('"')))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('\'')))
             },
             b'i' => {
                 crate::parser::numbers::inf.map(v::Value::from)
-                    .context(Context::Label("string"))
-                    .context(Context::Expected(ParserValue::CharLiteral('"')))
-                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
+                    .context(StrContext::Label("string"))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('"')))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('\'')))
             },
             b'n' => {
                 crate::parser::numbers::nan.map(v::Value::from)
-                    .context(Context::Label("string"))
-                    .context(Context::Expected(ParserValue::CharLiteral('"')))
-                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
+                    .context(StrContext::Label("string"))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('"')))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('\'')))
             },
             _ => {
                 fail
-                    .context(Context::Label("string"))
-                    .context(Context::Expected(ParserValue::CharLiteral('"')))
-                    .context(Context::Expected(ParserValue::CharLiteral('\'')))
+                    .context(StrContext::Label("string"))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('"')))
+                    .context(StrContext::Expected(ParserValue::CharLiteral('\'')))
             },
     }
         .with_span()

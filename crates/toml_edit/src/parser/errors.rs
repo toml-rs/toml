@@ -149,7 +149,7 @@ impl StdError for TomlError {
 #[derive(Debug)]
 pub(crate) struct ParserError<'b> {
     input: Input<'b>,
-    context: Vec<Context>,
+    context: Vec<StrContext>,
     cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
@@ -189,8 +189,8 @@ impl<'b> winnow::error::ParserError<&'b str> for ParserError<'b> {
     }
 }
 
-impl<'b> winnow::error::AddContext<Input<'b>, Context> for ParserError<'b> {
-    fn add_context(mut self, _input: Input<'b>, ctx: Context) -> Self {
+impl<'b> winnow::error::AddContext<Input<'b>, StrContext> for ParserError<'b> {
+    fn add_context(mut self, _input: Input<'b>, ctx: StrContext) -> Self {
         self.context.push(ctx);
         self
     }
@@ -233,14 +233,14 @@ impl<'b> std::cmp::PartialEq for ParserError<'b> {
 impl<'a> std::fmt::Display for ParserError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let expression = self.context.iter().find_map(|c| match c {
-            Context::Label(c) => Some(c),
+            StrContext::Label(c) => Some(c),
             _ => None,
         });
         let expected = self
             .context
             .iter()
             .filter_map(|c| match c {
-                Context::Expected(c) => Some(c),
+                StrContext::Expected(c) => Some(c),
                 _ => None,
             })
             .collect::<Vec<_>>();
@@ -279,7 +279,7 @@ impl<'a> std::fmt::Display for ParserError<'a> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub(crate) enum Context {
+pub(crate) enum StrContext {
     Label(&'static str),
     Expected(ParserValue),
 }

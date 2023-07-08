@@ -73,9 +73,9 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
 }
 
 pub(crate) mod prelude {
-    pub(crate) use super::errors::Context;
     pub(crate) use super::errors::ParserError;
     pub(crate) use super::errors::ParserValue;
+    pub(crate) use super::errors::StrContext;
     pub(crate) use winnow::combinator::dispatch;
     pub(crate) use winnow::IResult;
     pub(crate) use winnow::Parser;

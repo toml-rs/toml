@@ -18,8 +18,8 @@ pub(crate) fn array<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Array, 
             ARRAY_OPEN,
             cut_err(array_values(check)),
             cut_err(ARRAY_CLOSE)
-                .context(Context::Label("array"))
-                .context(Context::Expected(ParserValue::CharLiteral(']'))),
+                .context(StrContext::Label("array"))
+                .context(StrContext::Expected(ParserValue::CharLiteral(']'))),
         )
         .parse_next(input)
     }
