@@ -133,6 +133,50 @@ where
     serde::Deserialize::deserialize(value)
 }
 
+/// Deserialize a slice of bytes into a type.
+///
+/// This function will attempt to interpret `v` as a TOML document and
+/// deserialize `T` from the document.
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
+///
+/// # Examples
+///
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///    title: String,
+///  owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let config: Config = toml::from_slice(r#"
+///    title = 'TOML Example'
+///   [owner]
+///    name = 'Lisa'
+/// "#.as_bytes()).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
+#[cfg(feature = "parse")]
+pub fn from_slice<'de, T>(v: &'de [u8]) -> Result<T, Error>
+where
+    T: serde::de::Deserialize<'de>,
+{
+    use serde::de::Error;
+
+    T::deserialize(Deserializer::new(
+        std::str::from_utf8(v).map_err(|err| Error::custom(err.to_string()))?,
+    ))
+}
+
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Error {

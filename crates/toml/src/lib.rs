@@ -165,7 +165,7 @@ mod table;
 
 #[cfg(feature = "parse")]
 #[doc(inline)]
-pub use crate::de::{from_reader, from_str, from_value, Deserializer};
+pub use crate::de::{from_reader, from_slice, from_str, from_value, Deserializer};
 #[cfg(feature = "display")]
 #[doc(inline)]
 pub use crate::ser::{to_string, to_string_pretty, Serializer};
