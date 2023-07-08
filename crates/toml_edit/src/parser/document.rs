@@ -30,7 +30,7 @@ use crate::RawString;
 //                ( ws keyval ws [ comment ] ) /
 //                ( ws table ws [ comment ] ) /
 //                  ws )
-pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserError<'_>> {
+pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ContextError<'_>> {
     let state = RefCell::new(ParseState::default());
     let state_ref = &state;
 
@@ -57,7 +57,7 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserE
         .into_document()
         .map(|document| (i, document))
         .map_err(|err| {
-            winnow::error::ErrMode::Backtrack(ParserError::from_external_error(
+            winnow::error::ErrMode::Backtrack(ContextError::from_external_error(
                 i,
                 winnow::error::ErrorKind::Verify,
                 err,
@@ -67,7 +67,7 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserE
 
 pub(crate) fn parse_comment<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         (comment, line_ending)
             .span()
@@ -80,7 +80,7 @@ pub(crate) fn parse_comment<'s, 'i>(
 
 pub(crate) fn parse_ws<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         ws.span()
             .map(|span| state.borrow_mut().on_ws(span))
@@ -90,7 +90,7 @@ pub(crate) fn parse_ws<'s, 'i>(
 
 pub(crate) fn parse_newline<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         newline
             .span()
@@ -101,7 +101,7 @@ pub(crate) fn parse_newline<'s, 'i>(
 
 pub(crate) fn keyval<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         parse_keyval
             .try_map(|(p, kv)| state.borrow_mut().on_keyval(p, kv))
@@ -112,7 +112,7 @@ pub(crate) fn keyval<'s, 'i>(
 // keyval = key keyval-sep val
 pub(crate) fn parse_keyval(
     input: Input<'_>,
-) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
+) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ContextError<'_>> {
     (
         key,
         cut_err((

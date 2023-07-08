@@ -17,7 +17,7 @@ use crate::Value;
 // val = string / boolean / array / inline-table / date-time / float / integer
 pub(crate) fn value<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, v::Value, ParserError<'i>> {
+) -> impl Parser<Input<'i>, v::Value, ContextError<'i>> {
     move |input| {
         dispatch!{peek(any);
             crate::parser::strings::QUOTATION_MARK |

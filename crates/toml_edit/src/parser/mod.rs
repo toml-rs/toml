@@ -73,7 +73,7 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
 }
 
 pub(crate) mod prelude {
-    pub(crate) use super::errors::ParserError;
+    pub(crate) use super::errors::ContextError;
     pub(crate) use super::errors::StrContext;
     pub(crate) use super::errors::StrContextValue;
     pub(crate) use winnow::combinator::dispatch;
@@ -115,7 +115,7 @@ pub(crate) mod prelude {
         pub(crate) fn recursing(
             mut self,
             input: Input<'_>,
-        ) -> Result<Self, winnow::error::ErrMode<ParserError<'_>>> {
+        ) -> Result<Self, winnow::error::ErrMode<ContextError<'_>>> {
             self.current += 1;
             if self.current < 128 {
                 Ok(self)
@@ -144,7 +144,7 @@ pub(crate) mod prelude {
         pub(crate) fn recursing(
             self,
             _input: Input<'_>,
-        ) -> Result<Self, winnow::error::ErrMode<ParserError<'_>>> {
+        ) -> Result<Self, winnow::error::ErrMode<ContextError<'_>>> {
             Ok(self)
         }
     }

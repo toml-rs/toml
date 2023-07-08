@@ -19,7 +19,7 @@ use indexmap::map::Entry;
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
 pub(crate) fn inline_table<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, InlineTable, ParserError<'i>> {
+) -> impl Parser<Input<'i>, InlineTable, ContextError<'i>> {
     move |input| {
         delimited(
             INLINE_TABLE_OPEN,
@@ -98,7 +98,7 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 fn inline_table_keyvals<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ParserError<'i>> {
+) -> impl Parser<Input<'i>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ContextError<'i>> {
     move |input| {
         let check = check.recursing(input)?;
         (
@@ -111,7 +111,7 @@ fn inline_table_keyvals<'i>(
 
 fn keyval<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, (Vec<Key>, TableKeyValue), ParserError<'i>> {
+) -> impl Parser<Input<'i>, (Vec<Key>, TableKeyValue), ContextError<'i>> {
     move |input| {
         (
             key,

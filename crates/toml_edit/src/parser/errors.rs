@@ -16,7 +16,7 @@ pub struct TomlError {
 }
 
 impl TomlError {
-    pub(crate) fn new(error: ParserError<'_>, original: Input<'_>) -> Self {
+    pub(crate) fn new(error: ContextError<'_>, original: Input<'_>) -> Self {
         use winnow::stream::Offset;
         use winnow::stream::Stream;
 
@@ -147,13 +147,13 @@ impl StdError for TomlError {
 }
 
 #[derive(Debug)]
-pub(crate) struct ParserError<'b> {
+pub(crate) struct ContextError<'b> {
     input: Input<'b>,
     context: Vec<StrContext>,
     cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
-impl<'b> winnow::error::ParserError<Input<'b>> for ParserError<'b> {
+impl<'b> winnow::error::ParserError<Input<'b>> for ContextError<'b> {
     fn from_error_kind(input: Input<'b>, _kind: winnow::error::ErrorKind) -> Self {
         Self {
             input,
@@ -171,7 +171,7 @@ impl<'b> winnow::error::ParserError<Input<'b>> for ParserError<'b> {
     }
 }
 
-impl<'b> winnow::error::ParserError<&'b str> for ParserError<'b> {
+impl<'b> winnow::error::ParserError<&'b str> for ContextError<'b> {
     fn from_error_kind(input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
         Self {
             input: Input::new(BStr::new(input)),
@@ -189,7 +189,7 @@ impl<'b> winnow::error::ParserError<&'b str> for ParserError<'b> {
     }
 }
 
-impl<'b> winnow::error::AddContext<Input<'b>, StrContext> for ParserError<'b> {
+impl<'b> winnow::error::AddContext<Input<'b>, StrContext> for ContextError<'b> {
     fn add_context(mut self, _input: Input<'b>, ctx: StrContext) -> Self {
         self.context.push(ctx);
         self
@@ -197,7 +197,7 @@ impl<'b> winnow::error::AddContext<Input<'b>, StrContext> for ParserError<'b> {
 }
 
 impl<'b, E: std::error::Error + Send + Sync + 'static>
-    winnow::error::FromExternalError<Input<'b>, E> for ParserError<'b>
+    winnow::error::FromExternalError<Input<'b>, E> for ContextError<'b>
 {
     fn from_external_error(input: Input<'b>, _kind: winnow::error::ErrorKind, e: E) -> Self {
         Self {
@@ -209,7 +209,7 @@ impl<'b, E: std::error::Error + Send + Sync + 'static>
 }
 
 impl<'b, E: std::error::Error + Send + Sync + 'static> winnow::error::FromExternalError<&'b str, E>
-    for ParserError<'b>
+    for ContextError<'b>
 {
     fn from_external_error(input: &'b str, _kind: winnow::error::ErrorKind, e: E) -> Self {
         Self {
@@ -221,7 +221,7 @@ impl<'b, E: std::error::Error + Send + Sync + 'static> winnow::error::FromExtern
 }
 
 // For tests
-impl<'b> std::cmp::PartialEq for ParserError<'b> {
+impl<'b> std::cmp::PartialEq for ContextError<'b> {
     fn eq(&self, other: &Self) -> bool {
         self.input == other.input
             && self.context == other.context
@@ -230,7 +230,7 @@ impl<'b> std::cmp::PartialEq for ParserError<'b> {
     }
 }
 
-impl<'a> std::fmt::Display for ParserError<'a> {
+impl<'a> std::fmt::Display for ContextError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let expression = self.context.iter().find_map(|c| match c {
             StrContext::Label(c) => Some(c),

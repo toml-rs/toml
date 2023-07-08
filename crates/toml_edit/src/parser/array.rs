@@ -12,7 +12,7 @@ use crate::parser::prelude::*;
 // ;; Array
 
 // array = array-open array-values array-close
-pub(crate) fn array<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Array, ParserError<'i>> {
+pub(crate) fn array<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Array, ContextError<'i>> {
     move |input| {
         delimited(
             ARRAY_OPEN,
@@ -39,7 +39,7 @@ const ARRAY_SEP: u8 = b',';
 //                  array-value / ws-comment-newline ]
 pub(crate) fn array_values<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, Array, ParserError<'i>> {
+) -> impl Parser<Input<'i>, Array, ContextError<'i>> {
     move |input| {
         let check = check.recursing(input)?;
         (
@@ -67,7 +67,7 @@ pub(crate) fn array_values<'i>(
 
 pub(crate) fn array_value<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, Value, ParserError<'i>> {
+) -> impl Parser<Input<'i>, Value, ContextError<'i>> {
     move |input| {
         (
             ws_comment_newline.span(),

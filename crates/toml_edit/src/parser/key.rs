@@ -16,7 +16,7 @@ use crate::RawString;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
-pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<'_>> {
+pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ContextError<'_>> {
     separated1(
         (ws.span(), simple_key, ws.span()).map(|(pre, (raw, key), suffix)| {
             Key::new(key)
@@ -41,7 +41,7 @@ pub(crate) fn key(input: Input<'_>) -> IResult<Input<'_>, Vec<Key>, ParserError<
 // quoted-key = basic-string / literal-string
 pub(crate) fn simple_key(
     input: Input<'_>,
-) -> IResult<Input<'_>, (RawString, InternalString), ParserError<'_>> {
+) -> IResult<Input<'_>, (RawString, InternalString), ContextError<'_>> {
     dispatch! {peek(any);
         crate::parser::strings::QUOTATION_MARK => basic_string
             .map(|s: std::borrow::Cow<'_, str>| s.as_ref().into()),
@@ -57,7 +57,7 @@ pub(crate) fn simple_key(
 }
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
-fn unquoted_key(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+fn unquoted_key(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
     take_while(1.., UNQUOTED_CHAR)
         .map(|b| unsafe { from_utf8_unchecked(b, "`is_unquoted_char` filters out on-ASCII") })
         .parse_next(input)
