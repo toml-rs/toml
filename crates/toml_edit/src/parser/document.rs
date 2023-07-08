@@ -67,7 +67,7 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserE
 
 pub(crate) fn parse_comment<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'_>> + 's {
+) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
     move |i| {
         (comment, line_ending)
             .span()
@@ -80,7 +80,7 @@ pub(crate) fn parse_comment<'s, 'i>(
 
 pub(crate) fn parse_ws<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
     move |i| {
         ws.span()
             .map(|span| state.borrow_mut().on_ws(span))
@@ -90,7 +90,7 @@ pub(crate) fn parse_ws<'s, 'i>(
 
 pub(crate) fn parse_newline<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
     move |i| {
         newline
             .span()
@@ -101,7 +101,7 @@ pub(crate) fn parse_newline<'s, 'i>(
 
 pub(crate) fn keyval<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ParserError<'i>> + 's {
     move |i| {
         parse_keyval
             .try_map(|(p, kv)| state.borrow_mut().on_keyval(p, kv))

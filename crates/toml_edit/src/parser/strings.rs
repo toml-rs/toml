@@ -214,7 +214,7 @@ fn mlb_content(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError
 // mlb-quotes = 1*2quotation-mark
 fn mlb_quotes<'i>(
     mut term: impl winnow::Parser<Input<'i>, (), ParserError<'i>>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, &str, ParserError<'i>> {
+) -> impl Parser<Input<'i>, &'i str, ParserError<'i>> {
     move |input| {
         let res = terminated(b"\"\"", peek(term.by_ref()))
             .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
@@ -333,7 +333,7 @@ const MLL_CHAR: (
 // mll-quotes = 1*2apostrophe
 fn mll_quotes<'i>(
     mut term: impl winnow::Parser<Input<'i>, (), ParserError<'i>>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, &str, ParserError<'i>> {
+) -> impl Parser<Input<'i>, &'i str, ParserError<'i>> {
     move |input| {
         let res = terminated(b"''", peek(term.by_ref()))
             .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })

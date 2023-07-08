@@ -80,7 +80,7 @@ pub(crate) mod prelude {
     pub(crate) use super::errors::ParserError;
     pub(crate) use super::errors::ParserValue;
     pub(crate) use winnow::IResult;
-    pub(crate) use winnow::Parser as _;
+    pub(crate) use winnow::Parser;
 
     pub(crate) type Input<'b> = winnow::Located<&'b winnow::BStr>;
 
@@ -102,7 +102,7 @@ pub(crate) mod prelude {
     pub(crate) fn trace<I: std::fmt::Debug, O: std::fmt::Debug, E: std::fmt::Debug>(
         context: impl std::fmt::Display,
         mut parser: impl winnow::Parser<I, O, E>,
-    ) -> impl FnMut(I) -> IResult<I, O, E> {
+    ) -> impl Parser<I, O, E> {
         static DEPTH: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         move |input: I| {
             let depth = DEPTH.fetch_add(1, std::sync::atomic::Ordering::SeqCst) * 2;
