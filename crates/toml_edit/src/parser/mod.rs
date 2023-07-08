@@ -98,30 +98,6 @@ pub(crate) mod prelude {
         }
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn trace<I: std::fmt::Debug, O: std::fmt::Debug, E: std::fmt::Debug>(
-        context: impl std::fmt::Display,
-        mut parser: impl winnow::Parser<I, O, E>,
-    ) -> impl Parser<I, O, E> {
-        static DEPTH: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-        move |input: I| {
-            let depth = DEPTH.fetch_add(1, std::sync::atomic::Ordering::SeqCst) * 2;
-            eprintln!("{:depth$}--> {} {:?}", "", context, input);
-            match parser.parse_next(input) {
-                Ok((i, o)) => {
-                    DEPTH.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
-                    eprintln!("{:depth$}<-- {} {:?}", "", context, i);
-                    Ok((i, o))
-                }
-                Err(err) => {
-                    DEPTH.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
-                    eprintln!("{:depth$}<-- {} {:?}", "", context, err);
-                    Err(err)
-                }
-            }
-        }
-    }
-
     #[cfg(not(feature = "unbounded"))]
     #[derive(Copy, Clone, Debug, Default)]
     pub(crate) struct RecursionCheck {
