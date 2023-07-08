@@ -45,6 +45,53 @@ where
     T::deserialize(Deserializer::new(s))
 }
 
+/// Deserializes a reader into a type.
+///
+/// This function will attempt to interpret the reader as a TOML document and
+/// deserialize `T` from the document.
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
+///
+/// # Examples
+///
+/// ```
+/// use serde::Deserialize;
+/// #[derive(Deserialize)]
+/// struct Config {
+///    title: String,
+///   owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///    name: String,
+/// }
+///
+/// let config: Config = toml::from_reader(r#"
+///     title = 'TOML Example'
+///     [owner]
+///     name = 'Lisa'
+/// "#.as_bytes()).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
+#[cfg(feature = "parse")]
+pub fn from_reader<R, T>(rdr: R) -> Result<T, Error>
+where
+    R: std::io::Read,
+    T: serde::de::DeserializeOwned,
+{
+    use serde::de::Error;
+
+    let mut buffer = String::new();
+    let mut rdr = rdr;
+    rdr.read_to_string(&mut buffer)
+        .map_err(crate::de::Error::custom)?;
+
+    from_str(&buffer)
+}
+
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Error {
