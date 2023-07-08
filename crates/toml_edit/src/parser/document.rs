@@ -117,14 +117,14 @@ pub(crate) fn parse_keyval(
         key,
         cut_err((
             one_of(KEYVAL_SEP)
-                .context(StrContext::Expected(ParserValue::CharLiteral('.')))
-                .context(StrContext::Expected(ParserValue::CharLiteral('='))),
+                .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
             (
                 ws.span(),
                 value(RecursionCheck::default()),
                 line_trailing
-                    .context(StrContext::Expected(ParserValue::CharLiteral('\n')))
-                    .context(StrContext::Expected(ParserValue::CharLiteral('#'))),
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
             ),
         )),
     )

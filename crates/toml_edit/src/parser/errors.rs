@@ -281,27 +281,27 @@ impl<'a> std::fmt::Display for ParserError<'a> {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum StrContext {
     Label(&'static str),
-    Expected(ParserValue),
+    Expected(StrContextValue),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub(crate) enum ParserValue {
+pub(crate) enum StrContextValue {
     CharLiteral(char),
     StringLiteral(&'static str),
     Description(&'static str),
 }
 
-impl std::fmt::Display for ParserValue {
+impl std::fmt::Display for StrContextValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ParserValue::CharLiteral('\n') => "newline".fmt(f),
-            ParserValue::CharLiteral('`') => "'`'".fmt(f),
-            ParserValue::CharLiteral(c) if c.is_ascii_control() => {
+            StrContextValue::CharLiteral('\n') => "newline".fmt(f),
+            StrContextValue::CharLiteral('`') => "'`'".fmt(f),
+            StrContextValue::CharLiteral(c) if c.is_ascii_control() => {
                 write!(f, "`{}`", c.escape_debug())
             }
-            ParserValue::CharLiteral(c) => write!(f, "`{}`", c),
-            ParserValue::StringLiteral(c) => write!(f, "`{}`", c),
-            ParserValue::Description(c) => write!(f, "{}", c),
+            StrContextValue::CharLiteral(c) => write!(f, "`{}`", c),
+            StrContextValue::StringLiteral(c) => write!(f, "`{}`", c),
+            StrContextValue::Description(c) => write!(f, "{}", c),
         }
     }
 }

@@ -34,13 +34,13 @@ pub(crate) fn std_table<'s, 'i>(
                 STD_TABLE_OPEN,
                 cut_err(key),
                 cut_err(STD_TABLE_CLOSE)
-                    .context(StrContext::Expected(ParserValue::CharLiteral('.')))
-                    .context(StrContext::Expected(ParserValue::StringLiteral("]"))),
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::StringLiteral("]"))),
             )
             .with_span(),
             cut_err(line_trailing)
-                .context(StrContext::Expected(ParserValue::CharLiteral('\n')))
-                .context(StrContext::Expected(ParserValue::CharLiteral('#'))),
+                .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
         )
             .try_map(|((h, span), t)| state.borrow_mut().deref_mut().on_std_header(h, t, span))
             .parse_next(i)
@@ -59,13 +59,13 @@ pub(crate) fn array_table<'s, 'i>(
                 ARRAY_TABLE_OPEN,
                 cut_err(key),
                 cut_err(ARRAY_TABLE_CLOSE)
-                    .context(StrContext::Expected(ParserValue::CharLiteral('.')))
-                    .context(StrContext::Expected(ParserValue::StringLiteral("]]"))),
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::StringLiteral("]]"))),
             )
             .with_span(),
             cut_err(line_trailing)
-                .context(StrContext::Expected(ParserValue::CharLiteral('\n')))
-                .context(StrContext::Expected(ParserValue::CharLiteral('#'))),
+                .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
         )
             .try_map(|((h, span), t)| state.borrow_mut().deref_mut().on_array_header(h, t, span))
             .parse_next(i)

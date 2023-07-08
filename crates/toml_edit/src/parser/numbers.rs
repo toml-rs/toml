@@ -62,8 +62,9 @@ pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                         digit.value(()),
                         (
                             one_of(b'_'),
-                            cut_err(digit)
-                                .context(StrContext::Expected(ParserValue::Description("digit"))),
+                            cut_err(digit).context(StrContext::Expected(
+                                StrContextValue::Description("digit"),
+                            )),
                         )
                             .value(()),
                     )),
@@ -95,7 +96,7 @@ pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                     (
                         one_of(b'_'),
                         cut_err(hexdig)
-                            .context(StrContext::Expected(ParserValue::Description("digit"))),
+                            .context(StrContext::Expected(StrContextValue::Description("digit"))),
                     )
                         .value(()),
                 )),
@@ -124,7 +125,7 @@ pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                     (
                         one_of(b'_'),
                         cut_err(one_of(DIGIT0_7))
-                            .context(StrContext::Expected(ParserValue::Description("digit"))),
+                            .context(StrContext::Expected(StrContextValue::Description("digit"))),
                     )
                         .value(()),
                 )),
@@ -154,7 +155,7 @@ pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<
                     (
                         one_of(b'_'),
                         cut_err(one_of(DIGIT0_1))
-                            .context(StrContext::Expected(ParserValue::Description("digit"))),
+                            .context(StrContext::Expected(StrContextValue::Description("digit"))),
                     )
                         .value(()),
                 )),
@@ -205,7 +206,7 @@ pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>
     (
         b'.',
         cut_err(zero_prefixable_int)
-            .context(StrContext::Expected(ParserValue::Description("digit"))),
+            .context(StrContext::Expected(StrContextValue::Description("digit"))),
     )
         .recognize()
         .map(|b: &[u8]| unsafe {
@@ -227,7 +228,8 @@ pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, 
                 digit.value(()),
                 (
                     one_of(b'_'),
-                    cut_err(digit).context(StrContext::Expected(ParserValue::Description("digit"))),
+                    cut_err(digit)
+                        .context(StrContext::Expected(StrContextValue::Description("digit"))),
                 )
                     .value(()),
             )),
