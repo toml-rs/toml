@@ -1,5 +1,5 @@
-use winnow::branch::alt;
 use winnow::bytes::any;
+use winnow::combinator::alt;
 use winnow::combinator::fail;
 use winnow::combinator::peek;
 
