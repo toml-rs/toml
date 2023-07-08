@@ -1,7 +1,7 @@
-use winnow::bytes::any;
 use winnow::combinator::alt;
 use winnow::combinator::fail;
 use winnow::combinator::peek;
+use winnow::token::any;
 
 use crate::parser::array::array;
 use crate::parser::datetime::date_time;
