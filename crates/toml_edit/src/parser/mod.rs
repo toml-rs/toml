@@ -77,6 +77,7 @@ pub(crate) mod prelude {
     pub(crate) use super::errors::StrContext;
     pub(crate) use super::errors::StrContextValue;
     pub(crate) use winnow::combinator::dispatch;
+    pub(crate) use winnow::error::FromExternalError;
     pub(crate) use winnow::IResult;
     pub(crate) use winnow::Parser;
 
@@ -120,12 +121,10 @@ pub(crate) mod prelude {
             if self.current < 128 {
                 Ok(self)
             } else {
-                Err(winnow::error::ErrMode::Backtrack(
-                    winnow::error::FromExternalError::from_external_error(
-                        input,
-                        winnow::error::ErrorKind::Eof,
-                        super::errors::CustomError::RecursionLimitExceeded,
-                    ),
+                Err(winnow::error::ErrMode::from_external_error(
+                    input,
+                    winnow::error::ErrorKind::Eof,
+                    super::errors::CustomError::RecursionLimitExceeded,
                 ))
             }
         }

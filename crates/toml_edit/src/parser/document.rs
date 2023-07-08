@@ -5,7 +5,6 @@ use winnow::combinator::eof;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::repeat;
-use winnow::error::FromExternalError;
 use winnow::token::any;
 use winnow::token::one_of;
 
@@ -57,11 +56,7 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, Context
         .into_document()
         .map(|document| (i, document))
         .map_err(|err| {
-            winnow::error::ErrMode::Backtrack(ContextError::from_external_error(
-                i,
-                winnow::error::ErrorKind::Verify,
-                err,
-            ))
+            winnow::error::ErrMode::from_external_error(i, winnow::error::ErrorKind::Verify, err)
         })
 }
 
