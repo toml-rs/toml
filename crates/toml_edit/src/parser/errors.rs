@@ -20,7 +20,7 @@ impl TomlError {
         use winnow::stream::Offset;
         use winnow::stream::Stream;
 
-        let offset = original.offset_to(&error.input);
+        let offset = error.input.offset_from(&original);
         let span = if offset == original.len() {
             offset..offset
         } else {
@@ -153,7 +153,7 @@ pub(crate) struct ParserError<'b> {
     cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
-impl<'b> winnow::error::ParseError<Input<'b>> for ParserError<'b> {
+impl<'b> winnow::error::ParserError<Input<'b>> for ParserError<'b> {
     fn from_error_kind(input: Input<'b>, _kind: winnow::error::ErrorKind) -> Self {
         Self {
             input,
@@ -171,7 +171,7 @@ impl<'b> winnow::error::ParseError<Input<'b>> for ParserError<'b> {
     }
 }
 
-impl<'b> winnow::error::ParseError<&'b str> for ParserError<'b> {
+impl<'b> winnow::error::ParserError<&'b str> for ParserError<'b> {
     fn from_error_kind(input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
         Self {
             input: Input::new(BStr::new(input)),
@@ -189,7 +189,7 @@ impl<'b> winnow::error::ParseError<&'b str> for ParserError<'b> {
     }
 }
 
-impl<'b> winnow::error::ContextError<Input<'b>, Context> for ParserError<'b> {
+impl<'b> winnow::error::AddContext<Input<'b>, Context> for ParserError<'b> {
     fn add_context(mut self, _input: Input<'b>, ctx: Context) -> Self {
         self.context.push(ctx);
         self
