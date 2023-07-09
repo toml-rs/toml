@@ -168,7 +168,7 @@ mod table;
 pub use crate::de::{from_reader, from_slice, from_str, Deserializer};
 #[cfg(feature = "display")]
 #[doc(inline)]
-pub use crate::ser::{to_string, to_string_pretty, to_writer, Serializer};
+pub use crate::ser::{to_string, to_string_pretty, to_writer, to_writer_pretty, Serializer};
 #[doc(inline)]
 pub use crate::value::Value;
 
