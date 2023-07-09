@@ -73,6 +73,59 @@ where
     Ok(output)
 }
 
+/// Serialize the given data structure as TOML into the IO stream.
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, if `T` contains a map with non-string keys, or if `T` attempts to
+/// serialize an unsupported datatype such as an enum, tuple, or tuple struct.
+///
+/// # Examples
+///
+/// ```
+/// use std::env::temp_dir;
+/// use std::fs::File;
+/// use serde::Serialize;
+///
+/// #[derive(Serialize)]
+/// struct Config {
+///     database: Database,
+/// }
+///
+/// #[derive(Serialize)]
+/// struct Database {
+///     ip: String,
+///     port: Vec<u16>,
+///     connection_max: u32,
+///     enabled: bool,
+/// }
+///
+/// let config = Config {
+///     database: Database {
+///         ip: "192.168.1.1".to_string(),
+///         port: vec![8001, 8002, 8003],
+///         connection_max: 5000,
+///         enabled: false,
+///     },
+/// };
+///
+/// let mut dir = temp_dir();
+/// dir.push("config.toml");
+/// let mut file = File::create(dir).unwrap();
+///
+/// toml::to_writer(&mut file, &config).unwrap();
+/// ```
+pub fn to_writer<W, T>(writer: &mut W, value: &T) -> Result<(), Error>
+where
+    W: std::io::Write,
+    T: ?Sized + serde::ser::Serialize,
+{
+    writer
+        .write(&crate::to_string(value)?.into_bytes())
+        .map_err(|err| Error::new(err))?;
+
+    Ok(())
+}
+
 /// Errors that can occur when serializing a type.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error {
