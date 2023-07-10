@@ -27,8 +27,8 @@ const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 // std-table = std-table-open key *( table-key-sep key) std-table-close
 pub(crate) fn std_table<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
-    move |i| {
+) -> impl Parser<Input<'i>, (), ContextError> + 's {
+    move |i: &mut Input<'i>| {
         (
             delimited(
                 STD_TABLE_OPEN,
@@ -52,8 +52,8 @@ pub(crate) fn std_table<'s, 'i>(
 // array-table = array-table-open key *( table-key-sep key) array-table-close
 pub(crate) fn array_table<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
-    move |i| {
+) -> impl Parser<Input<'i>, (), ContextError> + 's {
+    move |i: &mut Input<'i>| {
         (
             delimited(
                 ARRAY_TABLE_OPEN,
@@ -77,8 +77,8 @@ pub(crate) fn array_table<'s, 'i>(
 // table = std-table / array-table
 pub(crate) fn table<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
-    move |i| {
+) -> impl Parser<Input<'i>, (), ContextError> + 's {
+    move |i: &mut Input<'i>| {
         dispatch!(peek::<_, &[u8],_,_>(take(2usize));
             b"[[" => array_table(state),
             _ => std_table(state),

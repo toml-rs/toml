@@ -21,7 +21,7 @@ use winnow::trace::trace;
 // local-date = full-date
 // local-time = partial-time
 // full-time = partial-time time-offset
-pub(crate) fn date_time(input: Input<'_>) -> IResult<Input<'_>, Datetime, ContextError<'_>> {
+pub(crate) fn date_time(input: &mut Input<'_>) -> PResult<Datetime> {
     trace(
         "date-time",
         alt((
@@ -52,7 +52,7 @@ pub(crate) fn date_time(input: Input<'_>) -> IResult<Input<'_>, Datetime, Contex
 }
 
 // full-date      = date-fullyear "-" date-month "-" date-mday
-pub(crate) fn full_date(input: Input<'_>) -> IResult<Input<'_>, Date, ContextError<'_>> {
+pub(crate) fn full_date(input: &mut Input<'_>) -> PResult<Date> {
     trace(
         "full-date",
         (date_fullyear, b'-', cut_err((date_month, b'-', date_mday)))
@@ -62,7 +62,7 @@ pub(crate) fn full_date(input: Input<'_>) -> IResult<Input<'_>, Date, ContextErr
 }
 
 // partial-time   = time-hour ":" time-minute ":" time-second [time-secfrac]
-pub(crate) fn partial_time(input: Input<'_>) -> IResult<Input<'_>, Time, ContextError<'_>> {
+pub(crate) fn partial_time(input: &mut Input<'_>) -> PResult<Time> {
     trace(
         "partial-time",
         (
@@ -82,7 +82,7 @@ pub(crate) fn partial_time(input: Input<'_>) -> IResult<Input<'_>, Time, Context
 
 // time-offset    = "Z" / time-numoffset
 // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
-pub(crate) fn time_offset(input: Input<'_>) -> IResult<Input<'_>, Offset, ContextError<'_>> {
+pub(crate) fn time_offset(input: &mut Input<'_>) -> PResult<Offset> {
     trace(
         "time-offset",
         alt((
@@ -108,14 +108,14 @@ pub(crate) fn time_offset(input: Input<'_>) -> IResult<Input<'_>, Offset, Contex
 }
 
 // date-fullyear  = 4DIGIT
-pub(crate) fn date_fullyear(input: Input<'_>) -> IResult<Input<'_>, u16, ContextError<'_>> {
+pub(crate) fn date_fullyear(input: &mut Input<'_>) -> PResult<u16> {
     unsigned_digits::<4, 4>
         .map(|s: &str| s.parse::<u16>().expect("4DIGIT should match u8"))
         .parse_next(input)
 }
 
 // date-month     = 2DIGIT  ; 01-12
-pub(crate) fn date_month(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn date_month(input: &mut Input<'_>) -> PResult<u8> {
     unsigned_digits::<2, 2>
         .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
@@ -129,7 +129,7 @@ pub(crate) fn date_month(input: Input<'_>) -> IResult<Input<'_>, u8, ContextErro
 }
 
 // date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
-pub(crate) fn date_mday(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn date_mday(input: &mut Input<'_>) -> PResult<u8> {
     unsigned_digits::<2, 2>
         .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
@@ -143,14 +143,14 @@ pub(crate) fn date_mday(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError
 }
 
 // time-delim     = "T" / %x20 ; T, t, or space
-pub(crate) fn time_delim(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn time_delim(input: &mut Input<'_>) -> PResult<u8> {
     one_of(TIME_DELIM).parse_next(input)
 }
 
 const TIME_DELIM: (u8, u8, u8) = (b'T', b't', b' ');
 
 // time-hour      = 2DIGIT  ; 00-23
-pub(crate) fn time_hour(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn time_hour(input: &mut Input<'_>) -> PResult<u8> {
     unsigned_digits::<2, 2>
         .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
@@ -164,7 +164,7 @@ pub(crate) fn time_hour(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError
 }
 
 // time-minute    = 2DIGIT  ; 00-59
-pub(crate) fn time_minute(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn time_minute(input: &mut Input<'_>) -> PResult<u8> {
     unsigned_digits::<2, 2>
         .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
@@ -178,7 +178,7 @@ pub(crate) fn time_minute(input: Input<'_>) -> IResult<Input<'_>, u8, ContextErr
 }
 
 // time-second    = 2DIGIT  ; 00-58, 00-59, 00-60 based on leap second rules
-pub(crate) fn time_second(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn time_second(input: &mut Input<'_>) -> PResult<u8> {
     unsigned_digits::<2, 2>
         .try_map(|s: &str| {
             let d = s.parse::<u8>().expect("2DIGIT should match u8");
@@ -192,7 +192,7 @@ pub(crate) fn time_second(input: Input<'_>) -> IResult<Input<'_>, u8, ContextErr
 }
 
 // time-secfrac   = "." 1*DIGIT
-pub(crate) fn time_secfrac(input: Input<'_>) -> IResult<Input<'_>, u32, ContextError<'_>> {
+pub(crate) fn time_secfrac(input: &mut Input<'_>) -> PResult<u32> {
     static SCALE: [u32; 10] = [
         0,
         100_000_000,
@@ -227,9 +227,9 @@ pub(crate) fn time_secfrac(input: Input<'_>) -> IResult<Input<'_>, u32, ContextE
         .parse_next(input)
 }
 
-pub(crate) fn unsigned_digits<const MIN: usize, const MAX: usize>(
-    input: Input<'_>,
-) -> IResult<Input<'_>, &str, ContextError<'_>> {
+pub(crate) fn unsigned_digits<'i, const MIN: usize, const MAX: usize>(
+    input: &mut Input<'i>,
+) -> PResult<&'i str> {
     take_while(MIN..=MAX, DIGIT)
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
         .parse_next(input)
