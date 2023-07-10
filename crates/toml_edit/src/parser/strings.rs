@@ -18,6 +18,7 @@ use winnow::token::none_of;
 use winnow::token::one_of;
 use winnow::token::tag;
 use winnow::token::take_while;
+use winnow::trace::trace;
 
 use crate::parser::errors::CustomError;
 use crate::parser::numbers::HEXDIG;
@@ -28,12 +29,15 @@ use crate::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_A
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
 pub(crate) fn string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
-    alt((
-        ml_basic_string,
-        basic_string,
-        ml_literal_string,
-        literal_string.map(Cow::Borrowed),
-    ))
+    trace(
+        "string",
+        alt((
+            ml_basic_string,
+            basic_string,
+            ml_literal_string,
+            literal_string.map(Cow::Borrowed),
+        )),
+    )
     .parse_next(input)
 }
 
@@ -41,23 +45,26 @@ pub(crate) fn string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, Conte
 
 // basic-string = quotation-mark *basic-char quotation-mark
 pub(crate) fn basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
-    let (mut input, _) = one_of(QUOTATION_MARK).parse_next(input)?;
+    trace("basic-string", |input| {
+        let (mut input, _) = one_of(QUOTATION_MARK).parse_next(input)?;
 
-    let mut c = Cow::Borrowed("");
-    if let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
-        input = i;
-        c = ci;
-    }
-    while let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
-        input = i;
-        c.to_mut().push_str(&ci);
-    }
+        let mut c = Cow::Borrowed("");
+        if let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
+            input = i;
+            c = ci;
+        }
+        while let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
+            input = i;
+            c.to_mut().push_str(&ci);
+        }
 
-    let (input, _) = cut_err(one_of(QUOTATION_MARK))
-        .context(StrContext::Label("basic string"))
-        .parse_next(input)?;
+        let (input, _) = cut_err(one_of(QUOTATION_MARK))
+            .context(StrContext::Label("basic string"))
+            .parse_next(input)?;
 
-    Ok((input, c))
+        Ok((input, c))
+    })
+    .parse_next(input)
 }
 
 // quotation-mark = %x22            ; "
@@ -146,12 +153,15 @@ pub(crate) fn hexescape<const N: usize>(
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
 fn ml_basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
-    delimited(
-        ML_BASIC_STRING_DELIM,
-        preceded(opt(newline), cut_err(ml_basic_body)),
-        cut_err(ML_BASIC_STRING_DELIM),
+    trace(
+        "ml-basic-string",
+        delimited(
+            ML_BASIC_STRING_DELIM,
+            preceded(opt(newline), cut_err(ml_basic_body)),
+            cut_err(ML_BASIC_STRING_DELIM),
+        )
+        .context(StrContext::Label("multiline basic string")),
     )
-    .context(StrContext::Label("multiline basic string"))
     .parse_next(input)
 }
 
@@ -254,13 +264,16 @@ fn mlb_escaped_nl(input: Input<'_>) -> IResult<Input<'_>, (), ContextError<'_>> 
 
 // literal-string = apostrophe *literal-char apostrophe
 pub(crate) fn literal_string(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
-    delimited(
-        APOSTROPHE,
-        cut_err(take_while(0.., LITERAL_CHAR)),
-        cut_err(APOSTROPHE),
+    trace(
+        "literal-string",
+        delimited(
+            APOSTROPHE,
+            cut_err(take_while(0.., LITERAL_CHAR)),
+            cut_err(APOSTROPHE),
+        )
+        .try_map(std::str::from_utf8)
+        .context(StrContext::Label("literal string")),
     )
-    .try_map(std::str::from_utf8)
-    .context(StrContext::Label("literal string"))
     .parse_next(input)
 }
 
@@ -280,18 +293,21 @@ pub(crate) const LITERAL_CHAR: (
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
 fn ml_literal_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
-    delimited(
-        (ML_LITERAL_STRING_DELIM, opt(newline)),
-        cut_err(ml_literal_body.map(|t| {
-            if t.contains("\r\n") {
-                Cow::Owned(t.replace("\r\n", "\n"))
-            } else {
-                Cow::Borrowed(t)
-            }
-        })),
-        cut_err(ML_LITERAL_STRING_DELIM),
+    trace(
+        "ml-literal-string",
+        delimited(
+            (ML_LITERAL_STRING_DELIM, opt(newline)),
+            cut_err(ml_literal_body.map(|t| {
+                if t.contains("\r\n") {
+                    Cow::Owned(t.replace("\r\n", "\n"))
+                } else {
+                    Cow::Borrowed(t)
+                }
+            })),
+            cut_err(ML_LITERAL_STRING_DELIM),
+        )
+        .context(StrContext::Label("multiline literal string")),
     )
-    .context(StrContext::Label("multiline literal string"))
     .parse_next(input)
 }
 

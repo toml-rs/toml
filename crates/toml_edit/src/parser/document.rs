@@ -7,6 +7,7 @@ use winnow::combinator::peek;
 use winnow::combinator::repeat;
 use winnow::token::any;
 use winnow::token::one_of;
+use winnow::trace::trace;
 
 use crate::document::Document;
 use crate::key::Key;
@@ -108,36 +109,39 @@ pub(crate) fn keyval<'s, 'i>(
 pub(crate) fn parse_keyval(
     input: Input<'_>,
 ) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ContextError<'_>> {
-    (
-        key,
-        cut_err((
-            one_of(KEYVAL_SEP)
-                .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
-                .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
-            (
-                ws.span(),
-                value(RecursionCheck::default()),
-                line_trailing
-                    .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
-                    .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
-            ),
-        )),
-    )
-        .try_map::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
-            let mut path = key;
-            let key = path.pop().expect("grammar ensures at least 1");
+    trace(
+        "keyval",
+        (
+            key,
+            cut_err((
+                one_of(KEYVAL_SEP)
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
+                (
+                    ws.span(),
+                    value(RecursionCheck::default()),
+                    line_trailing
+                        .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                        .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
+                ),
+            )),
+        )
+            .try_map::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
+                let mut path = key;
+                let key = path.pop().expect("grammar ensures at least 1");
 
-            let (pre, v, suf) = v;
-            let pre = RawString::with_span(pre);
-            let suf = RawString::with_span(suf);
-            let v = v.decorated(pre, suf);
-            Ok((
-                path,
-                TableKeyValue {
-                    key,
-                    value: Item::Value(v),
-                },
-            ))
-        })
-        .parse_next(input)
+                let (pre, v, suf) = v;
+                let pre = RawString::with_span(pre);
+                let suf = RawString::with_span(suf);
+                let v = v.decorated(pre, suf);
+                Ok((
+                    path,
+                    TableKeyValue {
+                        key,
+                        value: Item::Value(v),
+                    },
+                ))
+            }),
+    )
+    .parse_next(input)
 }

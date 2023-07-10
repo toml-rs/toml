@@ -2,6 +2,7 @@ use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
 use winnow::combinator::separated0;
 use winnow::token::one_of;
+use winnow::trace::trace;
 
 use crate::key::Key;
 use crate::parser::errors::CustomError;
@@ -20,7 +21,7 @@ use indexmap::map::Entry;
 pub(crate) fn inline_table<'i>(
     check: RecursionCheck,
 ) -> impl Parser<Input<'i>, InlineTable, ContextError<'i>> {
-    move |input| {
+    trace("inline-table", move |input| {
         delimited(
             INLINE_TABLE_OPEN,
             cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
@@ -29,7 +30,7 @@ pub(crate) fn inline_table<'i>(
                 .context(StrContext::Expected(StrContextValue::CharLiteral('}'))),
         )
         .parse_next(input)
-    }
+    })
 }
 
 fn table_from_pairs(

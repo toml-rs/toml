@@ -11,6 +11,7 @@ use winnow::combinator::opt;
 use winnow::combinator::preceded;
 use winnow::token::one_of;
 use winnow::token::take_while;
+use winnow::trace::trace;
 
 // ;; Date and Time (as defined in RFC 3339)
 
@@ -21,76 +22,88 @@ use winnow::token::take_while;
 // local-time = partial-time
 // full-time = partial-time time-offset
 pub(crate) fn date_time(input: Input<'_>) -> IResult<Input<'_>, Datetime, ContextError<'_>> {
-    alt((
-        (full_date, opt((time_delim, partial_time, opt(time_offset))))
-            .map(|(date, opt)| {
-                match opt {
-                    // Offset Date-Time
-                    Some((_, time, offset)) => Datetime {
-                        date: Some(date),
-                        time: Some(time),
-                        offset,
-                    },
-                    // Local Date
-                    None => Datetime {
-                        date: Some(date),
-                        time: None,
-                        offset: None,
-                    },
-                }
-            })
-            .context(StrContext::Label("date-time")),
-        partial_time
-            .map(|t| t.into())
-            .context(StrContext::Label("time")),
-    ))
+    trace(
+        "date-time",
+        alt((
+            (full_date, opt((time_delim, partial_time, opt(time_offset))))
+                .map(|(date, opt)| {
+                    match opt {
+                        // Offset Date-Time
+                        Some((_, time, offset)) => Datetime {
+                            date: Some(date),
+                            time: Some(time),
+                            offset,
+                        },
+                        // Local Date
+                        None => Datetime {
+                            date: Some(date),
+                            time: None,
+                            offset: None,
+                        },
+                    }
+                })
+                .context(StrContext::Label("date-time")),
+            partial_time
+                .map(|t| t.into())
+                .context(StrContext::Label("time")),
+        )),
+    )
     .parse_next(input)
 }
 
 // full-date      = date-fullyear "-" date-month "-" date-mday
 pub(crate) fn full_date(input: Input<'_>) -> IResult<Input<'_>, Date, ContextError<'_>> {
-    (date_fullyear, b'-', cut_err((date_month, b'-', date_mday)))
-        .map(|(year, _, (month, _, day))| Date { year, month, day })
-        .parse_next(input)
+    trace(
+        "full-date",
+        (date_fullyear, b'-', cut_err((date_month, b'-', date_mday)))
+            .map(|(year, _, (month, _, day))| Date { year, month, day }),
+    )
+    .parse_next(input)
 }
 
 // partial-time   = time-hour ":" time-minute ":" time-second [time-secfrac]
 pub(crate) fn partial_time(input: Input<'_>) -> IResult<Input<'_>, Time, ContextError<'_>> {
-    (
-        time_hour,
-        b':',
-        cut_err((time_minute, b':', time_second, opt(time_secfrac))),
+    trace(
+        "partial-time",
+        (
+            time_hour,
+            b':',
+            cut_err((time_minute, b':', time_second, opt(time_secfrac))),
+        )
+            .map(|(hour, _, (minute, _, second, nanosecond))| Time {
+                hour,
+                minute,
+                second,
+                nanosecond: nanosecond.unwrap_or_default(),
+            }),
     )
-        .map(|(hour, _, (minute, _, second, nanosecond))| Time {
-            hour,
-            minute,
-            second,
-            nanosecond: nanosecond.unwrap_or_default(),
-        })
-        .parse_next(input)
+    .parse_next(input)
 }
 
 // time-offset    = "Z" / time-numoffset
 // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
 pub(crate) fn time_offset(input: Input<'_>) -> IResult<Input<'_>, Offset, ContextError<'_>> {
-    alt((
-        one_of((b'Z', b'z')).value(Offset::Z),
-        (
-            one_of((b'+', b'-')),
-            cut_err((time_hour, b':', time_minute)),
-        )
-            .map(|(sign, (hours, _, minutes))| {
-                let sign = match sign {
-                    b'+' => 1,
-                    b'-' => -1,
-                    _ => unreachable!("Parser prevents this"),
-                };
-                sign * (hours as i16 * 60 + minutes as i16)
-            })
-            .verify(|minutes| ((-24 * 60)..=(24 * 60)).contains(minutes))
-            .map(|minutes| Offset::Custom { minutes }),
-    ))
-    .context(StrContext::Label("time offset"))
+    trace(
+        "time-offset",
+        alt((
+            one_of((b'Z', b'z')).value(Offset::Z),
+            (
+                one_of((b'+', b'-')),
+                cut_err((time_hour, b':', time_minute)),
+            )
+                .map(|(sign, (hours, _, minutes))| {
+                    let sign = match sign {
+                        b'+' => 1,
+                        b'-' => -1,
+                        _ => unreachable!("Parser prevents this"),
+                    };
+                    sign * (hours as i16 * 60 + minutes as i16)
+                })
+                .verify(|minutes| ((-24 * 60)..=(24 * 60)).contains(minutes))
+                .map(|minutes| Offset::Custom { minutes }),
+        ))
+        .context(StrContext::Label("time offset")),
+    )
     .parse_next(input)
 }
 
