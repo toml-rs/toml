@@ -5,9 +5,9 @@ use winnow::combinator::eof;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::repeat;
-use winnow::error::FromExternalError;
 use winnow::token::any;
 use winnow::token::one_of;
+use winnow::trace::trace;
 
 use crate::document::Document;
 use crate::key::Key;
@@ -30,7 +30,7 @@ use crate::RawString;
 //                ( ws keyval ws [ comment ] ) /
 //                ( ws table ws [ comment ] ) /
 //                  ws )
-pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserError<'_>> {
+pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ContextError<'_>> {
     let state = RefCell::new(ParseState::default());
     let state_ref = &state;
 
@@ -57,17 +57,13 @@ pub(crate) fn document(input: Input<'_>) -> IResult<Input<'_>, Document, ParserE
         .into_document()
         .map(|document| (i, document))
         .map_err(|err| {
-            winnow::error::ErrMode::Backtrack(ParserError::from_external_error(
-                i,
-                winnow::error::ErrorKind::Verify,
-                err,
-            ))
+            winnow::error::ErrMode::from_external_error(i, winnow::error::ErrorKind::Verify, err)
         })
 }
 
 pub(crate) fn parse_comment<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'_>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         (comment, line_ending)
             .span()
@@ -80,7 +76,7 @@ pub(crate) fn parse_comment<'s, 'i>(
 
 pub(crate) fn parse_ws<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         ws.span()
             .map(|span| state.borrow_mut().on_ws(span))
@@ -90,7 +86,7 @@ pub(crate) fn parse_ws<'s, 'i>(
 
 pub(crate) fn parse_newline<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         newline
             .span()
@@ -101,7 +97,7 @@ pub(crate) fn parse_newline<'s, 'i>(
 
 pub(crate) fn keyval<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         parse_keyval
             .try_map(|(p, kv)| state.borrow_mut().on_keyval(p, kv))
@@ -112,37 +108,40 @@ pub(crate) fn keyval<'s, 'i>(
 // keyval = key keyval-sep val
 pub(crate) fn parse_keyval(
     input: Input<'_>,
-) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
-    (
-        key,
-        cut_err((
-            one_of(KEYVAL_SEP)
-                .context(Context::Expected(ParserValue::CharLiteral('.')))
-                .context(Context::Expected(ParserValue::CharLiteral('='))),
-            (
-                ws.span(),
-                value(RecursionCheck::default()),
-                line_trailing
-                    .context(Context::Expected(ParserValue::CharLiteral('\n')))
-                    .context(Context::Expected(ParserValue::CharLiteral('#'))),
-            ),
-        )),
-    )
-        .try_map::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
-            let mut path = key;
-            let key = path.pop().expect("grammar ensures at least 1");
+) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ContextError<'_>> {
+    trace(
+        "keyval",
+        (
+            key,
+            cut_err((
+                one_of(KEYVAL_SEP)
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
+                (
+                    ws.span(),
+                    value(RecursionCheck::default()),
+                    line_trailing
+                        .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                        .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
+                ),
+            )),
+        )
+            .try_map::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
+                let mut path = key;
+                let key = path.pop().expect("grammar ensures at least 1");
 
-            let (pre, v, suf) = v;
-            let pre = RawString::with_span(pre);
-            let suf = RawString::with_span(suf);
-            let v = v.decorated(pre, suf);
-            Ok((
-                path,
-                TableKeyValue {
-                    key,
-                    value: Item::Value(v),
-                },
-            ))
-        })
-        .parse_next(input)
+                let (pre, v, suf) = v;
+                let pre = RawString::with_span(pre);
+                let suf = RawString::with_span(suf);
+                let v = v.decorated(pre, suf);
+                Ok((
+                    path,
+                    TableKeyValue {
+                        key,
+                        value: Item::Value(v),
+                    },
+                ))
+            }),
+    )
+    .parse_next(input)
 }

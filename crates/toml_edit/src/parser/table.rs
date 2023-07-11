@@ -27,20 +27,20 @@ const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 // std-table = std-table-open key *( table-key-sep key) std-table-close
 pub(crate) fn std_table<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         (
             delimited(
                 STD_TABLE_OPEN,
                 cut_err(key),
                 cut_err(STD_TABLE_CLOSE)
-                    .context(Context::Expected(ParserValue::CharLiteral('.')))
-                    .context(Context::Expected(ParserValue::StringLiteral("]"))),
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::StringLiteral("]"))),
             )
             .with_span(),
             cut_err(line_trailing)
-                .context(Context::Expected(ParserValue::CharLiteral('\n')))
-                .context(Context::Expected(ParserValue::CharLiteral('#'))),
+                .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
         )
             .try_map(|((h, span), t)| state.borrow_mut().deref_mut().on_std_header(h, t, span))
             .parse_next(i)
@@ -52,20 +52,20 @@ pub(crate) fn std_table<'s, 'i>(
 // array-table = array-table-open key *( table-key-sep key) array-table-close
 pub(crate) fn array_table<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         (
             delimited(
                 ARRAY_TABLE_OPEN,
                 cut_err(key),
                 cut_err(ARRAY_TABLE_CLOSE)
-                    .context(Context::Expected(ParserValue::CharLiteral('.')))
-                    .context(Context::Expected(ParserValue::StringLiteral("]]"))),
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::StringLiteral("]]"))),
             )
             .with_span(),
             cut_err(line_trailing)
-                .context(Context::Expected(ParserValue::CharLiteral('\n')))
-                .context(Context::Expected(ParserValue::CharLiteral('#'))),
+                .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
         )
             .try_map(|((h, span), t)| state.borrow_mut().deref_mut().on_array_header(h, t, span))
             .parse_next(i)
@@ -77,13 +77,13 @@ pub(crate) fn array_table<'s, 'i>(
 // table = std-table / array-table
 pub(crate) fn table<'s, 'i>(
     state: &'s RefCell<ParseState>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, (), ParserError<'i>> + 's {
+) -> impl Parser<Input<'i>, (), ContextError<'i>> + 's {
     move |i| {
         dispatch!(peek::<_, &[u8],_,_>(take(2usize));
             b"[[" => array_table(state),
             _ => std_table(state),
         )
-        .context(Context::Expression("table header"))
+        .context(StrContext::Label("table header"))
         .parse_next(i)
     }
 }

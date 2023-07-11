@@ -10,6 +10,7 @@ use winnow::combinator::rest;
 use winnow::token::one_of;
 use winnow::token::tag;
 use winnow::token::take;
+use winnow::trace::trace;
 
 use crate::parser::prelude::*;
 use crate::parser::trivia::from_utf8_unchecked;
@@ -18,16 +19,16 @@ use crate::parser::trivia::from_utf8_unchecked;
 
 // boolean = true / false
 #[allow(dead_code)] // directly define in `fn value`
-pub(crate) fn boolean(input: Input<'_>) -> IResult<Input<'_>, bool, ParserError<'_>> {
-    alt((true_, false_)).parse_next(input)
+pub(crate) fn boolean(input: Input<'_>) -> IResult<Input<'_>, bool, ContextError<'_>> {
+    trace("boolean", alt((true_, false_))).parse_next(input)
 }
 
-pub(crate) fn true_(input: Input<'_>) -> IResult<Input<'_>, bool, ParserError<'_>> {
+pub(crate) fn true_(input: Input<'_>) -> IResult<Input<'_>, bool, ContextError<'_>> {
     (peek(TRUE[0]), cut_err(TRUE)).value(true).parse_next(input)
 }
 const TRUE: &[u8] = b"true";
 
-pub(crate) fn false_(input: Input<'_>) -> IResult<Input<'_>, bool, ParserError<'_>> {
+pub(crate) fn false_(input: Input<'_>) -> IResult<Input<'_>, bool, ContextError<'_>> {
     (peek(FALSE[0]), cut_err(FALSE))
         .value(false)
         .parse_next(input)
@@ -37,104 +38,119 @@ const FALSE: &[u8] = b"false";
 // ;; Integer
 
 // integer = dec-int / hex-int / oct-int / bin-int
-pub(crate) fn integer(input: Input<'_>) -> IResult<Input<'_>, i64, ParserError<'_>> {
+pub(crate) fn integer(input: Input<'_>) -> IResult<Input<'_>, i64, ContextError<'_>> {
+    trace("integer",
     dispatch! {peek(opt::<_, &[u8], _, _>(take(2usize)));
         Some(b"0x") => cut_err(hex_int.try_map(|s| i64::from_str_radix(&s.replace('_', ""), 16))),
         Some(b"0o") => cut_err(oct_int.try_map(|s| i64::from_str_radix(&s.replace('_', ""), 8))),
         Some(b"0b") => cut_err(bin_int.try_map(|s| i64::from_str_radix(&s.replace('_', ""), 2))),
         _ => dec_int.and_then(cut_err(rest
             .try_map(|s: &str| s.replace('_', "").parse())))
-    }
+    })
     .parse_next(input)
 }
 
 // dec-int = [ minus / plus ] unsigned-dec-int
 // unsigned-dec-int = DIGIT / digit1-9 1*( DIGIT / underscore DIGIT )
-pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    (
-        opt(one_of((b'+', b'-'))),
-        alt((
-            (
-                one_of(DIGIT1_9),
-                repeat(
-                    0..,
-                    alt((
-                        digit.value(()),
-                        (
-                            one_of(b'_'),
-                            cut_err(digit)
-                                .context(Context::Expected(ParserValue::Description("digit"))),
-                        )
-                            .value(()),
-                    )),
+pub(crate) fn dec_int(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+    trace(
+        "dec-int",
+        (
+            opt(one_of((b'+', b'-'))),
+            alt((
+                (
+                    one_of(DIGIT1_9),
+                    repeat(
+                        0..,
+                        alt((
+                            digit.value(()),
+                            (
+                                one_of(b'_'),
+                                cut_err(digit).context(StrContext::Expected(
+                                    StrContextValue::Description("digit"),
+                                )),
+                            )
+                                .value(()),
+                        )),
+                    )
+                    .map(|()| ()),
                 )
-                .map(|()| ()),
-            )
-                .value(()),
-            digit.value(()),
-        )),
+                    .value(()),
+                digit.value(()),
+            )),
+        )
+            .recognize()
+            .map(|b: &[u8]| unsafe {
+                from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII")
+            })
+            .context(StrContext::Label("integer")),
     )
-        .recognize()
-        .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") })
-        .context(Context::Expression("integer"))
-        .parse_next(input)
+    .parse_next(input)
 }
 const DIGIT1_9: RangeInclusive<u8> = b'1'..=b'9';
 
 // hex-prefix = %x30.78               ; 0x
 // hex-int = hex-prefix HEXDIG *( HEXDIG / underscore HEXDIG )
-pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    preceded(
-        HEX_PREFIX,
-        cut_err((
-            hexdig,
-            repeat(
-                0..,
-                alt((
-                    hexdig.value(()),
-                    (
-                        one_of(b'_'),
-                        cut_err(hexdig)
-                            .context(Context::Expected(ParserValue::Description("digit"))),
-                    )
-                        .value(()),
-                )),
-            )
-            .map(|()| ()),
-        ))
-        .recognize(),
+pub(crate) fn hex_int(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+    trace(
+        "hex-int",
+        preceded(
+            HEX_PREFIX,
+            cut_err((
+                hexdig,
+                repeat(
+                    0..,
+                    alt((
+                        hexdig.value(()),
+                        (
+                            one_of(b'_'),
+                            cut_err(hexdig).context(StrContext::Expected(
+                                StrContextValue::Description("digit"),
+                            )),
+                        )
+                            .value(()),
+                    )),
+                )
+                .map(|()| ()),
+            ))
+            .recognize(),
+        )
+        .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
+        .context(StrContext::Label("hexadecimal integer")),
     )
-    .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
-    .context(Context::Expression("hexadecimal integer"))
     .parse_next(input)
 }
 const HEX_PREFIX: &[u8] = b"0x";
 
 // oct-prefix = %x30.6F               ; 0o
 // oct-int = oct-prefix digit0-7 *( digit0-7 / underscore digit0-7 )
-pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    preceded(
-        OCT_PREFIX,
-        cut_err((
-            one_of(DIGIT0_7),
-            repeat(
-                0..,
-                alt((
-                    one_of(DIGIT0_7).value(()),
-                    (
-                        one_of(b'_'),
-                        cut_err(one_of(DIGIT0_7))
-                            .context(Context::Expected(ParserValue::Description("digit"))),
-                    )
-                        .value(()),
-                )),
-            )
-            .map(|()| ()),
-        ))
-        .recognize(),
+pub(crate) fn oct_int(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+    trace(
+        "oct-int",
+        preceded(
+            OCT_PREFIX,
+            cut_err((
+                one_of(DIGIT0_7),
+                repeat(
+                    0..,
+                    alt((
+                        one_of(DIGIT0_7).value(()),
+                        (
+                            one_of(b'_'),
+                            cut_err(one_of(DIGIT0_7)).context(StrContext::Expected(
+                                StrContextValue::Description("digit"),
+                            )),
+                        )
+                            .value(()),
+                    )),
+                )
+                .map(|()| ()),
+            ))
+            .recognize(),
+        )
+        .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
+        .context(StrContext::Label("octal integer")),
     )
-    .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
-    .context(Context::Expression("octal integer"))
     .parse_next(input)
 }
 const OCT_PREFIX: &[u8] = b"0o";
@@ -142,29 +158,33 @@ const DIGIT0_7: RangeInclusive<u8> = b'0'..=b'7';
 
 // bin-prefix = %x30.62               ; 0b
 // bin-int = bin-prefix digit0-1 *( digit0-1 / underscore digit0-1 )
-pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    preceded(
-        BIN_PREFIX,
-        cut_err((
-            one_of(DIGIT0_1),
-            repeat(
-                0..,
-                alt((
-                    one_of(DIGIT0_1).value(()),
-                    (
-                        one_of(b'_'),
-                        cut_err(one_of(DIGIT0_1))
-                            .context(Context::Expected(ParserValue::Description("digit"))),
-                    )
-                        .value(()),
-                )),
-            )
-            .map(|()| ()),
-        ))
-        .recognize(),
+pub(crate) fn bin_int(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+    trace(
+        "bin-int",
+        preceded(
+            BIN_PREFIX,
+            cut_err((
+                one_of(DIGIT0_1),
+                repeat(
+                    0..,
+                    alt((
+                        one_of(DIGIT0_1).value(()),
+                        (
+                            one_of(b'_'),
+                            cut_err(one_of(DIGIT0_1)).context(StrContext::Expected(
+                                StrContextValue::Description("digit"),
+                            )),
+                        )
+                            .value(()),
+                    )),
+                )
+                .map(|()| ()),
+            ))
+            .recognize(),
+        )
+        .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
+        .context(StrContext::Label("binary integer")),
     )
-    .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
-    .context(Context::Expression("binary integer"))
     .parse_next(input)
 }
 const BIN_PREFIX: &[u8] = b"0b";
@@ -175,19 +195,22 @@ const DIGIT0_1: RangeInclusive<u8> = b'0'..=b'1';
 // float = float-int-part ( exp / frac [ exp ] )
 // float =/ special-float
 // float-int-part = dec-int
-pub(crate) fn float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
-    alt((
-        float_.and_then(cut_err(
-            rest.try_map(|s: &str| s.replace('_', "").parse())
-                .verify(|f: &f64| *f != f64::INFINITY),
-        )),
-        special_float,
-    ))
-    .context(Context::Expression("floating-point number"))
+pub(crate) fn float(input: Input<'_>) -> IResult<Input<'_>, f64, ContextError<'_>> {
+    trace(
+        "float",
+        alt((
+            float_.and_then(cut_err(
+                rest.try_map(|s: &str| s.replace('_', "").parse())
+                    .verify(|f: &f64| *f != f64::INFINITY),
+            )),
+            special_float,
+        ))
+        .context(StrContext::Label("floating-point number")),
+    )
     .parse_next(input)
 }
 
-pub(crate) fn float_(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+pub(crate) fn float_(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
     (dec_int, alt((exp, (frac, opt(exp)).map(|_| ""))))
         .recognize()
         .map(|b: &[u8]| unsafe {
@@ -201,10 +224,11 @@ pub(crate) fn float_(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'
 
 // frac = decimal-point zero-prefixable-int
 // decimal-point = %x2E               ; .
-pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
     (
         b'.',
-        cut_err(zero_prefixable_int).context(Context::Expected(ParserValue::Description("digit"))),
+        cut_err(zero_prefixable_int)
+            .context(StrContext::Expected(StrContextValue::Description("digit"))),
     )
         .recognize()
         .map(|b: &[u8]| unsafe {
@@ -217,7 +241,7 @@ pub(crate) fn frac(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>
 }
 
 // zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
-pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
     (
         digit,
         repeat(
@@ -226,7 +250,8 @@ pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, 
                 digit.value(()),
                 (
                     one_of(b'_'),
-                    cut_err(digit).context(Context::Expected(ParserValue::Description("digit"))),
+                    cut_err(digit)
+                        .context(StrContext::Expected(StrContextValue::Description("digit"))),
                 )
                     .value(()),
             )),
@@ -240,7 +265,7 @@ pub(crate) fn zero_prefixable_int(input: Input<'_>) -> IResult<Input<'_>, &str, 
 
 // exp = "e" float-exp-part
 // float-exp-part = [ minus / plus ] zero-prefixable-int
-pub(crate) fn exp(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+pub(crate) fn exp(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
     (
         one_of((b'e', b'E')),
         opt(one_of([b'+', b'-'])),
@@ -257,7 +282,7 @@ pub(crate) fn exp(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>>
 }
 
 // special-float = [ minus / plus ] ( inf / nan )
-pub(crate) fn special_float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+pub(crate) fn special_float(input: Input<'_>) -> IResult<Input<'_>, f64, ContextError<'_>> {
     (opt(one_of((b'+', b'-'))), alt((inf, nan)))
         .map(|(s, f)| match s {
             Some(b'+') | None => f,
@@ -267,24 +292,24 @@ pub(crate) fn special_float(input: Input<'_>) -> IResult<Input<'_>, f64, ParserE
         .parse_next(input)
 }
 // inf = %x69.6e.66  ; inf
-pub(crate) fn inf(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+pub(crate) fn inf(input: Input<'_>) -> IResult<Input<'_>, f64, ContextError<'_>> {
     tag(INF).value(f64::INFINITY).parse_next(input)
 }
 const INF: &[u8] = b"inf";
 // nan = %x6e.61.6e  ; nan
-pub(crate) fn nan(input: Input<'_>) -> IResult<Input<'_>, f64, ParserError<'_>> {
+pub(crate) fn nan(input: Input<'_>) -> IResult<Input<'_>, f64, ContextError<'_>> {
     tag(NAN).value(f64::NAN).parse_next(input)
 }
 const NAN: &[u8] = b"nan";
 
 // DIGIT = %x30-39 ; 0-9
-pub(crate) fn digit(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+pub(crate) fn digit(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
     one_of(DIGIT).parse_next(input)
 }
 const DIGIT: RangeInclusive<u8> = b'0'..=b'9';
 
 // HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
-pub(crate) fn hexdig(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+pub(crate) fn hexdig(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
     one_of(HEXDIG).parse_next(input)
 }
 pub(crate) const HEXDIG: (RangeInclusive<u8>, RangeInclusive<u8>, RangeInclusive<u8>) =

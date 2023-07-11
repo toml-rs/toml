@@ -2,6 +2,7 @@ use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
 use winnow::combinator::separated0;
 use winnow::token::one_of;
+use winnow::trace::trace;
 
 use crate::key::Key;
 use crate::parser::errors::CustomError;
@@ -17,19 +18,19 @@ use indexmap::map::Entry;
 // ;; Inline Table
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
-pub(crate) fn inline_table(
+pub(crate) fn inline_table<'i>(
     check: RecursionCheck,
-) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, InlineTable, ParserError<'_>> {
-    move |input| {
+) -> impl Parser<Input<'i>, InlineTable, ContextError<'i>> {
+    trace("inline-table", move |input| {
         delimited(
             INLINE_TABLE_OPEN,
             cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
             cut_err(INLINE_TABLE_CLOSE)
-                .context(Context::Expression("inline table"))
-                .context(Context::Expected(ParserValue::CharLiteral('}'))),
+                .context(StrContext::Label("inline table"))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('}'))),
         )
         .parse_next(input)
-    }
+    })
 }
 
 fn table_from_pairs(
@@ -96,11 +97,9 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 // ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
 // ( key keyval-sep val )
 
-fn inline_table_keyvals(
+fn inline_table_keyvals<'i>(
     check: RecursionCheck,
-) -> impl FnMut(
-    Input<'_>,
-) -> IResult<Input<'_>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ParserError<'_>> {
+) -> impl Parser<Input<'i>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ContextError<'i>> {
     move |input| {
         let check = check.recursing(input)?;
         (
@@ -111,16 +110,16 @@ fn inline_table_keyvals(
     }
 }
 
-fn keyval(
+fn keyval<'i>(
     check: RecursionCheck,
-) -> impl FnMut(Input<'_>) -> IResult<Input<'_>, (Vec<Key>, TableKeyValue), ParserError<'_>> {
+) -> impl Parser<Input<'i>, (Vec<Key>, TableKeyValue), ContextError<'i>> {
     move |input| {
         (
             key,
             cut_err((
                 one_of(KEYVAL_SEP)
-                    .context(Context::Expected(ParserValue::CharLiteral('.')))
-                    .context(Context::Expected(ParserValue::CharLiteral('='))),
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
                 (ws.span(), value(check), ws.span()),
             )),
         )

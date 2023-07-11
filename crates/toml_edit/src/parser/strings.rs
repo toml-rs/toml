@@ -18,6 +18,7 @@ use winnow::token::none_of;
 use winnow::token::one_of;
 use winnow::token::tag;
 use winnow::token::take_while;
+use winnow::trace::trace;
 
 use crate::parser::errors::CustomError;
 use crate::parser::numbers::HEXDIG;
@@ -27,44 +28,50 @@ use crate::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_A
 // ;; String
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
-pub(crate) fn string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
-    alt((
-        ml_basic_string,
-        basic_string,
-        ml_literal_string,
-        literal_string.map(Cow::Borrowed),
-    ))
+pub(crate) fn string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
+    trace(
+        "string",
+        alt((
+            ml_basic_string,
+            basic_string,
+            ml_literal_string,
+            literal_string.map(Cow::Borrowed),
+        )),
+    )
     .parse_next(input)
 }
 
 // ;; Basic String
 
 // basic-string = quotation-mark *basic-char quotation-mark
-pub(crate) fn basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
-    let (mut input, _) = one_of(QUOTATION_MARK).parse_next(input)?;
+pub(crate) fn basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
+    trace("basic-string", |input| {
+        let (mut input, _) = one_of(QUOTATION_MARK).parse_next(input)?;
 
-    let mut c = Cow::Borrowed("");
-    if let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
-        input = i;
-        c = ci;
-    }
-    while let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
-        input = i;
-        c.to_mut().push_str(&ci);
-    }
+        let mut c = Cow::Borrowed("");
+        if let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
+            input = i;
+            c = ci;
+        }
+        while let Some((i, ci)) = ok_error(basic_chars.parse_next(input))? {
+            input = i;
+            c.to_mut().push_str(&ci);
+        }
 
-    let (input, _) = cut_err(one_of(QUOTATION_MARK))
-        .context(Context::Expression("basic string"))
-        .parse_next(input)?;
+        let (input, _) = cut_err(one_of(QUOTATION_MARK))
+            .context(StrContext::Label("basic string"))
+            .parse_next(input)?;
 
-    Ok((input, c))
+        Ok((input, c))
+    })
+    .parse_next(input)
 }
 
 // quotation-mark = %x22            ; "
 pub(crate) const QUOTATION_MARK: u8 = b'"';
 
 // basic-char = basic-unescaped / escaped
-fn basic_chars(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+fn basic_chars(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
     alt((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
@@ -86,7 +93,7 @@ pub(crate) const BASIC_UNESCAPED: (
 ) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
 // escaped = escape escape-seq-char
-fn escaped(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>> {
+fn escaped(input: Input<'_>) -> IResult<Input<'_>, char, ContextError<'_>> {
     preceded(ESCAPE, escape_seq_char).parse_next(input)
 }
 
@@ -102,29 +109,29 @@ pub(crate) const ESCAPE: u8 = b'\\';
 // escape-seq-char =/ %x74         ; t    tab             U+0009
 // escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
-fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>> {
+fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ContextError<'_>> {
     dispatch! {any;
         b'b' => success('\u{8}'),
         b'f' => success('\u{c}'),
         b'n' => success('\n'),
         b'r' => success('\r'),
         b't' => success('\t'),
-        b'u' => cut_err(hexescape::<4>).context(Context::Expression("unicode 4-digit hex code")),
-        b'U' => cut_err(hexescape::<8>).context(Context::Expression("unicode 8-digit hex code")),
+        b'u' => cut_err(hexescape::<4>).context(StrContext::Label("unicode 4-digit hex code")),
+        b'U' => cut_err(hexescape::<8>).context(StrContext::Label("unicode 8-digit hex code")),
         b'\\' => success('\\'),
         b'"' => success('"'),
         _ => {
             cut_err(fail::<_, char, _>)
-            .context(Context::Expression("escape sequence"))
-            .context(Context::Expected(ParserValue::CharLiteral('b')))
-            .context(Context::Expected(ParserValue::CharLiteral('f')))
-            .context(Context::Expected(ParserValue::CharLiteral('n')))
-            .context(Context::Expected(ParserValue::CharLiteral('r')))
-            .context(Context::Expected(ParserValue::CharLiteral('t')))
-            .context(Context::Expected(ParserValue::CharLiteral('u')))
-            .context(Context::Expected(ParserValue::CharLiteral('U')))
-            .context(Context::Expected(ParserValue::CharLiteral('\\')))
-            .context(Context::Expected(ParserValue::CharLiteral('"')))
+            .context(StrContext::Label("escape sequence"))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('b')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('f')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('n')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('r')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('t')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('u')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('U')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('\\')))
+            .context(StrContext::Expected(StrContextValue::CharLiteral('"')))
         }
     }
     .parse_next(input)
@@ -132,7 +139,7 @@ fn escape_seq_char(input: Input<'_>) -> IResult<Input<'_>, char, ParserError<'_>
 
 pub(crate) fn hexescape<const N: usize>(
     input: Input<'_>,
-) -> IResult<Input<'_>, char, ParserError<'_>> {
+) -> IResult<Input<'_>, char, ContextError<'_>> {
     take_while(0..=N, HEXDIG)
         .verify(|b: &[u8]| b.len() == N)
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
@@ -145,13 +152,16 @@ pub(crate) fn hexescape<const N: usize>(
 
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
-fn ml_basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
-    delimited(
-        ML_BASIC_STRING_DELIM,
-        preceded(opt(newline), cut_err(ml_basic_body)),
-        cut_err(ML_BASIC_STRING_DELIM),
+fn ml_basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
+    trace(
+        "ml-basic-string",
+        delimited(
+            ML_BASIC_STRING_DELIM,
+            preceded(opt(newline), cut_err(ml_basic_body)),
+            cut_err(ML_BASIC_STRING_DELIM),
+        )
+        .context(StrContext::Label("multiline basic string")),
     )
-    .context(Context::Expression("multiline basic string"))
     .parse_next(input)
 }
 
@@ -159,7 +169,7 @@ fn ml_basic_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserE
 pub(crate) const ML_BASIC_STRING_DELIM: &[u8] = b"\"\"\"";
 
 // ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
-fn ml_basic_body(mut input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+fn ml_basic_body(mut input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
     let mut c = Cow::Borrowed("");
     if let Some((i, ci)) = ok_error(mlb_content.parse_next(input))? {
         input = i;
@@ -196,7 +206,7 @@ fn ml_basic_body(mut input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, Parse
 
 // mlb-content = mlb-char / newline / mlb-escaped-nl
 // mlb-char = mlb-unescaped / escaped
-fn mlb_content(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
+fn mlb_content(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
     alt((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
@@ -213,8 +223,8 @@ fn mlb_content(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError
 
 // mlb-quotes = 1*2quotation-mark
 fn mlb_quotes<'i>(
-    mut term: impl winnow::Parser<Input<'i>, (), ParserError<'i>>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, &str, ParserError<'i>> {
+    mut term: impl winnow::Parser<Input<'i>, (), ContextError<'i>>,
+) -> impl Parser<Input<'i>, &'i str, ContextError<'i>> {
     move |input| {
         let res = terminated(b"\"\"", peek(term.by_ref()))
             .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
@@ -243,7 +253,7 @@ pub(crate) const MLB_UNESCAPED: (
 // it will be trimmed along with all whitespace
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
-fn mlb_escaped_nl(input: Input<'_>) -> IResult<Input<'_>, (), ParserError<'_>> {
+fn mlb_escaped_nl(input: Input<'_>) -> IResult<Input<'_>, (), ContextError<'_>> {
     repeat(1.., (ESCAPE, ws, ws_newlines))
         .map(|()| ())
         .value(())
@@ -253,14 +263,17 @@ fn mlb_escaped_nl(input: Input<'_>) -> IResult<Input<'_>, (), ParserError<'_>> {
 // ;; Literal String
 
 // literal-string = apostrophe *literal-char apostrophe
-pub(crate) fn literal_string(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
-    delimited(
-        APOSTROPHE,
-        cut_err(take_while(0.., LITERAL_CHAR)),
-        cut_err(APOSTROPHE),
+pub(crate) fn literal_string(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+    trace(
+        "literal-string",
+        delimited(
+            APOSTROPHE,
+            cut_err(take_while(0.., LITERAL_CHAR)),
+            cut_err(APOSTROPHE),
+        )
+        .try_map(std::str::from_utf8)
+        .context(StrContext::Label("literal string")),
     )
-    .try_map(std::str::from_utf8)
-    .context(Context::Expression("literal string"))
     .parse_next(input)
 }
 
@@ -279,19 +292,22 @@ pub(crate) const LITERAL_CHAR: (
 
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
-fn ml_literal_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ParserError<'_>> {
-    delimited(
-        (ML_LITERAL_STRING_DELIM, opt(newline)),
-        cut_err(ml_literal_body.map(|t| {
-            if t.contains("\r\n") {
-                Cow::Owned(t.replace("\r\n", "\n"))
-            } else {
-                Cow::Borrowed(t)
-            }
-        })),
-        cut_err(ML_LITERAL_STRING_DELIM),
+fn ml_literal_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, ContextError<'_>> {
+    trace(
+        "ml-literal-string",
+        delimited(
+            (ML_LITERAL_STRING_DELIM, opt(newline)),
+            cut_err(ml_literal_body.map(|t| {
+                if t.contains("\r\n") {
+                    Cow::Owned(t.replace("\r\n", "\n"))
+                } else {
+                    Cow::Borrowed(t)
+                }
+            })),
+            cut_err(ML_LITERAL_STRING_DELIM),
+        )
+        .context(StrContext::Label("multiline literal string")),
     )
-    .context(Context::Expression("multiline literal string"))
     .parse_next(input)
 }
 
@@ -299,7 +315,7 @@ fn ml_literal_string(input: Input<'_>) -> IResult<Input<'_>, Cow<'_, str>, Parse
 pub(crate) const ML_LITERAL_STRING_DELIM: &[u8] = b"'''";
 
 // ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
-fn ml_literal_body(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>> {
+fn ml_literal_body(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
     (
         repeat(0.., mll_content).map(|()| ()),
         repeat(
@@ -318,7 +334,7 @@ fn ml_literal_body(input: Input<'_>) -> IResult<Input<'_>, &str, ParserError<'_>
 }
 
 // mll-content = mll-char / newline
-fn mll_content(input: Input<'_>) -> IResult<Input<'_>, u8, ParserError<'_>> {
+fn mll_content(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
     alt((one_of(MLL_CHAR), newline)).parse_next(input)
 }
 
@@ -332,8 +348,8 @@ const MLL_CHAR: (
 
 // mll-quotes = 1*2apostrophe
 fn mll_quotes<'i>(
-    mut term: impl winnow::Parser<Input<'i>, (), ParserError<'i>>,
-) -> impl FnMut(Input<'i>) -> IResult<Input<'i>, &str, ParserError<'i>> {
+    mut term: impl winnow::Parser<Input<'i>, (), ContextError<'i>>,
+) -> impl Parser<Input<'i>, &'i str, ContextError<'i>> {
     move |input| {
         let res = terminated(b"''", peek(term.by_ref()))
             .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
