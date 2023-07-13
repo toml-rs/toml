@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Improved parse times
+
 ## [0.19.12] - 2023-07-05
 
 ### Features
