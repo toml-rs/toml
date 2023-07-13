@@ -20,8 +20,8 @@ use indexmap::map::Entry;
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
 pub(crate) fn inline_table<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, InlineTable, ContextError<'i>> {
-    trace("inline-table", move |input| {
+) -> impl Parser<Input<'i>, InlineTable, ContextError> {
+    trace("inline-table", move |input: &mut Input<'i>| {
         delimited(
             INLINE_TABLE_OPEN,
             cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
@@ -99,8 +99,8 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 fn inline_table_keyvals<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ContextError<'i>> {
-    move |input| {
+) -> impl Parser<Input<'i>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ContextError> {
+    move |input: &mut Input<'i>| {
         let check = check.recursing(input)?;
         (
             separated0(keyval(check), INLINE_TABLE_SEP),
@@ -112,8 +112,8 @@ fn inline_table_keyvals<'i>(
 
 fn keyval<'i>(
     check: RecursionCheck,
-) -> impl Parser<Input<'i>, (Vec<Key>, TableKeyValue), ContextError<'i>> {
-    move |input| {
+) -> impl Parser<Input<'i>, (Vec<Key>, TableKeyValue), ContextError> {
+    move |input: &mut Input<'i>| {
         (
             key,
             cut_err((

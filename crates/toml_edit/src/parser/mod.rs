@@ -73,28 +73,18 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
 }
 
 pub(crate) mod prelude {
-    pub(crate) use super::errors::ContextError;
-    pub(crate) use super::errors::StrContext;
-    pub(crate) use super::errors::StrContextValue;
     pub(crate) use winnow::combinator::dispatch;
+    pub(crate) use winnow::error::ContextError;
     pub(crate) use winnow::error::FromExternalError;
-    pub(crate) use winnow::IResult;
+    pub(crate) use winnow::error::StrContext;
+    pub(crate) use winnow::error::StrContextValue;
+    pub(crate) use winnow::PResult;
     pub(crate) use winnow::Parser;
 
     pub(crate) type Input<'b> = winnow::Located<&'b winnow::BStr>;
 
     pub(crate) fn new_input(s: &str) -> Input<'_> {
         winnow::Located::new(winnow::BStr::new(s))
-    }
-
-    pub(crate) fn ok_error<I, O, E>(
-        res: IResult<I, O, E>,
-    ) -> Result<Option<(I, O)>, winnow::error::ErrMode<E>> {
-        match res {
-            Ok(ok) => Ok(Some(ok)),
-            Err(winnow::error::ErrMode::Backtrack(_)) => Ok(None),
-            Err(err) => Err(err),
-        }
     }
 
     #[cfg(not(feature = "unbounded"))]
@@ -115,8 +105,8 @@ pub(crate) mod prelude {
 
         pub(crate) fn recursing(
             mut self,
-            input: Input<'_>,
-        ) -> Result<Self, winnow::error::ErrMode<ContextError<'_>>> {
+            input: &mut Input<'_>,
+        ) -> Result<Self, winnow::error::ErrMode<ContextError>> {
             self.current += 1;
             if self.current < 128 {
                 Ok(self)
@@ -142,8 +132,8 @@ pub(crate) mod prelude {
 
         pub(crate) fn recursing(
             self,
-            _input: Input<'_>,
-        ) -> Result<Self, winnow::error::ErrMode<ContextError<'_>>> {
+            _input: &mut Input<'_>,
+        ) -> Result<Self, winnow::error::ErrMode<ContextError>> {
             Ok(self)
         }
     }

@@ -28,7 +28,7 @@ pub(crate) unsafe fn from_utf8_unchecked<'b>(
 pub(crate) const WSCHAR: (u8, u8) = (b' ', b'\t');
 
 // ws = *wschar
-pub(crate) fn ws(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+pub(crate) fn ws<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
     take_while(0.., WSCHAR)
         .map(|b| unsafe { from_utf8_unchecked(b, "`is_wschar` filters out on-ASCII") })
         .parse_next(input)
@@ -48,7 +48,7 @@ pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
 pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 // comment = comment-start-symbol *non-eol
-pub(crate) fn comment(input: Input<'_>) -> IResult<Input<'_>, &[u8], ContextError<'_>> {
+pub(crate) fn comment<'i>(input: &mut Input<'i>) -> PResult<&'i [u8]> {
     (COMMENT_START_SYMBOL, take_while(0.., NON_EOL))
         .recognize()
         .parse_next(input)
@@ -56,7 +56,7 @@ pub(crate) fn comment(input: Input<'_>) -> IResult<Input<'_>, &[u8], ContextErro
 
 // newline = ( %x0A /              ; LF
 //             %x0D.0A )           ; CRLF
-pub(crate) fn newline(input: Input<'_>) -> IResult<Input<'_>, u8, ContextError<'_>> {
+pub(crate) fn newline(input: &mut Input<'_>) -> PResult<u8> {
     alt((
         one_of(LF).value(b'\n'),
         (one_of(CR), one_of(LF)).value(b'\n'),
@@ -67,7 +67,7 @@ pub(crate) const LF: u8 = b'\n';
 pub(crate) const CR: u8 = b'\r';
 
 // ws-newline       = *( wschar / newline )
-pub(crate) fn ws_newline(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+pub(crate) fn ws_newline<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
     repeat(
         0..,
         alt((newline.value(&b"\n"[..]), take_while(1.., WSCHAR))),
@@ -79,7 +79,7 @@ pub(crate) fn ws_newline(input: Input<'_>) -> IResult<Input<'_>, &str, ContextEr
 }
 
 // ws-newlines      = newline *( wschar / newline )
-pub(crate) fn ws_newlines(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+pub(crate) fn ws_newlines<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
     (newline, ws_newline)
         .recognize()
         .map(|b| unsafe {
@@ -90,7 +90,7 @@ pub(crate) fn ws_newlines(input: Input<'_>) -> IResult<Input<'_>, &str, ContextE
 
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
-pub(crate) fn ws_comment_newline(input: Input<'_>) -> IResult<Input<'_>, &[u8], ContextError<'_>> {
+pub(crate) fn ws_comment_newline<'i>(input: &mut Input<'i>) -> PResult<&'i [u8]> {
     repeat(
         0..,
         alt((
@@ -109,15 +109,13 @@ pub(crate) fn ws_comment_newline(input: Input<'_>) -> IResult<Input<'_>, &[u8], 
 
 // note: this rule is not present in the original grammar
 // line-ending = newline / eof
-pub(crate) fn line_ending(input: Input<'_>) -> IResult<Input<'_>, &str, ContextError<'_>> {
+pub(crate) fn line_ending<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
     alt((newline.value("\n"), eof.value(""))).parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
 // line-trailing = ws [comment] skip-line-ending
-pub(crate) fn line_trailing(
-    input: Input<'_>,
-) -> IResult<Input<'_>, std::ops::Range<usize>, ContextError<'_>> {
+pub(crate) fn line_trailing(input: &mut Input<'_>) -> PResult<std::ops::Range<usize>> {
     terminated((ws, opt(comment)).span(), line_ending).parse_next(input)
 }
 

@@ -4,7 +4,8 @@ use std::fmt::{Display, Formatter, Result};
 use crate::parser::prelude::*;
 use crate::Key;
 
-use winnow::BStr;
+use winnow::error::ContextError;
+use winnow::error::ParseError;
 
 /// Type representing a TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -16,19 +17,18 @@ pub struct TomlError {
 }
 
 impl TomlError {
-    pub(crate) fn new(error: ContextError<'_>, original: Input<'_>) -> Self {
-        use winnow::stream::Offset;
+    pub(crate) fn new(error: ParseError<Input<'_>, ContextError>, mut original: Input<'_>) -> Self {
         use winnow::stream::Stream;
 
-        let offset = error.input.offset_from(&original);
+        let offset = error.offset();
         let span = if offset == original.len() {
             offset..offset
         } else {
             offset..(offset + 1)
         };
 
-        let message = error.to_string();
-        let original = original.next_slice(original.eof_offset()).1;
+        let message = error.inner().to_string();
+        let original = original.finish();
 
         Self {
             message,
@@ -143,166 +143,6 @@ impl Display for TomlError {
 impl StdError for TomlError {
     fn description(&self) -> &'static str {
         "TOML parse error"
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct ContextError<'b> {
-    input: Input<'b>,
-    context: Vec<StrContext>,
-    cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
-}
-
-impl<'b> winnow::error::ParserError<Input<'b>> for ContextError<'b> {
-    fn from_error_kind(input: Input<'b>, _kind: winnow::error::ErrorKind) -> Self {
-        Self {
-            input,
-            context: Default::default(),
-            cause: Default::default(),
-        }
-    }
-
-    fn append(self, _input: Input<'b>, _kind: winnow::error::ErrorKind) -> Self {
-        self
-    }
-
-    fn or(self, other: Self) -> Self {
-        other
-    }
-}
-
-impl<'b> winnow::error::ParserError<&'b str> for ContextError<'b> {
-    fn from_error_kind(input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
-        Self {
-            input: Input::new(BStr::new(input)),
-            context: Default::default(),
-            cause: Default::default(),
-        }
-    }
-
-    fn append(self, _input: &'b str, _kind: winnow::error::ErrorKind) -> Self {
-        self
-    }
-
-    fn or(self, other: Self) -> Self {
-        other
-    }
-}
-
-impl<'b> winnow::error::AddContext<Input<'b>, StrContext> for ContextError<'b> {
-    fn add_context(mut self, _input: Input<'b>, ctx: StrContext) -> Self {
-        self.context.push(ctx);
-        self
-    }
-}
-
-impl<'b, E: std::error::Error + Send + Sync + 'static>
-    winnow::error::FromExternalError<Input<'b>, E> for ContextError<'b>
-{
-    fn from_external_error(input: Input<'b>, _kind: winnow::error::ErrorKind, e: E) -> Self {
-        Self {
-            input,
-            context: Default::default(),
-            cause: Some(Box::new(e)),
-        }
-    }
-}
-
-impl<'b, E: std::error::Error + Send + Sync + 'static> winnow::error::FromExternalError<&'b str, E>
-    for ContextError<'b>
-{
-    fn from_external_error(input: &'b str, _kind: winnow::error::ErrorKind, e: E) -> Self {
-        Self {
-            input: Input::new(BStr::new(input)),
-            context: Default::default(),
-            cause: Some(Box::new(e)),
-        }
-    }
-}
-
-// For tests
-impl<'b> std::cmp::PartialEq for ContextError<'b> {
-    fn eq(&self, other: &Self) -> bool {
-        self.input == other.input
-            && self.context == other.context
-            && self.cause.as_ref().map(ToString::to_string)
-                == other.cause.as_ref().map(ToString::to_string)
-    }
-}
-
-impl<'a> std::fmt::Display for ContextError<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let expression = self.context.iter().find_map(|c| match c {
-            StrContext::Label(c) => Some(c),
-            _ => None,
-        });
-        let expected = self
-            .context
-            .iter()
-            .filter_map(|c| match c {
-                StrContext::Expected(c) => Some(c),
-                _ => None,
-            })
-            .collect::<Vec<_>>();
-
-        let mut newline = false;
-
-        if let Some(expression) = expression {
-            newline = true;
-
-            write!(f, "invalid {}", expression)?;
-        }
-
-        if !expected.is_empty() {
-            if newline {
-                writeln!(f)?;
-            }
-            newline = true;
-
-            write!(f, "expected ")?;
-            for (i, expected) in expected.iter().enumerate() {
-                if i != 0 {
-                    write!(f, ", ")?;
-                }
-                write!(f, "{}", expected)?;
-            }
-        }
-        if let Some(cause) = &self.cause {
-            if newline {
-                writeln!(f)?;
-            }
-            write!(f, "{}", cause)?;
-        }
-
-        Ok(())
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub(crate) enum StrContext {
-    Label(&'static str),
-    Expected(StrContextValue),
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub(crate) enum StrContextValue {
-    CharLiteral(char),
-    StringLiteral(&'static str),
-    Description(&'static str),
-}
-
-impl std::fmt::Display for StrContextValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            StrContextValue::CharLiteral('\n') => "newline".fmt(f),
-            StrContextValue::CharLiteral('`') => "'`'".fmt(f),
-            StrContextValue::CharLiteral(c) if c.is_ascii_control() => {
-                write!(f, "`{}`", c.escape_debug())
-            }
-            StrContextValue::CharLiteral(c) => write!(f, "`{}`", c),
-            StrContextValue::StringLiteral(c) => write!(f, "`{}`", c),
-            StrContextValue::Description(c) => write!(f, "{}", c),
-        }
     }
 }
 
