@@ -7,7 +7,7 @@ use crate::table::TableLike;
 use crate::{Array, InlineTable, Table, Value};
 
 /// Type representing either a value, a table, an array of tables, or none.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Item {
     /// Type representing none.
     None,
@@ -312,6 +312,18 @@ impl Item {
             Item::Value(v) => v.despan(input),
             Item::Table(v) => v.despan(input),
             Item::ArrayOfTables(v) => v.despan(input),
+        }
+    }
+}
+
+impl Clone for Item {
+    #[inline(never)]
+    fn clone(&self) -> Self {
+        match self {
+            Item::None => Item::None,
+            Item::Value(v) => Item::Value(v.clone()),
+            Item::Table(v) => Item::Table(v.clone()),
+            Item::ArrayOfTables(v) => Item::ArrayOfTables(v.clone()),
         }
     }
 }
