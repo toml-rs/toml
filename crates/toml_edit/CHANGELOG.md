@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Small binary size reduction
+
 ## [0.19.13] - 2023-07-13
 
 ### Performance
