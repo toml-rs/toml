@@ -211,7 +211,10 @@ pub(crate) fn float(input: &mut Input<'_>) -> PResult<f64> {
 }
 
 pub(crate) fn float_<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
-    (dec_int, alt((exp, (frac, opt(exp)).map(|_| ""))))
+    (
+        dec_int,
+        alt((exp.void(), (frac.void(), opt(exp.void())).void())),
+    )
         .recognize()
         .map(|b: &[u8]| unsafe {
             from_utf8_unchecked(

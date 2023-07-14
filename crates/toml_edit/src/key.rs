@@ -29,7 +29,7 @@ use crate::InternalString;
 /// For details see [toml spec](https://github.com/toml-lang/toml/#keyvalue-pair).
 ///
 /// To parse a key use `FromStr` trait implementation: `"string".parse::<Key>()`.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Key {
     key: InternalString,
     pub(crate) repr: Option<Repr>,
@@ -139,6 +139,17 @@ impl Key {
             key.despan(s);
         }
         Ok(keys)
+    }
+}
+
+impl Clone for Key {
+    #[inline(never)]
+    fn clone(&self) -> Self {
+        Self {
+            key: self.key.clone(),
+            repr: self.repr.clone(),
+            decor: self.decor.clone(),
+        }
     }
 }
 
