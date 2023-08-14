@@ -10,3 +10,7 @@ license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 include.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

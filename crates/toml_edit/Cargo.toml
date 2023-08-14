@@ -12,8 +12,8 @@ rust-version.workspace = true
 include.workspace = true
 
 [package.metadata.docs.rs]
-rustdoc-args = ["--cfg", "docsrs"]
 features = ["serde"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.release]
 tag-name = "v{{version}}"

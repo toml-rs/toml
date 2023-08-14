@@ -1,20 +1,28 @@
 # These settings are synced to GitHub by https://probot.github.io/apps/settings/
 
 repository:
-  description: Rust TOML Parser
-  topics: rust toml
+  description: "Rust TOML Parser"
+  homepage: "https://docs.rs/toml"
+  topics: "rust toml"
   has_issues: true
   has_projects: false
   has_wiki: false
   has_downloads: true
   default_branch: main
 
-  allow_squash_merge: true
+  # Preference: people do clean commits
   allow_merge_commit: true
-  allow_rebase_merge: true
+  # Backup in case we need to clean up commits
+  allow_squash_merge: true
+  # Not really needed
+  allow_rebase_merge: false
 
-  # Manual: allow_auto_merge: true, see https://github.com/probot/settings/issues/402
+  allow_auto_merge: true
   delete_branch_on_merge: true
+
+  squash_merge_commit_title: "PR_TITLE"
+  squash_merge_commit_message: "PR_BODY"
+  merge_commit_message: "PR_BODY"
 
 labels:
   - name: "A-parse"
@@ -62,6 +70,6 @@ branches:
       required_status_checks:
         # Required. Require branches to be up to date before merging.
         strict: false
-        contexts: ["CI"]
+        contexts: ["CI", "Lint Commits", "Spell Check with Typos"]
       enforce_admins: false
       restrictions: null
