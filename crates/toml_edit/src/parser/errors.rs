@@ -310,7 +310,7 @@ impl Display for CustomError {
                 )
             }
             CustomError::OutOfRange => write!(f, "value is out of range"),
-            CustomError::RecursionLimitExceeded => write!(f, "recursion limit exceded"),
+            CustomError::RecursionLimitExceeded => write!(f, "recursion limit exceeded"),
         }
     }
 }

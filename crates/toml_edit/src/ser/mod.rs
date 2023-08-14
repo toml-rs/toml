@@ -24,7 +24,7 @@ pub enum Error {
     OutOfRange(Option<&'static str>),
     /// `None` could not be serialized to TOML
     UnsupportedNone,
-    /// Key was not convertable to `String` for serializing to TOML
+    /// Key was not convertible to `String` for serializing to TOML
     KeyNotString,
     /// A serialized date was invalid
     DateInvalid,

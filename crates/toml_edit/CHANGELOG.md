@@ -124,7 +124,7 @@ Breaking changes
 - Renamed `toml_edit::ser::Serializer` in favor of `toml_edit::ser::ValueSerializer`
 - Make `Key` only comparable by the value, not repr or decor
 - More consistently accept `InternalString`
-- `Repr`, `Decor`, and `Formatted` are no longer guarenteed to hold strings for easy comparison / evaluatoon
+- `Repr`, `Decor`, and `Formatted` are no longer guaranteed to hold strings for easy comparison / evaluatoon
 - `Key`, `KeyMut`, `Formatted` no longer have `to_repr`, replaced by `display_repr`, see also `as_repr`, `default_repr`
 
 Deprecations
@@ -176,7 +176,7 @@ Deprecations
 
 ### Fixes
 
-- Prevent stackoverflows with a recusion limit.  Disable with `unbounded` feature flag
+- Prevent stackoverflows with a recursion limit.  Disable with `unbounded` feature flag
 
 ## [0.16.0] - 2022-12-23
 

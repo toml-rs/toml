@@ -182,10 +182,10 @@ hosts = [
     "omega"
 ]
 
-   'some.wierd .stuff'   =  """
+   'some.weird .stuff'   =  """
                          like
                          that
-                      #   """ # this broke my sintax highlighting
+                      #   """ # this broke my syntax highlighting
    " also. like " = '''
 that
 '''
