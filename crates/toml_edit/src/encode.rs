@@ -390,7 +390,7 @@ pub(crate) fn to_string_repr(
                 '\u{8}' => output.push_str("\\b"),
                 '\u{9}' => output.push_str("\\t"),
                 '\u{a}' => match style {
-                    StringStyle::NewlineTripple => output.push('\n'),
+                    StringStyle::NewlineTriple => output.push('\n'),
                     StringStyle::OnelineSingle => output.push_str("\\n"),
                     _ => unreachable!(),
                 },
@@ -412,44 +412,44 @@ pub(crate) fn to_string_repr(
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum StringStyle {
-    NewlineTripple,
-    OnelineTripple,
+    NewlineTriple,
+    OnelineTriple,
     OnelineSingle,
 }
 
 impl StringStyle {
     fn literal_start(self) -> &'static str {
         match self {
-            Self::NewlineTripple => "'''\n",
-            Self::OnelineTripple => "'''",
+            Self::NewlineTriple => "'''\n",
+            Self::OnelineTriple => "'''",
             Self::OnelineSingle => "'",
         }
     }
     fn literal_end(self) -> &'static str {
         match self {
-            Self::NewlineTripple => "'''",
-            Self::OnelineTripple => "'''",
+            Self::NewlineTriple => "'''",
+            Self::OnelineTriple => "'''",
             Self::OnelineSingle => "'",
         }
     }
 
     fn standard_start(self) -> &'static str {
         match self {
-            Self::NewlineTripple => "\"\"\"\n",
-            // note: OnelineTripple can happen if do_pretty wants to do
+            Self::NewlineTriple => "\"\"\"\n",
+            // note: OnelineTriple can happen if do_pretty wants to do
             // '''it's one line'''
             // but literal == false
-            Self::OnelineTripple | Self::OnelineSingle => "\"",
+            Self::OnelineTriple | Self::OnelineSingle => "\"",
         }
     }
 
     fn standard_end(self) -> &'static str {
         match self {
-            Self::NewlineTripple => "\"\"\"",
-            // note: OnelineTripple can happen if do_pretty wants to do
+            Self::NewlineTriple => "\"\"\"",
+            // note: OnelineTriple can happen if do_pretty wants to do
             // '''it's one line'''
             // but literal == false
-            Self::OnelineTripple | Self::OnelineSingle => "\"",
+            Self::OnelineTriple | Self::OnelineSingle => "\"",
         }
     }
 }
@@ -490,7 +490,7 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
                 '\\' => {
                     prefer_literal = true;
                 }
-                '\n' => ty = StringStyle::NewlineTripple,
+                '\n' => ty = StringStyle::NewlineTriple,
                 // Escape codes are needed if any ascii control
                 // characters are present, including \b \f \r.
                 c if c <= '\u{1f}' || c == '\u{7f}' => can_be_pretty = false,
@@ -501,7 +501,7 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
             // the string cannot be represented as pretty,
             // still check if it should be multiline
             if ch == '\n' {
-                ty = StringStyle::NewlineTripple;
+                ty = StringStyle::NewlineTriple;
             }
         }
     }
@@ -513,7 +513,7 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
         can_be_pretty = false;
     }
     if !can_be_pretty {
-        debug_assert!(ty != StringStyle::OnelineTripple);
+        debug_assert!(ty != StringStyle::OnelineTriple);
         return (ty, false);
     }
     if found_singles > max_found_singles {
@@ -522,7 +522,7 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
     debug_assert!(max_found_singles < 3);
     if ty == StringStyle::OnelineSingle && max_found_singles >= 1 {
         // no newlines, but must use ''' because it has ' in it
-        ty = StringStyle::OnelineTripple;
+        ty = StringStyle::OnelineTriple;
     }
     (ty, true)
 }

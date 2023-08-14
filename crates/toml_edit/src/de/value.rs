@@ -5,7 +5,7 @@ use crate::de::Error;
 
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
-/// Can be creater either directly from TOML strings, using [`std::str::FromStr`],
+/// Can be created either directly from TOML strings, using [`std::str::FromStr`],
 /// or from parsed [values][crate::Value] using [`serde::de::IntoDeserializer::into_deserializer`].
 ///
 /// # Example
