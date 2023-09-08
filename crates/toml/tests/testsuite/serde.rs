@@ -1094,3 +1094,25 @@ fn datetime_offset_issue_496() {
     let output = toml.to_string();
     snapbox::assert_eq(original, output);
 }
+
+#[test]
+fn serialize_array_with_none_value() {
+    #[derive(Serialize)]
+    struct Document {
+        values: Vec<Option<usize>>,
+    }
+
+    let input = Document {
+        values: vec![Some(1), Some(2), Some(3)],
+    };
+    let expected = "values = [1, 2, 3]\n";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
+    let input = Document {
+        values: vec![Some(1), None, Some(3)],
+    };
+    let expected = "";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+}
