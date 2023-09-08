@@ -886,7 +886,7 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.7.6"
+version = "0.7.7"
 dependencies = [
  "indexmap",
  "serde",
@@ -939,7 +939,7 @@ dependencies = [
  "serde",
  "serde_json",
  "toml 0.5.10",
- "toml 0.7.6",
+ "toml 0.7.7",
  "toml_edit",
 ]
 
@@ -952,7 +952,7 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.19.14"
+version = "0.19.15"
 dependencies = [
  "indexmap",
  "kstring",

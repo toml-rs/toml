@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.7] - 2023-09-08
+
 ### Fixes
 
 - *(ser)* Error rather than drop whole arrays when a single element is `None`
@@ -138,7 +140,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.7...HEAD
+[0.7.7]: https://github.com/toml-rs/toml/compare/toml-v0.7.6...toml-v0.7.7
 [0.7.6]: https://github.com/toml-rs/toml/compare/toml-v0.7.5...toml-v0.7.6
 [0.7.5]: https://github.com/toml-rs/toml/compare/toml-v0.7.4...toml-v0.7.5
 [0.7.4]: https://github.com/toml-rs/toml/compare/toml-v0.7.3...toml-v0.7.4
