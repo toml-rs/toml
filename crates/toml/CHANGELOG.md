@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(ser)* Error rather than drop whole arrays when a single element is `None`
+
 ## [0.7.6] - 2023-07-05
 
 ### Features
