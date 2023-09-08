@@ -1112,7 +1112,6 @@ fn serialize_array_with_none_value() {
     let input = Document {
         values: vec![Some(1), None, Some(3)],
     };
-    let expected = "";
-    let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    let err = toml::to_string(&input).unwrap_err();
+    snapbox::assert_eq("unsupported None value", err.to_string());
 }
