@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(ser)* Don't lose data when inline tables are nested deeply under arrays
+
 ## [0.7.7] - 2023-09-08
 
 ### Fixes
