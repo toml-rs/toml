@@ -1202,7 +1202,7 @@ fn serialize_array_with_enum_of_optional_struct_field() {
             Choice::Optional(OptionalField { x: 3, y: Some(7) }),
         ],
     };
-    let expected = "values = [{}, \"Empty\", {}, {}]
+    let expected = "values = [{ Optional = { x = 0, y = 4 } }, \"Empty\", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
 ";
     let raw = toml::to_string(&input).unwrap();
     snapbox::assert_eq(expected, raw);
@@ -1215,7 +1215,7 @@ fn serialize_array_with_enum_of_optional_struct_field() {
             Choice::Optional(OptionalField { x: 3, y: Some(7) }),
         ],
     };
-    let expected = "values = [{}, \"Empty\", {}, {}]
+    let expected = "values = [{ Optional = { x = 0, y = 4 } }, \"Empty\", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
 ";
     let raw = toml::to_string(&input).unwrap();
     snapbox::assert_eq(expected, raw);

@@ -1,6 +1,7 @@
 #[derive(Copy, Clone, Default)]
 pub(crate) struct DocumentFormatter {
     pub(crate) multiline_array: bool,
+    is_value: bool,
 }
 
 impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
@@ -9,21 +10,26 @@ impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
     }
 
     fn visit_item_mut(&mut self, node: &mut toml_edit::Item) {
-        let other = std::mem::take(node);
-        let other = match other.into_table().map(toml_edit::Item::Table) {
-            Ok(i) => i,
-            Err(i) => i,
-        };
-        let other = match other
-            .into_array_of_tables()
-            .map(toml_edit::Item::ArrayOfTables)
-        {
-            Ok(i) => i,
-            Err(i) => i,
-        };
-        *node = other;
+        let is_parent_value = self.is_value;
+        if !is_parent_value {
+            let other = std::mem::take(node);
+            let other = match other.into_table().map(toml_edit::Item::Table) {
+                Ok(i) => i,
+                Err(i) => i,
+            };
+            let other = match other
+                .into_array_of_tables()
+                .map(toml_edit::Item::ArrayOfTables)
+            {
+                Ok(i) => i,
+                Err(i) => i,
+            };
+            self.is_value = other.is_value();
+            *node = other;
+        }
 
         toml_edit::visit_mut::visit_item_mut(self, node);
+        self.is_value = is_parent_value;
     }
 
     fn visit_table_mut(&mut self, node: &mut toml_edit::Table) {
