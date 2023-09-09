@@ -1174,3 +1174,49 @@ y = 7
     let raw = toml::to_string(&input).unwrap();
     snapbox::assert_eq(expected, raw);
 }
+
+#[test]
+fn serialize_array_with_enum_of_optional_struct_field() {
+    #[derive(Debug, Deserialize, Serialize)]
+    struct Document {
+        values: Vec<Choice>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    enum Choice {
+        Optional(OptionalField),
+        Empty,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct OptionalField {
+        x: u8,
+        y: Option<u8>,
+    }
+
+    let input = Document {
+        values: vec![
+            Choice::Optional(OptionalField { x: 0, y: Some(4) }),
+            Choice::Empty,
+            Choice::Optional(OptionalField { x: 2, y: Some(5) }),
+            Choice::Optional(OptionalField { x: 3, y: Some(7) }),
+        ],
+    };
+    let expected = "values = [{}, \"Empty\", {}, {}]
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
+    let input = Document {
+        values: vec![
+            Choice::Optional(OptionalField { x: 0, y: Some(4) }),
+            Choice::Empty,
+            Choice::Optional(OptionalField { x: 2, y: None }),
+            Choice::Optional(OptionalField { x: 3, y: Some(7) }),
+        ],
+    };
+    let expected = "values = [{}, \"Empty\", {}, {}]
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+}
