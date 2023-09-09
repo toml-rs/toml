@@ -1115,3 +1115,62 @@ fn serialize_array_with_none_value() {
     let err = toml::to_string(&input).unwrap_err();
     snapbox::assert_eq("unsupported None value", err.to_string());
 }
+
+#[test]
+fn serialize_array_with_optional_struct_field() {
+    #[derive(Debug, Deserialize, Serialize)]
+    struct Document {
+        values: Vec<OptionalField>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct OptionalField {
+        x: u8,
+        y: Option<u8>,
+    }
+
+    let input = Document {
+        values: vec![
+            OptionalField { x: 0, y: Some(4) },
+            OptionalField { x: 2, y: Some(5) },
+            OptionalField { x: 3, y: Some(7) },
+        ],
+    };
+    let expected = "\
+[[values]]
+x = 0
+y = 4
+
+[[values]]
+x = 2
+y = 5
+
+[[values]]
+x = 3
+y = 7
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
+    let input = Document {
+        values: vec![
+            OptionalField { x: 0, y: Some(4) },
+            OptionalField { x: 2, y: None },
+            OptionalField { x: 3, y: Some(7) },
+        ],
+    };
+    let expected = "\
+[[values]]
+x = 0
+y = 4
+
+[[values]]
+x = 2
+
+[[values]]
+x = 3
+y = 7
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+}
