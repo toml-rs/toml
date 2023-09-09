@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.8] - 2023-09-09
+
 ### Fixes
 
 - *(ser)* Don't lose data when inline tables are nested deeply under arrays
@@ -144,7 +146,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.8...HEAD
+[0.7.8]: https://github.com/toml-rs/toml/compare/toml-v0.7.7...toml-v0.7.8
 [0.7.7]: https://github.com/toml-rs/toml/compare/toml-v0.7.6...toml-v0.7.7
 [0.7.6]: https://github.com/toml-rs/toml/compare/toml-v0.7.5...toml-v0.7.6
 [0.7.5]: https://github.com/toml-rs/toml/compare/toml-v0.7.4...toml-v0.7.5
