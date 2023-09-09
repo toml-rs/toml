@@ -1115,3 +1115,108 @@ fn serialize_array_with_none_value() {
     let err = toml::to_string(&input).unwrap_err();
     snapbox::assert_eq("unsupported None value", err.to_string());
 }
+
+#[test]
+fn serialize_array_with_optional_struct_field() {
+    #[derive(Debug, Deserialize, Serialize)]
+    struct Document {
+        values: Vec<OptionalField>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct OptionalField {
+        x: u8,
+        y: Option<u8>,
+    }
+
+    let input = Document {
+        values: vec![
+            OptionalField { x: 0, y: Some(4) },
+            OptionalField { x: 2, y: Some(5) },
+            OptionalField { x: 3, y: Some(7) },
+        ],
+    };
+    let expected = "\
+[[values]]
+x = 0
+y = 4
+
+[[values]]
+x = 2
+y = 5
+
+[[values]]
+x = 3
+y = 7
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
+    let input = Document {
+        values: vec![
+            OptionalField { x: 0, y: Some(4) },
+            OptionalField { x: 2, y: None },
+            OptionalField { x: 3, y: Some(7) },
+        ],
+    };
+    let expected = "\
+[[values]]
+x = 0
+y = 4
+
+[[values]]
+x = 2
+
+[[values]]
+x = 3
+y = 7
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+}
+
+#[test]
+fn serialize_array_with_enum_of_optional_struct_field() {
+    #[derive(Debug, Deserialize, Serialize)]
+    struct Document {
+        values: Vec<Choice>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    enum Choice {
+        Optional(OptionalField),
+        Empty,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct OptionalField {
+        x: u8,
+        y: Option<u8>,
+    }
+
+    let input = Document {
+        values: vec![
+            Choice::Optional(OptionalField { x: 0, y: Some(4) }),
+            Choice::Empty,
+            Choice::Optional(OptionalField { x: 2, y: Some(5) }),
+            Choice::Optional(OptionalField { x: 3, y: Some(7) }),
+        ],
+    };
+    let expected = "values = [{ Optional = { x = 0, y = 4 } }, \"Empty\", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
+    let input = Document {
+        values: vec![
+            Choice::Optional(OptionalField { x: 0, y: Some(4) }),
+            Choice::Empty,
+            Choice::Optional(OptionalField { x: 2, y: None }),
+            Choice::Optional(OptionalField { x: 3, y: Some(7) }),
+        ],
+    };
+    let expected = "values = [{ Optional = { x = 0, y = 4 } }, \"Empty\", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+}
