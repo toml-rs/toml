@@ -21,12 +21,6 @@ macro_rules! equivalent {
         let toml = $toml;
         let literal = $literal;
 
-        // In/out of Value is equivalent
-        println!("try_from");
-        assert_eq!(t!(Table::try_from(literal.clone())), toml);
-        println!("try_into");
-        assert_eq!(literal, t!(toml.clone().try_into()));
-
         // Through a string equivalent
         println!("to_string");
         snapbox::assert_eq(t!(toml::to_string(&toml)), t!(toml::to_string(&literal)));
@@ -34,6 +28,12 @@ macro_rules! equivalent {
         assert_eq!(literal, t!(toml::from_str(&t!(toml::to_string(&toml)))));
         println!("toml, from_str(toml)");
         assert_eq!(toml, t!(toml::from_str(&t!(toml::to_string(&toml)))));
+
+        // In/out of Value is equivalent
+        println!("try_from");
+        assert_eq!(t!(Table::try_from(literal.clone())), toml);
+        println!("try_into");
+        assert_eq!(literal, t!(toml.clone().try_into()));
     }};
 }
 
