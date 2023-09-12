@@ -770,6 +770,13 @@ impl<'de> serde::de::VariantAccess<'de> for MapEnumDeserializer {
     fn unit_variant(self) -> Result<(), Self::Error> {
         use de::Error;
         match self.value {
+            Value::Array(values) => {
+                if values.is_empty() {
+                    Ok(())
+                } else {
+                    Err(Error::custom("expected empty array"))
+                }
+            }
             Value::Table(values) => {
                 if values.is_empty() {
                     Ok(())
@@ -797,6 +804,13 @@ impl<'de> serde::de::VariantAccess<'de> for MapEnumDeserializer {
     {
         use de::Error;
         match self.value {
+            Value::Array(values) => {
+                if values.len() == len {
+                    serde::de::Deserializer::deserialize_seq(values.into_deserializer(), visitor)
+                } else {
+                    Err(Error::custom(format!("expected tuple with length {}", len)))
+                }
+            }
             Value::Table(values) => {
                 let tuple_values = values
                     .into_iter()
@@ -870,7 +884,7 @@ impl ser::Serializer for ValueSerializer {
     type SerializeSeq = ValueSerializeVec;
     type SerializeTuple = ValueSerializeVec;
     type SerializeTupleStruct = ValueSerializeVec;
-    type SerializeTupleVariant = ValueSerializeVec;
+    type SerializeTupleVariant = ValueSerializeTupleVariant;
     type SerializeMap = ValueSerializeMap;
     type SerializeStruct = ValueSerializeMap;
     type SerializeStructVariant = ser::Impossible<Value, crate::ser::Error>;
@@ -1015,10 +1029,10 @@ impl ser::Serializer for ValueSerializer {
         self,
         _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, crate::ser::Error> {
-        self.serialize_seq(Some(len))
+        Ok(ValueSerializeTupleVariant::tuple(variant, len))
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, crate::ser::Error> {
@@ -1451,5 +1465,42 @@ impl<'a, 'de> de::Visitor<'de> for DatetimeOrTable<'a> {
             *self.key = s;
             Ok(false)
         }
+    }
+}
+
+type ValueSerializeTupleVariant = ValueSerializeVariant<ValueSerializeVec>;
+
+struct ValueSerializeVariant<T> {
+    variant: &'static str,
+    inner: T,
+}
+
+impl ValueSerializeVariant<ValueSerializeVec> {
+    pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
+        Self {
+            variant,
+            inner: ValueSerializeVec {
+                vec: Vec::with_capacity(len),
+            },
+        }
+    }
+}
+
+impl serde::ser::SerializeTupleVariant for ValueSerializeVariant<ValueSerializeVec> {
+    type Ok = crate::Value;
+    type Error = crate::ser::Error;
+
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: serde::ser::Serialize,
+    {
+        serde::ser::SerializeSeq::serialize_element(&mut self.inner, value)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        let inner = serde::ser::SerializeSeq::end(self.inner)?;
+        let mut table = Table::new();
+        table.insert(self.variant.to_owned(), inner);
+        Ok(Value::Table(table))
     }
 }

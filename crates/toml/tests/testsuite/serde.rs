@@ -402,12 +402,15 @@ fn parse_tuple_variant() {
             Enum::String("2".to_owned(), "2".to_owned()),
         ],
     };
-    let expected = "inner = [[1, 1], [\"2\", \"2\"]]
+    let expected = "[[inner]]
+Int = [1, 1]
+
+[[inner]]
+String = [\"2\", \"2\"]
 ";
     let raw = toml::to_string(&input).unwrap();
     snapbox::assert_eq(expected, raw);
 
-    /*
     equivalent! {
         Document {
             inner: vec![
@@ -421,7 +424,7 @@ fn parse_tuple_variant() {
                 map! { String: ["2".to_owned(), "2".to_owned()] },
             ]
         },
-    }*/
+    }
 }
 
 #[test]
