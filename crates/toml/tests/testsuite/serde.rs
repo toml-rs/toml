@@ -377,6 +377,92 @@ fn parse_enum_string() {
 }
 
 #[test]
+fn parse_tuple_variant() {
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    struct Document {
+        inner: Vec<Enum>,
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    enum Enum {
+        Int(i32, i32),
+        String(String, String),
+    }
+
+    let input = Document {
+        inner: vec![
+            Enum::Int(1, 1),
+            Enum::String("2".to_owned(), "2".to_owned()),
+        ],
+    };
+    let expected = "inner = [[1, 1], [\"2\", \"2\"]]
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
+    /*
+    equivalent! {
+        Document {
+            inner: vec![
+                Enum::Int(1, 1),
+                Enum::String("2".to_owned(), "2".to_owned()),
+            ],
+        },
+        map! {
+            inner: vec![
+                map! { Int: [1, 1] },
+                map! { String: ["2".to_owned(), "2".to_owned()] },
+            ]
+        },
+    }*/
+}
+
+#[test]
+fn parse_struct_variant() {
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    struct Document {
+        inner: Vec<Enum>,
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    enum Enum {
+        Int { first: i32, second: i32 },
+        String { first: String, second: String },
+    }
+
+    let input = Document {
+        inner: vec![
+            Enum::Int {
+                first: 1,
+                second: 1,
+            },
+            Enum::String {
+                first: "2".to_owned(),
+                second: "2".to_owned(),
+            },
+        ],
+    };
+    let err = toml::to_string(&input).unwrap_err();
+    snapbox::assert_eq("unsupported Enum type", err.to_string());
+
+    /*
+    equivalent! {
+        Document {
+            inner: vec![
+                Enum::Int { first: 1, second: 1 },
+                Enum::String { first: "2".to_owned(), second: "2".to_owned() },
+            ],
+        },
+        map! {
+            inner: vec![
+                map! { Int: map! { first: 1, second: 1 } },
+                map! { String: map! { first: "2".to_owned(), second: "2".to_owned() } },
+            ]
+        },
+    }*/
+}
+
+#[test]
 #[cfg(feature = "preserve_order")]
 fn map_key_unit_variants() {
     #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone, PartialOrd, Ord)]
