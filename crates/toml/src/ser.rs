@@ -140,18 +140,18 @@ impl std::error::Error for Error {}
 /// To serialize TOML values, instead of documents, see [`ValueSerializer`].
 #[non_exhaustive]
 #[cfg(feature = "display")]
-pub struct Serializer<'d> {
-    dst: &'d mut String,
+pub struct Serializer<W> {
+    dst: W,
     settings: crate::fmt::DocumentFormatter,
 }
 
 #[cfg(feature = "display")]
-impl<'d> Serializer<'d> {
+impl<W: std::fmt::Write> Serializer<W> {
     /// Creates a new serializer which will emit TOML into the buffer provided.
     ///
     /// The serializer can then be used to serialize a type after which the data
     /// will be present in `dst`.
-    pub fn new(dst: &'d mut String) -> Self {
+    pub fn new(dst: W) -> Self {
         Self {
             dst,
             settings: Default::default(),
@@ -162,7 +162,7 @@ impl<'d> Serializer<'d> {
     ///
     /// For greater customization, instead serialize to a
     /// [`toml_edit::Document`](https://docs.rs/toml_edit/latest/toml_edit/struct.Document.html).
-    pub fn pretty(dst: &'d mut String) -> Self {
+    pub fn pretty(dst: W) -> Self {
         let mut ser = Serializer::new(dst);
         ser.settings.multiline_array = true;
         ser
@@ -170,15 +170,15 @@ impl<'d> Serializer<'d> {
 }
 
 #[cfg(feature = "display")]
-impl<'d> serde::ser::Serializer for Serializer<'d> {
+impl<W: std::fmt::Write> serde::ser::Serializer for Serializer<W> {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = SerializeDocumentArray<'d>;
-    type SerializeTuple = SerializeDocumentArray<'d>;
-    type SerializeTupleStruct = SerializeDocumentArray<'d>;
-    type SerializeTupleVariant = SerializeDocumentArray<'d>;
-    type SerializeMap = SerializeDocumentTable<'d>;
-    type SerializeStruct = SerializeDocumentTable<'d>;
+    type SerializeSeq = SerializeDocumentArray<W>;
+    type SerializeTuple = SerializeDocumentArray<W>;
+    type SerializeTupleStruct = SerializeDocumentArray<W>;
+    type SerializeTupleVariant = SerializeDocumentArray<W>;
+    type SerializeMap = SerializeDocumentTable<W>;
+    type SerializeStruct = SerializeDocumentTable<W>;
     type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -485,31 +485,31 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 /// ```
 #[non_exhaustive]
 #[cfg(feature = "display")]
-pub struct ValueSerializer<'d> {
-    dst: &'d mut String,
+pub struct ValueSerializer<W> {
+    dst: W,
 }
 
 #[cfg(feature = "display")]
-impl<'d> ValueSerializer<'d> {
+impl<W> ValueSerializer<W> {
     /// Creates a new serializer which will emit TOML into the buffer provided.
     ///
     /// The serializer can then be used to serialize a type after which the data
     /// will be present in `dst`.
-    pub fn new(dst: &'d mut String) -> Self {
+    pub fn new(dst: W) -> Self {
         Self { dst }
     }
 }
 
 #[cfg(feature = "display")]
-impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
+impl<W: std::fmt::Write> serde::ser::Serializer for ValueSerializer<W> {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = SerializeValueArray<'d>;
-    type SerializeTuple = SerializeValueArray<'d>;
-    type SerializeTupleStruct = SerializeValueArray<'d>;
-    type SerializeTupleVariant = SerializeValueArray<'d>;
-    type SerializeMap = SerializeValueTable<'d>;
-    type SerializeStruct = SerializeValueTable<'d>;
+    type SerializeSeq = SerializeValueArray<W>;
+    type SerializeTuple = SerializeValueArray<W>;
+    type SerializeTupleStruct = SerializeValueArray<W>;
+    type SerializeTupleVariant = SerializeValueArray<W>;
+    type SerializeMap = SerializeValueTable<W>;
+    type SerializeStruct = SerializeValueTable<W>;
     type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -762,14 +762,14 @@ mod internal {
         <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
 
     #[doc(hidden)]
-    pub struct SerializeDocumentArray<'d> {
+    pub struct SerializeDocumentArray<W> {
         inner: InnerSerializeDocumentSeq,
-        dst: &'d mut String,
+        dst: W,
         settings: DocumentFormatter,
     }
 
-    impl<'d> SerializeDocumentArray<'d> {
-        pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentSeq) -> Self {
+    impl<W> SerializeDocumentArray<W> {
+        pub(crate) fn new(ser: Serializer<W>, inner: InnerSerializeDocumentSeq) -> Self {
             Self {
                 inner,
                 dst: ser.dst,
@@ -778,7 +778,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeSeq for SerializeDocumentArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeSeq for SerializeDocumentArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -794,7 +794,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTuple for SerializeDocumentArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeTuple for SerializeDocumentArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -810,7 +810,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeTupleVariant for SerializeDocumentArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -826,7 +826,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleStruct for SerializeDocumentArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeTupleStruct for SerializeDocumentArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -846,14 +846,14 @@ mod internal {
         <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
 
     #[doc(hidden)]
-    pub struct SerializeDocumentTable<'d> {
+    pub struct SerializeDocumentTable<W> {
         inner: InnerSerializeDocumentTable,
-        dst: &'d mut String,
+        dst: W,
         settings: DocumentFormatter,
     }
 
-    impl<'d> SerializeDocumentTable<'d> {
-        pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentTable) -> Self {
+    impl<W> SerializeDocumentTable<W> {
+        pub(crate) fn new(ser: Serializer<W>, inner: InnerSerializeDocumentTable) -> Self {
             Self {
                 inner,
                 dst: ser.dst,
@@ -862,7 +862,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeMap for SerializeDocumentTable<W> {
         type Ok = ();
         type Error = Error;
 
@@ -885,7 +885,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeStruct for SerializeDocumentTable<W> {
         type Ok = ();
         type Error = Error;
 
@@ -906,12 +906,10 @@ mod internal {
     }
 
     pub(crate) fn write_document(
-        dst: &mut String,
+        mut dst: impl std::fmt::Write,
         mut settings: DocumentFormatter,
         value: Result<toml_edit::Value, crate::edit::ser::Error>,
     ) -> Result<(), Error> {
-        use std::fmt::Write;
-
         let value = value.map_err(Error::wrap)?;
         let mut table = match toml_edit::Item::Value(value).into_table() {
             Ok(i) => i,
@@ -933,13 +931,13 @@ mod internal {
         <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
 
     #[doc(hidden)]
-    pub struct SerializeValueArray<'d> {
+    pub struct SerializeValueArray<W> {
         inner: InnerSerializeValueSeq,
-        dst: &'d mut String,
+        dst: W,
     }
 
-    impl<'d> SerializeValueArray<'d> {
-        pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueSeq) -> Self {
+    impl<W> SerializeValueArray<W> {
+        pub(crate) fn new(ser: ValueSerializer<W>, inner: InnerSerializeValueSeq) -> Self {
             Self {
                 inner,
                 dst: ser.dst,
@@ -947,7 +945,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeSeq for SerializeValueArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -963,7 +961,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTuple for SerializeValueArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeTuple for SerializeValueArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -979,7 +977,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleVariant for SerializeValueArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeTupleVariant for SerializeValueArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -995,7 +993,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleStruct for SerializeValueArray<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeTupleStruct for SerializeValueArray<W> {
         type Ok = ();
         type Error = Error;
 
@@ -1015,13 +1013,13 @@ mod internal {
         <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
 
     #[doc(hidden)]
-    pub struct SerializeValueTable<'d> {
+    pub struct SerializeValueTable<W> {
         inner: InnerSerializeValueTable,
-        dst: &'d mut String,
+        dst: W,
     }
 
-    impl<'d> SerializeValueTable<'d> {
-        pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueTable) -> Self {
+    impl<W> SerializeValueTable<W> {
+        pub(crate) fn new(ser: ValueSerializer<W>, inner: InnerSerializeValueTable) -> Self {
             Self {
                 inner,
                 dst: ser.dst,
@@ -1029,7 +1027,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeMap for SerializeValueTable<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeMap for SerializeValueTable<W> {
         type Ok = ();
         type Error = Error;
 
@@ -1052,7 +1050,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeStruct for SerializeValueTable<'d> {
+    impl<W: std::fmt::Write> serde::ser::SerializeStruct for SerializeValueTable<W> {
         type Ok = ();
         type Error = Error;
 
@@ -1073,11 +1071,9 @@ mod internal {
     }
 
     pub(crate) fn write_value(
-        dst: &mut String,
+        mut dst: impl std::fmt::Write,
         value: Result<toml_edit::Value, crate::edit::ser::Error>,
     ) -> Result<(), Error> {
-        use std::fmt::Write;
-
         let value = value.map_err(Error::wrap)?;
 
         write!(dst, "{}", value).unwrap();
