@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Serialization and deserialization of tuple variants has changed from being an array to being a table with the key being the variant name and the value being the array
+
+### Fixes
+
+- Consistently serialize and deserialize struct and tuple variants, matching serde_json's behavior
+
 ## [0.7.8] - 2023-09-09
 
 ### Fixes
