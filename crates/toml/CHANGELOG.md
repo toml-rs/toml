@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.0] - 2023-09-13
+
 ### Compatibility
 
 - Serialization and deserialization of tuple variants has changed from being an array to being a table with the key being the variant name and the value being the array
@@ -154,7 +156,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.7.8...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.0...HEAD
+[0.8.0]: https://github.com/toml-rs/toml/compare/toml-v0.7.8...toml-v0.8.0
 [0.7.8]: https://github.com/toml-rs/toml/compare/toml-v0.7.7...toml-v0.7.8
 [0.7.7]: https://github.com/toml-rs/toml/compare/toml-v0.7.6...toml-v0.7.7
 [0.7.6]: https://github.com/toml-rs/toml/compare/toml-v0.7.5...toml-v0.7.6

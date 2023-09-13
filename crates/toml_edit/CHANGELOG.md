@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.20.0] - 2023-09-13
+
 ### Compatibility
 
 - Serialization and deserialization of tuple variants has changed from being an array to being a table with the key being the variant name and the value being the array
@@ -540,7 +542,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.19.15...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/toml-rs/toml/compare/v0.19.15...v0.20.0
 [0.19.15]: https://github.com/toml-rs/toml/compare/v0.19.14...v0.19.15
 [0.19.14]: https://github.com/toml-rs/toml/compare/v0.19.13...v0.19.14
 [0.19.13]: https://github.com/toml-rs/toml/compare/v0.19.12...v0.19.13
