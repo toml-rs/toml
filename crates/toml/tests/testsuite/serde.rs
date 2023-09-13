@@ -30,10 +30,17 @@ macro_rules! equivalent {
         assert_eq!(toml, t!(toml::from_str(&t!(toml::to_string(&literal)))));
 
         // In/out of Value is equivalent
-        println!("try_from");
+        println!("Table::try_from(literal)");
         assert_eq!(toml, t!(Table::try_from(literal.clone())));
-        println!("try_into");
+        println!("Value::try_from(literal)");
+        assert_eq!(
+            Value::Table(toml.clone()),
+            t!(Value::try_from(literal.clone()))
+        );
+        println!("toml.try_into()");
         assert_eq!(literal, t!(toml.clone().try_into()));
+        println!("Value::Table(toml).try_into()");
+        assert_eq!(literal, t!(Value::Table(toml.clone()).try_into()));
     }};
 }
 
