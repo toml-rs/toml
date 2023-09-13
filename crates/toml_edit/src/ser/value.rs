@@ -63,7 +63,7 @@ impl serde::ser::Serializer for ValueSerializer {
     type SerializeTupleVariant = super::SerializeTupleVariant;
     type SerializeMap = super::SerializeMap;
     type SerializeStruct = super::SerializeMap;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = super::SerializeStructVariant;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         Ok(v.into())
@@ -233,11 +233,11 @@ impl serde::ser::Serializer for ValueSerializer {
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
+        _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
+        variant: &'static str,
+        len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(Error::UnsupportedType(Some(name)))
+        Ok(super::SerializeStructVariant::struct_(variant, len))
     }
 }

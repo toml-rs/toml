@@ -887,7 +887,7 @@ impl ser::Serializer for ValueSerializer {
     type SerializeTupleVariant = ValueSerializeTupleVariant;
     type SerializeMap = ValueSerializeMap;
     type SerializeStruct = ValueSerializeMap;
-    type SerializeStructVariant = ser::Impossible<Value, crate::ser::Error>;
+    type SerializeStructVariant = ValueSerializeStructVariant;
 
     fn serialize_bool(self, value: bool) -> Result<Value, crate::ser::Error> {
         Ok(Value::Boolean(value))
@@ -1054,12 +1054,12 @@ impl ser::Serializer for ValueSerializer {
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
+        _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
+        variant: &'static str,
+        len: usize,
     ) -> Result<Self::SerializeStructVariant, crate::ser::Error> {
-        Err(crate::ser::Error::unsupported_type(Some(name)))
+        Ok(ValueSerializeStructVariant::struct_(variant, len))
     }
 }
 
@@ -1469,6 +1469,7 @@ impl<'a, 'de> de::Visitor<'de> for DatetimeOrTable<'a> {
 }
 
 type ValueSerializeTupleVariant = ValueSerializeVariant<ValueSerializeVec>;
+type ValueSerializeStructVariant = ValueSerializeVariant<ValueSerializeMap>;
 
 struct ValueSerializeVariant<T> {
     variant: &'static str,
@@ -1481,6 +1482,20 @@ impl ValueSerializeVariant<ValueSerializeVec> {
             variant,
             inner: ValueSerializeVec {
                 vec: Vec::with_capacity(len),
+            },
+        }
+    }
+}
+
+impl ValueSerializeVariant<ValueSerializeMap> {
+    pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
+        Self {
+            variant,
+            inner: ValueSerializeMap {
+                ser: SerializeMap {
+                    map: Table::with_capacity(len),
+                    next_key: None,
+                },
             },
         }
     }
@@ -1499,6 +1514,27 @@ impl serde::ser::SerializeTupleVariant for ValueSerializeVariant<ValueSerializeV
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         let inner = serde::ser::SerializeSeq::end(self.inner)?;
+        let mut table = Table::new();
+        table.insert(self.variant.to_owned(), inner);
+        Ok(Value::Table(table))
+    }
+}
+
+impl serde::ser::SerializeStructVariant for ValueSerializeVariant<ValueSerializeMap> {
+    type Ok = crate::Value;
+    type Error = crate::ser::Error;
+
+    #[inline]
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        serde::ser::SerializeStruct::serialize_field(&mut self.inner, key, value)
+    }
+
+    #[inline]
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        let inner = serde::ser::SerializeStruct::end(self.inner)?;
         let mut table = Table::new();
         table.insert(self.variant.to_owned(), inner);
         Ok(Value::Table(table))

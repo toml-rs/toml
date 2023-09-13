@@ -452,10 +452,21 @@ fn parse_struct_variant() {
             },
         ],
     };
-    let err = toml::to_string(&input).unwrap_err();
-    snapbox::assert_eq("unsupported Enum type", err.to_string());
+    let expected = "[[inner]]
 
-    /*
+[inner.Int]
+first = 1
+second = 1
+
+[[inner]]
+
+[inner.String]
+first = \"2\"
+second = \"2\"
+";
+    let raw = toml::to_string(&input).unwrap();
+    snapbox::assert_eq(expected, raw);
+
     equivalent! {
         Document {
             inner: vec![
@@ -469,7 +480,7 @@ fn parse_struct_variant() {
                 map! { String: map! { first: "2".to_owned(), second: "2".to_owned() } },
             ]
         },
-    }*/
+    }
 }
 
 #[test]
