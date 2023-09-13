@@ -1,4 +1,4 @@
-use super::{Error, KeySerializer, ValueSerializer};
+use super::{Error, KeySerializer, SerializeValueArray, ValueSerializer};
 
 #[doc(hidden)]
 pub enum SerializeMap {
@@ -165,7 +165,6 @@ impl serde::ser::SerializeMap for SerializeInlineTable {
     where
         T: serde::ser::Serialize,
     {
-        self.key = None;
         self.key = Some(input.serialize(KeySerializer)?);
         Ok(())
     }
@@ -423,10 +422,10 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
     type SerializeSeq = super::SerializeValueArray;
     type SerializeTuple = super::SerializeValueArray;
     type SerializeTupleStruct = super::SerializeValueArray;
-    type SerializeTupleVariant = super::SerializeValueArray;
+    type SerializeTupleVariant = super::SerializeTupleVariant;
     type SerializeMap = super::SerializeMap;
     type SerializeStruct = super::SerializeMap;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = super::SerializeStructVariant;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         ValueSerializer::new().serialize_bool(v)
@@ -583,5 +582,83 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         ValueSerializer::new().serialize_struct_variant(name, variant_index, variant, len)
+    }
+}
+
+pub type SerializeTupleVariant = SerializeVariant<SerializeValueArray>;
+pub type SerializeStructVariant = SerializeVariant<SerializeMap>;
+
+pub struct SerializeVariant<T> {
+    variant: &'static str,
+    inner: T,
+}
+
+impl SerializeVariant<SerializeValueArray> {
+    pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
+        Self {
+            variant,
+            inner: SerializeValueArray::with_capacity(len),
+        }
+    }
+}
+
+impl SerializeVariant<SerializeMap> {
+    pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
+        Self {
+            variant,
+            inner: SerializeMap::table_with_capacity(len),
+        }
+    }
+}
+
+impl serde::ser::SerializeTupleVariant for SerializeVariant<SerializeValueArray> {
+    type Ok = crate::Value;
+    type Error = Error;
+
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Error>
+    where
+        T: serde::ser::Serialize,
+    {
+        serde::ser::SerializeSeq::serialize_element(&mut self.inner, value)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        let inner = serde::ser::SerializeSeq::end(self.inner)?;
+        let mut items = crate::table::KeyValuePairs::new();
+        let kv = crate::table::TableKeyValue::new(
+            crate::Key::new(self.variant),
+            crate::Item::Value(inner),
+        );
+        items.insert(crate::InternalString::from(self.variant), kv);
+        Ok(crate::Value::InlineTable(crate::InlineTable::with_pairs(
+            items,
+        )))
+    }
+}
+
+impl serde::ser::SerializeStructVariant for SerializeVariant<SerializeMap> {
+    type Ok = crate::Value;
+    type Error = Error;
+
+    #[inline]
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        serde::ser::SerializeStruct::serialize_field(&mut self.inner, key, value)
+    }
+
+    #[inline]
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        let inner = serde::ser::SerializeStruct::end(self.inner)?;
+        let mut items = crate::table::KeyValuePairs::new();
+        let kv = crate::table::TableKeyValue::new(
+            crate::Key::new(self.variant),
+            crate::Item::Value(inner),
+        );
+        items.insert(crate::InternalString::from(self.variant), kv);
+        Ok(crate::Value::InlineTable(crate::InlineTable::with_pairs(
+            items,
+        )))
     }
 }

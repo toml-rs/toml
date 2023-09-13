@@ -16,6 +16,20 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
 
     fn unit_variant(self) -> Result<(), Self::Error> {
         match self.value {
+            crate::Item::ArrayOfTables(values) => {
+                if values.is_empty() {
+                    Ok(())
+                } else {
+                    Err(Error::custom("expected empty array", values.span()))
+                }
+            }
+            crate::Item::Value(crate::Value::Array(values)) => {
+                if values.is_empty() {
+                    Ok(())
+                } else {
+                    Err(Error::custom("expected empty table", values.span()))
+                }
+            }
             crate::Item::Table(values) => {
                 if values.is_empty() {
                     Ok(())
@@ -49,6 +63,38 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
         V: serde::de::Visitor<'de>,
     {
         match self.value {
+            crate::Item::ArrayOfTables(values) => {
+                let values_span = values.span();
+                let tuple_values = values.values.into_iter().collect::<Vec<_>>();
+
+                if tuple_values.len() == len {
+                    serde::de::Deserializer::deserialize_seq(
+                        super::ArrayDeserializer::new(tuple_values, values_span),
+                        visitor,
+                    )
+                } else {
+                    Err(Error::custom(
+                        format!("expected tuple with length {}", len),
+                        values_span,
+                    ))
+                }
+            }
+            crate::Item::Value(crate::Value::Array(values)) => {
+                let values_span = values.span();
+                let tuple_values = values.values.into_iter().collect::<Vec<_>>();
+
+                if tuple_values.len() == len {
+                    serde::de::Deserializer::deserialize_seq(
+                        super::ArrayDeserializer::new(tuple_values, values_span),
+                        visitor,
+                    )
+                } else {
+                    Err(Error::custom(
+                        format!("expected tuple with length {}", len),
+                        values_span,
+                    ))
+                }
+            }
             crate::Item::Table(values) => {
                 let values_span = values.span();
                 let tuple_values = values
