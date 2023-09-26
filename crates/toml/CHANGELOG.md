@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(de)* Allow parsing keys into newtypes
+
 ## [0.8.0] - 2023-09-13
 
 ### Compatibility
