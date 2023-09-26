@@ -742,6 +742,25 @@ fn newtype_variant() {
     }
 }
 
+#[test]
+fn newtype_key() {
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Serialize, Deserialize)]
+    struct NewType(String);
+
+    type CustomKeyMap = std::collections::BTreeMap<NewType, u32>;
+
+    equivalent! {
+        [
+            (NewType("x".to_owned()), 1),
+            (NewType("y".to_owned()), 2),
+        ].into_iter().collect::<CustomKeyMap>(),
+        map! {
+            x: Value::Integer(1),
+            y: Value::Integer(2)
+        },
+    }
+}
+
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 struct CanBeEmpty {
     a: Option<String>,
