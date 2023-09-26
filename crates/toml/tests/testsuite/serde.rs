@@ -743,7 +743,6 @@ fn newtype_variant() {
 }
 
 #[test]
-#[should_panic = "invalid type: string \"x\", expected tuple struct NewType"]
 fn newtype_key() {
     #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Serialize, Deserialize)]
     struct NewType(String);
