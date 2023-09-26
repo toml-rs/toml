@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.1] - 2023-09-26
+
 ### Fixes
 
 - *(de)* Allow parsing keys into newtypes
@@ -160,7 +162,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.1...HEAD
+[0.8.1]: https://github.com/toml-rs/toml/compare/toml-v0.8.0...toml-v0.8.1
 [0.8.0]: https://github.com/toml-rs/toml/compare/toml-v0.7.8...toml-v0.8.0
 [0.7.8]: https://github.com/toml-rs/toml/compare/toml-v0.7.7...toml-v0.7.8
 [0.7.7]: https://github.com/toml-rs/toml/compare/toml-v0.7.6...toml-v0.7.7

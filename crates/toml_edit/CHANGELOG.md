@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.20.1] - 2023-09-26
+
 ### Fixes
 
 - *(de)* Allow parsing keys into newtypes
@@ -546,7 +548,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.1...HEAD
+[0.20.1]: https://github.com/toml-rs/toml/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/toml-rs/toml/compare/v0.19.15...v0.20.0
 [0.19.15]: https://github.com/toml-rs/toml/compare/v0.19.14...v0.19.15
 [0.19.14]: https://github.com/toml-rs/toml/compare/v0.19.13...v0.19.14
