@@ -10,7 +10,10 @@ impl toml_test_harness::Encoder for Encoder {
 
     fn encode(&self, data: toml_test_harness::Decoded) -> Result<String, toml_test_harness::Error> {
         let value = from_decoded(&data)?;
-        let s = toml::to_string(&value).map_err(toml_test_harness::Error::new)?;
+        let toml::Value::Table(document) = value else {
+            return Err(toml_test_harness::Error::new("no root table"));
+        };
+        let s = toml::to_string(&document).map_err(toml_test_harness::Error::new)?;
         Ok(s)
     }
 }
