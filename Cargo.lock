@@ -893,6 +893,7 @@ dependencies = [
  "serde_json",
  "serde_spanned",
  "snapbox",
+ "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
  "toml_edit",
@@ -900,9 +901,9 @@ dependencies = [
 
 [[package]]
 name = "toml-test"
-version = "0.3.4"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37351256790aa1dbd6d60f4ff08e55e7f372e292f3e9040d6e077463d9a779c3"
+checksum = "a47dfa19ca3d6591b3151156884e0345e646307299a111391c54b0a7bd33bb04"
 dependencies = [
  "chrono",
  "serde",
@@ -911,18 +912,18 @@ dependencies = [
 
 [[package]]
 name = "toml-test-data"
-version = "1.3.0"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93f351b6d6005ee802b0d4a53ca1cdf05636f441df4d299e62cba57f1da52646"
+checksum = "4340f0f6c69efad9058211393c1a2d959f48f01c291ae6b21ffdf14a7eeba503"
 dependencies = [
  "include_dir",
 ]
 
 [[package]]
 name = "toml-test-harness"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e00fda5710922fe6b3005bf6a5050c303d6f9625249c37b7386e8818f4af675"
+checksum = "2ab6273ee89f4204793309f471313bc53d5881c38f02dc33303904e77107d04e"
 dependencies = [
  "ignore",
  "libtest-mimic",
