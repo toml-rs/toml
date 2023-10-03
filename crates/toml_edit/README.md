@@ -9,7 +9,7 @@
 
 This crate allows you to parse and modify toml
 documents, while preserving comments, spaces *and
-relative order* or items.
+relative order* of items.
 
 `toml_edit` is primarily tailored for [cargo-edit](https://github.com/killercup/cargo-edit/) needs.
 
