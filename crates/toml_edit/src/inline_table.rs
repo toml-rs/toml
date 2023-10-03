@@ -11,6 +11,8 @@ use crate::{InternalString, Item, KeyMut, RawString, Table, Value};
 pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
     preamble: RawString,
+    // Whether to hide an empty table
+    pub(crate) implicit: bool,
     // prefix before `{` and suffix after `}`
     decor: Decor,
     pub(crate) span: Option<std::ops::Range<usize>>,
@@ -131,6 +133,32 @@ impl InlineTable {
                 _ => {}
             }
         }
+    }
+
+    /// If a table has no key/value pairs and implicit, it will not be displayed.
+    ///
+    /// # Examples
+    ///
+    /// ```notrust
+    /// [target."x86_64/windows.json".dependencies]
+    /// ```
+    ///
+    /// In the document above, tables `target` and `target."x86_64/windows.json"` are implicit.
+    ///
+    /// ```
+    /// use toml_edit::Document;
+    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
+    ///
+    /// doc["a"].as_table_mut().unwrap().set_implicit(true);
+    /// assert_eq!(doc.to_string(), "[a.b]\n");
+    /// ```
+    pub(crate) fn set_implicit(&mut self, implicit: bool) {
+        self.implicit = implicit;
+    }
+
+    /// If a table has no key/value pairs and implicit, it will not be displayed.
+    pub(crate) fn is_implicit(&self) -> bool {
+        self.implicit
     }
 
     /// Change this table's dotted status
