@@ -1,5 +1,6 @@
-TOML parse error at line 1, column 21
+TOML parse error at line 1, column 24
   |
-1 | exp-trailing-us = 1e_23_
-  |                     ^
+1 | exp-trailing-us = 1e23_
+  |                        ^
 invalid floating-point number
+expected digit
