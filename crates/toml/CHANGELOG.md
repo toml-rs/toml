@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* Correctly error when mixing inline tables with inline dotted keys
+
 ## [0.8.1] - 2023-09-26
 
 ### Fixes
