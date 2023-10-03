@@ -713,9 +713,9 @@ dependencies = [
 
 [[package]]
 name = "ryu"
-version = "1.0.11"
+version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4501abdff3ae82a1c1b477a17252eb69cee9e66eb915c1abaa4f44d873df9f09"
+checksum = "1ad4cc8da4ef723ed60bced201181d83791ad433213d8c24efffda1eec85d741"
 
 [[package]]
 name = "same-file"
@@ -901,11 +901,12 @@ dependencies = [
 
 [[package]]
 name = "toml-test"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a47dfa19ca3d6591b3151156884e0345e646307299a111391c54b0a7bd33bb04"
+checksum = "f76ff6290013b41ffa06d30be167bca0d5798f296fcaf5b18892f2b3d7d75701"
 dependencies = [
  "chrono",
+ "ryu",
  "serde",
  "serde_json",
 ]
@@ -921,9 +922,9 @@ dependencies = [
 
 [[package]]
 name = "toml-test-harness"
-version = "0.4.5"
+version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7346ccc45965d33ad1a15e558bc67f8c7a35a72d882f646c342fea9227390296"
+checksum = "69f459a52d9e76baee240ab8463e0a830f70993457ad5c6f9d75e449cbda3246"
 dependencies = [
  "ignore",
  "libtest-mimic",
