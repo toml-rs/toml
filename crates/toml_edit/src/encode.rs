@@ -455,16 +455,13 @@ impl StringStyle {
 }
 
 fn infer_style(value: &str) -> (StringStyle, bool) {
-    // For doing pretty prints we store in a new String
-    // because there are too many cases where pretty cannot
-    // work. We need to determine:
+    // We need to determine:
     // - if we are a "multi-line" pretty (if there are \n)
     // - if ['''] appears if multi or ['] if single
     // - if there are any invalid control characters
     //
     // Doing it any other way would require multiple passes
     // to determine if a pretty string works or not.
-    let mut out = String::with_capacity(value.len() * 2);
     let mut ty = StringStyle::OnelineSingle;
     // found consecutive single quotes
     let mut max_found_singles = 0;
@@ -496,7 +493,6 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
                 c if c <= '\u{1f}' || c == '\u{7f}' => can_be_pretty = false,
                 _ => {}
             }
-            out.push(ch);
         } else {
             // the string cannot be represented as pretty,
             // still check if it should be multiline
