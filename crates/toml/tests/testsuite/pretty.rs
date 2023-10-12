@@ -47,7 +47,7 @@ fn pretty_std() {
     assert_eq(toml, &result);
 }
 
-const PRETTY_TRICKY: &str = r##"[example]
+const PRETTY_TRICKY: &str = r#"[example]
 f = "\f"
 glass = """
 Nothing too unusual, except that I can eat glass in:
@@ -72,7 +72,7 @@ This has a ''' in it and \"\"\" cuz it's tricky yo
 Also ' and \" because why not
 this is the fourth line
 """
-"##;
+"#;
 
 #[test]
 fn pretty_tricky() {
@@ -85,7 +85,7 @@ fn pretty_tricky() {
     assert_eq(toml, &result);
 }
 
-const PRETTY_TABLE_ARRAY: &str = r##"[[array]]
+const PRETTY_TABLE_ARRAY: &str = r#"[[array]]
 key = "foo"
 
 [[array]]
@@ -96,7 +96,7 @@ doc = "this is a table"
 
 [example]
 single = "this is a single line string"
-"##;
+"#;
 
 #[test]
 fn pretty_table_array() {
@@ -109,7 +109,7 @@ fn pretty_table_array() {
     assert_eq(toml, &result);
 }
 
-const TABLE_ARRAY: &str = r##"[[array]]
+const TABLE_ARRAY: &str = r#"[[array]]
 key = "foo"
 
 [[array]]
@@ -120,7 +120,7 @@ doc = "this is a table"
 
 [example]
 single = "this is a single line string"
-"##;
+"#;
 
 #[test]
 fn table_array() {

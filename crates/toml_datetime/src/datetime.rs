@@ -451,7 +451,7 @@ impl FromStr for Datetime {
 
 fn digit(chars: &mut str::Chars<'_>) -> Result<u8, DatetimeParseError> {
     match chars.next() {
-        Some(c) if ('0'..='9').contains(&c) => Ok(c as u8 - b'0'),
+        Some(c) if c.is_ascii_digit() => Ok(c as u8 - b'0'),
         _ => Err(DatetimeParseError {}),
     }
 }

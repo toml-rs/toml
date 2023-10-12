@@ -56,11 +56,11 @@ multiline basic string
 """"#
     )
     .is_str());
-    assert!(parse_value!(r#"'literal string\ \'"#).is_str());
+    assert!(parse_value!(r"'literal string\ \'").is_str());
     assert!(parse_value!(
-        r#"'''multiline
+        r"'''multiline
 literal \ \
-string'''"#
+string'''"
     )
     .is_str());
     assert!(parse_value!(r#"{ hello = "world", a = 1}"#).is_inline_table());

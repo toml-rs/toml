@@ -131,7 +131,7 @@ mod test {
             "-239",
             "1e200",
             "9_224_617.445_991_228_313",
-            r#"'''I [dw]on't need \d{2} apples'''"#,
+            r"'''I [dw]on't need \d{2} apples'''",
             r#"'''
 The first newline is
 trimmed in raw strings.

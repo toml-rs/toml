@@ -440,10 +440,10 @@ The quick brown \
     #[test]
     fn literal_string() {
         let inputs = [
-            r#"'C:\Users\nodejs\templates'"#,
-            r#"'\\ServerX\admin$\system32\'"#,
+            r"'C:\Users\nodejs\templates'",
+            r"'\\ServerX\admin$\system32\'",
             r#"'Tom "Dubs" Preston-Werner'"#,
-            r#"'<\i\c*\s*>'"#,
+            r"'<\i\c*\s*>'",
         ];
 
         for input in &inputs {
@@ -456,7 +456,7 @@ The quick brown \
     #[test]
     fn ml_literal_string() {
         let inputs = [
-            r#"'''I [dw]on't need \d{2} apples'''"#,
+            r"'''I [dw]on't need \d{2} apples'''",
             r#"''''one_quote''''"#,
         ];
         for input in &inputs {

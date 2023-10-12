@@ -812,7 +812,7 @@ impl<'de> serde::de::VariantAccess<'de> for MapEnumDeserializer {
                 }
             }
             Value::Table(values) => {
-                let tuple_values = values
+                let tuple_values: Result<Vec<_>, _> = values
                     .into_iter()
                     .enumerate()
                     .map(|(index, (key, value))| match key.parse::<usize>() {
@@ -822,17 +822,8 @@ impl<'de> serde::de::VariantAccess<'de> for MapEnumDeserializer {
                             index, key
                         ))),
                     })
-                    // Fold all values into a `Vec`, or return the first error.
-                    .fold(Ok(Vec::with_capacity(len)), |result, value_result| {
-                        result.and_then(move |mut tuple_values| match value_result {
-                            Ok(value) => {
-                                tuple_values.push(value);
-                                Ok(tuple_values)
-                            }
-                            // `Result<de::Value, Self::Error>` to `Result<Vec<_>, Self::Error>`
-                            Err(e) => Err(e),
-                        })
-                    })?;
+                    .collect();
+                let tuple_values = tuple_values?;
 
                 if tuple_values.len() == len {
                     serde::de::Deserializer::deserialize_seq(
