@@ -96,7 +96,7 @@ mod test {
         let cases = [
             ("a", "a"),
             (r#""hello\n ""#, "hello\n "),
-            (r#"'hello\n '"#, "hello\\n "),
+            (r"'hello\n '", "hello\\n "),
         ];
 
         for (input, expected) in cases {

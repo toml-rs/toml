@@ -57,10 +57,10 @@ impl InlineTable {
         values
     }
 
-    pub(crate) fn append_values<'s, 'c>(
+    pub(crate) fn append_values<'s>(
         &'s self,
         parent: &[&'s Key],
-        values: &'c mut Vec<(Vec<&'s Key>, &'s Value)>,
+        values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
     ) {
         for value in self.items.values() {
             let mut path = parent.to_vec();
@@ -467,7 +467,7 @@ fn decorate_inline_table(table: &mut InlineTable) {
     for (key_decor, value) in table
         .items
         .iter_mut()
-        .filter(|&(_, ref kv)| kv.value.is_value())
+        .filter(|(_, kv)| kv.value.is_value())
         .map(|(_, kv)| (&mut kv.key.decor, kv.value.as_value_mut().unwrap()))
     {
         key_decor.clear();

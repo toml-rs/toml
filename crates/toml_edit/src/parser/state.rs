@@ -217,9 +217,9 @@ impl ParseState {
         Ok(())
     }
 
-    pub(crate) fn descend_path<'t, 'k>(
+    pub(crate) fn descend_path<'t>(
         mut table: &'t mut Table,
-        path: &'k [Key],
+        path: &[Key],
         dotted: bool,
     ) -> Result<&'t mut Table, CustomError> {
         for (i, key) in path.iter().enumerate() {

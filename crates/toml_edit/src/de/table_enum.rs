@@ -97,7 +97,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
             }
             crate::Item::Table(values) => {
                 let values_span = values.span();
-                let tuple_values = values
+                let tuple_values: Result<Vec<_>, _> = values
                     .items
                     .into_iter()
                     .enumerate()
@@ -114,17 +114,8 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                             )),
                         },
                     )
-                    // Fold all values into a `Vec`, or return the first error.
-                    .fold(Ok(Vec::with_capacity(len)), |result, value_result| {
-                        result.and_then(move |mut tuple_values| match value_result {
-                            Ok(value) => {
-                                tuple_values.push(value);
-                                Ok(tuple_values)
-                            }
-                            // `Result<de::Value, Self::Error>` to `Result<Vec<_>, Self::Error>`
-                            Err(e) => Err(e),
-                        })
-                    })?;
+                    .collect();
+                let tuple_values = tuple_values?;
 
                 if tuple_values.len() == len {
                     serde::de::Deserializer::deserialize_seq(
@@ -140,7 +131,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
             }
             crate::Item::Value(crate::Value::InlineTable(values)) => {
                 let values_span = values.span();
-                let tuple_values = values
+                let tuple_values: Result<Vec<_>, _> = values
                     .items
                     .into_iter()
                     .enumerate()
@@ -157,17 +148,8 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                             )),
                         },
                     )
-                    // Fold all values into a `Vec`, or return the first error.
-                    .fold(Ok(Vec::with_capacity(len)), |result, value_result| {
-                        result.and_then(move |mut tuple_values| match value_result {
-                            Ok(value) => {
-                                tuple_values.push(value);
-                                Ok(tuple_values)
-                            }
-                            // `Result<de::Value, Self::Error>` to `Result<Vec<_>, Self::Error>`
-                            Err(e) => Err(e),
-                        })
-                    })?;
+                    .collect();
+                let tuple_values = tuple_values?;
 
                 if tuple_values.len() == len {
                     serde::de::Deserializer::deserialize_seq(
