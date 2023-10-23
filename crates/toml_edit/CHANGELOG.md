@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- *(edit)* Add `Array::sort_by_key`
+
 ## [0.20.2] - 2023-10-03
 
 ### Fixes
