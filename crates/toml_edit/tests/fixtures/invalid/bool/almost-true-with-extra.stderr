@@ -1,6 +1,6 @@
-TOML parse error at line 1, column 5
+TOML parse error at line 1, column 27
   |
-1 | a = truthy
-  |     ^
+1 | almost-true-with-extra  = truthy
+  |                           ^
 invalid string
 expected `"`, `'`

@@ -1,6 +1,6 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 27
   |
-1 | valid = False
-  |         ^
+1 | mixed-case              = valid   = False
+  |                           ^
 invalid string
 expected `"`, `'`

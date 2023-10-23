@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 24
+TOML parse error at line 1, column 27
   |
-1 | comment-del = "0x7f" # 
-  |                        ^
+1 | comment-del  = "0x7f"   # 
+  |                           ^
 expected newline, `#`
