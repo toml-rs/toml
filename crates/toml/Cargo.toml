@@ -1,6 +1,6 @@
 [package]
 name = "toml"
-version = "0.8.2"
+version = "0.8.3"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = """
@@ -42,9 +42,9 @@ preserve_order = ["indexmap"]
 [dependencies]
 serde = "1.0.145"
 indexmap = { version = "2.0.0", optional = true }
-toml_edit = { version = "0.20.2", path = "../toml_edit", features = ["serde"], optional = true }
-toml_datetime = { version = "0.6.3", path = "../toml_datetime", features = ["serde"] }
-serde_spanned = { version = "0.6.3", path = "../serde_spanned", features = ["serde"] }
+toml_edit = { version = "0.20.3", path = "../toml_edit", features = ["serde"], optional = true }
+toml_datetime = { version = "0.6.4", path = "../toml_datetime", features = ["serde"] }
+serde_spanned = { version = "0.6.4", path = "../serde_spanned", features = ["serde"] }
 
 [dev-dependencies]
 serde = { version = "1.0.160", features = ["derive"] }
