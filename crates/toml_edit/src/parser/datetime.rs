@@ -9,6 +9,7 @@ use winnow::combinator::alt;
 use winnow::combinator::cut_err;
 use winnow::combinator::opt;
 use winnow::combinator::preceded;
+use winnow::stream::Stream as _;
 use winnow::token::one_of;
 use winnow::token::take_while;
 use winnow::trace::trace;
@@ -53,12 +54,35 @@ pub(crate) fn date_time(input: &mut Input<'_>) -> PResult<Datetime> {
 
 // full-date      = date-fullyear "-" date-month "-" date-mday
 pub(crate) fn full_date(input: &mut Input<'_>) -> PResult<Date> {
-    trace(
-        "full-date",
-        (date_fullyear, b'-', cut_err((date_month, b'-', date_mday)))
-            .map(|(year, _, (month, _, day))| Date { year, month, day }),
-    )
-    .parse_next(input)
+    trace("full-date", full_date_).parse_next(input)
+}
+
+fn full_date_(input: &mut Input<'_>) -> PResult<Date> {
+    let year = date_fullyear.parse_next(input)?;
+    let _ = b'-'.parse_next(input)?;
+    let month = cut_err(date_month).parse_next(input)?;
+    let _ = cut_err(b'-').parse_next(input)?;
+    let day_start = input.checkpoint();
+    let day = cut_err(date_mday).parse_next(input)?;
+
+    let is_leap_year = (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0));
+    let max_days_in_month = match month {
+        2 if is_leap_year => 29,
+        2 => 28,
+        4 | 6 | 9 | 11 => 30,
+        _ => 31,
+    };
+    if max_days_in_month < day {
+        input.reset(day_start);
+        return Err(winnow::error::ErrMode::from_external_error(
+            input,
+            winnow::error::ErrorKind::Verify,
+            CustomError::OutOfRange,
+        )
+        .cut());
+    }
+
+    Ok(Date { year, month, day })
 }
 
 // partial-time   = time-hour ":" time-minute ":" time-second [time-secfrac]
