@@ -317,6 +317,26 @@ impl Array {
             .retain(|item| item.as_value().map(&mut keep).unwrap_or(false));
     }
 
+    /// Sorts the array with a key extraction function.
+    ///
+    /// This sort is stable (i.e., does not reorder equal elements) and *O*(*m* \* *n* \* log(*n*))
+    /// worst-case, where the key function is *O*(*m*).
+    #[inline]
+    pub fn sort_by_key<K, F>(&mut self, mut f: F)
+    where
+        F: FnMut(&Value) -> K,
+        K: Ord,
+    {
+        #[allow(clippy::manual_map)] // needed for lifetimes
+        self.values.sort_by_key(move |item| {
+            if let Some(value) = item.as_value() {
+                Some(f(value))
+            } else {
+                None
+            }
+        });
+    }
+
     fn value_op<T>(
         &mut self,
         v: Value,
