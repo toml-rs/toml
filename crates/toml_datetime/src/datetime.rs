@@ -381,7 +381,8 @@ impl FromStr for Datetime {
             if time.minute > 59 {
                 return Err(DatetimeParseError {});
             }
-            if time.second > 59 {
+            // 00-58, 00-59, 00-60 based on leap second rules
+            if time.second > 60 {
                 return Err(DatetimeParseError {});
             }
             if time.nanosecond > 999_999_999 {
