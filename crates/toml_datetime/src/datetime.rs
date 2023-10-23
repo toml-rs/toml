@@ -308,7 +308,15 @@ impl FromStr for Datetime {
             if date.month < 1 || date.month > 12 {
                 return Err(DatetimeParseError {});
             }
-            if date.day < 1 || date.day > 31 {
+            let is_leap_year =
+                (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
+            let max_days_in_month = match date.month {
+                2 if is_leap_year => 29,
+                2 => 28,
+                4 | 6 | 9 | 11 => 30,
+                _ => 31,
+            };
+            if date.day < 1 || date.day > max_days_in_month {
                 return Err(DatetimeParseError {});
             }
 
@@ -381,7 +389,8 @@ impl FromStr for Datetime {
             if time.minute > 59 {
                 return Err(DatetimeParseError {});
             }
-            if time.second > 59 {
+            // 00-58, 00-59, 00-60 based on leap second rules
+            if time.second > 60 {
                 return Err(DatetimeParseError {});
             }
             if time.nanosecond > 999_999_999 {
