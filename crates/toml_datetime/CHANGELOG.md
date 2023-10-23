@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Allow leapseconds in `FromStr`
+- Error on invalid days of month, accounting for leap years, in `FromStr`
+
 ## [0.6.4] - 2023-10-23
 
 ## [0.6.3] - 2023-06-24

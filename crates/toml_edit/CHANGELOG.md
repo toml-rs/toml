@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* Error on invalid days of month, accounting for leap years
+
 ## [0.20.3] - 2023-10-23
 
 ### Features
