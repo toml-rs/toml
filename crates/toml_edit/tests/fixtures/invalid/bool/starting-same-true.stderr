@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 31
   |
-1 | a = truer
-  |         ^
+1 | starting-same-true      = truer
+  |                               ^
 expected newline, `#`
