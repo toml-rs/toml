@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.20.4] - 2023-10-23
+
 ### Fixes
 
 - *(parser)* Error on invalid days of month, accounting for leap years
@@ -564,7 +566,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.3...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.4...HEAD
+[0.20.4]: https://github.com/toml-rs/toml/compare/v0.20.3...v0.20.4
 [0.20.3]: https://github.com/toml-rs/toml/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/toml-rs/toml/compare/v0.20.1...v0.20.2
 [0.20.1]: https://github.com/toml-rs/toml/compare/v0.20.0...v0.20.1
