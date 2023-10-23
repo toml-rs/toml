@@ -41,20 +41,6 @@
         '* * * * *',
       ],
     },
-    {
-      matchManagers: [
-        'cargo',
-      ],
-      matchPackageNames: [
-        'toml-test-harness',
-        'toml-test-data',
-        'toml-test',
-      ],
-      schedule: [
-        '* * * * *',
-      ],
-      groupName: 'toml-test',
-    },
     // Goals:
     // - Keep version reqs low, ignoring compatible normal/build dependencies
     // - Take advantage of latest dev-dependencies
@@ -116,6 +102,20 @@
       ],
       automerge: true,
       groupName: 'compatible (dev)',
+    },
+    {
+      matchManagers: [
+        'cargo',
+      ],
+      matchPackageNames: [
+        'toml-test-harness',
+        'toml-test-data',
+        'toml-test',
+      ],
+      schedule: [
+        '* * * * *',
+      ],
+      groupName: 'toml-test',
     },
   ],
 }
