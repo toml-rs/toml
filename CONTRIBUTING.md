@@ -27,6 +27,59 @@ Already have an idea?  It might be good to first [create an issue][new issue]
 to propose it so we can make sure we are aligned and lower the risk of having
 to re-work some of it and the discouragement that goes along with that.
 
+### Setup local development environment
+
+Fork the [repository](https://github.com/toml-rs/toml)
+
+
+Clone the original repository and then add your fork as another remote.
+Replace USERNAME by your username on GitHub:
+
+```
+git clone https://github.com/toml-rs/toml
+cd toml
+git remote add fork git@github.com:USERNAME/toml.git
+```
+
+This project uses [pre-commit](https://pre-commit.com/) to make contribution
+smoother. It is recommended that you also install it. Once you have
+**pre-commit** installed on your computer you can set it up for the project
+with the following command:
+
+```
+pre-commit install
+```
+
+Create a branch (replace the word BRANCH with something indicating the change).
+
+```
+git checkout -b BRANCH
+```
+
+Make your changes.
+
+Add the changed files to staging.
+
+```
+git add .
+```
+
+At this point you can manually run `pre-commit` if you wish, but trying to
+commit the changes will also run the verifications.
+
+```
+git commit -m "Put some good commit messages here"
+```
+
+Push out to the **fork** remote repository.
+Replace BRANCH with the name of your current branch.
+
+```
+git push --set-upstream fork BRANCH
+```
+
+Visit the [repository](https://github.com/toml-rs/toml) and send a pull-request.
+
 ### Process
 
 Before posting a PR, we request that the commit history get cleaned up.
