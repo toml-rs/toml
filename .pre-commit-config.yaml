@@ -24,3 +24,8 @@ repos:
     hooks:
     - id: committed
       stages: [commit-msg]
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: v1.0
+    hooks:
+    - id: fmt
+      staged: [commit]
