@@ -24,16 +24,8 @@ extern crate alloc;
 
 mod spanned;
 pub use crate::spanned::Spanned;
-
-#[doc(hidden)]
 #[cfg(feature = "serde")]
-pub mod __unstable {
-    pub use crate::spanned::is_spanned;
-    pub use crate::spanned::END_FIELD;
-    pub use crate::spanned::NAME;
-    pub use crate::spanned::START_FIELD;
-    pub use crate::spanned::VALUE_FIELD;
-}
+pub mod de;
 
 #[doc = include_str!("../README.md")]
 #[cfg(doctest)]
