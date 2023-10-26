@@ -198,9 +198,18 @@ fn test_nan() {
         sf5 = +nan
         sf6 = -nan
     };
-    assert!(actual["sf4"].as_float().unwrap().is_nan());
-    assert!(actual["sf5"].as_float().unwrap().is_nan());
-    assert!(actual["sf6"].as_float().unwrap().is_nan());
+
+    let sf4 = actual["sf4"].as_float().unwrap();
+    assert!(sf4.is_nan());
+    assert!(sf4.is_sign_positive());
+
+    let sf5 = actual["sf5"].as_float().unwrap();
+    assert!(sf5.is_nan());
+    assert!(sf5.is_sign_positive());
+
+    let sf6 = actual["sf6"].as_float().unwrap();
+    assert!(sf6.is_nan());
+    assert!(sf6.is_sign_negative());
 }
 
 #[test]
