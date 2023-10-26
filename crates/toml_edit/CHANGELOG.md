@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* Ensure the sign of NAN is preserved
+- *(serde)* Ensure the sign of NAN is preserved
+
 ## [0.20.4] - 2023-10-23
 
 ### Fixes
