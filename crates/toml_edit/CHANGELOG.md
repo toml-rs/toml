@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.20.5] - 2023-10-26
+
 ### Fixes
 
 - *(parser)* Ensure the sign of NAN is preserved
@@ -571,7 +573,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.4...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.5...HEAD
+[0.20.5]: https://github.com/toml-rs/toml/compare/v0.20.4...v0.20.5
 [0.20.4]: https://github.com/toml-rs/toml/compare/v0.20.3...v0.20.4
 [0.20.3]: https://github.com/toml-rs/toml/compare/v0.20.2...v0.20.3
 [0.20.2]: https://github.com/toml-rs/toml/compare/v0.20.1...v0.20.2
