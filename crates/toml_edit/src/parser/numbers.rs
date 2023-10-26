@@ -301,7 +301,7 @@ pub(crate) fn inf(input: &mut Input<'_>) -> PResult<f64> {
 const INF: &[u8] = b"inf";
 // nan = %x6e.61.6e  ; nan
 pub(crate) fn nan(input: &mut Input<'_>) -> PResult<f64> {
-    tag(NAN).value(f64::NAN).parse_next(input)
+    tag(NAN).value(f64::NAN.copysign(1.0)).parse_next(input)
 }
 const NAN: &[u8] = b"nan";
 
@@ -353,6 +353,7 @@ mod test {
     fn assert_float_eq(actual: f64, expected: f64) {
         if expected.is_nan() {
             assert!(actual.is_nan());
+            assert_eq!(expected.is_sign_positive(), actual.is_sign_positive());
         } else if expected.is_infinite() {
             assert!(actual.is_infinite());
             assert_eq!(expected.is_sign_positive(), actual.is_sign_positive());
@@ -376,9 +377,9 @@ mod test {
             ("9_224_617.445_991_228_313", 9_224_617.445_991_227),
             ("-1.7976931348623157e+308", std::f64::MIN),
             ("1.7976931348623157e+308", std::f64::MAX),
-            ("nan", f64::NAN),
-            ("+nan", f64::NAN),
-            ("-nan", f64::NAN),
+            ("nan", f64::NAN.copysign(1.0)),
+            ("+nan", f64::NAN.copysign(1.0)),
+            ("-nan", f64::NAN.copysign(-1.0)),
             ("inf", f64::INFINITY),
             ("+inf", f64::INFINITY),
             ("-inf", f64::NEG_INFINITY),

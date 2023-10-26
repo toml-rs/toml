@@ -105,7 +105,9 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        self.serialize_f64(v as f64)
+        // Preserve sign of NaN. The `as` produces a nondeterministic sign.
+        let sign = if v.is_sign_positive() { 1.0 } else { -1.0 };
+        self.serialize_f64((v as f64).copysign(sign))
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
