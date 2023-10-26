@@ -921,7 +921,9 @@ impl ser::Serializer for ValueSerializer {
     }
 
     fn serialize_f32(self, value: f32) -> Result<Value, crate::ser::Error> {
-        self.serialize_f64(value.into())
+        // Preserve sign of NaN. The `as` produces a nondeterministic sign.
+        let sign = if value.is_sign_positive() { 1.0 } else { -1.0 };
+        self.serialize_f64((value as f64).copysign(sign))
     }
 
     fn serialize_f64(self, value: f64) -> Result<Value, crate::ser::Error> {
