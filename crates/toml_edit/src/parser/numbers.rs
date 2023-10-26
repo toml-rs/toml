@@ -301,7 +301,7 @@ pub(crate) fn inf(input: &mut Input<'_>) -> PResult<f64> {
 const INF: &[u8] = b"inf";
 // nan = %x6e.61.6e  ; nan
 pub(crate) fn nan(input: &mut Input<'_>) -> PResult<f64> {
-    tag(NAN).value(f64::NAN).parse_next(input)
+    tag(NAN).value(f64::NAN.copysign(1.0)).parse_next(input)
 }
 const NAN: &[u8] = b"nan";
 
