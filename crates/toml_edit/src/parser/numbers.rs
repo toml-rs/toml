@@ -353,6 +353,7 @@ mod test {
     fn assert_float_eq(actual: f64, expected: f64) {
         if expected.is_nan() {
             assert!(actual.is_nan());
+            assert_eq!(expected.is_sign_positive(), actual.is_sign_positive());
         } else if expected.is_infinite() {
             assert!(actual.is_infinite());
             assert_eq!(expected.is_sign_positive(), actual.is_sign_positive());
