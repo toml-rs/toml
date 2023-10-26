@@ -198,15 +198,15 @@ macro_rules! toml_internal {
     }};
 
     (@value (-nan)) => {
-        $crate::Value::Float(-::std::f64::NAN)
+        $crate::Value::Float(::std::f64::NAN.copysign(-1.0))
     };
 
     (@value (nan)) => {
-        $crate::Value::Float(::std::f64::NAN)
+        $crate::Value::Float(::std::f64::NAN.copysign(1.0))
     };
 
     (@value nan) => {
-        $crate::Value::Float(::std::f64::NAN)
+        $crate::Value::Float(::std::f64::NAN.copysign(1.0))
     };
 
     (@value (-inf)) => {
