@@ -537,8 +537,7 @@ impl ValueRepr for f64 {
 
 fn to_f64_repr(f: f64) -> Repr {
     let repr = match (f.is_sign_negative(), f.is_nan(), f == 0.0) {
-        (true, true, _) => "-nan".to_owned(),
-        (false, true, _) => "nan".to_owned(),
+        (_, true, _) => "nan".to_owned(),
         (true, false, true) => "-0.0".to_owned(),
         (false, false, true) => "0.0".to_owned(),
         (_, false, false) => {
