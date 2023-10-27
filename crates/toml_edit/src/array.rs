@@ -317,6 +317,36 @@ impl Array {
             .retain(|item| item.as_value().map(&mut keep).unwrap_or(false));
     }
 
+    /// Sorts the slice with a comparator function.
+    ///
+    /// This sort is stable (i.e., does not reorder equal elements) and *O*(*n* \* log(*n*)) worst-case.
+    ///
+    /// The comparator function must define a total ordering for the elements in the slice. If
+    /// the ordering is not total, the order of the elements is unspecified. An order is a
+    /// total order if it is (for all `a`, `b` and `c`):
+    ///
+    /// * total and antisymmetric: exactly one of `a < b`, `a == b` or `a > b` is true, and
+    /// * transitive, `a < b` and `b < c` implies `a < c`. The same must hold for both `==` and `>`.
+    ///
+    /// For example, while [`f64`] doesn't implement [`Ord`] because `NaN != NaN`, we can use
+    /// `partial_cmp` as our sort function when we know the slice doesn't contain a `NaN`.
+    #[inline]
+    pub fn sort_by<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(&Value, &Value) -> std::cmp::Ordering,
+    {
+        self.values.sort_by(move |lhs, rhs| {
+            let lhs = lhs.as_value();
+            let rhs = rhs.as_value();
+            match (lhs, rhs) {
+                (None, None) => std::cmp::Ordering::Equal,
+                (Some(_), None) => std::cmp::Ordering::Greater,
+                (None, Some(_)) => std::cmp::Ordering::Less,
+                (Some(lhs), Some(rhs)) => compare(lhs, rhs),
+            }
+        })
+    }
+
     /// Sorts the array with a key extraction function.
     ///
     /// This sort is stable (i.e., does not reorder equal elements) and *O*(*m* \* *n* \* log(*n*))
