@@ -1,7 +1,7 @@
 # toml_edit
 
-[![Build Status](https://github.com/ordian/toml_edit/workflows/Continuous%20integration/badge.svg)](https://github.com/ordian/toml_edit/actions)
-[![codecov](https://codecov.io/gh/ordian/toml_edit/branch/master/graph/badge.svg)](https://codecov.io/gh/ordian/toml_edit)
+[![Build Status](https://github.com/toml-rs/toml/workflows/Continuous%20integration/badge.svg)](https://github.com/toml-rs/toml/actions)
+[![codecov](https://codecov.io/gh/toml-rs/toml/branch/master/graph/badge.svg)](https://codecov.io/gh/toml-rs/toml)
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 [![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit)
 [![Join the chat at https://gitter.im/toml_edit/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_edit/Lobby)
@@ -42,8 +42,7 @@ c = { d = "hello" }
 
 Things it does not preserve:
 
-* Scattered array of tables (tables are reordered by default, see [test]).
-* Order of dotted keys, see [issue](https://github.com/ordian/toml_edit/issues/163).
+* Order of dotted keys, see [issue](https://github.com/toml-rs/toml/issues/163).
 
 ## License
 
@@ -55,5 +54,3 @@ Licensed under either of
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
-
-[test]: https://github.com/ordian/toml_edit/blob/f09bd5d075fdb7d2ef8d9bb3270a34506c276753/tests/test_valid.rs#L84
