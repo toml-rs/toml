@@ -284,6 +284,7 @@ impl From<i64> for Value {
 
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
+        // Preserve sign of NaN. It may get written to TOML as `-nan`.
         Value::Float(Formatted::new(f))
     }
 }

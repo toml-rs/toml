@@ -47,7 +47,7 @@ macro_rules! float_inf_tests {
         assert!(inf.sf5.is_nan());
         assert!(inf.sf5.is_sign_positive());
         assert!(inf.sf6.is_nan());
-        assert!(inf.sf6.is_sign_negative());
+        assert!(inf.sf6.is_sign_negative()); // NOTE: serializes to just `nan`
 
         assert_eq!(inf.sf7, 0.0);
         assert!(inf.sf7.is_sign_positive());
@@ -63,7 +63,7 @@ sf2 = inf
 sf3 = -inf
 sf4 = nan
 sf5 = nan
-sf6 = -nan
+sf6 = nan
 sf7 = 0.0
 sf8 = -0.0
 "

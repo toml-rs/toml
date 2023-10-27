@@ -105,12 +105,20 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        // Preserve sign of NaN. The `as` produces a nondeterministic sign.
-        let sign = if v.is_sign_positive() { 1.0 } else { -1.0 };
-        self.serialize_f64((v as f64).copysign(sign))
+        self.serialize_f64(v as f64)
     }
 
-    fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
+    fn serialize_f64(self, mut v: f64) -> Result<Self::Ok, Self::Error> {
+        // Discard sign of NaN when serialized using Serde.
+        //
+        // In all likelihood the sign of NaNs is not meaningful in the user's
+        // program. Ending up with `-nan` in the TOML document would usually be
+        // surprising and undesirable, when the sign of the NaN was not
+        // intentionally controlled by the caller, or may even be
+        // nondeterministic if it comes from arithmetic operations or a cast.
+        if v.is_nan() {
+            v = v.copysign(1.0);
+        }
         Ok(v.into())
     }
 
