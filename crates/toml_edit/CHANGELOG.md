@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.20.6] - 2023-10-27
+
 ### Features
 
 - *(edit)* Add `Array::sort_by`
@@ -577,7 +579,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.5...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.6...HEAD
+[0.20.6]: https://github.com/toml-rs/toml/compare/v0.20.5...v0.20.6
 [0.20.5]: https://github.com/toml-rs/toml/compare/v0.20.4...v0.20.5
 [0.20.4]: https://github.com/toml-rs/toml/compare/v0.20.3...v0.20.4
 [0.20.3]: https://github.com/toml-rs/toml/compare/v0.20.2...v0.20.3
