@@ -853,3 +853,10 @@ src.git = "https://github.com/nixos/nixpkgs"
 "#,
         );
 }
+
+#[test]
+fn sorting_with_references() {
+    let values = vec!["foo", "qux", "bar"];
+    let mut array = toml_edit::Array::from_iter(values);
+    array.sort_by(|lhs, rhs| lhs.as_str().cmp(&rhs.as_str()));
+}
