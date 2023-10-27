@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(ser)* Make sign of `nan` deterministic by always being positive
+
 ## [0.20.6] - 2023-10-27
 
 ### Features
