@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Change
+
+- Split `default-features=false` APIs into  `parse` and `display` features
+
 ## [0.20.7] - 2023-10-27
 
 ### Fixes

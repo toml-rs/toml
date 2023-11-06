@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Comptibility
+
+- If you relied on `toml` to enable `toml_edit` `parse` or `display` features, it will no longer work
+
 ## [0.8.6] - 2023-10-27
 
 ### Fixes
