@@ -146,11 +146,15 @@ impl InlineTable {
     /// In the document above, tables `target` and `target."x86_64/windows.json"` are implicit.
     ///
     /// ```
+    /// # #[cfg(feature = "parse")] {
+    /// # #[cfg(feature = "display")] {
     /// use toml_edit::Document;
     /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
     ///
     /// doc["a"].as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");
+    /// # }
+    /// # }
     /// ```
     pub(crate) fn set_implicit(&mut self, implicit: bool) {
         self.implicit = implicit;
@@ -411,6 +415,7 @@ impl InlineTable {
     }
 }
 
+#[cfg(feature = "display")]
 impl std::fmt::Display for InlineTable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::encode::Encode::encode(self, f, None, ("", ""))

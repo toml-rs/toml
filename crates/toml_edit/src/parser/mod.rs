@@ -3,7 +3,7 @@
 pub(crate) mod array;
 pub(crate) mod datetime;
 pub(crate) mod document;
-pub(crate) mod errors;
+pub(crate) mod error;
 pub(crate) mod inline_table;
 pub(crate) mod key;
 pub(crate) mod numbers;
@@ -13,7 +13,7 @@ pub(crate) mod table;
 pub(crate) mod trivia;
 pub(crate) mod value;
 
-pub use errors::TomlError;
+pub use crate::error::TomlError;
 
 pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
     use prelude::*;
@@ -95,11 +95,11 @@ pub(crate) mod prelude {
 
     #[cfg(not(feature = "unbounded"))]
     impl RecursionCheck {
-        pub(crate) fn check_depth(depth: usize) -> Result<(), super::errors::CustomError> {
+        pub(crate) fn check_depth(depth: usize) -> Result<(), super::error::CustomError> {
             if depth < 128 {
                 Ok(())
             } else {
-                Err(super::errors::CustomError::RecursionLimitExceeded)
+                Err(super::error::CustomError::RecursionLimitExceeded)
             }
         }
 
@@ -114,7 +114,7 @@ pub(crate) mod prelude {
                 Err(winnow::error::ErrMode::from_external_error(
                     input,
                     winnow::error::ErrorKind::Eof,
-                    super::errors::CustomError::RecursionLimitExceeded,
+                    super::error::CustomError::RecursionLimitExceeded,
                 ))
             }
         }
@@ -126,7 +126,7 @@ pub(crate) mod prelude {
 
     #[cfg(feature = "unbounded")]
     impl RecursionCheck {
-        pub(crate) fn check_depth(_depth: usize) -> Result<(), super::errors::CustomError> {
+        pub(crate) fn check_depth(_depth: usize) -> Result<(), super::error::CustomError> {
             Ok(())
         }
 
@@ -140,6 +140,8 @@ pub(crate) mod prelude {
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

@@ -44,11 +44,13 @@ where
     }
 
     /// Returns the default raw representation.
+    #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
         self.value.to_repr()
     }
 
     /// Returns a raw representation.
+    #[cfg(feature = "display")]
     pub fn display_repr(&self) -> Cow<str> {
         self.as_repr()
             .and_then(|r| r.as_raw().as_str())
@@ -82,7 +84,7 @@ where
 
     /// Auto formats the value.
     pub fn fmt(&mut self) {
-        self.repr = Some(self.value.to_repr());
+        self.repr = None;
     }
 }
 
@@ -103,6 +105,7 @@ where
     }
 }
 
+#[cfg(feature = "display")]
 impl<T> std::fmt::Display for Formatted<T>
 where
     T: ValueRepr,
@@ -114,7 +117,19 @@ where
 
 pub trait ValueRepr: crate::private::Sealed {
     /// The TOML representation of the value
+    #[cfg(feature = "display")]
     fn to_repr(&self) -> Repr;
+}
+
+#[cfg(not(feature = "display"))]
+mod inner {
+    use super::ValueRepr;
+
+    impl ValueRepr for String {}
+    impl ValueRepr for i64 {}
+    impl ValueRepr for f64 {}
+    impl ValueRepr for bool {}
+    impl ValueRepr for toml_datetime::Datetime {}
 }
 
 /// TOML-encoded value
@@ -144,6 +159,7 @@ impl Repr {
         self.raw_value.despan(input)
     }
 
+    #[cfg(feature = "display")]
     pub(crate) fn encode(&self, buf: &mut dyn std::fmt::Write, input: &str) -> std::fmt::Result {
         self.as_raw().encode(buf, input)
     }
@@ -185,6 +201,7 @@ impl Decor {
         self.prefix.as_ref()
     }
 
+    #[cfg(feature = "display")]
     pub(crate) fn prefix_encode(
         &self,
         buf: &mut dyn std::fmt::Write,
@@ -208,6 +225,7 @@ impl Decor {
         self.suffix.as_ref()
     }
 
+    #[cfg(feature = "display")]
     pub(crate) fn suffix_encode(
         &self,
         buf: &mut dyn std::fmt::Write,

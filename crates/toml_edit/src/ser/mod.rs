@@ -84,6 +84,7 @@ impl std::error::Error for Error {}
 /// Serialization can fail if `T`'s implementation of `Serialize` decides to
 /// fail, if `T` contains a map with non-string keys, or if `T` attempts to
 /// serialize an unsupported datatype such as an enum, tuple, or tuple struct.
+#[cfg(feature = "display")]
 pub fn to_vec<T: ?Sized>(value: &T) -> Result<Vec<u8>, Error>
 where
     T: serde::ser::Serialize,
@@ -127,6 +128,7 @@ where
 /// let toml = toml_edit::ser::to_string(&config).unwrap();
 /// println!("{}", toml)
 /// ```
+#[cfg(feature = "display")]
 pub fn to_string<T: ?Sized>(value: &T) -> Result<String, Error>
 where
     T: serde::ser::Serialize,
@@ -138,6 +140,7 @@ where
 ///
 /// This is identical to `to_string` except the output string has a more
 /// "pretty" output. See `ValueSerializer::pretty` for more details.
+#[cfg(feature = "display")]
 pub fn to_string_pretty<T: ?Sized>(value: &T) -> Result<String, Error>
 where
     T: serde::ser::Serialize,

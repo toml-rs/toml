@@ -87,6 +87,7 @@ impl From<Error> for crate::TomlError {
 impl std::error::Error for Error {}
 
 /// Convert a value into `T`.
+#[cfg(feature = "parse")]
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -96,6 +97,7 @@ where
 }
 
 /// Convert a value into `T`.
+#[cfg(feature = "parse")]
 pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -125,6 +127,7 @@ impl Deserializer {
     }
 }
 
+#[cfg(feature = "parse")]
 impl std::str::FromStr for Deserializer {
     type Err = Error;
 

@@ -120,6 +120,8 @@ pub(crate) fn line_trailing(input: &mut Input<'_>) -> PResult<std::ops::Range<us
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

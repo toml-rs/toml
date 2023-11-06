@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use crate::parser;
 use crate::table::Iter;
 use crate::{Item, RawString, Table};
 
@@ -78,12 +77,13 @@ impl Default for Document {
     }
 }
 
+#[cfg(feature = "parse")]
 impl FromStr for Document {
     type Err = crate::TomlError;
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut d = parser::parse_document(s)?;
+        let mut d = crate::parser::parse_document(s)?;
         d.despan();
         Ok(d)
     }

@@ -158,6 +158,7 @@ impl<'s> IntoIterator for &'s ArrayOfTables {
     }
 }
 
+#[cfg(feature = "display")]
 impl std::fmt::Display for ArrayOfTables {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // HACK: Without the header, we don't really have a proper way of printing this

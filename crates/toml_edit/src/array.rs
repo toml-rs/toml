@@ -183,9 +183,11 @@ impl Array {
     /// # Examples
     ///
     /// ```rust
+    /// # #[cfg(feature = "parse")] {
     /// let formatted_value = "'literal'".parse::<toml_edit::Value>().unwrap();
     /// let mut arr = toml_edit::Array::new();
     /// arr.push_formatted(formatted_value);
+    /// # }
     /// ```
     pub fn push_formatted(&mut self, v: Value) {
         self.values.push(Item::Value(v));
@@ -223,12 +225,14 @@ impl Array {
     /// # Examples
     ///
     /// ```rust
+    /// # #[cfg(feature = "parse")] {
     /// let mut arr = toml_edit::Array::new();
     /// arr.push(1);
     /// arr.push("foo");
     ///
     /// let formatted_value = "'start'".parse::<toml_edit::Value>().unwrap();
     /// arr.insert_formatted(0, formatted_value);
+    /// # }
     /// ```
     pub fn insert_formatted(&mut self, index: usize, v: Value) {
         self.values.insert(index, Item::Value(v))
@@ -269,12 +273,14 @@ impl Array {
     /// # Examples
     ///
     /// ```rust
+    /// # #[cfg(feature = "parse")] {
     /// let mut arr = toml_edit::Array::new();
     /// arr.push(1);
     /// arr.push("foo");
     ///
     /// let formatted_value = "'start'".parse::<toml_edit::Value>().unwrap();
     /// arr.replace_formatted(0, formatted_value);
+    /// # }
     /// ```
     pub fn replace_formatted(&mut self, index: usize, v: Value) -> Value {
         match mem::replace(&mut self.values[index], Item::Value(v)) {
@@ -383,6 +389,7 @@ impl Array {
     }
 }
 
+#[cfg(feature = "display")]
 impl std::fmt::Display for Array {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::encode::Encode::encode(self, f, None, ("", ""))

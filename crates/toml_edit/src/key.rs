@@ -1,9 +1,6 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
-use crate::encode::{to_string_repr, StringStyle};
-use crate::parser;
-use crate::parser::key::is_unquoted_char;
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
 
@@ -49,6 +46,7 @@ impl Key {
     /// Parse a TOML key expression
     ///
     /// Unlike `"".parse<Key>()`, this supports dotted keys.
+    #[cfg(feature = "parse")]
     pub fn parse(repr: &str) -> Result<Vec<Self>, crate::TomlError> {
         Self::try_parse_path(repr)
     }
@@ -84,11 +82,13 @@ impl Key {
     }
 
     /// Returns the default raw representation.
+    #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
         to_key_repr(&self.key)
     }
 
     /// Returns a raw representation.
+    #[cfg(feature = "display")]
     pub fn display_repr(&self) -> Cow<'_, str> {
         self.as_repr()
             .and_then(|r| r.as_raw().as_str())
@@ -123,18 +123,20 @@ impl Key {
 
     /// Auto formats the key.
     pub fn fmt(&mut self) {
-        self.repr = Some(to_key_repr(&self.key));
+        self.repr = None;
         self.decor.clear();
     }
 
+    #[cfg(feature = "parse")]
     fn try_parse_simple(s: &str) -> Result<Key, crate::TomlError> {
-        let mut key = parser::parse_key(s)?;
+        let mut key = crate::parser::parse_key(s)?;
         key.despan(s);
         Ok(key)
     }
 
+    #[cfg(feature = "parse")]
     fn try_parse_path(s: &str) -> Result<Vec<Key>, crate::TomlError> {
-        let mut keys = parser::parse_key_path(s)?;
+        let mut keys = crate::parser::parse_key_path(s)?;
         for key in &mut keys {
             key.despan(s);
         }
@@ -209,12 +211,14 @@ impl PartialEq<String> for Key {
     }
 }
 
+#[cfg(feature = "display")]
 impl std::fmt::Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::encode::Encode::encode(self, f, None, ("", ""))
     }
 }
 
+#[cfg(feature = "parse")]
 impl FromStr for Key {
     type Err = crate::TomlError;
 
@@ -226,11 +230,33 @@ impl FromStr for Key {
     }
 }
 
+#[cfg(feature = "display")]
 fn to_key_repr(key: &str) -> Repr {
-    if key.as_bytes().iter().copied().all(is_unquoted_char) && !key.is_empty() {
-        Repr::new_unchecked(key)
-    } else {
-        to_string_repr(key, Some(StringStyle::OnelineSingle), Some(false))
+    #[cfg(feature = "parse")]
+    {
+        if key
+            .as_bytes()
+            .iter()
+            .copied()
+            .all(crate::parser::key::is_unquoted_char)
+            && !key.is_empty()
+        {
+            Repr::new_unchecked(key)
+        } else {
+            crate::encode::to_string_repr(
+                key,
+                Some(crate::encode::StringStyle::OnelineSingle),
+                Some(false),
+            )
+        }
+    }
+    #[cfg(not(feature = "parse"))]
+    {
+        crate::encode::to_string_repr(
+            key,
+            Some(crate::encode::StringStyle::OnelineSingle),
+            Some(false),
+        )
     }
 }
 
@@ -283,11 +309,13 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the default raw representation.
+    #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
         self.key.default_repr()
     }
 
     /// Returns a raw representation.
+    #[cfg(feature = "display")]
     pub fn display_repr(&self) -> Cow<str> {
         self.key.display_repr()
     }
@@ -337,6 +365,7 @@ impl<'s> PartialEq<String> for KeyMut<'s> {
     }
 }
 
+#[cfg(feature = "display")]
 impl<'k> std::fmt::Display for KeyMut<'k> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(&self.key, f)

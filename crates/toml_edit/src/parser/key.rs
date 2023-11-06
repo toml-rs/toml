@@ -7,7 +7,7 @@ use winnow::token::take_while;
 use winnow::trace::trace;
 
 use crate::key::Key;
-use crate::parser::errors::CustomError;
+use crate::parser::error::CustomError;
 use crate::parser::prelude::*;
 use crate::parser::strings::{basic_string, literal_string};
 use crate::parser::trivia::{from_utf8_unchecked, ws};
@@ -88,6 +88,8 @@ const UNQUOTED_CHAR: (
 const DOT_SEP: u8 = b'.';
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

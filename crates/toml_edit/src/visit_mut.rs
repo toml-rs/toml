@@ -45,6 +45,8 @@
 //! 2 decimal points.
 //!
 //! ```
+//! # #[cfg(feature = "parse")] {
+//! # #[cfg(feature = "display")] {
 //! # use toml_edit::*;
 //! use toml_edit::visit_mut::*;
 //!
@@ -80,6 +82,8 @@
 //! "#;
 //!
 //! assert_eq!(format!("{}", document), output);
+//! # }
+//! # }
 //! ```
 //!
 //! For a more complex example where the visitor has internal state, see `examples/visit.rs`

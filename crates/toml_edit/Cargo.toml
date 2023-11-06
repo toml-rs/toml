@@ -5,6 +5,7 @@ keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Yet another format-preserving TOML parser."
 authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.com>"]
+autotests = false
 repository.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -26,7 +27,9 @@ pre-release-replacements = [
 ]
 
 [features]
-default = []
+default = ["parse", "display"]
+parse = ["dep:winnow"]
+display = []
 perf = ["dep:kstring"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
@@ -38,7 +41,7 @@ unbounded = []
 
 [dependencies]
 indexmap = { version = "2.0.0", features = ["std"] }
-winnow = "0.5.0"
+winnow = { version = "0.5.0", optional = true }
 serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.6.5", path = "../toml_datetime" }
@@ -52,17 +55,25 @@ libtest-mimic = "0.6.0"
 snapbox = { version = "0.4.11", features = ["harness"] }
 
 [[test]]
+name = "testsuite"
+required-features = ["parse", "display"]
+
+[[test]]
 name = "decoder_compliance"
+required-features = ["parse"]
 harness = false
 
 [[test]]
 name = "encoder_compliance"
+required-features = ["parse", "display"]
 harness = false
 
 [[test]]
 name = "invalid"
+required-features = ["parse"]
 harness = false
 
 [[example]]
 name = "visit"
+required-features = ["parse", "display"]
 test = true

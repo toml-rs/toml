@@ -121,6 +121,8 @@ fn apply_raw(mut val: Value, span: std::ops::Range<usize>) -> Result<Value, std:
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 
