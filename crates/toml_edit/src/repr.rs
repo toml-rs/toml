@@ -82,7 +82,7 @@ where
 
     /// Auto formats the value.
     pub fn fmt(&mut self) {
-        self.repr = Some(self.value.to_repr());
+        self.repr = None;
     }
 }
 

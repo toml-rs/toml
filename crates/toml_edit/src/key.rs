@@ -123,7 +123,7 @@ impl Key {
 
     /// Auto formats the key.
     pub fn fmt(&mut self) {
-        self.repr = Some(to_key_repr(&self.key));
+        self.repr = None;
         self.decor.clear();
     }
 
