@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use crate::parser::errors::CustomError;
+use crate::parser::error::CustomError;
 use crate::parser::prelude::*;
 use crate::parser::trivia::from_utf8_unchecked;
 

@@ -2,7 +2,6 @@ use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
 use crate::parser::prelude::*;
-use crate::Key;
 
 use winnow::error::ContextError;
 use winnow::error::ParseError;
@@ -241,75 +240,5 @@ mod test_translate_position {
         let index = 8;
         let position = translate_position(&input[..], index);
         assert_eq!(position, (1, 2));
-    }
-}
-
-#[derive(Debug, Clone)]
-pub(crate) enum CustomError {
-    DuplicateKey {
-        key: String,
-        table: Option<Vec<Key>>,
-    },
-    DottedKeyExtendWrongType {
-        key: Vec<Key>,
-        actual: &'static str,
-    },
-    OutOfRange,
-    #[cfg_attr(feature = "unbounded", allow(dead_code))]
-    RecursionLimitExceeded,
-}
-
-impl CustomError {
-    pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
-        assert!(i < path.len());
-        let key = &path[i];
-        let repr = key.display_repr();
-        Self::DuplicateKey {
-            key: repr.into(),
-            table: Some(path[..i].to_vec()),
-        }
-    }
-
-    pub(crate) fn extend_wrong_type(path: &[Key], i: usize, actual: &'static str) -> Self {
-        assert!(i < path.len());
-        Self::DottedKeyExtendWrongType {
-            key: path[..=i].to_vec(),
-            actual,
-        }
-    }
-}
-
-impl StdError for CustomError {
-    fn description(&self) -> &'static str {
-        "TOML parse error"
-    }
-}
-
-impl Display for CustomError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        match self {
-            CustomError::DuplicateKey { key, table } => {
-                if let Some(table) = table {
-                    if table.is_empty() {
-                        write!(f, "duplicate key `{}` in document root", key)
-                    } else {
-                        let path = table.iter().map(|k| k.get()).collect::<Vec<_>>().join(".");
-                        write!(f, "duplicate key `{}` in table `{}`", key, path)
-                    }
-                } else {
-                    write!(f, "duplicate key `{}`", key)
-                }
-            }
-            CustomError::DottedKeyExtendWrongType { key, actual } => {
-                let path = key.iter().map(|k| k.get()).collect::<Vec<_>>().join(".");
-                write!(
-                    f,
-                    "dotted key `{}` attempted to extend non-table type ({})",
-                    path, actual
-                )
-            }
-            CustomError::OutOfRange => write!(f, "value is out of range"),
-            CustomError::RecursionLimitExceeded => write!(f, "recursion limit exceeded"),
-        }
     }
 }

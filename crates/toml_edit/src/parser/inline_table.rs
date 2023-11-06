@@ -5,7 +5,7 @@ use winnow::token::one_of;
 use winnow::trace::trace;
 
 use crate::key::Key;
-use crate::parser::errors::CustomError;
+use crate::parser::error::CustomError;
 use crate::parser::key::key;
 use crate::parser::prelude::*;
 use crate::parser::trivia::ws;

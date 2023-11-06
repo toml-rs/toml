@@ -21,7 +21,7 @@ use winnow::token::tag;
 use winnow::token::take_while;
 use winnow::trace::trace;
 
-use crate::parser::errors::CustomError;
+use crate::parser::error::CustomError;
 use crate::parser::numbers::HEXDIG;
 use crate::parser::prelude::*;
 use crate::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_ASCII, WSCHAR};

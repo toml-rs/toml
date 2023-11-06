@@ -1,5 +1,5 @@
 use crate::key::Key;
-use crate::parser::errors::CustomError;
+use crate::parser::error::CustomError;
 use crate::repr::Decor;
 use crate::table::TableKeyValue;
 use crate::{ArrayOfTables, Document, InternalString, Item, RawString, Table};

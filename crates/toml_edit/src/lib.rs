@@ -66,6 +66,7 @@ mod array;
 mod array_of_tables;
 mod document;
 mod encode;
+mod error;
 mod index;
 mod inline_table;
 mod internal_string;
@@ -90,6 +91,7 @@ pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
 pub use crate::document::Document;
+pub use crate::error::TomlError;
 pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,
     InlineTableIterMut, InlineVacantEntry,
@@ -97,7 +99,6 @@ pub use crate::inline_table::{
 pub use crate::internal_string::InternalString;
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::{Key, KeyMut};
-pub use crate::parser::TomlError;
 pub use crate::raw_string::RawString;
 pub use crate::repr::{Decor, Formatted, Repr};
 pub use crate::table::{
