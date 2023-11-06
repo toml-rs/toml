@@ -4,7 +4,6 @@ use std::str::FromStr;
 use toml_datetime::*;
 
 use crate::key::Key;
-use crate::parser;
 use crate::repr::{Decor, Formatted};
 use crate::{Array, InlineTable, InternalString, RawString};
 
@@ -236,7 +235,7 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parser::parse_value(s)
+        crate::parser::parse_value(s)
     }
 }
 

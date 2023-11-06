@@ -1,11 +1,6 @@
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
-use crate::parser::prelude::*;
-
-use winnow::error::ContextError;
-use winnow::error::ParseError;
-
 /// Type representing a TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
@@ -16,7 +11,13 @@ pub struct TomlError {
 }
 
 impl TomlError {
-    pub(crate) fn new(error: ParseError<Input<'_>, ContextError>, mut original: Input<'_>) -> Self {
+    pub(crate) fn new(
+        error: winnow::error::ParseError<
+            crate::parser::prelude::Input<'_>,
+            winnow::error::ContextError,
+        >,
+        mut original: crate::parser::prelude::Input<'_>,
+    ) -> Self {
         use winnow::stream::Stream;
 
         let offset = error.offset();

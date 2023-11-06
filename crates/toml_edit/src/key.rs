@@ -1,9 +1,6 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
-use crate::encode::{to_string_repr, StringStyle};
-use crate::parser;
-use crate::parser::key::is_unquoted_char;
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
 
@@ -128,13 +125,13 @@ impl Key {
     }
 
     fn try_parse_simple(s: &str) -> Result<Key, crate::TomlError> {
-        let mut key = parser::parse_key(s)?;
+        let mut key = crate::parser::parse_key(s)?;
         key.despan(s);
         Ok(key)
     }
 
     fn try_parse_path(s: &str) -> Result<Vec<Key>, crate::TomlError> {
-        let mut keys = parser::parse_key_path(s)?;
+        let mut keys = crate::parser::parse_key_path(s)?;
         for key in &mut keys {
             key.despan(s);
         }
@@ -227,10 +224,20 @@ impl FromStr for Key {
 }
 
 fn to_key_repr(key: &str) -> Repr {
-    if key.as_bytes().iter().copied().all(is_unquoted_char) && !key.is_empty() {
+    if key
+        .as_bytes()
+        .iter()
+        .copied()
+        .all(crate::parser::key::is_unquoted_char)
+        && !key.is_empty()
+    {
         Repr::new_unchecked(key)
     } else {
-        to_string_repr(key, Some(StringStyle::OnelineSingle), Some(false))
+        crate::encode::to_string_repr(
+            key,
+            Some(crate::encode::StringStyle::OnelineSingle),
+            Some(false),
+        )
     }
 }
 
