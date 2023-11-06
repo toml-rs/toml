@@ -1,6 +1,6 @@
 [package]
 name = "toml"
-version = "0.8.6"
+version = "0.8.7"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = """
