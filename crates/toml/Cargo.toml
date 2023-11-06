@@ -31,8 +31,8 @@ pre-release-replacements = [
 
 [features]
 default = ["parse", "display"]
-parse = ["dep:toml_edit"]
-display = ["dep:toml_edit"]
+parse = ["dep:toml_edit", "toml_edit?/parse"]
+display = ["dep:toml_edit", "toml_edit?/display"]
 
 # Use indexmap rather than BTreeMap as the map type of toml::Value.
 # This allows data to be read into a Value and written back to a TOML string

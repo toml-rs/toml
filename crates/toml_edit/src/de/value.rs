@@ -241,6 +241,7 @@ impl crate::Item {
     }
 }
 
+#[cfg(feature = "parse")]
 impl std::str::FromStr for ValueDeserializer {
     type Err = Error;
 

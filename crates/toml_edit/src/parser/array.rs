@@ -81,6 +81,8 @@ pub(crate) fn array_value<'i>(
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

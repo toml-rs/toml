@@ -319,6 +319,8 @@ pub(crate) const HEXDIG: (RangeInclusive<u8>, RangeInclusive<u8>, RangeInclusive
     (DIGIT, b'A'..=b'F', b'a'..=b'f');
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

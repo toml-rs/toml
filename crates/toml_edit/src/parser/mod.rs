@@ -140,6 +140,8 @@ pub(crate) mod prelude {
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

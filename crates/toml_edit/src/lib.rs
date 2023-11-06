@@ -14,6 +14,8 @@
 //! # Example
 //!
 //! ```rust
+//! # #[cfg(feature = "parse")] {
+//! # #[cfg(feature = "display")] {
 //! use toml_edit::{Document, value};
 //!
 //! let toml = r#"
@@ -32,26 +34,32 @@
 //! c = { d = "hello" }
 //! "#;
 //! assert_eq!(doc.to_string(), expected);
+//! # }
+//! # }
 //! ```
 //!
 //! ## Controlling formatting
 //!
 //! By default, values are created with default formatting
 //! ```rust
+//! # #[cfg(feature = "display")] {
 //! let mut doc = toml_edit::Document::new();
 //! doc["foo"] = toml_edit::value("bar");
 //! let expected = r#"foo = "bar"
 //! "#;
 //! assert_eq!(doc.to_string(), expected);
+//! # }
 //! ```
 //!
 //! You can choose a custom TOML representation by parsing the value.
 //! ```rust
+//! # #[cfg(feature = "display")] {
 //! let mut doc = toml_edit::Document::new();
 //! doc["foo"] = "'bar'".parse::<toml_edit::Item>().unwrap();
 //! let expected = r#"foo = 'bar'
 //! "#;
 //! assert_eq!(doc.to_string(), expected);
+//! # }
 //! ```
 //!
 //! ## Limitations
@@ -65,6 +73,7 @@
 mod array;
 mod array_of_tables;
 mod document;
+#[cfg(feature = "display")]
 mod encode;
 mod error;
 mod index;
@@ -72,6 +81,7 @@ mod inline_table;
 mod internal_string;
 mod item;
 mod key;
+#[cfg(feature = "parse")]
 mod parser;
 mod raw_string;
 mod repr;

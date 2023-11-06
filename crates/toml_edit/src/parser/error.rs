@@ -22,9 +22,22 @@ impl CustomError {
     pub(crate) fn duplicate_key(path: &[Key], i: usize) -> Self {
         assert!(i < path.len());
         let key = &path[i];
-        let repr = key.display_repr();
+        let repr = key
+            .as_repr()
+            .and_then(|key| key.as_raw().as_str())
+            .map(|s| s.to_owned())
+            .unwrap_or_else(|| {
+                #[cfg(feature = "display")]
+                {
+                    key.default_repr().as_raw().as_str().unwrap().to_owned()
+                }
+                #[cfg(not(feature = "display"))]
+                {
+                    format!("{:?}", key.get())
+                }
+            });
         Self::DuplicateKey {
-            key: repr.into(),
+            key: repr,
             table: Some(path[..i].to_vec()),
         }
     }

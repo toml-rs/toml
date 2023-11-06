@@ -77,6 +77,7 @@ impl Default for Document {
     }
 }
 
+#[cfg(feature = "parse")]
 impl FromStr for Document {
     type Err = crate::TomlError;
 

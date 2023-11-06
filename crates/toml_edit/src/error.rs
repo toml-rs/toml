@@ -11,6 +11,7 @@ pub struct TomlError {
 }
 
 impl TomlError {
+    #[cfg(feature = "parse")]
     pub(crate) fn new(
         error: winnow::error::ParseError<
             crate::parser::prelude::Input<'_>,

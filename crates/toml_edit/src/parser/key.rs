@@ -88,6 +88,8 @@ const UNQUOTED_CHAR: (
 const DOT_SEP: u8 = b'.';
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

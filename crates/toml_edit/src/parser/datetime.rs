@@ -263,6 +263,8 @@ pub(crate) fn unsigned_digits<'i, const MIN: usize, const MAX: usize>(
 const DIGIT: RangeInclusive<u8> = b'0'..=b'9';
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

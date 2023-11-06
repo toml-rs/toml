@@ -329,6 +329,7 @@ impl Clone for Item {
     }
 }
 
+#[cfg(feature = "parse")]
 impl FromStr for Item {
     type Err = crate::TomlError;
 
@@ -339,6 +340,7 @@ impl FromStr for Item {
     }
 }
 
+#[cfg(feature = "display")]
 impl std::fmt::Display for Item {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
@@ -358,6 +360,7 @@ impl std::fmt::Display for Item {
 ///
 /// # Examples
 /// ```rust
+/// # #[cfg(feature = "display")] {
 /// # use snapbox::assert_eq;
 /// # use toml_edit::*;
 /// let mut table = Table::default();
@@ -372,6 +375,7 @@ impl std::fmt::Display for Item {
 /// key2 = 42
 /// key3 = ["hello", '\, world']
 /// "#);
+/// # }
 /// ```
 pub fn value<V: Into<Value>>(v: V) -> Item {
     Item::Value(v.into())

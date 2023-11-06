@@ -189,10 +189,12 @@ impl Value {
     /// Sets the prefix and the suffix for value.
     /// # Example
     /// ```rust
+    /// # #[cfg(feature = "display")] {
     /// let mut v = toml_edit::Value::from(42);
     /// assert_eq!(&v.to_string(), "42");
     /// let d = v.decorated(" ", " ");
     /// assert_eq!(&d.to_string(), " 42 ");
+    /// # }
     /// ```
     pub fn decorated(mut self, prefix: impl Into<RawString>, suffix: impl Into<RawString>) -> Self {
         self.decorate(prefix, suffix);
@@ -230,6 +232,7 @@ impl Value {
     }
 }
 
+#[cfg(feature = "parse")]
 impl FromStr for Value {
     type Err = crate::TomlError;
 
@@ -346,6 +349,7 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
     }
 }
 
+#[cfg(feature = "display")]
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::encode::Encode::encode(self, f, None, ("", ""))
@@ -360,6 +364,8 @@ pub(crate) const DEFAULT_TRAILING_VALUE_DECOR: (&str, &str) = (" ", " ");
 pub(crate) const DEFAULT_LEADING_VALUE_DECOR: (&str, &str) = ("", "");
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod tests {
     use super::*;
 

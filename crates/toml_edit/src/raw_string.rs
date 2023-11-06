@@ -80,6 +80,7 @@ impl RawString {
         }
     }
 
+    #[cfg(feature = "display")]
     pub(crate) fn encode(&self, buf: &mut dyn std::fmt::Write, input: &str) -> std::fmt::Result {
         let raw = self.to_str(input);
         for part in raw.split('\r') {
@@ -88,6 +89,7 @@ impl RawString {
         Ok(())
     }
 
+    #[cfg(feature = "display")]
     pub(crate) fn encode_with_default(
         &self,
         buf: &mut dyn std::fmt::Write,

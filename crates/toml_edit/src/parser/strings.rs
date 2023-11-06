@@ -363,6 +363,8 @@ fn mll_quotes<'i>(
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 

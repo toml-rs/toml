@@ -165,6 +165,8 @@ fn keyval<'i>(
 }
 
 #[cfg(test)]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
 mod test {
     use super::*;
 
