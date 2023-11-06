@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.8] - 2023-11-06
+
 ### Comptibility
 
 - If you relied on `toml` to enable `toml_edit` `parse` or `display` features, it will no longer work
@@ -195,7 +197,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.8...HEAD
+[0.8.8]: https://github.com/toml-rs/toml/compare/toml-v0.8.7...toml-v0.8.8
 [0.8.7]: https://github.com/toml-rs/toml/compare/toml-v0.8.6...toml-v0.8.7
 [0.8.6]: https://github.com/toml-rs/toml/compare/toml-v0.8.5...toml-v0.8.6
 [0.8.5]: https://github.com/toml-rs/toml/compare/toml-v0.8.4...toml-v0.8.5
