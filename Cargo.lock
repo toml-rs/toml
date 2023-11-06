@@ -954,7 +954,7 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.20.7"
+version = "0.21.0"
 dependencies = [
  "indexmap",
  "kstring",

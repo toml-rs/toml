@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.21.0] - 2023-11-06
+
 ### Breaking Change
 
 - Split `default-features=false` APIs into  `parse` and `display` features
@@ -589,7 +591,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.20.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.21.0...HEAD
+[0.21.0]: https://github.com/toml-rs/toml/compare/v0.20.7...v0.21.0
 [0.20.7]: https://github.com/toml-rs/toml/compare/v0.20.6...v0.20.7
 [0.20.6]: https://github.com/toml-rs/toml/compare/v0.20.5...v0.20.6
 [0.20.5]: https://github.com/toml-rs/toml/compare/v0.20.4...v0.20.5
