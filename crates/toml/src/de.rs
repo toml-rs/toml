@@ -38,9 +38,9 @@
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
 #[cfg(feature = "parse")]
-pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
+pub fn from_str<'a, T>(s: &'a str) -> Result<T, Error>
 where
-    T: serde::de::DeserializeOwned,
+    T: serde::de::Deserialize<'a>,
 {
     T::deserialize(Deserializer::new(s))
 }
