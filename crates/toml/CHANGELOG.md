@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog].
 
 ## [0.8.8] - 2023-11-06
 
-### Comptibility
+### Compatibility
 
 - If you relied on `toml` to enable `toml_edit` `parse` or `display` features, it will no longer work
 
