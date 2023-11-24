@@ -98,7 +98,7 @@ pub trait Visit<'doc> {
         visit_inline_table(self, node)
     }
 
-    fn visit_table_like(&mut self, node: &'doc dyn TableLike) {
+    fn visit_table_like(&mut self, node: &'doc (dyn TableLike + Send + Sync)) {
         visit_table_like(self, node);
     }
 
@@ -172,7 +172,7 @@ where
     v.visit_table_like(node)
 }
 
-pub fn visit_table_like<'doc, V>(v: &mut V, node: &'doc dyn TableLike)
+pub fn visit_table_like<'doc, V>(v: &mut V, node: &'doc (dyn TableLike + Send + Sync))
 where
     V: Visit<'doc> + ?Sized,
 {
