@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Spanned::new`
+
+### Documentation
+
+- Show how to transpose a `Spanned<Enum<T>>` into `Enum<Spanned<T>>`
+
 ## [0.6.4] - 2023-10-23
 
 ## [0.6.3] - 2023-06-24
