@@ -35,6 +35,63 @@ pub struct Spanned<T> {
 }
 
 impl<T> Spanned<T> {
+    /// Create a spanned value encompassing the given byte range.
+    ///
+    /// # Example
+    ///
+    /// Transposing a `Spanned<Enum<T>>` into `Enum<Spanned<T>>`:
+    ///
+    /// ```
+    /// use serde::de::{Deserialize, Deserializer};
+    /// use serde_untagged::UntaggedEnumVisitor;
+    /// use toml::Spanned;
+    ///
+    /// pub enum Dependency {
+    ///     Simple(Spanned<String>),
+    ///     Detailed(Spanned<DetailedDependency>),
+    /// }
+    ///
+    /// impl<'de> Deserialize<'de> for Dependency {
+    ///     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    ///     where
+    ///         D: Deserializer<'de>,
+    ///     {
+    ///         enum DependencyKind {
+    ///             Simple(String),
+    ///             Detailed(DetailedDependency),
+    ///         }
+    ///
+    ///         impl<'de> Deserialize<'de> for DependencyKind {
+    ///             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    ///             where
+    ///                 D: Deserializer<'de>,
+    ///             {
+    ///                 UntaggedEnumVisitor::new()
+    ///                     .expecting(
+    ///                         "a version string like \"0.9.8\" or a \
+    ///                             detailed dependency like { version = \"0.9.8\" }",
+    ///                     )
+    ///                     .string(|value| Ok(DependencyKind::Simple(value.to_owned())))
+    ///                     .map(|value| value.deserialize().map(DependencyKind::Detailed))
+    ///                     .deserialize(deserializer)
+    ///             }
+    ///         }
+    ///
+    ///         let spanned: Spanned<DependencyKind> = Deserialize::deserialize(deserializer)?;
+    ///         let range = spanned.span();
+    ///         Ok(match spanned.into_inner() {
+    ///             DependencyKind::Simple(simple) => Dependency::Simple(Spanned::new(range, simple)),
+    ///             DependencyKind::Detailed(detailed) => Dependency::Detailed(Spanned::new(range, detailed)),
+    ///         })
+    ///     }
+    /// }
+    /// #
+    /// # type DetailedDependency = std::collections::BTreeMap<String, String>;
+    /// ```
+    pub fn new(range: std::ops::Range<usize>, value: T) -> Self {
+        Spanned { span: range, value }
+    }
+
     /// Byte range
     pub fn span(&self) -> std::ops::Range<usize> {
         self.span.clone()
