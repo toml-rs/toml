@@ -26,3 +26,9 @@ pre-release-replacements = [
 
 [dependencies]
 serde = { version = "1.0.145", optional = true }
+
+[dev-dependencies]
+serde = "1"
+serde_derive = "1"
+serde-untagged = "0.1"
+toml = { path = "../toml" }
