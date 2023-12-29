@@ -59,7 +59,7 @@ jobs:
     - name: toml (no-default features)
       run: cargo test -p toml --no-default-features
   msrv:
-    name: "Check MSRV: 1.67"
+    name: "Check MSRV: 1.69"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -67,7 +67,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.67"  # MSRV
+        toolchain: "1.69"  # MSRV
     - uses: Swatinem/rust-cache@v2
     - name: Default features
       run: cargo check --workspace --all-targets
@@ -129,7 +129,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.67"  # MSRV
+        toolchain: "1.69"  # MSRV
         components: clippy
     - uses: Swatinem/rust-cache@v2
     - name: Install SARIF tools
