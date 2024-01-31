@@ -118,7 +118,7 @@ impl crate::InlineTable {
 pub(crate) struct TableMapAccess {
     iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
     span: Option<std::ops::Range<usize>>,
-    value: Option<(crate::InternalString, crate::Item)>,
+    value: Option<(crate::Key, crate::Item)>,
 }
 
 impl TableMapAccess {
@@ -149,7 +149,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
                         }
                         e
                     });
-                self.value = Some((v.key.into(), v.value));
+                self.value = Some((v.key, v.value));
                 ret
             }
             None => Ok(None),
@@ -162,13 +162,13 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
     {
         match self.value.take() {
             Some((k, v)) => {
-                let span = v.span();
+                let span = v.span().or_else(|| k.span());
                 seed.deserialize(crate::de::ValueDeserializer::new(v))
                     .map_err(|mut e: Self::Error| {
                         if e.span().is_none() {
                             e.set_span(span);
                         }
-                        e.add_key(k.as_str().to_owned());
+                        e.add_key(k.get().to_owned());
                         e
                     })
             }

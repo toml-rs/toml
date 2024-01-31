@@ -1346,3 +1346,32 @@ fn serialize_array_with_enum_of_optional_struct_field() {
     let raw = toml::to_string(&input).unwrap();
     snapbox::assert_eq(expected, raw);
 }
+
+#[test]
+fn span_for_sequence_as_map() {
+    #[allow(dead_code)]
+    #[derive(Deserialize)]
+    struct Manifest {
+        package: Package,
+        bench: Vec<Bench>,
+    }
+
+    #[derive(Deserialize)]
+    struct Package {}
+
+    #[derive(Deserialize)]
+    struct Bench {}
+
+    let raw = r#"
+[package]
+name = "foo"
+version = "0.1.0"
+edition = "2021"
+[[bench.foo]]
+"#;
+    let err = match toml::from_str::<Manifest>(raw) {
+        Ok(_) => panic!("should fail"),
+        Err(err) => err,
+    };
+    assert_eq!(err.span(), Some(61..66));
+}
