@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.21.1] - 2024-01-31
+
 ### Fixes
 
 - *(de)* Improve error span for empty tables
@@ -595,7 +597,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.21.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.21.1...HEAD
+[0.21.1]: https://github.com/toml-rs/toml/compare/v0.21.0...v0.21.1
 [0.21.0]: https://github.com/toml-rs/toml/compare/v0.20.7...v0.21.0
 [0.20.7]: https://github.com/toml-rs/toml/compare/v0.20.6...v0.20.7
 [0.20.6]: https://github.com/toml-rs/toml/compare/v0.20.5...v0.20.6

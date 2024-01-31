@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.9] - 2024-01-31
+
 ### Fixes
 
 - *(de)* Improve error span for empty tables
@@ -201,7 +203,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.8...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.9...HEAD
+[0.8.9]: https://github.com/toml-rs/toml/compare/toml-v0.8.8...toml-v0.8.9
 [0.8.8]: https://github.com/toml-rs/toml/compare/toml-v0.8.7...toml-v0.8.8
 [0.8.7]: https://github.com/toml-rs/toml/compare/toml-v0.8.6...toml-v0.8.7
 [0.8.6]: https://github.com/toml-rs/toml/compare/toml-v0.8.5...toml-v0.8.6
