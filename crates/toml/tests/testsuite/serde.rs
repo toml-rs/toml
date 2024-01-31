@@ -1373,5 +1373,5 @@ edition = "2021"
         Ok(_) => panic!("should fail"),
         Err(err) => err,
     };
-    assert_eq!(err.span(), Some(0..0));
+    assert_eq!(err.span(), Some(61..66));
 }
