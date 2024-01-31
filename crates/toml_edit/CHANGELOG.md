@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(de)* Improve error span for empty tables
+
 ## [0.21.0] - 2023-11-06
 
 ### Breaking Change
