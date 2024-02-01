@@ -793,6 +793,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_spanned"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb3622f419d1296904700073ea6cc23ad690adbd66f13ea683df73298736f0c1"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_toml"
 version = "0.0.1"
 
@@ -899,26 +908,29 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1333c76748e868a4d9d1017b5ab53171dfd095f70c712fdb4653a406547f598f"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "toml"
 version = "0.8.9"
 dependencies = [
  "indexmap",
  "serde",
  "serde_json",
- "serde_spanned",
+ "serde_spanned 0.6.5",
  "snapbox",
  "toml-test-data",
  "toml-test-harness",
- "toml_datetime",
- "toml_edit",
+ "toml_datetime 0.6.5",
+ "toml_edit 0.21.1",
+]
+
+[[package]]
+name = "toml"
+version = "0.8.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6a4b9e8023eb94392d3dca65d717c53abc5dad49c07cb65bb8fcd87115fa325"
+dependencies = [
+ "serde",
+ "serde_spanned 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml_datetime 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml_edit 0.21.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -962,14 +974,23 @@ dependencies = [
  "lexopt",
  "serde",
  "serde_json",
- "toml 0.5.10",
  "toml 0.8.9",
- "toml_edit",
+ "toml 0.8.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml_edit 0.21.1",
 ]
 
 [[package]]
 name = "toml_datetime"
 version = "0.6.5"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "toml_datetime"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3550f4e9685620ac18a50ed434eb3aec30db8ba93b0287467bca5826ea25baf1"
 dependencies = [
  "serde",
 ]
@@ -983,11 +1004,24 @@ dependencies = [
  "libtest-mimic",
  "serde",
  "serde_json",
- "serde_spanned",
+ "serde_spanned 0.6.5",
  "snapbox",
  "toml-test-data",
  "toml-test-harness",
- "toml_datetime",
+ "toml_datetime 0.6.5",
+ "winnow",
+]
+
+[[package]]
+name = "toml_edit"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a8534fd7f78b5405e860340ad6575217ce99f38d4d5c8f2442cb5ecb50090e1"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_spanned 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml_datetime 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "winnow",
 ]
 
@@ -996,7 +1030,7 @@ name = "toml_edit_fuzz"
 version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",
- "toml_edit",
+ "toml_edit 0.21.1",
 ]
 
 [[package]]
