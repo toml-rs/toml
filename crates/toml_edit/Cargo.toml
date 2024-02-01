@@ -51,7 +51,7 @@ serde_spanned = { version = "0.6.5", path = "../serde_spanned", features = ["ser
 serde_json = "1.0.96"
 toml-test-harness = "0.4.8"
 toml-test-data = "1.8.0"
-libtest-mimic = "0.6.0"
+libtest-mimic = "0.7.0"
 snapbox = { version = "0.4.11", features = ["harness"] }
 
 [[test]]

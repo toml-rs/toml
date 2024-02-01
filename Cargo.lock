@@ -321,6 +321,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "escape8259"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba4f4911e3666fcd7826997b4745c8224295a6f3072f1418c3067b97a67557ee"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -508,6 +517,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7b603516767d1ab23d0de09d023e62966c3322f7148297c35cf3d97aa8b37fa"
 dependencies = [
  "clap",
+ "termcolor",
+ "threadpool",
+]
+
+[[package]]
+name = "libtest-mimic"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f0f4c6f44ecfd52e8b443f2ad18f2b996540135771561283c2352ce56a1c70b"
+dependencies = [
+ "clap",
+ "escape8259",
  "termcolor",
  "threadpool",
 ]
@@ -721,6 +742,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustversion"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+
+[[package]]
 name = "ryu"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -811,7 +838,7 @@ dependencies = [
  "anstream",
  "anstyle",
  "ignore",
- "libtest-mimic",
+ "libtest-mimic 0.6.0",
  "normalize-line-endings",
  "similar",
  "snapbox-macros",
@@ -949,7 +976,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1be4b8d761dee51b4694e9f1d622a1d7f9c135a8b8265459e16d09ac5b16a05d"
 dependencies = [
  "ignore",
- "libtest-mimic",
+ "libtest-mimic 0.6.0",
  "toml-test",
  "toml-test-data",
 ]
@@ -980,7 +1007,7 @@ version = "0.21.1"
 dependencies = [
  "indexmap",
  "kstring",
- "libtest-mimic",
+ "libtest-mimic 0.7.0",
  "serde",
  "serde_json",
  "serde_spanned",
