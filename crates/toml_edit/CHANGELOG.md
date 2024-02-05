@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.0] - 2024-02-05
+
 ### Breaking Change
 
 - `Key::decor` is now tracked in `Key::dotted_decor` and `Key::leaf_decor`
@@ -605,7 +607,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.21.1...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/toml-rs/toml/compare/v0.21.1...v0.22.0
 [0.21.1]: https://github.com/toml-rs/toml/compare/v0.21.0...v0.21.1
 [0.21.0]: https://github.com/toml-rs/toml/compare/v0.20.7...v0.21.0
 [0.20.7]: https://github.com/toml-rs/toml/compare/v0.20.6...v0.20.7
