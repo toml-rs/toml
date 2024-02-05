@@ -214,7 +214,7 @@ impl PartialEq<String> for Key {
 #[cfg(feature = "display")]
 impl std::fmt::Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, None, ("", ""))
+        crate::encode::encode_key(self, f, None, ("", ""))
     }
 }
 

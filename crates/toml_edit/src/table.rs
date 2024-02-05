@@ -420,13 +420,12 @@ impl Table {
 #[cfg(feature = "display")]
 impl std::fmt::Display for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use crate::encode::Encode;
         let children = self.get_values();
         // print table body
         for (key_path, value) in children {
-            key_path.as_slice().encode(f, None, DEFAULT_KEY_DECOR)?;
+            crate::encode::encode_key_path_ref(&key_path, f, None, DEFAULT_KEY_DECOR)?;
             write!(f, "=")?;
-            value.encode(f, None, DEFAULT_VALUE_DECOR)?;
+            crate::encode::encode_value(value, f, None, DEFAULT_VALUE_DECOR)?;
             writeln!(f)?;
         }
         Ok(())
