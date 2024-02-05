@@ -13,218 +13,190 @@ use crate::value::{
 };
 use crate::{Array, InlineTable, Item, Table, Value};
 
-pub(crate) trait Encode {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result;
+pub(crate) fn encode_key(
+    this: &Key,
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    let decor = this.decor();
+    decor.prefix_encode(buf, input, default_decor.0)?;
+
+    if let Some(input) = input {
+        let repr = this
+            .as_repr()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(this.default_repr()));
+        repr.encode(buf, input)?;
+    } else {
+        let repr = this.display_repr();
+        write!(buf, "{}", repr)?;
+    };
+
+    decor.suffix_encode(buf, input, default_decor.1)?;
+    Ok(())
 }
 
-impl Encode for Key {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        let decor = self.decor();
-        decor.prefix_encode(buf, input, default_decor.0)?;
+fn encode_key_path(
+    this: &[Key],
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    for (i, key) in this.iter().enumerate() {
+        let first = i == 0;
+        let last = i + 1 == this.len();
 
-        if let Some(input) = input {
-            let repr = self
-                .as_repr()
-                .map(Cow::Borrowed)
-                .unwrap_or_else(|| Cow::Owned(self.default_repr()));
-            repr.encode(buf, input)?;
+        let prefix = if first {
+            default_decor.0
         } else {
-            let repr = self.display_repr();
-            write!(buf, "{}", repr)?;
+            DEFAULT_KEY_PATH_DECOR.0
+        };
+        let suffix = if last {
+            default_decor.1
+        } else {
+            DEFAULT_KEY_PATH_DECOR.1
         };
 
-        decor.suffix_encode(buf, input, default_decor.1)?;
-        Ok(())
-    }
-}
-
-impl<'k> Encode for &'k [Key] {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        for (i, key) in self.iter().enumerate() {
-            let first = i == 0;
-            let last = i + 1 == self.len();
-
-            let prefix = if first {
-                default_decor.0
-            } else {
-                DEFAULT_KEY_PATH_DECOR.0
-            };
-            let suffix = if last {
-                default_decor.1
-            } else {
-                DEFAULT_KEY_PATH_DECOR.1
-            };
-
-            if !first {
-                write!(buf, ".")?;
-            }
-            key.encode(buf, input, (prefix, suffix))?;
+        if !first {
+            write!(buf, ".")?;
         }
-        Ok(())
+        encode_key(key, buf, input, (prefix, suffix))?;
     }
+    Ok(())
 }
 
-impl<'k> Encode for &'k [&'k Key] {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        for (i, key) in self.iter().enumerate() {
-            let first = i == 0;
-            let last = i + 1 == self.len();
+pub(crate) fn encode_key_path_ref(
+    this: &[&Key],
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    for (i, key) in this.iter().enumerate() {
+        let first = i == 0;
+        let last = i + 1 == this.len();
 
-            let prefix = if first {
-                default_decor.0
-            } else {
-                DEFAULT_KEY_PATH_DECOR.0
-            };
-            let suffix = if last {
-                default_decor.1
-            } else {
-                DEFAULT_KEY_PATH_DECOR.1
-            };
-
-            if !first {
-                write!(buf, ".")?;
-            }
-            key.encode(buf, input, (prefix, suffix))?;
-        }
-        Ok(())
-    }
-}
-
-impl<T> Encode for Formatted<T>
-where
-    T: ValueRepr,
-{
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        let decor = self.decor();
-        decor.prefix_encode(buf, input, default_decor.0)?;
-
-        if let Some(input) = input {
-            let repr = self
-                .as_repr()
-                .map(Cow::Borrowed)
-                .unwrap_or_else(|| Cow::Owned(self.default_repr()));
-            repr.encode(buf, input)?;
+        let prefix = if first {
+            default_decor.0
         } else {
-            let repr = self.display_repr();
-            write!(buf, "{}", repr)?;
+            DEFAULT_KEY_PATH_DECOR.0
+        };
+        let suffix = if last {
+            default_decor.1
+        } else {
+            DEFAULT_KEY_PATH_DECOR.1
         };
 
-        decor.suffix_encode(buf, input, default_decor.1)?;
-        Ok(())
+        if !first {
+            write!(buf, ".")?;
+        }
+        encode_key(key, buf, input, (prefix, suffix))?;
     }
+    Ok(())
 }
 
-impl Encode for Array {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        let decor = self.decor();
-        decor.prefix_encode(buf, input, default_decor.0)?;
-        write!(buf, "[")?;
+pub(crate) fn encode_formatted<T: ValueRepr>(
+    this: &Formatted<T>,
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    let decor = this.decor();
+    decor.prefix_encode(buf, input, default_decor.0)?;
 
-        for (i, elem) in self.iter().enumerate() {
-            let inner_decor;
-            if i == 0 {
-                inner_decor = DEFAULT_LEADING_VALUE_DECOR;
-            } else {
-                inner_decor = DEFAULT_VALUE_DECOR;
-                write!(buf, ",")?;
-            }
-            elem.encode(buf, input, inner_decor)?;
-        }
-        if self.trailing_comma() && !self.is_empty() {
+    if let Some(input) = input {
+        let repr = this
+            .as_repr()
+            .map(Cow::Borrowed)
+            .unwrap_or_else(|| Cow::Owned(this.default_repr()));
+        repr.encode(buf, input)?;
+    } else {
+        let repr = this.display_repr();
+        write!(buf, "{}", repr)?;
+    };
+
+    decor.suffix_encode(buf, input, default_decor.1)?;
+    Ok(())
+}
+
+pub(crate) fn encode_array(
+    this: &Array,
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    let decor = this.decor();
+    decor.prefix_encode(buf, input, default_decor.0)?;
+    write!(buf, "[")?;
+
+    for (i, elem) in this.iter().enumerate() {
+        let inner_decor;
+        if i == 0 {
+            inner_decor = DEFAULT_LEADING_VALUE_DECOR;
+        } else {
+            inner_decor = DEFAULT_VALUE_DECOR;
             write!(buf, ",")?;
         }
-
-        self.trailing().encode_with_default(buf, input, "")?;
-        write!(buf, "]")?;
-        decor.suffix_encode(buf, input, default_decor.1)?;
-
-        Ok(())
+        encode_value(elem, buf, input, inner_decor)?;
     }
+    if this.trailing_comma() && !this.is_empty() {
+        write!(buf, ",")?;
+    }
+
+    this.trailing().encode_with_default(buf, input, "")?;
+    write!(buf, "]")?;
+    decor.suffix_encode(buf, input, default_decor.1)?;
+
+    Ok(())
 }
 
-impl Encode for InlineTable {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        let decor = self.decor();
-        decor.prefix_encode(buf, input, default_decor.0)?;
-        write!(buf, "{{")?;
-        self.preamble().encode_with_default(buf, input, "")?;
+pub(crate) fn encode_table(
+    this: &InlineTable,
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    let decor = this.decor();
+    decor.prefix_encode(buf, input, default_decor.0)?;
+    write!(buf, "{{")?;
+    this.preamble().encode_with_default(buf, input, "")?;
 
-        let children = self.get_values();
-        let len = children.len();
-        for (i, (key_path, value)) in children.into_iter().enumerate() {
-            if i != 0 {
-                write!(buf, ",")?;
-            }
-            let inner_decor = if i == len - 1 {
-                DEFAULT_TRAILING_VALUE_DECOR
-            } else {
-                DEFAULT_VALUE_DECOR
-            };
-            key_path
-                .as_slice()
-                .encode(buf, input, DEFAULT_INLINE_KEY_DECOR)?;
-            write!(buf, "=")?;
-            value.encode(buf, input, inner_decor)?;
+    let children = this.get_values();
+    let len = children.len();
+    for (i, (key_path, value)) in children.into_iter().enumerate() {
+        if i != 0 {
+            write!(buf, ",")?;
         }
-
-        write!(buf, "}}")?;
-        decor.suffix_encode(buf, input, default_decor.1)?;
-
-        Ok(())
+        let inner_decor = if i == len - 1 {
+            DEFAULT_TRAILING_VALUE_DECOR
+        } else {
+            DEFAULT_VALUE_DECOR
+        };
+        encode_key_path_ref(&key_path, buf, input, DEFAULT_INLINE_KEY_DECOR)?;
+        write!(buf, "=")?;
+        encode_value(value, buf, input, inner_decor)?;
     }
+
+    write!(buf, "}}")?;
+    decor.suffix_encode(buf, input, default_decor.1)?;
+
+    Ok(())
 }
 
-impl Encode for Value {
-    fn encode(
-        &self,
-        buf: &mut dyn Write,
-        input: Option<&str>,
-        default_decor: (&str, &str),
-    ) -> Result {
-        match self {
-            Value::String(repr) => repr.encode(buf, input, default_decor),
-            Value::Integer(repr) => repr.encode(buf, input, default_decor),
-            Value::Float(repr) => repr.encode(buf, input, default_decor),
-            Value::Boolean(repr) => repr.encode(buf, input, default_decor),
-            Value::Datetime(repr) => repr.encode(buf, input, default_decor),
-            Value::Array(array) => array.encode(buf, input, default_decor),
-            Value::InlineTable(table) => table.encode(buf, input, default_decor),
-        }
+pub(crate) fn encode_value(
+    this: &Value,
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+) -> Result {
+    match this {
+        Value::String(repr) => encode_formatted(repr, buf, input, default_decor),
+        Value::Integer(repr) => encode_formatted(repr, buf, input, default_decor),
+        Value::Float(repr) => encode_formatted(repr, buf, input, default_decor),
+        Value::Boolean(repr) => encode_formatted(repr, buf, input, default_decor),
+        Value::Datetime(repr) => encode_formatted(repr, buf, input, default_decor),
+        Value::Array(array) => encode_array(array, buf, input, default_decor),
+        Value::InlineTable(table) => encode_table(table, buf, input, default_decor),
     }
 }
 
@@ -332,7 +304,7 @@ fn visit_table(
         };
         table.decor.prefix_encode(buf, input, default_decor.0)?;
         write!(buf, "[[")?;
-        path.encode(buf, input, DEFAULT_KEY_PATH_DECOR)?;
+        encode_key_path(path, buf, input, DEFAULT_KEY_PATH_DECOR)?;
         write!(buf, "]]")?;
         table.decor.suffix_encode(buf, input, default_decor.1)?;
         writeln!(buf)?;
@@ -345,16 +317,16 @@ fn visit_table(
         };
         table.decor.prefix_encode(buf, input, default_decor.0)?;
         write!(buf, "[")?;
-        path.encode(buf, input, DEFAULT_KEY_PATH_DECOR)?;
+        encode_key_path(path, buf, input, DEFAULT_KEY_PATH_DECOR)?;
         write!(buf, "]")?;
         table.decor.suffix_encode(buf, input, default_decor.1)?;
         writeln!(buf)?;
     }
     // print table body
     for (key_path, value) in children {
-        key_path.as_slice().encode(buf, input, DEFAULT_KEY_DECOR)?;
+        encode_key_path_ref(&key_path, buf, input, DEFAULT_KEY_DECOR)?;
         write!(buf, "=")?;
-        value.encode(buf, input, DEFAULT_VALUE_DECOR)?;
+        encode_value(value, buf, input, DEFAULT_VALUE_DECOR)?;
         writeln!(buf)?;
     }
     Ok(())

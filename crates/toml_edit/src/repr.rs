@@ -111,7 +111,7 @@ where
     T: ValueRepr,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::Encode::encode(self, f, None, ("", ""))
+        crate::encode::encode_formatted(self, f, None, ("", ""))
     }
 }
 
