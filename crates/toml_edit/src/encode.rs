@@ -13,15 +13,7 @@ use crate::value::{
 };
 use crate::{Array, InlineTable, Item, Table, Value};
 
-pub(crate) fn encode_key(
-    this: &Key,
-    buf: &mut dyn Write,
-    input: Option<&str>,
-    default_decor: (&str, &str),
-) -> Result {
-    let decor = this.decor();
-    decor.prefix_encode(buf, input, default_decor.0)?;
-
+pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -> Result {
     if let Some(input) = input {
         let repr = this
             .as_repr()
@@ -33,7 +25,6 @@ pub(crate) fn encode_key(
         write!(buf, "{}", repr)?;
     };
 
-    decor.suffix_encode(buf, input, default_decor.1)?;
     Ok(())
 }
 
@@ -44,24 +35,25 @@ fn encode_key_path(
     default_decor: (&str, &str),
 ) -> Result {
     for (i, key) in this.iter().enumerate() {
+        let decor = key.decor();
+
         let first = i == 0;
         let last = i + 1 == this.len();
 
-        let prefix = if first {
-            default_decor.0
+        if first {
+            decor.prefix_encode(buf, input, default_decor.0)?;
         } else {
-            DEFAULT_KEY_PATH_DECOR.0
-        };
-        let suffix = if last {
-            default_decor.1
-        } else {
-            DEFAULT_KEY_PATH_DECOR.1
-        };
-
-        if !first {
             write!(buf, ".")?;
+            decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0)?;
         }
-        encode_key(key, buf, input, (prefix, suffix))?;
+
+        encode_key(key, buf, input)?;
+
+        if last {
+            decor.suffix_encode(buf, input, default_decor.1)?;
+        } else {
+            decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1)?;
+        }
     }
     Ok(())
 }
@@ -73,24 +65,25 @@ pub(crate) fn encode_key_path_ref(
     default_decor: (&str, &str),
 ) -> Result {
     for (i, key) in this.iter().enumerate() {
+        let decor = key.decor();
+
         let first = i == 0;
         let last = i + 1 == this.len();
 
-        let prefix = if first {
-            default_decor.0
+        if first {
+            decor.prefix_encode(buf, input, default_decor.0)?;
         } else {
-            DEFAULT_KEY_PATH_DECOR.0
-        };
-        let suffix = if last {
-            default_decor.1
-        } else {
-            DEFAULT_KEY_PATH_DECOR.1
-        };
-
-        if !first {
             write!(buf, ".")?;
+            decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0)?;
         }
-        encode_key(key, buf, input, (prefix, suffix))?;
+
+        encode_key(key, buf, input)?;
+
+        if last {
+            decor.suffix_encode(buf, input, default_decor.1)?;
+        } else {
+            decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1)?;
+        }
     }
     Ok(())
 }
