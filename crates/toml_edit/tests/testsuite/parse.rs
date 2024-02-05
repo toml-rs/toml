@@ -1488,3 +1488,23 @@ fn despan_keys() {
 
     assert_eq!(doc.to_string(), "aaaaaa = 1\nbbb = 2\n");
 }
+
+#[test]
+fn dotted_key_comment_roundtrip() {
+    let input = r###"
+rust.unsafe_op_in_unsafe_fn = "deny"
+
+rust.explicit_outlives_requirements = "warn"
+# rust.unused_crate_dependencies = "warn"
+
+clippy.cast_lossless = "warn"
+clippy.doc_markdown = "warn"
+clippy.exhaustive_enums = "warn"
+"###;
+    let expected = input;
+
+    let manifest: toml_edit::Document = input.parse().unwrap();
+    let actual = manifest.to_string();
+
+    assert_eq(expected, actual);
+}

@@ -39,26 +39,21 @@ impl ParseState {
 
     pub(crate) fn on_keyval(
         &mut self,
-        mut path: Vec<Key>,
+        path: Vec<Key>,
         mut kv: TableKeyValue,
     ) -> Result<(), CustomError> {
         {
             let mut prefix = self.trailing.take();
-            let first_key = if path.is_empty() {
-                &mut kv.key
-            } else {
-                &mut path[0]
-            };
             let prefix = match (
                 prefix.take(),
-                first_key.decor.prefix().and_then(|d| d.span()),
+                kv.key.leaf_decor.prefix().and_then(|d| d.span()),
             ) {
                 (Some(p), Some(k)) => Some(p.start..k.end),
                 (Some(p), None) | (None, Some(p)) => Some(p),
                 (None, None) => None,
             };
-            first_key
-                .decor
+            kv.key
+                .leaf_decor
                 .set_prefix(prefix.map(RawString::with_span).unwrap_or_default());
         }
 

@@ -13,15 +13,7 @@ use crate::value::{
 };
 use crate::{Array, InlineTable, Item, Table, Value};
 
-pub(crate) fn encode_key(
-    this: &Key,
-    buf: &mut dyn Write,
-    input: Option<&str>,
-    default_decor: (&str, &str),
-) -> Result {
-    let decor = this.decor();
-    decor.prefix_encode(buf, input, default_decor.0)?;
-
+pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -> Result {
     if let Some(input) = input {
         let repr = this
             .as_repr()
@@ -33,7 +25,6 @@ pub(crate) fn encode_key(
         write!(buf, "{}", repr)?;
     };
 
-    decor.suffix_encode(buf, input, default_decor.1)?;
     Ok(())
 }
 
@@ -43,25 +34,27 @@ fn encode_key_path(
     input: Option<&str>,
     default_decor: (&str, &str),
 ) -> Result {
+    let leaf_decor = this.last().expect("always at least one key").leaf_decor();
     for (i, key) in this.iter().enumerate() {
+        let dotted_decor = key.dotted_decor();
+
         let first = i == 0;
         let last = i + 1 == this.len();
 
-        let prefix = if first {
-            default_decor.0
+        if first {
+            leaf_decor.prefix_encode(buf, input, default_decor.0)?;
         } else {
-            DEFAULT_KEY_PATH_DECOR.0
-        };
-        let suffix = if last {
-            default_decor.1
-        } else {
-            DEFAULT_KEY_PATH_DECOR.1
-        };
-
-        if !first {
             write!(buf, ".")?;
+            dotted_decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0)?;
         }
-        encode_key(key, buf, input, (prefix, suffix))?;
+
+        encode_key(key, buf, input)?;
+
+        if last {
+            leaf_decor.suffix_encode(buf, input, default_decor.1)?;
+        } else {
+            dotted_decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1)?;
+        }
     }
     Ok(())
 }
@@ -72,25 +65,27 @@ pub(crate) fn encode_key_path_ref(
     input: Option<&str>,
     default_decor: (&str, &str),
 ) -> Result {
+    let leaf_decor = this.last().expect("always at least one key").leaf_decor();
     for (i, key) in this.iter().enumerate() {
+        let dotted_decor = key.dotted_decor();
+
         let first = i == 0;
         let last = i + 1 == this.len();
 
-        let prefix = if first {
-            default_decor.0
+        if first {
+            leaf_decor.prefix_encode(buf, input, default_decor.0)?;
         } else {
-            DEFAULT_KEY_PATH_DECOR.0
-        };
-        let suffix = if last {
-            default_decor.1
-        } else {
-            DEFAULT_KEY_PATH_DECOR.1
-        };
-
-        if !first {
             write!(buf, ".")?;
+            dotted_decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0)?;
         }
-        encode_key(key, buf, input, (prefix, suffix))?;
+
+        encode_key(key, buf, input)?;
+
+        if last {
+            leaf_decor.suffix_encode(buf, input, default_decor.1)?;
+        } else {
+            dotted_decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1)?;
+        }
     }
     Ok(())
 }
@@ -247,11 +242,7 @@ where
     for kv in table.items.values() {
         match kv.value {
             Item::Table(ref t) => {
-                let mut key = kv.key.clone();
-                if t.is_dotted() {
-                    // May have newlines and generally isn't written for standard tables
-                    key.decor_mut().clear();
-                }
+                let key = kv.key.clone();
                 path.push(key);
                 visit_nested_tables(t, path, false, callback)?;
                 path.pop();

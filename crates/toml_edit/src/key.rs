@@ -30,7 +30,8 @@ use crate::InternalString;
 pub struct Key {
     key: InternalString,
     pub(crate) repr: Option<Repr>,
-    pub(crate) decor: Decor,
+    pub(crate) leaf_decor: Decor,
+    pub(crate) dotted_decor: Decor,
 }
 
 impl Key {
@@ -39,7 +40,8 @@ impl Key {
         Self {
             key: key.into(),
             repr: None,
-            decor: Default::default(),
+            leaf_decor: Default::default(),
+            dotted_decor: Default::default(),
         }
     }
 
@@ -57,8 +59,20 @@ impl Key {
     }
 
     /// While creating the `Key`, add `Decor` to it
-    pub fn with_decor(mut self, decor: Decor) -> Self {
-        self.decor = decor;
+    #[deprecated(since = "0.21.1", note = "Replaced with `with_leaf_decor`")]
+    pub fn with_decor(self, decor: Decor) -> Self {
+        self.with_leaf_decor(decor)
+    }
+
+    /// While creating the `Key`, add `Decor` to it for the line entry
+    pub fn with_leaf_decor(mut self, decor: Decor) -> Self {
+        self.leaf_decor = decor;
+        self
+    }
+
+    /// While creating the `Key`, add `Decor` to it for between dots
+    pub fn with_dotted_decor(mut self, decor: Decor) -> Self {
+        self.dotted_decor = decor;
         self
     }
 
@@ -99,13 +113,35 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
+    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
     pub fn decor_mut(&mut self) -> &mut Decor {
-        &mut self.decor
+        self.leaf_decor_mut()
+    }
+
+    /// Returns the surrounding whitespace for the line entry
+    pub fn leaf_decor_mut(&mut self) -> &mut Decor {
+        &mut self.leaf_decor
+    }
+
+    /// Returns the surrounding whitespace for between dots
+    pub fn dotted_decor_mut(&mut self) -> &mut Decor {
+        &mut self.dotted_decor
     }
 
     /// Returns the surrounding whitespace
+    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
     pub fn decor(&self) -> &Decor {
-        &self.decor
+        self.leaf_decor()
+    }
+
+    /// Returns the surrounding whitespace for the line entry
+    pub fn leaf_decor(&self) -> &Decor {
+        &self.leaf_decor
+    }
+
+    /// Returns the surrounding whitespace for between dots
+    pub fn dotted_decor(&self) -> &Decor {
+        &self.dotted_decor
     }
 
     /// Returns the location within the original document
@@ -115,7 +151,8 @@ impl Key {
     }
 
     pub(crate) fn despan(&mut self, input: &str) {
-        self.decor.despan(input);
+        self.leaf_decor.despan(input);
+        self.dotted_decor.despan(input);
         if let Some(repr) = &mut self.repr {
             repr.despan(input)
         }
@@ -124,7 +161,8 @@ impl Key {
     /// Auto formats the key.
     pub fn fmt(&mut self) {
         self.repr = None;
-        self.decor.clear();
+        self.leaf_decor.clear();
+        self.dotted_decor.clear();
     }
 
     #[cfg(feature = "parse")]
@@ -150,7 +188,8 @@ impl Clone for Key {
         Self {
             key: self.key.clone(),
             repr: self.repr.clone(),
-            decor: self.decor.clone(),
+            leaf_decor: self.leaf_decor.clone(),
+            dotted_decor: self.dotted_decor.clone(),
         }
     }
 }
@@ -214,7 +253,7 @@ impl PartialEq<String> for Key {
 #[cfg(feature = "display")]
 impl std::fmt::Display for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::encode::encode_key(self, f, None, ("", ""))
+        crate::encode::encode_key(self, f, None)
     }
 }
 
@@ -291,7 +330,7 @@ impl From<Key> for InternalString {
     }
 }
 
-/// A mutable reference to a `Key`
+/// A mutable reference to a `Key`'s formatting
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct KeyMut<'k> {
     key: &'k mut Key,
@@ -321,13 +360,37 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the surrounding whitespace
+    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
     pub fn decor_mut(&mut self) -> &mut Decor {
+        #![allow(deprecated)]
         self.key.decor_mut()
     }
 
+    /// Returns the surrounding whitespace for the line entry
+    pub fn leaf_decor_mut(&mut self) -> &mut Decor {
+        self.key.leaf_decor_mut()
+    }
+
+    /// Returns the surrounding whitespace for between dots
+    pub fn dotted_decor_mut(&mut self) -> &mut Decor {
+        self.key.dotted_decor_mut()
+    }
+
     /// Returns the surrounding whitespace
+    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
     pub fn decor(&self) -> &Decor {
+        #![allow(deprecated)]
         self.key.decor()
+    }
+
+    /// Returns the surrounding whitespace for the line entry
+    pub fn leaf_decor(&self) -> &Decor {
+        self.key.leaf_decor()
+    }
+
+    /// Returns the surrounding whitespace for between dots
+    pub fn dotted_decor(&self) -> &Decor {
+        self.key.dotted_decor()
     }
 
     /// Auto formats the key.
