@@ -218,14 +218,23 @@ impl Table {
         &self.decor
     }
 
-    /// Returns the decor associated with a given key of the table.
-    pub fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
-        self.items.get_mut(key).map(|kv| &mut kv.key.decor)
+    /// Returns an accessor to a key's formatting
+    pub fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
+        self.items.get_mut(key).map(|kv| kv.key.as_mut())
     }
 
     /// Returns the decor associated with a given key of the table.
+    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
+    pub fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
+        #![allow(deprecated)]
+        self.items.get_mut(key).map(|kv| kv.key.leaf_decor_mut())
+    }
+
+    /// Returns the decor associated with a given key of the table.
+    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
     pub fn key_decor(&self, key: &str) -> Option<&Decor> {
-        self.items.get(key).map(|kv| &kv.key.decor)
+        #![allow(deprecated)]
+        self.items.get(key).map(|kv| kv.key.leaf_decor())
     }
 
     /// Returns the location within the original document
@@ -475,13 +484,14 @@ impl<'s> IntoIterator for &'s Table {
 pub(crate) type KeyValuePairs = IndexMap<InternalString, TableKeyValue>;
 
 fn decorate_table(table: &mut Table) {
-    for (key_decor, value) in table
+    for (mut key, value) in table
         .items
         .iter_mut()
         .filter(|(_, kv)| kv.value.is_value())
-        .map(|(_, kv)| (&mut kv.key.decor, kv.value.as_value_mut().unwrap()))
+        .map(|(_, kv)| (kv.key.as_mut(), kv.value.as_value_mut().unwrap()))
     {
-        key_decor.clear();
+        key.leaf_decor_mut().clear();
+        key.dotted_decor_mut().clear();
         value.decor_mut().clear();
     }
 }
@@ -561,9 +571,13 @@ pub trait TableLike: crate::private::Sealed {
     /// Check if this is a wrapper for dotted keys, rather than a standard table
     fn is_dotted(&self) -> bool;
 
+    /// Returns an accessor to a key's formatting
+    fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>>;
     /// Returns the decor associated with a given key of the table.
+    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
     fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor>;
     /// Returns the decor associated with a given key of the table.
+    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
     fn key_decor(&self, key: &str) -> Option<&Decor>;
 }
 
@@ -621,10 +635,15 @@ impl TableLike for Table {
         self.set_dotted(yes)
     }
 
+    fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
+        self.key_mut(key)
+    }
     fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
+        #![allow(deprecated)]
         self.key_decor_mut(key)
     }
     fn key_decor(&self, key: &str) -> Option<&Decor> {
+        #![allow(deprecated)]
         self.key_decor(key)
     }
 }

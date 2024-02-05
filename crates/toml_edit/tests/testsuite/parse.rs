@@ -1501,20 +1501,7 @@ clippy.cast_lossless = "warn"
 clippy.doc_markdown = "warn"
 clippy.exhaustive_enums = "warn"
 "###;
-    let expected = r###"
-rust.unsafe_op_in_unsafe_fn = "deny"
-
-rust.explicit_outlives_requirements = "warn"
-# rust.unused_crate_dependencies = "warn"
-
-clippy.cast_lossless = "warn"
-# rust.unused_crate_dependencies = "warn"
-
-clippy.doc_markdown = "warn"
-# rust.unused_crate_dependencies = "warn"
-
-clippy.exhaustive_enums = "warn"
-"###;
+    let expected = input;
 
     let manifest: toml_edit::Document = input.parse().unwrap();
     let actual = manifest.to_string();
