@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Internal
+
+- Update `toml_edit` dependency
+
 ## [0.8.9] - 2024-01-31
 
 ### Fixes
