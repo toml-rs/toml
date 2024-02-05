@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Change
+
+- `Key::decor` is now tracked in `Key::dotted_decor` and `Key::leaf_decor`
+
+### Fixes
+
+- *(edit)* When a comment exists on a line before a dotted key, don't duplicate it on all following dotted keys under the same root key
+
 ## [0.21.1] - 2024-01-31
 
 ### Fixes
