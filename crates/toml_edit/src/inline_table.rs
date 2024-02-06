@@ -186,7 +186,7 @@ impl InlineTable {
     }
 
     /// Returns an accessor to a key's formatting
-    pub fn key(&mut self, key: &str) -> Option<&'_ Key> {
+    pub fn key(&self, key: &str) -> Option<&'_ Key> {
         self.items.get(key).map(|kv| &kv.key)
     }
 
@@ -578,7 +578,7 @@ impl TableLike for InlineTable {
         self.is_dotted()
     }
 
-    fn key(&mut self, key: &str) -> Option<&'_ Key> {
+    fn key(&self, key: &str) -> Option<&'_ Key> {
         self.key(key)
     }
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
