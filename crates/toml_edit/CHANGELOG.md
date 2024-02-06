@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Table::key`
+
 ## [0.22.0] - 2024-02-05
 
 ### Breaking Change
