@@ -186,7 +186,7 @@ impl InlineTable {
     }
 
     /// Returns an accessor to a key's formatting
-    fn key(&mut self, key: &str) -> Option<&'_ Key> {
+    pub fn key(&mut self, key: &str) -> Option<&'_ Key> {
         self.items.get(key).map(|kv| &kv.key)
     }
 
