@@ -219,6 +219,11 @@ impl Table {
     }
 
     /// Returns an accessor to a key's formatting
+    fn key(&mut self, key: &str) -> Option<&'_ Key> {
+        self.items.get(key).map(|kv| &kv.key)
+    }
+
+    /// Returns an accessor to a key's formatting
     pub fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
         self.items.get_mut(key).map(|kv| kv.key.as_mut())
     }
@@ -572,6 +577,8 @@ pub trait TableLike: crate::private::Sealed {
     fn is_dotted(&self) -> bool;
 
     /// Returns an accessor to a key's formatting
+    fn key(&mut self, key: &str) -> Option<&'_ Key>;
+    /// Returns an accessor to a key's formatting
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>>;
     /// Returns the decor associated with a given key of the table.
     #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
@@ -635,6 +642,9 @@ impl TableLike for Table {
         self.set_dotted(yes)
     }
 
+    fn key(&mut self, key: &str) -> Option<&'_ Key> {
+        self.key(key)
+    }
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
         self.key_mut(key)
     }
