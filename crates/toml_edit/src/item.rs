@@ -390,3 +390,10 @@ pub fn table() -> Item {
 pub fn array() -> Item {
     Item::ArrayOfTables(ArrayOfTables::new())
 }
+
+#[test]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
+fn string_roundtrip() {
+    value("hello").to_string().parse::<Item>().unwrap();
+}

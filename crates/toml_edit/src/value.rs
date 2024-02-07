@@ -376,3 +376,10 @@ mod tests {
         assert_eq!(features.to_string(), r#"["node", "mouth"]"#);
     }
 }
+
+#[test]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
+fn string_roundtrip() {
+    Value::from("hello").to_string().parse::<Value>().unwrap();
+}
