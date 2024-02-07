@@ -111,3 +111,10 @@ impl From<Table> for Document {
         }
     }
 }
+
+#[test]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
+fn default_roundtrip() {
+    Document::default().to_string().parse::<Document>().unwrap();
+}

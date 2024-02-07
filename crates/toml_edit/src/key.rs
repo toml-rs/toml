@@ -434,3 +434,10 @@ impl<'k> std::fmt::Display for KeyMut<'k> {
         std::fmt::Display::fmt(&self.key, f)
     }
 }
+
+#[test]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
+fn string_roundtrip() {
+    Key::new("hello").to_string().parse::<Key>().unwrap();
+}
