@@ -48,11 +48,11 @@ toml_datetime = { version = "0.6.5", path = "../toml_datetime" }
 serde_spanned = { version = "0.6.5", path = "../serde_spanned", features = ["serde"], optional = true }
 
 [dev-dependencies]
-serde_json = "1.0.96"
+serde_json = "1.0.113"
 toml-test-harness = "0.4.8"
 toml-test-data = "1.8.0"
 libtest-mimic = "0.7.0"
-snapbox = { version = "0.4.11", features = ["harness"] }
+snapbox = { version = "0.4.16", features = ["harness"] }
 
 [[test]]
 name = "testsuite"
