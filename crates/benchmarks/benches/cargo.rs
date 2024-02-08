@@ -1,39 +1,69 @@
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+mod toml_edit {
+    use super::*;
 
-fn cargo_manifest(c: &mut Criterion) {
-    let mut group = c.benchmark_group("cargo_manifest");
-    for (name, sample) in MANIFESTS {
-        let len = sample.len();
-        group.throughput(Throughput::Bytes(len as u64));
-
-        group.bench_with_input(BenchmarkId::new("toml_edit", name), &len, |b, _| {
-            sample.parse::<toml_edit::Document>().unwrap();
-            b.iter(|| sample.parse::<toml_edit::Document>());
-        });
-        group.bench_with_input(BenchmarkId::new("toml::Value", name), &len, |b, _| {
-            sample.parse::<toml::Value>().unwrap();
-            b.iter(|| sample.parse::<toml::Value>());
-        });
-        group.bench_with_input(BenchmarkId::new("toml::de", name), &len, |b, _| {
-            toml::from_str::<manifest::Manifest>(sample).unwrap();
-            b.iter(|| toml::from_str::<manifest::Manifest>(sample));
-        });
-        group.bench_with_input(BenchmarkId::new("toml_old::Value", name), &len, |b, _| {
-            sample.parse::<toml_old::Value>().unwrap();
-            b.iter(|| sample.parse::<toml_old::Value>());
-        });
-        group.bench_with_input(BenchmarkId::new("toml_old::de", name), &len, |b, _| {
-            toml_old::from_str::<manifest::Manifest>(sample).unwrap();
-            b.iter(|| toml_old::from_str::<manifest::Manifest>(sample));
-        });
+    #[divan::bench(args=MANIFESTS)]
+    fn document(sample: &Data) -> ::toml_edit::Document {
+        sample.content().parse().unwrap()
     }
-    group.finish();
+
+    #[divan::bench(args=MANIFESTS)]
+    fn manifest(sample: &Data) -> manifest::Manifest {
+        ::toml_edit::de::from_str(sample.content()).unwrap()
+    }
 }
 
-criterion_group!(benches, cargo_manifest);
-criterion_main!(benches);
+mod toml {
+    use super::*;
 
-const MANIFESTS: &[(&str, &str)] = &[("minimal", MINIMAL), ("medium", MEDIUM)];
+    #[divan::bench(args=MANIFESTS)]
+    fn document(sample: &Data) -> ::toml::Value {
+        sample.content().parse().unwrap()
+    }
+
+    #[divan::bench(args=MANIFESTS)]
+    fn manifest(sample: &Data) -> manifest::Manifest {
+        ::toml::de::from_str(sample.content()).unwrap()
+    }
+}
+
+mod toml_v05 {
+    use super::*;
+
+    #[divan::bench(args=MANIFESTS)]
+    fn document(sample: &Data) -> ::toml_old::Value {
+        sample.content().parse().unwrap()
+    }
+
+    #[divan::bench(args=MANIFESTS)]
+    fn manifest(sample: &Data) -> manifest::Manifest {
+        ::toml_old::de::from_str(sample.content()).unwrap()
+    }
+}
+
+fn main() {
+    divan::main();
+}
+
+#[derive(Debug)]
+pub struct Data(&'static str, &'static str);
+
+impl Data {
+    pub const fn name(&self) -> &'static str {
+        self.0
+    }
+
+    pub const fn content(&self) -> &'static str {
+        self.1
+    }
+}
+
+impl std::fmt::Display for Data {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.name().fmt(f)
+    }
+}
+
+const MANIFESTS: &[Data] = &[Data("0-minimal", MINIMAL), Data("1-medium", MEDIUM)];
 
 const MINIMAL: &str = r#"
 [package]

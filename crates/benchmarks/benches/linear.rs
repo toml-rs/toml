@@ -1,84 +1,79 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+const NUM_ENTRIES: &[usize] = &[10, 100];
 
-fn map(c: &mut Criterion) {
-    let mut group = c.benchmark_group("map");
-    let samples = [10, 100];
-    for sample in samples {
+mod map {
+    use super::*;
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn toml_edit(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| sample.parse::<toml_edit::Document>().unwrap())
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn toml(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| sample.parse::<toml::Table>().unwrap())
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn toml_v05(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| sample.parse::<toml_old::Value>().unwrap())
+    }
+
+    fn gen(num_entries: usize) -> String {
         let mut s = String::new();
-        for i in 0..sample {
+        for i in 0..num_entries {
             s += &format!("[header_no_{}]\n", i);
             s += "entry = 42\n"
         }
-        let len = s.len();
-        group.throughput(Throughput::Bytes(len as u64));
-
-        group.bench_with_input(BenchmarkId::new("toml_edit", sample), &sample, |b, _| {
-            let s = s.clone();
-            s.parse::<toml_edit::Document>().unwrap();
-            let s = black_box(s);
-            b.iter(|| {
-                black_box(s.parse::<toml_edit::Document>().unwrap());
-            })
-        });
-        group.bench_with_input(BenchmarkId::new("toml", sample), &sample, |b, _| {
-            let s = s.clone();
-            s.parse::<toml::Value>().unwrap();
-            let s = black_box(s);
-            b.iter(|| {
-                black_box(s.parse::<toml::Value>().unwrap());
-            })
-        });
-        group.bench_with_input(BenchmarkId::new("toml-v0.5", sample), &sample, |b, _| {
-            let s = s.clone();
-            s.parse::<toml_old::Value>().unwrap();
-            let s = black_box(s);
-            b.iter(|| {
-                black_box(s.parse::<toml_old::Value>().unwrap());
-            })
-        });
+        s
     }
-    group.finish();
 }
 
-fn array(c: &mut Criterion) {
-    let mut group = c.benchmark_group("array");
-    let samples = [10, 100];
-    for sample in samples {
+mod array {
+    use super::*;
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn toml_edit(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| sample.parse::<toml_edit::Document>().unwrap())
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn toml(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| sample.parse::<toml::Table>().unwrap())
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn toml_v05(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| sample.parse::<toml_old::Value>().unwrap())
+    }
+
+    fn gen(num_entries: usize) -> String {
         let mut s = String::new();
-        for _ in 0..sample {
+        for _ in 0..num_entries {
             s += "[[header]]\n";
             s += "entry = 42\n"
         }
-        let len = s.len();
-        group.throughput(Throughput::Bytes(len as u64));
-
-        group.bench_with_input(BenchmarkId::new("toml_edit", sample), &sample, |b, _| {
-            let s = s.clone();
-            s.parse::<toml_edit::Document>().unwrap();
-            let s = black_box(s);
-            b.iter(|| {
-                black_box(s.parse::<toml_edit::Document>().unwrap());
-            })
-        });
-        group.bench_with_input(BenchmarkId::new("toml", sample), &sample, |b, _| {
-            let s = s.clone();
-            s.parse::<toml::Value>().unwrap();
-            let s = black_box(s);
-            b.iter(|| {
-                black_box(s.parse::<toml::Value>().unwrap());
-            })
-        });
-        group.bench_with_input(BenchmarkId::new("toml-v0.5", sample), &sample, |b, _| {
-            let s = s.clone();
-            s.parse::<toml_old::Value>().unwrap();
-            let s = black_box(s);
-            b.iter(|| {
-                black_box(s.parse::<toml_old::Value>().unwrap());
-            })
-        });
+        s
     }
-    group.finish();
 }
 
-criterion_group!(benches, map, array);
-criterion_main!(benches);
+fn main() {
+    divan::main();
+}
