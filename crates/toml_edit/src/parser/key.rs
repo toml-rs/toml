@@ -1,10 +1,10 @@
 use std::ops::RangeInclusive;
 
 use winnow::combinator::peek;
-use winnow::combinator::separated1;
+use winnow::combinator::separated;
+use winnow::combinator::trace;
 use winnow::token::any;
 use winnow::token::take_while;
-use winnow::trace::trace;
 
 use crate::key::Key;
 use crate::parser::error::CustomError;
@@ -20,7 +20,8 @@ use crate::RawString;
 pub(crate) fn key(input: &mut Input<'_>) -> PResult<Vec<Key>> {
     let mut key_path = trace(
         "dotted-key",
-        separated1(
+        separated(
+            1..,
             (ws.span(), simple_key, ws.span()).map(|(pre, (raw, key), suffix)| {
                 Key::new(key)
                     .with_repr_unchecked(Repr::new_unchecked(raw))

@@ -5,9 +5,9 @@ use winnow::combinator::eof;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::repeat;
+use winnow::combinator::trace;
 use winnow::token::any;
 use winnow::token::one_of;
-use winnow::trace::trace;
 
 use crate::document::Document;
 use crate::key::Key;

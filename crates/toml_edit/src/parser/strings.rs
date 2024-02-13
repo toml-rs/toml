@@ -5,21 +5,20 @@ use std::ops::RangeInclusive;
 use winnow::combinator::alt;
 use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
+use winnow::combinator::empty;
 use winnow::combinator::fail;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::preceded;
 use winnow::combinator::repeat;
-use winnow::combinator::success;
 use winnow::combinator::terminated;
+use winnow::combinator::trace;
 use winnow::prelude::*;
 use winnow::stream::Stream;
 use winnow::token::any;
 use winnow::token::none_of;
 use winnow::token::one_of;
-use winnow::token::tag;
 use winnow::token::take_while;
-use winnow::trace::trace;
 
 use crate::parser::error::CustomError;
 use crate::parser::numbers::HEXDIG;
@@ -110,15 +109,15 @@ pub(crate) const ESCAPE: u8 = b'\\';
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
 fn escape_seq_char(input: &mut Input<'_>) -> PResult<char> {
     dispatch! {any;
-        b'b' => success('\u{8}'),
-        b'f' => success('\u{c}'),
-        b'n' => success('\n'),
-        b'r' => success('\r'),
-        b't' => success('\t'),
+        b'b' => empty.value('\u{8}'),
+        b'f' => empty.value('\u{c}'),
+        b'n' => empty.value('\n'),
+        b'r' => empty.value('\r'),
+        b't' => empty.value('\t'),
         b'u' => cut_err(hexescape::<4>).context(StrContext::Label("unicode 4-digit hex code")),
         b'U' => cut_err(hexescape::<8>).context(StrContext::Label("unicode 8-digit hex code")),
-        b'\\' => success('\\'),
-        b'"' => success('"'),
+        b'\\' => empty.value('\\'),
+        b'"' => empty.value('"'),
         _ => {
             cut_err(fail::<_, char, _>)
             .context(StrContext::Label("escape sequence"))
@@ -187,7 +186,7 @@ fn ml_basic_body<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
         }
     }
 
-    if let Some(qi) = opt(mlb_quotes(tag(ML_BASIC_STRING_DELIM).value(()))).parse_next(input)? {
+    if let Some(qi) = opt(mlb_quotes(ML_BASIC_STRING_DELIM.void())).parse_next(input)? {
         c.to_mut().push_str(qi);
     }
 
@@ -223,7 +222,7 @@ fn mlb_quotes<'i>(
 
         match res {
             Err(winnow::error::ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 terminated(b"\"", peek(term.by_ref()))
                     .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
                     .parse_next(input)
@@ -320,7 +319,7 @@ fn ml_literal_body<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
             ),
         )
         .map(|()| ()),
-        opt(mll_quotes(tag(ML_LITERAL_STRING_DELIM).value(()))),
+        opt(mll_quotes(ML_LITERAL_STRING_DELIM.void())),
     )
         .recognize()
         .try_map(std::str::from_utf8)
@@ -352,7 +351,7 @@ fn mll_quotes<'i>(
 
         match res {
             Err(winnow::error::ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 terminated(b"'", peek(term.by_ref()))
                     .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
                     .parse_next(input)

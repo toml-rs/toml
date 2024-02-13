@@ -9,10 +9,10 @@ use winnow::combinator::alt;
 use winnow::combinator::cut_err;
 use winnow::combinator::opt;
 use winnow::combinator::preceded;
+use winnow::combinator::trace;
 use winnow::stream::Stream as _;
 use winnow::token::one_of;
 use winnow::token::take_while;
-use winnow::trace::trace;
 
 // ;; Date and Time (as defined in RFC 3339)
 
@@ -73,7 +73,7 @@ fn full_date_(input: &mut Input<'_>) -> PResult<Date> {
         _ => 31,
     };
     if max_days_in_month < day {
-        input.reset(day_start);
+        input.reset(&day_start);
         return Err(winnow::error::ErrMode::from_external_error(
             input,
             winnow::error::ErrorKind::Verify,

@@ -1,8 +1,8 @@
 use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
-use winnow::combinator::separated1;
-use winnow::trace::trace;
+use winnow::combinator::separated;
+use winnow::combinator::trace;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
@@ -44,16 +44,16 @@ pub(crate) fn array_values<'i>(
     move |input: &mut Input<'i>| {
         let check = check.recursing(input)?;
         (
-            opt(
-                (separated1(array_value(check), ARRAY_SEP), opt(ARRAY_SEP)).map(
-                    |(v, trailing): (Vec<Value>, Option<u8>)| {
-                        (
-                            Array::with_vec(v.into_iter().map(Item::Value).collect()),
-                            trailing.is_some(),
-                        )
-                    },
-                ),
-            ),
+            opt((
+                separated(1.., array_value(check), ARRAY_SEP),
+                opt(ARRAY_SEP),
+            )
+                .map(|(v, trailing): (Vec<Value>, Option<u8>)| {
+                    (
+                        Array::with_vec(v.into_iter().map(Item::Value).collect()),
+                        trailing.is_some(),
+                    )
+                })),
             ws_comment_newline.span(),
         )
             .try_map::<_, _, std::str::Utf8Error>(|(array, trailing)| {

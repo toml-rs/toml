@@ -99,7 +99,7 @@ pub(crate) fn ws_comment_newline<'i>(input: &mut Input<'i>) -> PResult<&'i [u8]>
                 alt((take_while(1.., WSCHAR), newline.value(&b"\n"[..]))),
             )
             .map(|()| ()),
-            comment.value(()),
+            comment.void(),
         )),
     )
     .map(|()| ())
