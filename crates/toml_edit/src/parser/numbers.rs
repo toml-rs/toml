@@ -7,10 +7,9 @@ use winnow::combinator::peek;
 use winnow::combinator::preceded;
 use winnow::combinator::repeat;
 use winnow::combinator::rest;
+use winnow::combinator::trace;
 use winnow::token::one_of;
-use winnow::token::tag;
 use winnow::token::take;
-use winnow::trace::trace;
 
 use crate::parser::prelude::*;
 use crate::parser::trivia::from_utf8_unchecked;
@@ -63,20 +62,20 @@ pub(crate) fn dec_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                     repeat(
                         0..,
                         alt((
-                            digit.value(()),
+                            digit.void(),
                             (
                                 one_of(b'_'),
                                 cut_err(digit).context(StrContext::Expected(
                                     StrContextValue::Description("digit"),
                                 )),
                             )
-                                .value(()),
+                                .void(),
                         )),
                     )
                     .map(|()| ()),
                 )
-                    .value(()),
-                digit.value(()),
+                    .void(),
+                digit.void(),
             )),
         )
             .recognize()
@@ -101,14 +100,14 @@ pub(crate) fn hex_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 repeat(
                     0..,
                     alt((
-                        hexdig.value(()),
+                        hexdig.void(),
                         (
                             one_of(b'_'),
                             cut_err(hexdig).context(StrContext::Expected(
                                 StrContextValue::Description("digit"),
                             )),
                         )
-                            .value(()),
+                            .void(),
                     )),
                 )
                 .map(|()| ()),
@@ -134,14 +133,14 @@ pub(crate) fn oct_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 repeat(
                     0..,
                     alt((
-                        one_of(DIGIT0_7).value(()),
+                        one_of(DIGIT0_7).void(),
                         (
                             one_of(b'_'),
                             cut_err(one_of(DIGIT0_7)).context(StrContext::Expected(
                                 StrContextValue::Description("digit"),
                             )),
                         )
-                            .value(()),
+                            .void(),
                     )),
                 )
                 .map(|()| ()),
@@ -168,14 +167,14 @@ pub(crate) fn bin_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 repeat(
                     0..,
                     alt((
-                        one_of(DIGIT0_1).value(()),
+                        one_of(DIGIT0_1).void(),
                         (
                             one_of(b'_'),
                             cut_err(one_of(DIGIT0_1)).context(StrContext::Expected(
                                 StrContextValue::Description("digit"),
                             )),
                         )
-                            .value(()),
+                            .void(),
                     )),
                 )
                 .map(|()| ()),
@@ -250,13 +249,13 @@ pub(crate) fn zero_prefixable_int<'i>(input: &mut Input<'i>) -> PResult<&'i str>
         repeat(
             0..,
             alt((
-                digit.value(()),
+                digit.void(),
                 (
                     one_of(b'_'),
                     cut_err(digit)
                         .context(StrContext::Expected(StrContextValue::Description("digit"))),
                 )
-                    .value(()),
+                    .void(),
             )),
         )
         .map(|()| ()),
@@ -296,12 +295,12 @@ pub(crate) fn special_float(input: &mut Input<'_>) -> PResult<f64> {
 }
 // inf = %x69.6e.66  ; inf
 pub(crate) fn inf(input: &mut Input<'_>) -> PResult<f64> {
-    tag(INF).value(f64::INFINITY).parse_next(input)
+    INF.value(f64::INFINITY).parse_next(input)
 }
 const INF: &[u8] = b"inf";
 // nan = %x6e.61.6e  ; nan
 pub(crate) fn nan(input: &mut Input<'_>) -> PResult<f64> {
-    tag(NAN).value(f64::NAN.copysign(1.0)).parse_next(input)
+    NAN.value(f64::NAN.copysign(1.0)).parse_next(input)
 }
 const NAN: &[u8] = b"nan";
 

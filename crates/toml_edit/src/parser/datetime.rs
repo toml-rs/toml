@@ -9,10 +9,10 @@ use winnow::combinator::alt;
 use winnow::combinator::cut_err;
 use winnow::combinator::opt;
 use winnow::combinator::preceded;
+use winnow::combinator::trace;
 use winnow::stream::Stream as _;
 use winnow::token::one_of;
 use winnow::token::take_while;
-use winnow::trace::trace;
 
 // ;; Date and Time (as defined in RFC 3339)
 
