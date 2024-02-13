@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Internal
+
+- Update `winnow`
+
 ## [0.22.4] - 2024-02-06
 
 ## [0.22.3] - 2024-02-06
