@@ -222,7 +222,7 @@ fn mlb_quotes<'i>(
 
         match res {
             Err(winnow::error::ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 terminated(b"\"", peek(term.by_ref()))
                     .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
                     .parse_next(input)
@@ -351,7 +351,7 @@ fn mll_quotes<'i>(
 
         match res {
             Err(winnow::error::ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 terminated(b"'", peek(term.by_ref()))
                     .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
                     .parse_next(input)

@@ -73,7 +73,7 @@ fn full_date_(input: &mut Input<'_>) -> PResult<Date> {
         _ => 31,
     };
     if max_days_in_month < day {
-        input.reset(day_start);
+        input.reset(&day_start);
         return Err(winnow::error::ErrMode::from_external_error(
             input,
             winnow::error::ErrorKind::Verify,
