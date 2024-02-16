@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Correctly point people to `Key::decor` / `Key::decor_mut` replacements
+
 ## [0.22.5] - 2024-02-13
 
 ### Internal
