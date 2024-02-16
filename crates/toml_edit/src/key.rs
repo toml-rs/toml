@@ -113,7 +113,10 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
+    #[deprecated(
+        since = "0.21.1",
+        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
+    )]
     pub fn decor_mut(&mut self) -> &mut Decor {
         self.leaf_decor_mut()
     }
@@ -129,7 +132,7 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
+    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
     pub fn decor(&self) -> &Decor {
         self.leaf_decor()
     }
@@ -360,7 +363,10 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
+    #[deprecated(
+        since = "0.21.1",
+        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
+    )]
     pub fn decor_mut(&mut self) -> &mut Decor {
         #![allow(deprecated)]
         self.key.decor_mut()
@@ -377,7 +383,7 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
+    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
     pub fn decor(&self) -> &Decor {
         #![allow(deprecated)]
         self.key.decor()
