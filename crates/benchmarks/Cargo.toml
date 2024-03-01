@@ -12,10 +12,10 @@ release = false
 toml = { path = "../toml" }
 toml_edit = { path = "../toml_edit" }
 toml_old = { version = "0.5.10", package = "toml" }
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.113"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
 lexopt = "0.3.0"
-divan = "0.1.11"
+divan = "0.1.14"
 
 [[bench]]
 name = "cargo"
