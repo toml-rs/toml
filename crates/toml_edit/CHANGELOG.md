@@ -47,6 +47,10 @@ The format is based on [Keep a Changelog].
 
 - *(de)* Improve error span for empty tables
 
+### Compatibility
+
+MSRV is now 1.69
+
 ## [0.21.0] - 2023-11-06
 
 ### Breaking Change
