@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+MSRV is now 1.70
+
 ## [0.8.10] - 2024-02-05
 
 ### Internal
@@ -18,6 +22,10 @@ The format is based on [Keep a Changelog].
 ### Fixes
 
 - *(de)* Improve error span for empty tables
+
+### Compatibility
+
+MSRV is now 1.69
 
 ## [0.8.8] - 2023-11-06
 
@@ -47,6 +55,10 @@ The format is based on [Keep a Changelog].
 - *(parser)* Error on invalid days of month, accounting for leap years
 
 ## [0.8.3] - 2023-10-23
+
+### Compatibility
+
+MSRV is now 1.67
 
 ## [0.8.2] - 2023-10-03
 
@@ -81,6 +93,10 @@ The format is based on [Keep a Changelog].
 ### Fixes
 
 - *(ser)* Error rather than drop whole arrays when a single element is `None`
+
+### Compatibility
+
+MSRV is now 1.66.0
 
 ## [0.7.6] - 2023-07-05
 
