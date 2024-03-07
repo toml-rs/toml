@@ -19,6 +19,10 @@ The format is based on [Keep a Changelog].
 
 - Update `winnow`
 
+### Compatibility
+
+MSRV is now 1.70
+
 ## [0.22.4] - 2024-02-06
 
 ## [0.22.3] - 2024-02-06
@@ -88,6 +92,10 @@ MSRV is now 1.69
 
 - *(edit)* Add `Array::sort_by_key`
 
+### Compatibility
+
+MSRV is now 1.67
+
 ## [0.20.2] - 2023-10-03
 
 ### Fixes
@@ -115,6 +123,10 @@ MSRV is now 1.69
 ### Fixes
 
 - *(ser)* Error rather than drop whole arrays when a single element is `None`
+
+### Compatibility
+
+MSRV is now 1.66.0
 
 ## [0.19.14] - 2023-07-14
 
