@@ -27,13 +27,13 @@ impl ParseState {
         }
     }
 
-    pub(crate) fn into_document(mut self) -> Result<Document, CustomError> {
+    pub(crate) fn into_document(mut self, raw: &str) -> Result<Document, CustomError> {
         self.finalize_table()?;
         let trailing = self.trailing.map(RawString::with_span).unwrap_or_default();
         Ok(Document {
             root: Item::Table(self.root),
             trailing,
-            raw: None,
+            raw: Some(raw.to_owned()),
         })
     }
 

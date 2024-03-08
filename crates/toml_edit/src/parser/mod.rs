@@ -25,12 +25,10 @@ pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
     document::document(state_ref)
         .parse(b)
         .map_err(|e| TomlError::new(e, b))?;
-    let mut doc = state
+    let doc = state
         .into_inner()
-        .into_document()
+        .into_document(raw)
         .map_err(|e| TomlError::custom(e.to_string(), None))?;
-    doc.span = Some(0..(raw.len()));
-    doc.raw = Some(raw.to_owned());
     Ok(doc)
 }
 
