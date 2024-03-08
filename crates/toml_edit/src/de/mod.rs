@@ -107,11 +107,11 @@ where
 }
 
 /// Convert a [Document][crate::Document] into `T`.
-pub fn from_document<T>(d: crate::Document) -> Result<T, Error>
+pub fn from_document<T>(d: impl Into<Deserializer>) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let deserializer = Deserializer::new(d);
+    let deserializer = d.into();
     T::deserialize(deserializer)
 }
 
