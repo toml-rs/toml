@@ -127,6 +127,12 @@ impl Deserializer {
         let crate::Document { root, raw, .. } = input;
         Self { root, raw }
     }
+
+    fn new_im(input: crate::ImDocument<String>) -> Self {
+        let crate::ImDocument { root, raw, .. } = input;
+        let raw = Some(raw);
+        Self { root, raw }
+    }
 }
 
 #[cfg(feature = "parse")]
@@ -135,10 +141,8 @@ impl std::str::FromStr for Deserializer {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let d = crate::parser::parse_document(s)
-            .map_err(Error::from)?
-            .into_spanned_document();
-        Ok(Self::new(d))
+        let doc = s.parse().map_err(Error::from)?;
+        Ok(Deserializer::new_im(doc))
     }
 }
 

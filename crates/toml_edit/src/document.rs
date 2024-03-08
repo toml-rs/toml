@@ -59,17 +59,13 @@ impl<S: AsRef<str>> ImDocument<S> {
 impl<S: Into<String>> ImDocument<S> {
     /// Allow editing of the [`Document`]
     pub fn into_mut(self) -> Document {
-        let mut doc = self.into_spanned_document();
-        doc.despan();
-        doc
-    }
-
-    pub(crate) fn into_spanned_document(self) -> Document {
-        Document {
+        let mut doc = Document {
             root: self.root,
             trailing: self.trailing,
             raw: Some(self.raw.into()),
-        }
+        };
+        doc.despan();
+        doc
     }
 }
 
