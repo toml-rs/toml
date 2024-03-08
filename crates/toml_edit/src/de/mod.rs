@@ -124,12 +124,20 @@ pub struct Deserializer {
 impl Deserializer {
     /// Deserialization implementation for TOML.
     pub fn new(input: crate::Document) -> Self {
-        let crate::Document { root, raw, .. } = input;
+        Self::from(input)
+    }
+}
+
+impl From<crate::Document> for Deserializer {
+    fn from(doc: crate::Document) -> Self {
+        let crate::Document { root, raw, .. } = doc;
         Self { root, raw }
     }
+}
 
-    fn new_im(input: crate::ImDocument<String>) -> Self {
-        let crate::ImDocument { root, raw, .. } = input;
+impl From<crate::ImDocument<String>> for Deserializer {
+    fn from(doc: crate::ImDocument<String>) -> Self {
+        let crate::ImDocument { root, raw, .. } = doc;
         let raw = Some(raw);
         Self { root, raw }
     }
@@ -141,8 +149,8 @@ impl std::str::FromStr for Deserializer {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let doc = s.parse().map_err(Error::from)?;
-        Ok(Deserializer::new_im(doc))
+        let doc: crate::ImDocument<_> = s.parse().map_err(Error::from)?;
+        Ok(Deserializer::from(doc))
     }
 }
 
@@ -257,7 +265,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
-        Deserializer::new(self)
+        Deserializer::from(self)
     }
 }
 
