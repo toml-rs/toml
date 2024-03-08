@@ -1,5 +1,6 @@
 #![allow(clippy::type_complexity)]
 
+use std::cell::RefCell;
 pub(crate) mod array;
 pub(crate) mod datetime;
 pub(crate) mod document;
@@ -19,9 +20,15 @@ pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let mut doc = document::document
+    let state = RefCell::new(state::ParseState::new());
+    let state_ref = &state;
+    document::document(state_ref)
         .parse(b)
         .map_err(|e| TomlError::new(e, b))?;
+    let mut doc = state
+        .into_inner()
+        .into_document()
+        .map_err(|e| TomlError::custom(e.to_string(), None))?;
     doc.span = Some(0..(raw.len()));
     doc.raw = Some(raw.to_owned());
     Ok(doc)

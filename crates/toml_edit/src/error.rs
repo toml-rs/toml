@@ -39,7 +39,7 @@ impl TomlError {
         }
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(any(feature = "serde", feature = "parse"))]
     pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,

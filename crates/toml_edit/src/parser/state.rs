@@ -14,6 +14,19 @@ pub(crate) struct ParseState {
 }
 
 impl ParseState {
+    pub(crate) fn new() -> Self {
+        let mut root = Table::new();
+        root.span = Some(0..0);
+        Self {
+            document: Document::new(),
+            trailing: None,
+            current_table_position: 0,
+            current_table: root,
+            current_is_array: false,
+            current_table_path: Vec::new(),
+        }
+    }
+
     pub(crate) fn into_document(mut self) -> Result<Document, CustomError> {
         self.finalize_table()?;
         let trailing = self.trailing.map(RawString::with_span);
@@ -299,20 +312,5 @@ impl ParseState {
         )?;
 
         Ok(())
-    }
-}
-
-impl Default for ParseState {
-    fn default() -> Self {
-        let mut root = Table::new();
-        root.span = Some(0..0);
-        Self {
-            document: Document::new(),
-            trailing: None,
-            current_table_position: 0,
-            current_table: root,
-            current_is_array: false,
-            current_table_path: Vec::new(),
-        }
     }
 }
