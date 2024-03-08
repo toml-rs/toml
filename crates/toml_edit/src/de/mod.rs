@@ -269,6 +269,14 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document
     }
 }
 
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::ImDocument<String> {
+    type Deserializer = Deserializer;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        Deserializer::from(self)
+    }
+}
+
 pub(crate) fn validate_struct_keys(
     table: &crate::table::KeyValuePairs,
     fields: &'static [&'static str],
