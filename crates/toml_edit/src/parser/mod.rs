@@ -16,7 +16,7 @@ pub(crate) mod value;
 
 pub use crate::error::TomlError;
 
-pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
+pub(crate) fn parse_document(raw: &str) -> Result<crate::ImDocument<&str>, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
@@ -212,10 +212,7 @@ key = "value"
         ];
         for input in documents {
             dbg!(input);
-            let mut parsed = parse_document(input);
-            if let Ok(parsed) = &mut parsed {
-                parsed.despan();
-            }
+            let parsed = parse_document(input).map(|d| d.into_mut());
             let doc = match parsed {
                 Ok(doc) => doc,
                 Err(err) => {
@@ -240,10 +237,7 @@ authors = []
 "];
         for input in parse_only {
             dbg!(input);
-            let mut parsed = parse_document(input);
-            if let Ok(parsed) = &mut parsed {
-                parsed.despan();
-            }
+            let parsed = parse_document(input).map(|d| d.into_mut());
             match parsed {
                 Ok(_) => (),
                 Err(err) => {
@@ -262,10 +256,7 @@ authors = []
 $"#];
         for input in invalid_inputs {
             dbg!(input);
-            let mut parsed = parse_document(input);
-            if let Ok(parsed) = &mut parsed {
-                parsed.despan();
-            }
+            let parsed = parse_document(input).map(|d| d.into_mut());
             assert!(parsed.is_err(), "Input: {:?}", input);
         }
     }

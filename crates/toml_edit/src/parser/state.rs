@@ -2,7 +2,7 @@ use crate::key::Key;
 use crate::parser::error::CustomError;
 use crate::repr::Decor;
 use crate::table::TableKeyValue;
-use crate::{ArrayOfTables, Document, InternalString, Item, RawString, Table};
+use crate::{ArrayOfTables, ImDocument, InternalString, Item, RawString, Table};
 
 pub(crate) struct ParseState {
     root: Table,
@@ -27,13 +27,13 @@ impl ParseState {
         }
     }
 
-    pub(crate) fn into_document(mut self, raw: &str) -> Result<Document, CustomError> {
+    pub(crate) fn into_document(mut self, raw: &str) -> Result<ImDocument<&str>, CustomError> {
         self.finalize_table()?;
         let trailing = self.trailing.map(RawString::with_span).unwrap_or_default();
-        Ok(Document {
+        Ok(ImDocument {
             root: Item::Table(self.root),
             trailing,
-            raw: Some(raw.to_owned()),
+            raw,
         })
     }
 

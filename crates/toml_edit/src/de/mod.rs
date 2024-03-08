@@ -133,7 +133,9 @@ impl std::str::FromStr for Deserializer {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let d = crate::parser::parse_document(s).map_err(Error::from)?;
+        let d = crate::parser::parse_document(s)
+            .map_err(Error::from)?
+            .into_spanned_document();
         Ok(Self::new(d))
     }
 }

@@ -101,6 +101,7 @@ pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
 pub use crate::document::Document;
+pub use crate::document::ImDocument;
 pub use crate::error::TomlError;
 pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,
