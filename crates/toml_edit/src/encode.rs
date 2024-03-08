@@ -214,7 +214,7 @@ impl Display for Document {
         for (_, table, path, is_array) in tables {
             visit_table(
                 f,
-                self.original.as_deref(),
+                self.raw.as_deref(),
                 table,
                 &path,
                 is_array,
@@ -222,7 +222,7 @@ impl Display for Document {
             )?;
         }
         self.trailing()
-            .encode_with_default(f, self.original.as_deref(), "")
+            .encode_with_default(f, self.raw.as_deref(), "")
     }
 }
 

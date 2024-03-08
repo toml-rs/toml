@@ -147,13 +147,13 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.input.original;
+        let raw = self.input.raw;
         self.input
             .root
             .into_deserializer()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_original(original);
+                e.inner.set_raw(raw);
                 e
             })
     }
@@ -164,13 +164,13 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.input.original;
+        let raw = self.input.raw;
         self.input
             .root
             .into_deserializer()
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_original(original);
+                e.inner.set_raw(raw);
                 e
             })
     }
@@ -183,13 +183,13 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.input.original;
+        let raw = self.input.raw;
         self.input
             .root
             .into_deserializer()
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_original(original);
+                e.inner.set_raw(raw);
                 e
             })
     }
@@ -203,13 +203,13 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.input.original;
+        let raw = self.input.raw;
         self.input
             .root
             .into_deserializer()
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_original(original);
+                e.inner.set_raw(raw);
                 e
             })
     }
@@ -224,13 +224,13 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let original = self.input.original;
+        let raw = self.input.raw;
         self.input
             .root
             .into_deserializer()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_original(original);
+                e.inner.set_raw(raw);
                 e
             })
     }

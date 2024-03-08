@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,
-    original: Option<String>,
+    raw: Option<String>,
     keys: Vec<String>,
     span: Option<std::ops::Range<usize>>,
 }
@@ -17,25 +17,23 @@ impl TomlError {
             crate::parser::prelude::Input<'_>,
             winnow::error::ContextError,
         >,
-        mut original: crate::parser::prelude::Input<'_>,
+        mut raw: crate::parser::prelude::Input<'_>,
     ) -> Self {
         use winnow::stream::Stream;
 
         let offset = error.offset();
-        let span = if offset == original.len() {
+        let span = if offset == raw.len() {
             offset..offset
         } else {
             offset..(offset + 1)
         };
 
         let message = error.inner().to_string();
-        let original = original.finish();
+        let raw = raw.finish();
 
         Self {
             message,
-            original: Some(
-                String::from_utf8(original.to_owned()).expect("original document was utf8"),
-            ),
+            raw: Some(String::from_utf8(raw.to_owned()).expect("original document was utf8")),
             keys: Vec::new(),
             span: Some(span),
         }
@@ -45,7 +43,7 @@ impl TomlError {
     pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,
-            original: None,
+            raw: None,
             keys: Vec::new(),
             span,
         }
@@ -72,8 +70,8 @@ impl TomlError {
     }
 
     #[cfg(feature = "serde")]
-    pub(crate) fn set_original(&mut self, original: Option<String>) {
-        self.original = original;
+    pub(crate) fn set_raw(&mut self, raw: Option<String>) {
+        self.raw = raw;
     }
 }
 
@@ -92,14 +90,14 @@ impl TomlError {
 impl Display for TomlError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut context = false;
-        if let (Some(original), Some(span)) = (&self.original, self.span()) {
+        if let (Some(raw), Some(span)) = (&self.raw, self.span()) {
             context = true;
 
-            let (line, column) = translate_position(original.as_bytes(), span.start);
+            let (line, column) = translate_position(raw.as_bytes(), span.start);
             let line_num = line + 1;
             let col_num = column + 1;
             let gutter = line_num.to_string().len();
-            let content = original.split('\n').nth(line).expect("valid line number");
+            let content = raw.split('\n').nth(line).expect("valid line number");
 
             writeln!(
                 f,
