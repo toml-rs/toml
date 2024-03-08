@@ -5,7 +5,7 @@ use crate::table::TableKeyValue;
 use crate::{ArrayOfTables, Document, InternalString, Item, RawString, Table};
 
 pub(crate) struct ParseState {
-    document: Document,
+    root: Table,
     trailing: Option<std::ops::Range<usize>>,
     current_table_position: usize,
     current_table: Table,
@@ -18,7 +18,7 @@ impl ParseState {
         let mut root = Table::new();
         root.span = Some(0..0);
         Self {
-            document: Document::new(),
+            root: Table::new(),
             trailing: None,
             current_table_position: 0,
             current_table: root,
@@ -29,9 +29,12 @@ impl ParseState {
 
     pub(crate) fn into_document(mut self) -> Result<Document, CustomError> {
         self.finalize_table()?;
-        let trailing = self.trailing.map(RawString::with_span);
-        self.document.trailing = trailing.unwrap_or_default();
-        Ok(self.document)
+        let trailing = self.trailing.map(RawString::with_span).unwrap_or_default();
+        Ok(Document {
+            root: Item::Table(self.root),
+            trailing,
+            raw: None,
+        })
     }
 
     pub(crate) fn on_ws(&mut self, span: std::ops::Range<usize>) {
@@ -113,7 +116,7 @@ impl ParseState {
         debug_assert!(self.current_table_path.is_empty());
 
         // Look up the table on start to ensure the duplicate_key error points to the right line
-        let root = self.document.as_table_mut();
+        let root = &mut self.root;
         let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
         let key = &path[path.len() - 1];
         let entry = parent_table
@@ -147,7 +150,7 @@ impl ParseState {
 
         // 1. Look up the table on start to ensure the duplicate_key error points to the right line
         // 2. Ensure any child tables from an implicit table are preserved
-        let root = self.document.as_table_mut();
+        let root = &mut self.root;
         let parent_table = Self::descend_path(root, &path[..path.len() - 1], false)?;
         let key = &path[path.len() - 1];
         if let Some(entry) = parent_table.remove(key.get()) {
@@ -176,7 +179,7 @@ impl ParseState {
         let mut table = std::mem::take(&mut self.current_table);
         let path = std::mem::take(&mut self.current_table_path);
 
-        let root = self.document.as_table_mut();
+        let root = &mut self.root;
         if path.is_empty() {
             assert!(root.is_empty());
             std::mem::swap(&mut table, root);
