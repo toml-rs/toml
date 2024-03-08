@@ -123,6 +123,7 @@ pub struct Deserializer<S = String> {
 
 impl Deserializer {
     /// Deserialization implementation for TOML.
+    #[deprecated(since = "0.22.6", note = "Replaced with `Deserializer::from`")]
     pub fn new(input: crate::Document) -> Self {
         Self::from(input)
     }
