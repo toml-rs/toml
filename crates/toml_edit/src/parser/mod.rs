@@ -16,10 +16,10 @@ pub(crate) mod value;
 
 pub use crate::error::TomlError;
 
-pub(crate) fn parse_document(raw: &str) -> Result<crate::ImDocument<&str>, TomlError> {
+pub(crate) fn parse_document<S: AsRef<str>>(raw: S) -> Result<crate::ImDocument<S>, TomlError> {
     use prelude::*;
 
-    let b = new_input(raw);
+    let b = new_input(raw.as_ref());
     let state = RefCell::new(state::ParseState::new());
     let state_ref = &state;
     document::document(state_ref)

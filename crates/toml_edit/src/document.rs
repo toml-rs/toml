@@ -19,6 +19,14 @@ impl ImDocument<&'static str> {
     }
 }
 
+#[cfg(feature = "parse")]
+impl<S: AsRef<str>> ImDocument<S> {
+    /// Parse a TOML document
+    pub fn parse(raw: S) -> Result<Self, crate::TomlError> {
+        crate::parser::parse_document(raw)
+    }
+}
+
 impl<S> ImDocument<S> {
     /// Returns a reference to the root item.
     pub fn as_item(&self) -> &Item {
@@ -81,16 +89,7 @@ impl FromStr for ImDocument<String> {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ImDocument {
-            root,
-            trailing,
-            raw,
-        } = crate::parser::parse_document(s)?;
-        Ok(ImDocument {
-            root,
-            trailing,
-            raw: raw.to_owned(),
-        })
+        Self::parse(s.to_owned())
     }
 }
 
