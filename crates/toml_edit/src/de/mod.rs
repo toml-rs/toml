@@ -92,7 +92,7 @@ pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    let de = s.parse::<Deserializer>()?;
+    let de = Deserializer::parse(s)?;
     T::deserialize(de)
 }
 
@@ -116,15 +116,25 @@ where
 }
 
 /// Deserialization for TOML [documents][crate::Document].
-pub struct Deserializer {
+pub struct Deserializer<S = String> {
     root: crate::Item,
-    raw: Option<String>,
+    raw: Option<S>,
 }
 
 impl Deserializer {
     /// Deserialization implementation for TOML.
     pub fn new(input: crate::Document) -> Self {
         Self::from(input)
+    }
+}
+
+#[cfg(feature = "parse")]
+impl<S: AsRef<str>> Deserializer<S> {
+    /// Parse a TOML document
+    pub fn parse(raw: S) -> Result<Self, Error> {
+        crate::ImDocument::parse(raw)
+            .map(Self::from)
+            .map_err(Into::into)
     }
 }
 
@@ -135,8 +145,8 @@ impl From<crate::Document> for Deserializer {
     }
 }
 
-impl From<crate::ImDocument<String>> for Deserializer {
-    fn from(doc: crate::ImDocument<String>) -> Self {
+impl<S> From<crate::ImDocument<S>> for Deserializer<S> {
+    fn from(doc: crate::ImDocument<S>) -> Self {
         let crate::ImDocument { root, raw, .. } = doc;
         let raw = Some(raw);
         Self { root, raw }
@@ -156,7 +166,7 @@ impl std::str::FromStr for Deserializer {
 
 // Note: this is wrapped by `toml::de::Deserializer` and any trait methods
 // implemented here need to be wrapped there
-impl<'de> serde::Deserializer<'de> for Deserializer {
+impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -168,7 +178,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
             .into_deserializer()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw);
+                e.inner.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -184,7 +194,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
             .into_deserializer()
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw);
+                e.inner.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -202,7 +212,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
             .into_deserializer()
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw);
+                e.inner.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -221,7 +231,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
             .into_deserializer()
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw);
+                e.inner.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -241,7 +251,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
             .into_deserializer()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw);
+                e.inner.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
