@@ -117,13 +117,15 @@ where
 
 /// Deserialization for TOML [documents][crate::Document].
 pub struct Deserializer {
-    input: crate::Document,
+    root: crate::Item,
+    raw: Option<String>,
 }
 
 impl Deserializer {
     /// Deserialization implementation for TOML.
     pub fn new(input: crate::Document) -> Self {
-        Self { input }
+        let crate::Document { root, raw, .. } = input;
+        Self { root, raw }
     }
 }
 
@@ -149,9 +151,8 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let raw = self.input.raw;
-        self.input
-            .root
+        let raw = self.raw;
+        self.root
             .into_deserializer()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
@@ -166,9 +167,8 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let raw = self.input.raw;
-        self.input
-            .root
+        let raw = self.raw;
+        self.root
             .into_deserializer()
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
@@ -185,9 +185,8 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let raw = self.input.raw;
-        self.input
-            .root
+        let raw = self.raw;
+        self.root
             .into_deserializer()
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
@@ -205,9 +204,8 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let raw = self.input.raw;
-        self.input
-            .root
+        let raw = self.raw;
+        self.root
             .into_deserializer()
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
@@ -226,9 +224,8 @@ impl<'de> serde::Deserializer<'de> for Deserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        let raw = self.input.raw;
-        self.input
-            .root
+        let raw = self.raw;
+        self.root
             .into_deserializer()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
