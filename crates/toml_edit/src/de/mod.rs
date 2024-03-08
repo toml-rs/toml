@@ -86,7 +86,7 @@ impl From<Error> for crate::TomlError {
 
 impl std::error::Error for Error {}
 
-/// Convert a value into `T`.
+/// Convert a TOML [documents][crate::Document] into `T`.
 #[cfg(feature = "parse")]
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
@@ -96,7 +96,7 @@ where
     T::deserialize(de)
 }
 
-/// Convert a value into `T`.
+/// Convert a TOML [documents][crate::Document] into `T`.
 #[cfg(feature = "parse")]
 pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
@@ -106,7 +106,7 @@ where
     from_str(s)
 }
 
-/// Convert a document into `T`.
+/// Convert a [Document][crate::Document] into `T`.
 pub fn from_document<T>(d: crate::Document) -> Result<T, Error>
 where
     T: DeserializeOwned,
