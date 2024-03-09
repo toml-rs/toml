@@ -21,11 +21,24 @@ impl RawString {
     }
 
     /// Access the underlying string
+    ///
+    /// This generally requires a [`Document`][crate::Document].
     pub fn as_str(&self) -> Option<&str> {
         match &self.0 {
             RawStringInner::Empty => Some(""),
             RawStringInner::Explicit(s) => Some(s.as_str()),
             RawStringInner::Spanned(_) => None,
+        }
+    }
+
+    /// Access the underlying span
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+        match &self.0 {
+            RawStringInner::Empty => None,
+            RawStringInner::Explicit(_) => None,
+            RawStringInner::Spanned(span) => Some(span.clone()),
         }
     }
 
@@ -56,15 +69,6 @@ impl RawString {
                     default
                 }
             }
-        }
-    }
-
-    /// Access the underlying span
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
-        match &self.0 {
-            RawStringInner::Empty => None,
-            RawStringInner::Explicit(_) => None,
-            RawStringInner::Spanned(span) => Some(span.clone()),
         }
     }
 

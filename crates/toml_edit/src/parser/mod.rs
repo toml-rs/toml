@@ -1,5 +1,6 @@
 #![allow(clippy::type_complexity)]
 
+use std::cell::RefCell;
 pub(crate) mod array;
 pub(crate) mod datetime;
 pub(crate) mod document;
@@ -15,15 +16,19 @@ pub(crate) mod value;
 
 pub use crate::error::TomlError;
 
-pub(crate) fn parse_document(raw: &str) -> Result<crate::Document, TomlError> {
+pub(crate) fn parse_document<S: AsRef<str>>(raw: S) -> Result<crate::ImDocument<S>, TomlError> {
     use prelude::*;
 
-    let b = new_input(raw);
-    let mut doc = document::document
+    let b = new_input(raw.as_ref());
+    let state = RefCell::new(state::ParseState::new());
+    let state_ref = &state;
+    document::document(state_ref)
         .parse(b)
         .map_err(|e| TomlError::new(e, b))?;
-    doc.span = Some(0..(raw.len()));
-    doc.original = Some(raw.to_owned());
+    let doc = state
+        .into_inner()
+        .into_document(raw)
+        .map_err(|e| TomlError::custom(e.to_string(), None))?;
     Ok(doc)
 }
 
@@ -207,10 +212,7 @@ key = "value"
         ];
         for input in documents {
             dbg!(input);
-            let mut parsed = parse_document(input);
-            if let Ok(parsed) = &mut parsed {
-                parsed.despan();
-            }
+            let parsed = parse_document(input).map(|d| d.into_mut());
             let doc = match parsed {
                 Ok(doc) => doc,
                 Err(err) => {
@@ -235,10 +237,7 @@ authors = []
 "];
         for input in parse_only {
             dbg!(input);
-            let mut parsed = parse_document(input);
-            if let Ok(parsed) = &mut parsed {
-                parsed.despan();
-            }
+            let parsed = parse_document(input).map(|d| d.into_mut());
             match parsed {
                 Ok(_) => (),
                 Err(err) => {
@@ -257,10 +256,7 @@ authors = []
 $"#];
         for input in invalid_inputs {
             dbg!(input);
-            let mut parsed = parse_document(input);
-            if let Ok(parsed) = &mut parsed {
-                parsed.despan();
-            }
+            let parsed = parse_document(input).map(|d| d.into_mut());
             assert!(parsed.is_err(), "Input: {:?}", input);
         }
     }

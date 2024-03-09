@@ -9,7 +9,6 @@ use winnow::combinator::trace;
 use winnow::token::any;
 use winnow::token::one_of;
 
-use crate::document::Document;
 use crate::key::Key;
 use crate::parser::inline_table::KEYVAL_SEP;
 use crate::parser::key::key;
@@ -30,31 +29,28 @@ use crate::RawString;
 //                ( ws keyval ws [ comment ] ) /
 //                ( ws table ws [ comment ] ) /
 //                  ws )
-pub(crate) fn document(input: &mut Input<'_>) -> PResult<Document> {
-    let state = RefCell::new(ParseState::default());
-    let state_ref = &state;
-
-    let _o = (
-        // Remove BOM if present
-        opt(b"\xEF\xBB\xBF"),
-        parse_ws(state_ref),
-        repeat(0.., (
-            dispatch! {peek(any);
-                crate::parser::trivia::COMMENT_START_SYMBOL => cut_err(parse_comment(state_ref)),
-                crate::parser::table::STD_TABLE_OPEN => cut_err(table(state_ref)),
-                crate::parser::trivia::LF |
-                crate::parser::trivia::CR => parse_newline(state_ref),
-                _ => cut_err(keyval(state_ref)),
-            },
+pub(crate) fn document<'s, 'i>(
+    state_ref: &'s RefCell<ParseState>,
+) -> impl Parser<Input<'i>, (), ContextError> + 's {
+    move |i: &mut Input<'i>| {
+        (
+            // Remove BOM if present
+            opt(b"\xEF\xBB\xBF"),
             parse_ws(state_ref),
-        ))
-        .map(|()| ()),
-        eof,
-    )
-        .parse_next(input)?;
-    state.into_inner().into_document().map_err(|err| {
-        winnow::error::ErrMode::from_external_error(input, winnow::error::ErrorKind::Verify, err)
-    })
+            repeat(0.., (
+                dispatch! {peek(any);
+                    crate::parser::trivia::COMMENT_START_SYMBOL => cut_err(parse_comment(state_ref)),
+                    crate::parser::table::STD_TABLE_OPEN => cut_err(table(state_ref)),
+                    crate::parser::trivia::LF |
+                    crate::parser::trivia::CR => parse_newline(state_ref),
+                    _ => cut_err(keyval(state_ref)),
+                },
+                parse_ws(state_ref),
+            ))
+            .map(|()| ()),
+            eof,
+        ).void().parse_next(i)
+    }
 }
 
 pub(crate) fn parse_comment<'s, 'i>(
