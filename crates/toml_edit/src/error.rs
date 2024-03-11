@@ -125,7 +125,7 @@ impl Display for TomlError {
             // The span will be empty at eof, so we need to make sure we always print at least
             // one `^`
             write!(f, "^")?;
-            for _ in (span.start + 1)..(span.end.min(span.start + content.len())) {
+            for _ in (span.start + 1)..(span.end.min(span.start + content.len() - column)) {
                 write!(f, "^")?;
             }
             writeln!(f)?;

@@ -271,7 +271,7 @@ unknown field `c_d`, expected `c_a` or `c_b`
 TOML parse error at line 6, column 13
   |
 6 |             [[p_b]]
-  |             ^^^^^^^^^^^^^^^^^^^
+  |             ^^^^^^^
 missing field `c_b`
 "
     );
