@@ -212,17 +212,9 @@ impl Display for Document {
         tables.sort_by_key(|&(id, _, _, _)| id);
         let mut first_table = true;
         for (_, table, path, is_array) in tables {
-            visit_table(
-                f,
-                self.raw.as_deref(),
-                table,
-                &path,
-                is_array,
-                &mut first_table,
-            )?;
+            visit_table(f, None, table, &path, is_array, &mut first_table)?;
         }
-        self.trailing()
-            .encode_with_default(f, self.raw.as_deref(), "")
+        self.trailing().encode_with_default(f, None, "")
     }
 }
 

@@ -73,9 +73,6 @@ impl<S: AsRef<str>> ImDocument<S> {
         Document {
             root: self.root,
             trailing: self.trailing,
-            // prevent a child of `ImDocument` from being inserted into `Document` and having the
-            // spans evaluated when using `crate::encode`
-            raw: None,
         }
     }
 }
@@ -114,7 +111,6 @@ pub struct Document {
     pub(crate) root: Item,
     // Trailing comments and whitespaces
     pub(crate) trailing: RawString,
-    pub(crate) raw: Option<String>,
 }
 
 impl Document {
@@ -166,7 +162,6 @@ impl Default for Document {
         Self {
             root: Item::Table(Table::with_pos(Some(0))),
             trailing: Default::default(),
-            raw: Default::default(),
         }
     }
 }

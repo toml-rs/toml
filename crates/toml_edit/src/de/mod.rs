@@ -141,8 +141,8 @@ impl<S: AsRef<str>> Deserializer<S> {
 
 impl From<crate::Document> for Deserializer {
     fn from(doc: crate::Document) -> Self {
-        let crate::Document { root, raw, .. } = doc;
-        Self { root, raw }
+        let crate::Document { root, .. } = doc;
+        Self { root, raw: None }
     }
 }
 
