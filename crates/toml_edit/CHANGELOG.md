@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Added `ImDocument` for parsing into an immutable document for performance and looking up spans
+
+### Fixes
+
+- error: Fix don't highlight past the end of the current line
+- Renamed `Document` to `DocumentMut` to clarify its role with `ImDocument`
+
+### Compatibility
+
+- Deprecated `Document` in favor of `DocumentMut`
+- `de::Deserializer` gained a default generic parameter to line up with `ImDocument`
+- `de::Deserializer::new` was deprecated in favor of `Deserializer::from`
+
 ## [0.22.6] - 2024-02-16
 
 ### Documentation

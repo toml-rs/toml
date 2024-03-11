@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- *(de)* Remove an allocation when parsing
+
 ### Compatibility
 
 MSRV is now 1.70
