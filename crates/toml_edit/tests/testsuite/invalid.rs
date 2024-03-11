@@ -1,6 +1,6 @@
 #[test]
 fn incomplete_inline_table_issue_296() {
-    let err = "native = {".parse::<toml_edit::Document>().unwrap_err();
+    let err = "native = {".parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(
         r#"TOML parse error at line 1, column 11
   |
@@ -15,7 +15,7 @@ expected `}`
 
 #[test]
 fn bare_value_disallowed_issue_293() {
-    let err = "value=zzz".parse::<toml_edit::Document>().unwrap_err();
+    let err = "value=zzz".parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(
         r#"TOML parse error at line 1, column 7
   |
@@ -30,7 +30,7 @@ expected `"`, `'`
 
 #[test]
 fn bare_value_in_array_disallowed_issue_293() {
-    let err = "value=[zzz]".parse::<toml_edit::Document>().unwrap_err();
+    let err = "value=[zzz]".parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(
         r#"TOML parse error at line 1, column 8
   |
@@ -55,7 +55,7 @@ libc = \"0.2\"
 [dependencies]
 rand = \"0.3.14\"
 "
-    .parse::<toml_edit::Document>()
+    .parse::<toml_edit::DocumentMut>()
     .unwrap_err();
     snapbox::assert_eq(
         r#"TOML parse error at line 8, column 1
@@ -79,7 +79,7 @@ TOML parse error at line 1, column 6
   |      ^
 expected newline, `#`
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = 1__1";
@@ -91,7 +91,7 @@ TOML parse error at line 1, column 7
 invalid integer
 expected digit
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = 1_";
@@ -103,7 +103,7 @@ TOML parse error at line 1, column 7
 invalid integer
 expected digit
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "''";
@@ -114,7 +114,7 @@ TOML parse error at line 1, column 3
   |   ^
 expected `.`, `=`
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = 9e99999";
@@ -125,7 +125,7 @@ TOML parse error at line 1, column 5
   |     ^
 invalid floating-point number
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = \"\u{7f}\"";
@@ -136,7 +136,7 @@ TOML parse error at line 1, column 6
   |      ^
 invalid basic string
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = '\u{7f}'";
@@ -147,7 +147,7 @@ TOML parse error at line 1, column 6
   |      ^
 invalid literal string
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = -0x1";
@@ -158,7 +158,7 @@ TOML parse error at line 1, column 7
   |       ^
 expected newline, `#`
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = 0x-1";
@@ -169,7 +169,7 @@ TOML parse error at line 1, column 7
   |       ^
 invalid hexadecimal integer
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     // Dotted keys.
@@ -183,7 +183,7 @@ TOML parse error at line 2, column 10
   |          ^
 duplicate key `b` in document root
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = 1
@@ -195,7 +195,7 @@ TOML parse error at line 2, column 10
   |          ^
 dotted key `a` attempted to extend non-table type (integer)
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 
     let toml_input = "a = {k1 = 1, k1.name = \"joe\"}";
@@ -206,6 +206,6 @@ TOML parse error at line 1, column 6
   |      ^
 dotted key `k1` attempted to extend non-table type (integer)
 ";
-    let err = toml_input.parse::<toml_edit::Document>().unwrap_err();
+    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
     snapbox::assert_eq(expected_err, err.to_string());
 }

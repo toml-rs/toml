@@ -1,6 +1,6 @@
 use snapbox::assert_eq;
 
-use toml_edit::{Document, Item, Value};
+use toml_edit::{DocumentMut, Item, Value};
 
 #[test]
 fn table_into_inline() {
@@ -13,7 +13,7 @@ inline = { "1" = 1, "2" = 2 }
 [table.child]
 other = "world"
 "#;
-    let mut doc = toml.parse::<Document>().unwrap();
+    let mut doc = toml.parse::<DocumentMut>().unwrap();
 
     doc.get_mut("table").unwrap().make_value();
 
@@ -28,7 +28,7 @@ other = "world"
 fn inline_table_to_table() {
     let toml = r#"table = { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }
 "#;
-    let mut doc = toml.parse::<Document>().unwrap();
+    let mut doc = toml.parse::<DocumentMut>().unwrap();
 
     let t = doc.remove("table").unwrap();
     let t = match t {
@@ -67,7 +67,7 @@ inline = { "1" = 1, "2" = 2 }
 [table.child]
 other = "world"
 "#;
-    let mut doc = toml.parse::<Document>().unwrap();
+    let mut doc = toml.parse::<DocumentMut>().unwrap();
 
     doc.get_mut("table").unwrap().make_value();
 

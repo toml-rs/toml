@@ -148,8 +148,8 @@ impl InlineTable {
     /// ```
     /// # #[cfg(feature = "parse")] {
     /// # #[cfg(feature = "display")] {
-    /// use toml_edit::Document;
-    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
+    /// use toml_edit::DocumentMut;
+    /// let mut doc = "[a]\n[a.b]\n".parse::<DocumentMut>().expect("invalid toml");
     ///
     /// doc["a"].as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");

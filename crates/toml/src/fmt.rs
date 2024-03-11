@@ -5,7 +5,7 @@ pub(crate) struct DocumentFormatter {
 }
 
 impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
-    fn visit_document_mut(&mut self, node: &mut toml_edit::Document) {
+    fn visit_document_mut(&mut self, node: &mut toml_edit::DocumentMut) {
         toml_edit::visit_mut::visit_document_mut(self, node);
     }
 

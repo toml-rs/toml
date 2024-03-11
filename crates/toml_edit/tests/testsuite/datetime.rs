@@ -1,6 +1,6 @@
 macro_rules! bad {
     ($toml:expr, $msg:expr) => {
-        match $toml.parse::<toml_edit::Document>() {
+        match $toml.parse::<toml_edit::DocumentMut>() {
             Ok(s) => panic!("parsed to: {:#?}", s),
             Err(e) => snapbox::assert_eq($msg, e.to_string()),
         }
@@ -11,7 +11,7 @@ macro_rules! bad {
 fn times() {
     fn dogood(s: &str, serialized: &str) {
         let to_parse = format!("foo = {}", s);
-        let document = to_parse.parse::<toml_edit::Document>().unwrap();
+        let document = to_parse.parse::<toml_edit::DocumentMut>().unwrap();
         assert_eq!(
             document["foo"].as_datetime().unwrap().to_string(),
             serialized

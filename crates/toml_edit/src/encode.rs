@@ -3,7 +3,6 @@ use std::fmt::{Display, Formatter, Result, Write};
 
 use toml_datetime::*;
 
-use crate::document::Document;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{Formatted, Repr, ValueRepr};
@@ -11,6 +10,7 @@ use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_TABLE_DECO
 use crate::value::{
     DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
 };
+use crate::DocumentMut;
 use crate::{Array, InlineTable, Item, Table, Value};
 
 pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -> Result {
@@ -195,7 +195,7 @@ pub(crate) fn encode_value(
     }
 }
 
-impl Display for Document {
+impl Display for DocumentMut {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut path = Vec::new();
         let mut last_position = 0;
@@ -212,17 +212,9 @@ impl Display for Document {
         tables.sort_by_key(|&(id, _, _, _)| id);
         let mut first_table = true;
         for (_, table, path, is_array) in tables {
-            visit_table(
-                f,
-                self.raw.as_deref(),
-                table,
-                &path,
-                is_array,
-                &mut first_table,
-            )?;
+            visit_table(f, None, table, &path, is_array, &mut first_table)?;
         }
-        self.trailing()
-            .encode_with_default(f, self.raw.as_deref(), "")
+        self.trailing().encode_with_default(f, None, "")
     }
 }
 

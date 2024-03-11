@@ -1,8 +1,8 @@
 use std::ops;
 
-use crate::document::Document;
 use crate::key::Key;
 use crate::table::TableKeyValue;
+use crate::DocumentMut;
 use crate::{value, InlineTable, InternalString, Item, Table, Value};
 
 // copied from
@@ -141,7 +141,7 @@ impl<'s> ops::IndexMut<&'s str> for InlineTable {
     }
 }
 
-impl<'s> ops::Index<&'s str> for Document {
+impl<'s> ops::Index<&'s str> for DocumentMut {
     type Output = Item;
 
     fn index(&self, key: &'s str) -> &Item {
@@ -149,7 +149,7 @@ impl<'s> ops::Index<&'s str> for Document {
     }
 }
 
-impl<'s> ops::IndexMut<&'s str> for Document {
+impl<'s> ops::IndexMut<&'s str> for DocumentMut {
     fn index_mut(&mut self, key: &'s str) -> &mut Item {
         self.root.index_mut(key)
     }

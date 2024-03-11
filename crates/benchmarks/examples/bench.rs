@@ -3,7 +3,7 @@ fn main() -> Result<(), lexopt::Error> {
 
     match args.parser {
         Parser::Document => {
-            let _doc = CARGO_MANIFEST.parse::<toml_edit::Document>().unwrap();
+            let _doc = CARGO_MANIFEST.parse::<toml_edit::DocumentMut>().unwrap();
             #[cfg(debug_assertions)] // Don't interefere with profiling
             dbg!(_doc);
         }

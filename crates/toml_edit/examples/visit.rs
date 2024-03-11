@@ -3,7 +3,7 @@
 use std::collections::BTreeSet;
 use toml_edit::visit::*;
 use toml_edit::visit_mut::*;
-use toml_edit::{Array, Document, InlineTable, Item, KeyMut, Table, Value};
+use toml_edit::{Array, DocumentMut, InlineTable, Item, KeyMut, Table, Value};
 
 /// This models the visit state for dependency keys in a `Cargo.toml`.
 ///
@@ -223,7 +223,7 @@ cargo-test-macro = { path = "crates/cargo-test-macro" }
 flate2 = { version = "0.4" }
 "#;
 
-fn visit_example(document: &Document) -> BTreeSet<&str> {
+fn visit_example(document: &DocumentMut) -> BTreeSet<&str> {
     let mut visitor = DependencyNameVisitor {
         state: VisitState::Root,
         names: BTreeSet::new(),
@@ -234,7 +234,7 @@ fn visit_example(document: &Document) -> BTreeSet<&str> {
     visitor.names
 }
 
-fn visit_mut_example(document: &mut Document) {
+fn visit_mut_example(document: &mut DocumentMut) {
     let mut visitor = NormalizeDependencyTablesVisitor {
         state: VisitState::Root,
     };
@@ -243,7 +243,7 @@ fn visit_mut_example(document: &mut Document) {
 }
 
 fn main() {
-    let mut document: Document = INPUT.parse().expect("input is valid TOML");
+    let mut document: DocumentMut = INPUT.parse().expect("input is valid TOML");
 
     println!("** visit example");
     println!("{:?}", visit_example(&document));
@@ -256,7 +256,7 @@ fn main() {
 #[cfg(test)]
 #[test]
 fn visit_correct() {
-    let document: Document = INPUT.parse().expect("input is valid TOML");
+    let document: DocumentMut = INPUT.parse().expect("input is valid TOML");
 
     let names = visit_example(&document);
     let expected = vec![
@@ -277,7 +277,7 @@ fn visit_correct() {
 #[cfg(test)]
 #[test]
 fn visit_mut_correct() {
-    let mut document: Document = INPUT.parse().expect("input is valid TOML");
+    let mut document: DocumentMut = INPUT.parse().expect("input is valid TOML");
 
     visit_mut_example(&mut document);
     assert_eq!(format!("{}", document), VISIT_MUT_OUTPUT);

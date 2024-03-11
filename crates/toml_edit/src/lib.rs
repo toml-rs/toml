@@ -16,13 +16,13 @@
 //! ```rust
 //! # #[cfg(feature = "parse")] {
 //! # #[cfg(feature = "display")] {
-//! use toml_edit::{Document, value};
+//! use toml_edit::{DocumentMut, value};
 //!
 //! let toml = r#"
 //! "hello" = 'toml!' # comment
 //! ['a'.b]
 //! "#;
-//! let mut doc = toml.parse::<Document>().expect("invalid doc");
+//! let mut doc = toml.parse::<DocumentMut>().expect("invalid doc");
 //! assert_eq!(doc.to_string(), toml);
 //! // let's add a new key/value pair inside a.b: c = {d = "hello"}
 //! doc["a"]["b"]["c"]["d"] = value("hello");
@@ -43,7 +43,7 @@
 //! By default, values are created with default formatting
 //! ```rust
 //! # #[cfg(feature = "display")] {
-//! let mut doc = toml_edit::Document::new();
+//! let mut doc = toml_edit::DocumentMut::new();
 //! doc["foo"] = toml_edit::value("bar");
 //! let expected = r#"foo = "bar"
 //! "#;
@@ -54,7 +54,7 @@
 //! You can choose a custom TOML representation by parsing the value.
 //! ```rust
 //! # #[cfg(feature = "display")] {
-//! let mut doc = toml_edit::Document::new();
+//! let mut doc = toml_edit::DocumentMut::new();
 //! doc["foo"] = "'bar'".parse::<toml_edit::Item>().unwrap();
 //! let expected = r#"foo = 'bar'
 //! "#;
@@ -100,7 +100,10 @@ pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
-pub use crate::document::Document;
+/// Deprecated, replaced with [`DocumentMut`]
+#[deprecated(since = "0.22.6", note = "Replaced with `DocumentMut`")]
+pub type Document = DocumentMut;
+pub use crate::document::DocumentMut;
 pub use crate::document::ImDocument;
 pub use crate::error::TomlError;
 pub use crate::inline_table::{

@@ -1,7 +1,7 @@
 pub(crate) struct Pretty;
 
 impl crate::visit_mut::VisitMut for Pretty {
-    fn visit_document_mut(&mut self, node: &mut crate::Document) {
+    fn visit_document_mut(&mut self, node: &mut crate::DocumentMut) {
         crate::visit_mut::visit_document_mut(self, node);
     }
 

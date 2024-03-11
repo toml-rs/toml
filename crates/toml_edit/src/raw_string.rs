@@ -22,7 +22,7 @@ impl RawString {
 
     /// Access the underlying string
     ///
-    /// This generally requires a [`Document`][crate::Document].
+    /// This generally requires a [`DocumentMut`][crate::DocumentMut].
     pub fn as_str(&self) -> Option<&str> {
         match &self.0 {
             RawStringInner::Empty => Some(""),
