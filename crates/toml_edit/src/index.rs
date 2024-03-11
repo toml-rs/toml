@@ -1,8 +1,8 @@
 use std::ops;
 
-use crate::document::Document;
 use crate::key::Key;
 use crate::table::TableKeyValue;
+use crate::Document;
 use crate::{value, InlineTable, InternalString, Item, Table, Value};
 
 // copied from

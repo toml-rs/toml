@@ -67,10 +67,10 @@ impl<S: AsRef<str>> ImDocument<S> {
 }
 
 impl<S: AsRef<str>> ImDocument<S> {
-    /// Allow editing of the [`Document`]
-    pub fn into_mut(mut self) -> Document {
+    /// Allow editing of the [`DocumentMut`]
+    pub fn into_mut(mut self) -> DocumentMut {
         self.despan();
-        Document {
+        DocumentMut {
             root: self.root,
             trailing: self.trailing,
         }
@@ -107,13 +107,13 @@ impl<S> std::ops::Deref for ImDocument<S> {
 
 /// Type representing a TOML document
 #[derive(Debug, Clone)]
-pub struct Document {
+pub struct DocumentMut {
     pub(crate) root: Item,
     // Trailing comments and whitespaces
     pub(crate) trailing: RawString,
 }
 
-impl Document {
+impl DocumentMut {
     /// Creates an empty document
     pub fn new() -> Self {
         Default::default()
@@ -157,7 +157,7 @@ impl Document {
     }
 }
 
-impl Default for Document {
+impl Default for DocumentMut {
     fn default() -> Self {
         Self {
             root: Item::Table(Table::with_pos(Some(0))),
@@ -167,7 +167,7 @@ impl Default for Document {
 }
 
 #[cfg(feature = "parse")]
-impl FromStr for Document {
+impl FromStr for DocumentMut {
     type Err = crate::TomlError;
 
     /// Parses a document from a &str
@@ -177,7 +177,7 @@ impl FromStr for Document {
     }
 }
 
-impl std::ops::Deref for Document {
+impl std::ops::Deref for DocumentMut {
     type Target = Table;
 
     fn deref(&self) -> &Self::Target {
@@ -185,13 +185,13 @@ impl std::ops::Deref for Document {
     }
 }
 
-impl std::ops::DerefMut for Document {
+impl std::ops::DerefMut for DocumentMut {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_table_mut()
     }
 }
 
-impl From<Table> for Document {
+impl From<Table> for DocumentMut {
     fn from(root: Table) -> Self {
         Self {
             root: Item::Table(root),
@@ -204,5 +204,8 @@ impl From<Table> for Document {
 #[cfg(feature = "parse")]
 #[cfg(feature = "display")]
 fn default_roundtrip() {
-    Document::default().to_string().parse::<Document>().unwrap();
+    DocumentMut::default()
+        .to_string()
+        .parse::<DocumentMut>()
+        .unwrap();
 }

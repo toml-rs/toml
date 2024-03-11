@@ -3,7 +3,6 @@ use std::fmt::{Display, Formatter, Result, Write};
 
 use toml_datetime::*;
 
-use crate::document::Document;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{Formatted, Repr, ValueRepr};
@@ -11,6 +10,7 @@ use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_TABLE_DECO
 use crate::value::{
     DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
 };
+use crate::Document;
 use crate::{Array, InlineTable, Item, Table, Value};
 
 pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -> Result {

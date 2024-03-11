@@ -100,7 +100,9 @@ pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
-pub use crate::document::Document;
+/// Type representing a TOML document
+pub type Document = DocumentMut;
+pub use crate::document::DocumentMut;
 pub use crate::document::ImDocument;
 pub use crate::error::TomlError;
 pub use crate::inline_table::{
