@@ -98,6 +98,9 @@ impl Display for TomlError {
             let col_num = column + 1;
             let gutter = line_num.to_string().len();
             let content = raw.split('\n').nth(line).expect("valid line number");
+            let highlight_len = span.end - span.start;
+            // Allow highlight to go one past the line
+            let highlight_len = highlight_len.min(content.len().saturating_sub(column));
 
             writeln!(
                 f,
@@ -125,7 +128,7 @@ impl Display for TomlError {
             // The span will be empty at eof, so we need to make sure we always print at least
             // one `^`
             write!(f, "^")?;
-            for _ in (span.start + 1)..(span.end.min(span.start + content.len() - column)) {
+            for _ in 1..highlight_len {
                 write!(f, "^")?;
             }
             writeln!(f)?;
