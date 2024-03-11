@@ -1,5 +1,5 @@
 use snapbox::assert_eq;
-use toml_edit::{Document, Key, Value};
+use toml_edit::{DocumentMut, Key, Value};
 
 macro_rules! parse {
     ($s:expr, $ty:ty) => {{
@@ -87,7 +87,7 @@ fn test_key_unification() {
 [a.'b'.c.e]
 [a.'b'.c.d]
 "#;
-    let doc = toml.parse::<Document>();
+    let doc = toml.parse::<DocumentMut>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
 
@@ -96,7 +96,7 @@ fn test_key_unification() {
 
 macro_rules! bad {
     ($toml:expr, $msg:expr) => {
-        match $toml.parse::<Document>() {
+        match $toml.parse::<DocumentMut>() {
             Ok(s) => panic!("parsed to: {:#?}", s),
             Err(e) => snapbox::assert_eq($msg, e.to_string()),
         }
@@ -123,7 +123,7 @@ fn crlf() {
      contents are never required to be entirely resident in memory all at once.\r\n\
      \"\"\"\
      "
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
 }
 
@@ -163,7 +163,7 @@ All other whitespace
 is preserved.
 '''
 "#
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
     assert_eq!(table["bar"].as_str(), Some("\0"));
     assert_eq!(table["key1"].as_str(), Some("One\nTwo"));
@@ -216,7 +216,7 @@ fn tables_in_arrays() {
 [foo.bar]
 #...
 "#
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
     table["foo"][0]["bar"].as_table().unwrap();
     table["foo"][1]["bar"].as_table().unwrap();
@@ -226,7 +226,7 @@ fn tables_in_arrays() {
 fn empty_table() {
     let table = r#"
 [foo]"#
-        .parse::<Document>()
+        .parse::<DocumentMut>()
         .unwrap();
     table["foo"].as_table().unwrap();
 }
@@ -239,7 +239,7 @@ metadata.msrv = "1.65.0"
 
 [package.metadata.release.pre-release-replacements]
 "#;
-    let document = input.parse::<Document>().unwrap();
+    let document = input.parse::<DocumentMut>().unwrap();
     let actual = document.to_string();
     assert_eq(input, actual);
 }
@@ -266,7 +266,7 @@ name = "banana"
 [[fruit.variety]]
 name = "plantain"
 "#
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
     assert_eq!(table["fruit"][0]["name"].as_str(), Some("apple"));
     assert_eq!(table["fruit"][0]["physical"]["color"].as_str(), Some("red"));
@@ -373,13 +373,13 @@ invalid basic string
 
 #[test]
 fn blank_literal_string() {
-    let table = "foo = ''".parse::<Document>().unwrap();
+    let table = "foo = ''".parse::<DocumentMut>().unwrap();
     assert_eq!(table["foo"].as_str(), Some(""));
 }
 
 #[test]
 fn many_blank() {
-    let table = "foo = \"\"\"\n\n\n\"\"\"".parse::<Document>().unwrap();
+    let table = "foo = \"\"\"\n\n\n\"\"\"".parse::<DocumentMut>().unwrap();
     assert_eq!(table["foo"].as_str(), Some("\n\n"));
 }
 
@@ -389,7 +389,7 @@ fn literal_eats_crlf() {
         foo = \"\"\"\\\r\n\"\"\"
         bar = \"\"\"\\\r\n   \r\n   \r\n   a\"\"\"
     "
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
     assert_eq!(table["foo"].as_str(), Some(""));
     assert_eq!(table["bar"].as_str(), Some("a"));
@@ -586,7 +586,7 @@ fn floats() {
         ($actual:expr, $expected:expr) => {{
             let f = format!("foo = {}", $actual);
             println!("{}", f);
-            let a = f.parse::<Document>().unwrap();
+            let a = f.parse::<DocumentMut>().unwrap();
             assert_eq!(a["foo"].as_float().unwrap(), $expected);
         }};
     }
@@ -621,7 +621,7 @@ fn bare_key_names() {
         \"character encoding\" = \"value\"
         'ʎǝʞ' = \"value\"
     "
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
     let _ = &a["foo"];
     let _ = &a["-"];
@@ -901,7 +901,7 @@ fn table_names() {
         ['a.a']
         ['\"\"']
     "
-    .parse::<Document>()
+    .parse::<DocumentMut>()
     .unwrap();
     println!("{:?}", a);
     let _ = &a["a"]["b"];
@@ -927,11 +927,11 @@ expected `.`, `=`
 
 #[test]
 fn inline_tables() {
-    "a = {}".parse::<Document>().unwrap();
-    "a = {b=1}".parse::<Document>().unwrap();
-    "a = {   b   =   1    }".parse::<Document>().unwrap();
-    "a = {a=1,b=2}".parse::<Document>().unwrap();
-    "a = {a=1,b=2,c={}}".parse::<Document>().unwrap();
+    "a = {}".parse::<DocumentMut>().unwrap();
+    "a = {b=1}".parse::<DocumentMut>().unwrap();
+    "a = {   b   =   1    }".parse::<DocumentMut>().unwrap();
+    "a = {a=1,b=2}".parse::<DocumentMut>().unwrap();
+    "a = {a=1,b=2,c={}}".parse::<DocumentMut>().unwrap();
 
     bad!(
         "a = {a=1,}",
@@ -988,9 +988,9 @@ expected `}`
 "
     );
 
-    "a = {a=[\n]}".parse::<Document>().unwrap();
-    "a = {\"a\"=[\n]}".parse::<Document>().unwrap();
-    "a = [\n{},\n{},\n]".parse::<Document>().unwrap();
+    "a = {a=[\n]}".parse::<DocumentMut>().unwrap();
+    "a = {\"a\"=[\n]}".parse::<DocumentMut>().unwrap();
+    "a = [\n{},\n{},\n]".parse::<DocumentMut>().unwrap();
 }
 
 #[test]
@@ -998,7 +998,7 @@ fn number_underscores() {
     macro_rules! t {
         ($actual:expr, $expected:expr) => {{
             let f = format!("foo = {}", $actual);
-            let table = f.parse::<Document>().unwrap();
+            let table = f.parse::<DocumentMut>().unwrap();
             assert_eq!(table["foo"].as_integer().unwrap(), $expected);
         }};
     }
@@ -1118,7 +1118,7 @@ invalid literal string
 #[test]
 fn empty_string() {
     assert_eq!(
-        "foo = \"\"".parse::<Document>().unwrap()["foo"]
+        "foo = \"\"".parse::<DocumentMut>().unwrap()["foo"]
             .as_str()
             .unwrap(),
         ""
@@ -1127,10 +1127,10 @@ fn empty_string() {
 
 #[test]
 fn booleans() {
-    let table = "foo = true".parse::<Document>().unwrap();
+    let table = "foo = true".parse::<DocumentMut>().unwrap();
     assert_eq!(table["foo"].as_bool(), Some(true));
 
-    let table = "foo = false".parse::<Document>().unwrap();
+    let table = "foo = false".parse::<DocumentMut>().unwrap();
     assert_eq!(table["foo"].as_bool(), Some(false));
 
     bad!(
@@ -1327,7 +1327,7 @@ fn datetimes() {
     macro_rules! t {
         ($actual:expr) => {{
             let f = format!("foo = {}", $actual);
-            let toml = f.parse::<Document>().expect(&format!("failed: {}", f));
+            let toml = f.parse::<DocumentMut>().expect(&format!("failed: {}", f));
             assert_eq!(toml["foo"].as_datetime().unwrap().to_string(), $actual);
         }};
     }
@@ -1471,14 +1471,14 @@ fn dont_use_dotted_key_prefix_on_table_fuzz_57049() {
 p.a=4
 [p.o]
 "#;
-    let document = input.parse::<Document>().unwrap();
+    let document = input.parse::<DocumentMut>().unwrap();
     let actual = document.to_string();
     assert_eq(input, actual);
 }
 
 #[test]
 fn despan_keys() {
-    let mut doc = r#"aaaaaa = 1"#.parse::<Document>().unwrap();
+    let mut doc = r#"aaaaaa = 1"#.parse::<DocumentMut>().unwrap();
     let key = "bbb".parse::<Key>().unwrap();
     let table = doc.as_table_mut();
     table.insert_formatted(
@@ -1503,7 +1503,7 @@ clippy.exhaustive_enums = "warn"
 "###;
     let expected = input;
 
-    let manifest: toml_edit::Document = input.parse().unwrap();
+    let manifest: toml_edit::DocumentMut = input.parse().unwrap();
     let actual = manifest.to_string();
 
     assert_eq(expected, actual);

@@ -63,7 +63,7 @@
 //! the-force = { value = "surrounds-you" }
 //! "#;
 //!
-//! let mut document: Document = input.parse().unwrap();
+//! let mut document: DocumentMut = input.parse().unwrap();
 //! let mut visitor = StringCollector::default();
 //! visitor.visit_document(&document);
 //!
@@ -75,14 +75,15 @@
 //! [on GitHub](https://github.com/toml-rs/toml/blob/main/crates/toml_edit/examples/visit.rs).
 
 use crate::{
-    Array, ArrayOfTables, Datetime, Document, Formatted, InlineTable, Item, Table, TableLike, Value,
+    Array, ArrayOfTables, Datetime, DocumentMut, Formatted, InlineTable, Item, Table, TableLike,
+    Value,
 };
 
 /// Document tree traversal to mutate an exclusive borrow of a document tree in-place.
 ///
 /// See the [module documentation](self) for details.
 pub trait Visit<'doc> {
-    fn visit_document(&mut self, node: &'doc Document) {
+    fn visit_document(&mut self, node: &'doc DocumentMut) {
         visit_document(self, node);
     }
 
@@ -139,7 +140,7 @@ pub trait Visit<'doc> {
     }
 }
 
-pub fn visit_document<'doc, V>(v: &mut V, node: &'doc Document)
+pub fn visit_document<'doc, V>(v: &mut V, node: &'doc DocumentMut)
 where
     V: Visit<'doc> + ?Sized,
 {

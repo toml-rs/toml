@@ -167,8 +167,8 @@ impl Table {
     /// ```
     /// # #[cfg(feature = "parse")] {
     /// # #[cfg(feature = "display")] {
-    /// use toml_edit::Document;
-    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
+    /// use toml_edit::DocumentMut;
+    /// let mut doc = "[a]\n[a.b]\n".parse::<DocumentMut>().expect("invalid toml");
     ///
     /// doc["a"].as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");
@@ -194,12 +194,12 @@ impl Table {
         self.dotted
     }
 
-    /// Sets the position of the `Table` within the `Document`.
+    /// Sets the position of the `Table` within the [`DocumentMut`][crate::DocumentMut].
     pub fn set_position(&mut self, doc_position: usize) {
         self.doc_position = Some(doc_position);
     }
 
-    /// The position of the `Table` within the `Document`.
+    /// The position of the `Table` within the [`DocumentMut`][crate::DocumentMut].
     ///
     /// Returns `None` if the `Table` was created manually (i.e. not via parsing)
     /// in which case its position is set automatically.  This can be overridden with

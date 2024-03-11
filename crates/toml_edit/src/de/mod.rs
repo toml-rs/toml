@@ -86,7 +86,7 @@ impl From<Error> for crate::TomlError {
 
 impl std::error::Error for Error {}
 
-/// Convert a TOML [documents][crate::Document] into `T`.
+/// Convert a TOML [documents][crate::DocumentMut] into `T`.
 #[cfg(feature = "parse")]
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
@@ -96,7 +96,7 @@ where
     T::deserialize(de)
 }
 
-/// Convert a TOML [documents][crate::Document] into `T`.
+/// Convert a TOML [documents][crate::DocumentMut] into `T`.
 #[cfg(feature = "parse")]
 pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
@@ -106,7 +106,7 @@ where
     from_str(s)
 }
 
-/// Convert a [Document][crate::Document] into `T`.
+/// Convert a [DocumentMut][crate::DocumentMut] into `T`.
 pub fn from_document<T>(d: impl Into<Deserializer>) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -115,7 +115,7 @@ where
     T::deserialize(deserializer)
 }
 
-/// Deserialization for TOML [documents][crate::Document].
+/// Deserialization for TOML [documents][crate::DocumentMut].
 pub struct Deserializer<S = String> {
     root: crate::Item,
     raw: Option<S>,
@@ -124,7 +124,7 @@ pub struct Deserializer<S = String> {
 impl Deserializer {
     /// Deserialization implementation for TOML.
     #[deprecated(since = "0.22.6", note = "Replaced with `Deserializer::from`")]
-    pub fn new(input: crate::Document) -> Self {
+    pub fn new(input: crate::DocumentMut) -> Self {
         Self::from(input)
     }
 }
@@ -139,9 +139,9 @@ impl<S: AsRef<str>> Deserializer<S> {
     }
 }
 
-impl From<crate::Document> for Deserializer {
-    fn from(doc: crate::Document) -> Self {
-        let crate::Document { root, .. } = doc;
+impl From<crate::DocumentMut> for Deserializer {
+    fn from(doc: crate::DocumentMut) -> Self {
+        let crate::DocumentMut { root, .. } = doc;
         Self { root, raw: None }
     }
 }
@@ -272,7 +272,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for Deserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document {
+impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::DocumentMut {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

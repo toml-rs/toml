@@ -10,7 +10,7 @@ use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_TABLE_DECO
 use crate::value::{
     DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
 };
-use crate::Document;
+use crate::DocumentMut;
 use crate::{Array, InlineTable, Item, Table, Value};
 
 pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -> Result {
@@ -195,7 +195,7 @@ pub(crate) fn encode_value(
     }
 }
 
-impl Display for Document {
+impl Display for DocumentMut {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut path = Vec::new();
         let mut last_position = 0;

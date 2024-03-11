@@ -61,7 +61,7 @@ where
 /// To serialize TOML values, instead of documents, see [`ValueSerializer`].
 ///
 /// For greater customization, instead serialize to a
-/// [`toml_edit::Document`](https://docs.rs/toml_edit/latest/toml_edit/struct.Document.html).
+/// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T: ?Sized>(value: &T) -> Result<String, Error>
 where
@@ -161,7 +161,7 @@ impl<'d> Serializer<'d> {
     /// Apply a default "pretty" policy to the document
     ///
     /// For greater customization, instead serialize to a
-    /// [`toml_edit::Document`](https://docs.rs/toml_edit/latest/toml_edit/struct.Document.html).
+    /// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
     pub fn pretty(dst: &'d mut String) -> Self {
         let mut ser = Serializer::new(dst);
         ser.settings.multiline_array = true;
@@ -923,7 +923,7 @@ mod internal {
         use toml_edit::visit_mut::VisitMut as _;
         settings.visit_table_mut(&mut table);
 
-        let doc: toml_edit::Document = table.into();
+        let doc: toml_edit::DocumentMut = table.into();
         write!(dst, "{}", doc).unwrap();
 
         Ok(())

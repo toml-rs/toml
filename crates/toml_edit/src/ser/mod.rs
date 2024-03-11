@@ -153,7 +153,7 @@ where
 /// Serialize the given data structure into a TOML document.
 ///
 /// This would allow custom formatting to be applied, mixing with format preserving edits, etc.
-pub fn to_document<T: ?Sized>(value: &T) -> Result<crate::Document, Error>
+pub fn to_document<T: ?Sized>(value: &T) -> Result<crate::DocumentMut, Error>
 where
     T: serde::ser::Serialize,
 {

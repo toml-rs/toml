@@ -72,7 +72,7 @@
 //! table = { apple = 4.5 }
 //! "#;
 //!
-//! let mut document: Document = input.parse().unwrap();
+//! let mut document: DocumentMut = input.parse().unwrap();
 //! let mut visitor = FloatToString;
 //! visitor.visit_document_mut(&mut document);
 //!
@@ -90,7 +90,7 @@
 //! [on GitHub](https://github.com/toml-rs/toml/blob/main/crates/toml_edit/examples/visit.rs).
 
 use crate::{
-    Array, ArrayOfTables, Datetime, Document, Formatted, InlineTable, Item, KeyMut, Table,
+    Array, ArrayOfTables, Datetime, DocumentMut, Formatted, InlineTable, Item, KeyMut, Table,
     TableLike, Value,
 };
 
@@ -98,7 +98,7 @@ use crate::{
 ///
 /// See the [module documentation](self) for details.
 pub trait VisitMut {
-    fn visit_document_mut(&mut self, node: &mut Document) {
+    fn visit_document_mut(&mut self, node: &mut DocumentMut) {
         visit_document_mut(self, node);
     }
 
@@ -157,7 +157,7 @@ pub trait VisitMut {
     }
 }
 
-pub fn visit_document_mut<V>(v: &mut V, node: &mut Document)
+pub fn visit_document_mut<V>(v: &mut V, node: &mut DocumentMut)
 where
     V: VisitMut + ?Sized,
 {

@@ -1,4 +1,4 @@
-use toml_edit::Document;
+use toml_edit::DocumentMut;
 
 fn main() {
     let args = libtest_mimic::Arguments::from_args();
@@ -21,6 +21,6 @@ fn main() {
 
 fn run_case(input: &[u8]) -> Result<(), String> {
     let raw = std::str::from_utf8(input).map_err(|e| e.to_string())?;
-    let _ = raw.parse::<Document>().map_err(|e| e.to_string())?;
+    let _ = raw.parse::<DocumentMut>().map_err(|e| e.to_string())?;
     Ok(())
 }

@@ -8,7 +8,7 @@ mod map {
         bencher
             .with_inputs(|| gen(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
-            .bench_values(|sample| sample.parse::<toml_edit::Document>().unwrap())
+            .bench_values(|sample| sample.parse::<toml_edit::DocumentMut>().unwrap())
     }
 
     #[divan::bench(args = NUM_ENTRIES)]
@@ -45,7 +45,7 @@ mod array {
         bencher
             .with_inputs(|| gen(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
-            .bench_values(|sample| sample.parse::<toml_edit::Document>().unwrap())
+            .bench_values(|sample| sample.parse::<toml_edit::DocumentMut>().unwrap())
     }
 
     #[divan::bench(args = NUM_ENTRIES)]

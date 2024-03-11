@@ -2,7 +2,7 @@ mod toml_edit {
     use super::*;
 
     #[divan::bench(args=MANIFESTS)]
-    fn document(sample: &Data) -> ::toml_edit::Document {
+    fn document(sample: &Data) -> ::toml_edit::DocumentMut {
         sample.content().parse().unwrap()
     }
 

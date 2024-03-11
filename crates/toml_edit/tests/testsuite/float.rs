@@ -1,4 +1,4 @@
-use toml_edit::Document;
+use toml_edit::DocumentMut;
 
 macro_rules! float_inf_tests {
     ($ty:ty) => {{
@@ -18,7 +18,7 @@ macro_rules! float_inf_tests {
             sf8 = -0.0
         ";
 
-        let document = document.parse::<Document>().unwrap();
+        let document = document.parse::<DocumentMut>().unwrap();
         let float = |k| document[k].as_float().unwrap();
 
         assert!(float("sf1").is_infinite());
@@ -40,7 +40,7 @@ macro_rules! float_inf_tests {
         assert_eq!(float("sf8"), 0.0);
         assert!(float("sf8").is_sign_negative());
 
-        let mut document = Document::new();
+        let mut document = DocumentMut::new();
         document["sf4"] = toml_edit::value(f64::NAN.copysign(1.0));
         document["sf6"] = toml_edit::value(f64::NAN.copysign(-1.0));
         assert_eq!(
