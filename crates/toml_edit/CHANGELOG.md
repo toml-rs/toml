@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.7] - 2024-03-11
+
 ### Features
 
 - Added `ImDocument` for parsing into an immutable document for performance and looking up spans
@@ -662,7 +664,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.7...HEAD
+[0.22.7]: https://github.com/toml-rs/toml/compare/v0.22.6...v0.22.7
 [0.22.6]: https://github.com/toml-rs/toml/compare/v0.22.5...v0.22.6
 [0.22.5]: https://github.com/toml-rs/toml/compare/v0.22.4...v0.22.5
 [0.22.4]: https://github.com/toml-rs/toml/compare/v0.22.3...v0.22.4

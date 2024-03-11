@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.11] - 2024-03-11
+
 ### Performance
 
 - *(de)* Remove an allocation when parsing
@@ -229,7 +231,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.11...HEAD
+[0.8.11]: https://github.com/toml-rs/toml/compare/toml-v0.8.10...toml-v0.8.11
 [0.8.10]: https://github.com/toml-rs/toml/compare/toml-v0.8.9...toml-v0.8.10
 [0.8.9]: https://github.com/toml-rs/toml/compare/toml-v0.8.8...toml-v0.8.9
 [0.8.8]: https://github.com/toml-rs/toml/compare/toml-v0.8.7...toml-v0.8.8
