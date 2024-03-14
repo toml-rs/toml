@@ -49,16 +49,6 @@ impl<S: AsRef<str>> Document<S> {
 }
 
 impl<S> Document<S> {
-    /// Returns a reference to the root item.
-    pub fn as_item(&self) -> &Item {
-        &self.root
-    }
-
-    /// Returns the root item.
-    pub fn into_item(self) -> Item {
-        self.root
-    }
-
     /// Returns a reference to the root table.
     pub fn as_table(&self) -> &Table {
         self.root.as_table().expect("root should always be a table")
@@ -140,21 +130,6 @@ impl DocumentMut {
     /// Creates an empty document
     pub fn new() -> Self {
         Default::default()
-    }
-
-    /// Returns a reference to the root item.
-    pub fn as_item(&self) -> &Item {
-        &self.root
-    }
-
-    /// Returns a mutable reference to the root item.
-    pub fn as_item_mut(&mut self) -> &mut Item {
-        &mut self.root
-    }
-
-    /// Returns the root item.
-    pub fn into_item(self) -> Item {
-        self.root
     }
 
     /// Returns a reference to the root table.
