@@ -108,6 +108,7 @@ pub use crate::array_of_tables::{
 };
 pub use crate::document::DocumentMut;
 /// Type representing a parsed TOML document
+#[deprecated(since = "0.23.0", note = "Replaced with `Document`")]
 pub type ImDocument<S> = Document<S>;
 pub use crate::document::Document;
 pub use crate::error::TomlError;

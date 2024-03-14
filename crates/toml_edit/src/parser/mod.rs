@@ -17,7 +17,7 @@ pub(crate) mod value;
 pub(crate) fn parse_document<'s>(
     source: toml_parse::Source<'s>,
     errors: &mut dyn prelude::ErrorSink,
-) -> crate::ImDocument<&'s str> {
+) -> crate::Document<&'s str> {
     let tokens = source.lex().into_vec();
 
     let mut events = Vec::with_capacity(tokens.len());
