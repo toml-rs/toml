@@ -163,14 +163,6 @@ pub struct Deserializer<S = String> {
     raw: Option<S>,
 }
 
-impl Deserializer {
-    /// Deserialization implementation for TOML.
-    #[deprecated(since = "0.22.6", note = "Replaced with `Deserializer::from`")]
-    pub fn new(input: crate::DocumentMut) -> Self {
-        Self::from(input)
-    }
-}
-
 #[cfg(feature = "parse")]
 impl<S: AsRef<str>> Deserializer<S> {
     /// Parse a TOML document

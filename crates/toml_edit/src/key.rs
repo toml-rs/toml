@@ -62,12 +62,6 @@ impl Key {
         self
     }
 
-    /// While creating the `Key`, add `Decor` to it
-    #[deprecated(since = "0.21.1", note = "Replaced with `with_leaf_decor`")]
-    pub fn with_decor(self, decor: Decor) -> Self {
-        self.with_leaf_decor(decor)
-    }
-
     /// While creating the `Key`, add `Decor` to it for the line entry
     pub fn with_leaf_decor(mut self, decor: Decor) -> Self {
         self.leaf_decor = decor;
@@ -115,15 +109,6 @@ impl Key {
             })
     }
 
-    /// Returns the surrounding whitespace
-    #[deprecated(
-        since = "0.21.1",
-        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
-    )]
-    pub fn decor_mut(&mut self) -> &mut Decor {
-        self.leaf_decor_mut()
-    }
-
     /// Returns the surrounding whitespace for the line entry
     pub fn leaf_decor_mut(&mut self) -> &mut Decor {
         &mut self.leaf_decor
@@ -132,12 +117,6 @@ impl Key {
     /// Returns the surrounding whitespace for between dots
     pub fn dotted_decor_mut(&mut self) -> &mut Decor {
         &mut self.dotted_decor
-    }
-
-    /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
-    pub fn decor(&self) -> &Decor {
-        self.leaf_decor()
     }
 
     /// Returns the surrounding whitespace for the line entry
@@ -355,16 +334,6 @@ impl KeyMut<'_> {
         self.key.display_repr()
     }
 
-    /// Returns the surrounding whitespace
-    #[deprecated(
-        since = "0.21.1",
-        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
-    )]
-    pub fn decor_mut(&mut self) -> &mut Decor {
-        #![allow(deprecated)]
-        self.key.decor_mut()
-    }
-
     /// Returns the surrounding whitespace for the line entry
     pub fn leaf_decor_mut(&mut self) -> &mut Decor {
         self.key.leaf_decor_mut()
@@ -373,13 +342,6 @@ impl KeyMut<'_> {
     /// Returns the surrounding whitespace for between dots
     pub fn dotted_decor_mut(&mut self) -> &mut Decor {
         self.key.dotted_decor_mut()
-    }
-
-    /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
-    pub fn decor(&self) -> &Decor {
-        #![allow(deprecated)]
-        self.key.decor()
     }
 
     /// Returns the surrounding whitespace for the line entry

@@ -106,9 +106,6 @@ pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
-/// Deprecated, replaced with [`DocumentMut`]
-#[deprecated(since = "0.22.6", note = "Replaced with `DocumentMut`")]
-pub type Document = DocumentMut;
 pub use crate::document::DocumentMut;
 pub use crate::document::ImDocument;
 pub use crate::error::TomlError;

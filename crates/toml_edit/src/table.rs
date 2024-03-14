@@ -245,27 +245,8 @@ impl Table {
             .map(|(_, key, _)| key.as_mut())
     }
 
-    /// Returns the decor associated with a given key of the table.
-    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
-    pub fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
-        #![allow(deprecated)]
-        use indexmap::map::MutableKeys;
-        self.items
-            .get_full_mut2(key)
-            .map(|(_, key, _)| key.leaf_decor_mut())
-    }
-
-    /// Returns the decor associated with a given key of the table.
-    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
-    pub fn key_decor(&self, key: &str) -> Option<&Decor> {
-        #![allow(deprecated)]
-        self.items.get_full(key).map(|(_, key, _)| key.leaf_decor())
-    }
-
-    /// The location within the original document
-    ///
-    /// This generally requires an [`ImDocument`][crate::ImDocument].
-    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// Returns the location within the original document
+    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
     }
 
@@ -610,12 +591,6 @@ pub trait TableLike: crate::private::Sealed {
     fn key(&self, key: &str) -> Option<&'_ Key>;
     /// Returns an accessor to a key's formatting
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>>;
-    /// Returns the decor associated with a given key of the table.
-    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
-    fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor>;
-    /// Returns the decor associated with a given key of the table.
-    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
-    fn key_decor(&self, key: &str) -> Option<&Decor>;
 }
 
 impl TableLike for Table {
@@ -677,14 +652,6 @@ impl TableLike for Table {
     }
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
         self.key_mut(key)
-    }
-    fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
-        #![allow(deprecated)]
-        self.key_decor_mut(key)
-    }
-    fn key_decor(&self, key: &str) -> Option<&Decor> {
-        #![allow(deprecated)]
-        self.key_decor(key)
     }
 }
 

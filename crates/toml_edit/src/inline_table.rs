@@ -206,23 +206,6 @@ impl InlineTable {
             .map(|(_, key, _)| key.as_mut())
     }
 
-    /// Returns the decor associated with a given key of the table.
-    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
-    pub fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
-        #![allow(deprecated)]
-        use indexmap::map::MutableKeys;
-        self.items
-            .get_full_mut2(key)
-            .map(|(_, key, _)| key.leaf_decor_mut())
-    }
-
-    /// Returns the decor associated with a given key of the table.
-    #[deprecated(since = "0.21.1", note = "Replaced with `key_mut`")]
-    pub fn key_decor(&self, key: &str) -> Option<&Decor> {
-        #![allow(deprecated)]
-        self.items.get_full(key).map(|(_, key, _)| key.leaf_decor())
-    }
-
     /// Set whitespace after before element
     pub fn set_preamble(&mut self, preamble: impl Into<RawString>) {
         self.preamble = preamble.into();
@@ -610,14 +593,6 @@ impl TableLike for InlineTable {
     }
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
         self.key_mut(key)
-    }
-    fn key_decor_mut(&mut self, key: &str) -> Option<&mut Decor> {
-        #![allow(deprecated)]
-        self.key_decor_mut(key)
-    }
-    fn key_decor(&self, key: &str) -> Option<&Decor> {
-        #![allow(deprecated)]
-        self.key_decor(key)
     }
 }
 
