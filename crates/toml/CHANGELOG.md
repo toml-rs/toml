@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Drop recursion limit from 128 to 100 to work on `opt-level = 0` builds
+
 ## [0.8.11] - 2024-03-11
 
 ### Performance
