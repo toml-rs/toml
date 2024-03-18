@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.8] - 2024-03-18
+
 ### Fixes
 
 - Drop recursion limit from 128 to 100 to work on `opt-level = 0` builds
@@ -668,7 +670,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.8...HEAD
+[0.22.8]: https://github.com/toml-rs/toml/compare/v0.22.7...v0.22.8
 [0.22.7]: https://github.com/toml-rs/toml/compare/v0.22.6...v0.22.7
 [0.22.6]: https://github.com/toml-rs/toml/compare/v0.22.5...v0.22.6
 [0.22.5]: https://github.com/toml-rs/toml/compare/v0.22.4...v0.22.5

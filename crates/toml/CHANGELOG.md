@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.12] - 2024-03-18
+
 ### Fixes
 
 - Drop recursion limit from 128 to 100 to work on `opt-level = 0` builds
@@ -235,7 +237,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.11...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.12...HEAD
+[0.8.12]: https://github.com/toml-rs/toml/compare/toml-v0.8.11...toml-v0.8.12
 [0.8.11]: https://github.com/toml-rs/toml/compare/toml-v0.8.10...toml-v0.8.11
 [0.8.10]: https://github.com/toml-rs/toml/compare/toml-v0.8.9...toml-v0.8.10
 [0.8.9]: https://github.com/toml-rs/toml/compare/toml-v0.8.8...toml-v0.8.9
