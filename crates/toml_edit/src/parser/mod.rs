@@ -99,7 +99,7 @@ pub(crate) mod prelude {
     }
 
     #[cfg(not(feature = "unbounded"))]
-    const LIMIT: usize = 128;
+    const LIMIT: usize = 100;
 
     #[cfg(not(feature = "unbounded"))]
     impl RecursionCheck {
