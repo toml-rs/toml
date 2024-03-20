@@ -242,8 +242,10 @@ impl Table {
         self.items.get(key).map(|kv| kv.key.leaf_decor())
     }
 
-    /// Returns the location within the original document
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
     }
 

@@ -60,8 +60,10 @@ where
             })
     }
 
-    /// Returns the location within the original document
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.repr.as_ref().and_then(|r| r.span())
     }
 
@@ -150,8 +152,10 @@ impl Repr {
         &self.raw_value
     }
 
-    /// Returns the location within the original document
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.raw_value.span()
     }
 

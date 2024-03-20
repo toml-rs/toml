@@ -206,8 +206,10 @@ impl Value {
         *decor = Decor::new(prefix, suffix);
     }
 
-    /// Returns the location within the original document
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         match self {
             Value::String(f) => f.span(),
             Value::Integer(f) => f.span(),
