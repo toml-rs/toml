@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Expose convenience `span` functions on each item type
+
 ## [0.22.8] - 2024-03-18
 
 ### Fixes
