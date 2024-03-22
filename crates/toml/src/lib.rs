@@ -135,6 +135,28 @@
 //! let toml = toml::to_string(&config).unwrap();
 //! ```
 //!
+//! To reject invalid keys use the Serde attribute `deny_unknown_fields`:
+//!
+#![cfg_attr(not(feature = "parse"), doc = " ```ignore")]
+#![cfg_attr(feature = "parse", doc = " ```")]
+//! use serde::Deserialize;
+//!
+//! #[derive(Deserialize)]
+//! #[serde(deny_unknown_fields)]
+//! struct Config {
+//!     ip: String,
+//!     port: u16,
+//! }
+//!
+//! let res: Result<Config, toml::de::Error> = toml::from_str(r#"
+//!     ip = '127.0.0.1'
+//!     poort = 1024
+//! "#);
+//!
+//! assert!(res.is_err_and(|err|
+//!     err.message() == "unknown field `poort`, expected `ip` or `port`"));
+//! ```
+//!
 //! [TOML]: https://github.com/toml-lang/toml
 //! [Cargo]: https://crates.io/
 //! [`serde`]: https://serde.rs/
