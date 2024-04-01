@@ -11,7 +11,7 @@ release = false
 [dev-dependencies]
 toml = { path = "../toml" }
 toml_edit = { path = "../toml_edit" }
-toml_old = { version = "0.5.10", package = "toml" }
+toml_old = { version = "0.8.12", package = "toml" }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
 lexopt = "0.3.0"
