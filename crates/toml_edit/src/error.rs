@@ -21,19 +21,23 @@ impl TomlError {
     ) -> Self {
         use winnow::stream::Stream;
 
-        let offset = error.offset();
-        let span = if offset == raw.len() {
-            offset..offset
-        } else {
-            offset..(offset + 1)
-        };
-
         let message = error.inner().to_string();
         let raw = raw.finish();
+        let raw = String::from_utf8(raw.to_owned()).expect("original document was utf8");
+
+        let offset = error.offset();
+        let mut indices = raw[offset..].char_indices();
+        indices.next();
+        let len = if let Some((index, _)) = indices.next() {
+            index
+        } else {
+            raw.len()
+        };
+        let span = offset..(offset + len);
 
         Self {
             message,
-            raw: Some(String::from_utf8(raw.to_owned()).expect("original document was utf8")),
+            raw: Some(raw),
             keys: Vec::new(),
             span: Some(span),
         }
