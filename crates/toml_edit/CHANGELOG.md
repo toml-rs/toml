@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Parse errors now return spans that respect multi-byte characters
+
 ## [0.22.9] - 2024-03-20
 
 ### Features
