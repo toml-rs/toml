@@ -211,10 +211,10 @@ dotted key `k1` attempted to extend non-table type (integer)
 }
 
 #[test]
-#[should_panic]
 fn emoji_error_span() {
     let input = "😀";
     let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
     dbg!(err.span());
-    let _ = &input[err.span().unwrap()];
+    let actual = &input[err.span().unwrap()];
+    assert_eq!(actual, input);
 }
