@@ -31,7 +31,7 @@ impl TomlError {
         let len = if let Some((index, _)) = indices.next() {
             index
         } else {
-            raw.len()
+            raw.len() - offset
         };
         let span = offset..(offset + len);
 
