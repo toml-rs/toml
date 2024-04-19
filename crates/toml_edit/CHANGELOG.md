@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.11] - 2024-04-19
+
 ### Fixes
 
 - Fix a regression from 0.22.10 where errors pointing at the end of the input would produce bad spans
@@ -686,7 +688,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.11...HEAD
+[0.22.11]: https://github.com/toml-rs/toml/compare/v0.22.10...v0.22.11
 [0.22.10]: https://github.com/toml-rs/toml/compare/v0.22.9...v0.22.10
 [0.22.9]: https://github.com/toml-rs/toml/compare/v0.22.8...v0.22.9
 [0.22.8]: https://github.com/toml-rs/toml/compare/v0.22.7...v0.22.8
