@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix a regression from 0.22.10 where errors pointing at the end of the input would produce bad spans
+
 ## [0.22.10] - 2024-04-18
 
 ### Fixes
