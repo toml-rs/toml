@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Calculate valid error span when doing `"\<multi-byte char>"`
+
 ## [0.22.11] - 2024-04-19
 
 ### Fixes
