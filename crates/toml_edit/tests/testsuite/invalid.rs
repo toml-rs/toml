@@ -227,3 +227,12 @@ fn text_error_span() {
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, "");
 }
+
+#[test]
+fn fuzzed_68144_error_span() {
+    let input = "\"\\ᾂr\"";
+    let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
+    dbg!(err.span());
+    let actual = &input[err.span().unwrap()];
+    assert_eq!(actual, "ᾂ");
+}
