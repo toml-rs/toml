@@ -218,3 +218,13 @@ fn emoji_error_span() {
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, input);
 }
+
+#[test]
+#[should_panic]
+fn text_error_span() {
+    let input = "asdf";
+    let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
+    dbg!(err.span());
+    let actual = &input[err.span().unwrap()];
+    assert_eq!(actual, input);
+}
