@@ -265,7 +265,7 @@ impl ParseState {
                     }
                     table = sweet_child_of_mine;
                 }
-                _ => unreachable!(),
+                Item::None => unreachable!(),
             }
         }
         Ok(table)

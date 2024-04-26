@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 use std::str::FromStr;
 
-use toml_datetime::*;
+use toml_datetime::{Date, Datetime, Time};
 
 use crate::key::Key;
 use crate::repr::{Decor, Formatted};
@@ -373,7 +373,7 @@ mod tests {
 
     #[test]
     fn from_iter_formatting() {
-        let features = vec!["node".to_owned(), "mouth".to_owned()];
+        let features = ["node".to_owned(), "mouth".to_owned()];
         let features: Value = features.iter().cloned().collect();
         assert_eq!(features.to_string(), r#"["node", "mouth"]"#);
     }

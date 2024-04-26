@@ -212,7 +212,7 @@ fn mlb_content<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 
 // mlb-quotes = 1*2quotation-mark
 fn mlb_quotes<'i>(
-    mut term: impl winnow::Parser<Input<'i>, (), ContextError>,
+    mut term: impl Parser<Input<'i>, (), ContextError>,
 ) -> impl Parser<Input<'i>, &'i str, ContextError> {
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
@@ -341,7 +341,7 @@ const MLL_CHAR: (
 
 // mll-quotes = 1*2apostrophe
 fn mll_quotes<'i>(
-    mut term: impl winnow::Parser<Input<'i>, (), ContextError>,
+    mut term: impl Parser<Input<'i>, (), ContextError>,
 ) -> impl Parser<Input<'i>, &'i str, ContextError> {
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();

@@ -98,7 +98,7 @@ macro_rules! bad {
     ($toml:expr, $msg:expr) => {
         match $toml.parse::<DocumentMut>() {
             Ok(s) => panic!("parsed to: {:#?}", s),
-            Err(e) => snapbox::assert_eq($msg, e.to_string()),
+            Err(e) => assert_eq($msg, e.to_string()),
         }
     };
 }
@@ -1503,7 +1503,7 @@ clippy.exhaustive_enums = "warn"
 "###;
     let expected = input;
 
-    let manifest: toml_edit::DocumentMut = input.parse().unwrap();
+    let manifest: DocumentMut = input.parse().unwrap();
     let actual = manifest.to_string();
 
     assert_eq(expected, actual);

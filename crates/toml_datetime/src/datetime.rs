@@ -357,6 +357,7 @@ impl FromStr for Datetime {
 
                 let mut end = whole.len();
                 for (i, byte) in whole.bytes().enumerate() {
+                    #[allow(clippy::single_match_else)]
                     match byte {
                         b'0'..=b'9' => {
                             if i < 9 {

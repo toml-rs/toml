@@ -70,10 +70,13 @@ harness = false
 
 [[test]]
 name = "invalid"
-required-features = ["parse"]
+required-features = ["parse", "display"]
 harness = false
 
 [[example]]
 name = "visit"
 required-features = ["parse", "display"]
 test = true
+
+[lints]
+workspace = true

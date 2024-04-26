@@ -750,11 +750,14 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 }
 
 #[cfg(feature = "display")]
-use internal::*;
+use internal::{
+    write_document, write_value, SerializeDocumentArray, SerializeDocumentTable,
+    SerializeValueArray, SerializeValueTable,
+};
 
 #[cfg(feature = "display")]
 mod internal {
-    use super::*;
+    use super::{Error, Serializer, ValueSerializer};
 
     use crate::fmt::DocumentFormatter;
 
@@ -911,6 +914,7 @@ mod internal {
         value: Result<toml_edit::Value, crate::edit::ser::Error>,
     ) -> Result<(), Error> {
         use std::fmt::Write;
+        use toml_edit::visit_mut::VisitMut as _;
 
         let value = value.map_err(Error::wrap)?;
         let mut table = match toml_edit::Item::Value(value).into_table() {
@@ -920,7 +924,6 @@ mod internal {
             }
         };
 
-        use toml_edit::visit_mut::VisitMut as _;
         settings.visit_table_mut(&mut table);
 
         let doc: toml_edit::DocumentMut = table.into();

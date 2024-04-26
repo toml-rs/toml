@@ -1,8 +1,8 @@
 //! Example for how to use `VisitMut` to iterate over a table.
 
 use std::collections::BTreeSet;
-use toml_edit::visit::*;
-use toml_edit::visit_mut::*;
+use toml_edit::visit::{visit_table_like_kv, Visit};
+use toml_edit::visit_mut::{visit_table_like_kv_mut, visit_table_mut, VisitMut};
 use toml_edit::{Array, DocumentMut, InlineTable, Item, KeyMut, Table, Value};
 
 /// This models the visit state for dependency keys in a `Cargo.toml`.
@@ -159,7 +159,7 @@ impl VisitMut for NormalizeDependencyTablesVisitor {
     }
 }
 
-/// This is the input provided to visit_mut_example.
+/// This is the input provided to `visit_mut_example`.
 static INPUT: &str = r#"
 [package]
 name = "my-package"
@@ -195,7 +195,7 @@ path = "crates/cargo-test-macro"
 version = "0.4"
 "#;
 
-/// This is the output produced by visit_mut_example.
+/// This is the output produced by `visit_mut_example`.
 #[cfg(test)]
 static VISIT_MUT_OUTPUT: &str = r#"
 [package]

@@ -57,7 +57,7 @@ impl Error {
     }
 
     pub(crate) fn add_key(&mut self, key: String) {
-        self.inner.add_key(key)
+        self.inner.add_key(key);
     }
 
     /// What went wrong

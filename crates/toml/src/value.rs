@@ -248,7 +248,7 @@ where
 impl<'a> From<&'a str> for Value {
     #[inline]
     fn from(val: &'a str) -> Value {
-        Value::String(val.to_string())
+        Value::String(val.to_owned())
     }
 }
 
@@ -465,7 +465,7 @@ impl<'de> de::Deserialize<'de> for Value {
             }
 
             fn visit_u64<E: de::Error>(self, value: u64) -> Result<Value, E> {
-                if value <= i64::max_value() as u64 {
+                if i64::try_from(value).is_ok() {
                     Ok(Value::Integer(value as i64))
                 } else {
                     Err(de::Error::custom("u64 value was too large"))
@@ -858,7 +858,7 @@ impl<'de> serde::de::VariantAccess<'de> for MapEnumDeserializer {
     }
 }
 
-impl<'de> de::IntoDeserializer<'de, crate::de::Error> for Value {
+impl<'de> IntoDeserializer<'de, crate::de::Error> for Value {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self {
@@ -913,7 +913,7 @@ impl ser::Serializer for ValueSerializer {
     }
 
     fn serialize_u64(self, value: u64) -> Result<Value, crate::ser::Error> {
-        if value <= i64::max_value() as u64 {
+        if i64::try_from(value).is_ok() {
             self.serialize_i64(value as i64)
         } else {
             Err(ser::Error::custom("u64 value was too large"))
@@ -1497,7 +1497,7 @@ impl ValueSerializeVariant<ValueSerializeMap> {
 }
 
 impl serde::ser::SerializeTupleVariant for ValueSerializeVariant<ValueSerializeVec> {
-    type Ok = crate::Value;
+    type Ok = Value;
     type Error = crate::ser::Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
@@ -1516,7 +1516,7 @@ impl serde::ser::SerializeTupleVariant for ValueSerializeVariant<ValueSerializeV
 }
 
 impl serde::ser::SerializeStructVariant for ValueSerializeVariant<ValueSerializeMap> {
-    type Ok = crate::Value;
+    type Ok = Value;
     type Error = crate::ser::Error;
 
     #[inline]

@@ -5,17 +5,17 @@ fn main() -> Result<(), lexopt::Error> {
         Parser::Document => {
             let _doc = CARGO_MANIFEST.parse::<toml_edit::DocumentMut>().unwrap();
             #[cfg(debug_assertions)] // Don't interefere with profiling
-            dbg!(_doc);
+            drop(_doc);
         }
         Parser::De => {
             let _doc = toml::from_str::<manifest::Manifest>(CARGO_MANIFEST).unwrap();
             #[cfg(debug_assertions)] // Don't interefere with profiling
-            dbg!(_doc);
+            drop(_doc);
         }
         Parser::Table => {
             let _doc = CARGO_MANIFEST.parse::<toml::Table>().unwrap();
             #[cfg(debug_assertions)] // Don't interefere with profiling
-            dbg!(_doc);
+            drop(_doc);
         }
     }
     Ok(())
@@ -67,7 +67,7 @@ mod manifest {
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
-    pub struct Manifest {
+    pub(crate) struct Manifest {
         package: Package,
         #[serde(default)]
         lib: Option<Lib>,
@@ -87,7 +87,7 @@ mod manifest {
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
-    pub struct Package {
+    pub(crate) struct Package {
         name: String,
         version: String,
         #[serde(default)]
@@ -110,7 +110,7 @@ mod manifest {
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
-    pub struct Lib {
+    pub(crate) struct Lib {
         name: String,
         #[serde(default)]
         path: Option<String>,
@@ -118,7 +118,7 @@ mod manifest {
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
-    pub struct Bin {
+    pub(crate) struct Bin {
         name: String,
         #[serde(default)]
         test: bool,
@@ -129,14 +129,14 @@ mod manifest {
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
     #[serde(untagged)]
-    pub enum Dependency {
+    pub(crate) enum Dependency {
         Version(String),
         Full(DependencyFull),
     }
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
-    pub struct DependencyFull {
+    pub(crate) struct DependencyFull {
         #[serde(default)]
         version: Option<String>,
         #[serde(default)]
@@ -151,7 +151,7 @@ mod manifest {
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
-    pub struct Target {
+    pub(crate) struct Target {
         #[serde(default)]
         dependencies: HashMap<String, Dependency>,
         #[serde(default)]

@@ -1,7 +1,7 @@
 #![cfg(all(feature = "parse", feature = "display"))]
 
 #[derive(Copy, Clone)]
-pub struct Encoder;
+pub(crate) struct Encoder;
 
 impl toml_test_harness::Encoder for Encoder {
     fn name(&self) -> &str {

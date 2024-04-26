@@ -14,7 +14,7 @@ pub(crate) mod table;
 pub(crate) mod trivia;
 pub(crate) mod value;
 
-pub use crate::error::TomlError;
+pub(crate) use crate::error::TomlError;
 
 pub(crate) fn parse_document<S: AsRef<str>>(raw: S) -> Result<crate::ImDocument<S>, TomlError> {
     use prelude::*;
@@ -99,7 +99,7 @@ pub(crate) mod prelude {
     }
 
     #[cfg(not(feature = "unbounded"))]
-    const LIMIT: usize = 100;
+    const LIMIT: usize = 80;
 
     #[cfg(not(feature = "unbounded"))]
     impl RecursionCheck {

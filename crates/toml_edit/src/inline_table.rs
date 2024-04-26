@@ -270,7 +270,7 @@ impl InlineTable {
 
     /// Clears the table, removing all key-value pairs. Keeps the allocated memory for reuse.
     pub fn clear(&mut self) {
-        self.items.clear()
+        self.items.clear();
     }
 
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
@@ -568,13 +568,13 @@ impl TableLike for InlineTable {
         self.get_values()
     }
     fn fmt(&mut self) {
-        self.fmt()
+        self.fmt();
     }
     fn sort_values(&mut self) {
-        self.sort_values()
+        self.sort_values();
     }
     fn set_dotted(&mut self, yes: bool) {
-        self.set_dotted(yes)
+        self.set_dotted(yes);
     }
     fn is_dotted(&self) -> bool {
         self.is_dotted()
@@ -681,7 +681,7 @@ impl<'a> InlineOccupiedEntry<'a> {
         self.entry.get_mut().value.as_value_mut().unwrap()
     }
 
-    /// Converts the OccupiedEntry into a mutable reference to the value in the entry
+    /// Converts the `OccupiedEntry` into a mutable reference to the value in the entry
     /// with a lifetime bound to the map itself
     pub fn into_mut(self) -> &'a mut Value {
         self.entry.into_mut().value.as_value_mut().unwrap()
@@ -722,7 +722,7 @@ impl<'a> InlineVacantEntry<'a> {
         self.entry.key().as_str()
     }
 
-    /// Sets the value of the entry with the VacantEntry's key,
+    /// Sets the value of the entry with the `VacantEntry`'s key,
     /// and returns a mutable reference to it
     pub fn insert(self, value: Value) -> &'a mut Value {
         let entry = self.entry;

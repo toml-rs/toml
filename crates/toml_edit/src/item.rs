@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use toml_datetime::*;
+use toml_datetime::Datetime;
 
 use crate::array_of_tables::ArrayOfTables;
 use crate::table::TableLike;
@@ -25,7 +25,7 @@ impl Item {
     /// returns a mutable reference to `self`.
     pub fn or_insert(&mut self, item: Item) -> &mut Item {
         if self.is_none() {
-            *self = item
+            *self = item;
         }
         self
     }
@@ -363,6 +363,7 @@ impl std::fmt::Display for Item {
 /// # Examples
 /// ```rust
 /// # #[cfg(feature = "display")] {
+/// # #[cfg(feature = "parse")] {
 /// # use snapbox::assert_eq;
 /// # use toml_edit::*;
 /// let mut table = Table::default();
@@ -377,6 +378,7 @@ impl std::fmt::Display for Item {
 /// key2 = 42
 /// key3 = ["hello", '\, world']
 /// "#);
+/// # }
 /// # }
 /// ```
 pub fn value<V: Into<Value>>(v: V) -> Item {

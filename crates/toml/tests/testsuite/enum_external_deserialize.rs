@@ -189,12 +189,12 @@ mod enum_newtype {
     #[test]
     fn from_inline_table() {
         assert_eq!(
-            TheEnum::NewType("value".to_string()),
+            TheEnum::NewType("value".to_owned()),
             value_from_str(r#"{ NewType = "value" }"#).unwrap()
         );
         assert_eq!(
             Val {
-                val: TheEnum::NewType("value".to_string()),
+                val: TheEnum::NewType("value".to_owned()),
             },
             toml::from_str(r#"val = { NewType = "value" }"#).unwrap()
         );
@@ -203,12 +203,12 @@ mod enum_newtype {
     #[test]
     fn from_std_table() {
         assert_eq!(
-            TheEnum::NewType("value".to_string()),
+            TheEnum::NewType("value".to_owned()),
             toml::from_str(r#"NewType = "value""#).unwrap()
         );
         assert_eq!(
             Val {
-                val: TheEnum::NewType("value".to_string()),
+                val: TheEnum::NewType("value".to_owned()),
             },
             toml::from_str(
                 r#"[val]
@@ -283,7 +283,7 @@ mod enum_array {
                 enums: vec![
                     TheEnum::Plain,
                     TheEnum::Tuple(-123, true),
-                    TheEnum::NewType("value".to_string()),
+                    TheEnum::NewType("value".to_owned()),
                     TheEnum::Struct { value: -123 },
                 ]
             },
@@ -310,7 +310,7 @@ mod enum_array {
                 enums: vec![
                     TheEnum::Plain,
                     TheEnum::Tuple(-123, true),
-                    TheEnum::NewType("value".to_string()),
+                    TheEnum::NewType("value".to_owned()),
                     TheEnum::Struct { value: -123 },
                 ]
             },

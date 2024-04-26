@@ -204,9 +204,10 @@ where
             }
         }
 
+        static FIELDS: [&str; 3] = [START_FIELD, END_FIELD, VALUE_FIELD];
+
         let visitor = SpannedVisitor(::std::marker::PhantomData);
 
-        static FIELDS: [&str; 3] = [START_FIELD, END_FIELD, VALUE_FIELD];
         deserializer.deserialize_struct(NAME, &FIELDS, visitor)
     }
 }

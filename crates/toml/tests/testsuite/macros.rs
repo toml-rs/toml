@@ -8,7 +8,7 @@ macro_rules! table {
         #[allow(unused_mut)]
         let mut table = toml::value::Table::new();
         $(
-            table.insert($key.to_string(), $value.into());
+            table.insert($key.to_owned(), $value.into());
         )*
         toml::Value::Table(table)
     }};

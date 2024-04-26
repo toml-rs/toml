@@ -9,7 +9,7 @@ use toml::value::Datetime;
 use toml::Spanned;
 
 /// A set of good datetimes.
-pub fn good_datetimes() -> Vec<&'static str> {
+pub(crate) fn good_datetimes() -> Vec<&'static str> {
     vec![
         "1997-09-09T09:09:09Z",
         "1997-09-09T09:09:09+09:09",

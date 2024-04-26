@@ -54,11 +54,11 @@ fn vec_of_vec_issue_387() {
     }
 
     let comp1 = Component {
-        base: "b".to_string(),
+        base: "b".to_owned(),
         transform: (1.0, 0.0, 0.0, 1.0, 0.0, 0.0),
     };
     let comp2 = Component {
-        base: "c".to_string(),
+        base: "c".to_owned(),
         transform: (1.0, 0.0, 0.0, 1.0, 0.0, 0.0),
     };
     let components = vec![comp1, comp2];
@@ -68,40 +68,40 @@ fn vec_of_vec_issue_387() {
             Point {
                 x: 3.0,
                 y: 4.0,
-                pt_type: "line".to_string(),
+                pt_type: "line".to_owned(),
             },
             Point {
                 x: 5.0,
                 y: 6.0,
-                pt_type: "line".to_string(),
+                pt_type: "line".to_owned(),
             },
         ],
         vec![
             Point {
                 x: 0.0,
                 y: 0.0,
-                pt_type: "move".to_string(),
+                pt_type: "move".to_owned(),
             },
             Point {
                 x: 7.0,
                 y: 9.0,
-                pt_type: "offcurve".to_string(),
+                pt_type: "offcurve".to_owned(),
             },
             Point {
                 x: 8.0,
                 y: 10.0,
-                pt_type: "offcurve".to_string(),
+                pt_type: "offcurve".to_owned(),
             },
             Point {
                 x: 11.0,
                 y: 12.0,
-                pt_type: "curve".to_string(),
+                pt_type: "curve".to_owned(),
             },
         ],
     ];
     let g1 = Glyph {
-        contours,
         components,
+        contours,
     };
 
     let s = toml::to_string_pretty(&g1).unwrap();
@@ -149,13 +149,13 @@ fn values_before_tables_issue_403() {
     }
     toml::to_string(&C {
         a: A {
-            a: "aa".to_string(),
-            b: "ab".to_string(),
+            a: "aa".to_owned(),
+            b: "ab".to_owned(),
         },
-        b: vec!["b".to_string()],
+        b: vec!["b".to_owned()],
         c: vec![B {
-            a: "cba".to_string(),
-            b: vec!["cbb".to_string()],
+            a: "cba".to_owned(),
+            b: vec!["cbb".to_owned()],
         }],
     })
     .unwrap();

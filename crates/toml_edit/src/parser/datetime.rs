@@ -4,7 +4,7 @@ use crate::parser::error::CustomError;
 use crate::parser::prelude::*;
 use crate::parser::trivia::from_utf8_unchecked;
 
-use toml_datetime::*;
+use toml_datetime::{Date, Datetime, Offset, Time};
 use winnow::combinator::alt;
 use winnow::combinator::cut_err;
 use winnow::combinator::opt;

@@ -4,19 +4,19 @@ use toml::to_string;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 struct User {
-    pub name: String,
-    pub surname: String,
+    pub(crate) name: String,
+    pub(crate) surname: String,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 struct Users {
-    pub user: Vec<User>,
+    pub(crate) user: Vec<User>,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 struct TwoUsers {
-    pub user0: User,
-    pub user1: User,
+    pub(crate) user0: User,
+    pub(crate) user1: User,
 }
 
 #[test]
@@ -24,12 +24,12 @@ fn no_unnecessary_newlines_array() {
     assert!(!to_string(&Users {
         user: vec![
             User {
-                name: "John".to_string(),
-                surname: "Doe".to_string(),
+                name: "John".to_owned(),
+                surname: "Doe".to_owned(),
             },
             User {
-                name: "Jane".to_string(),
-                surname: "Dough".to_string(),
+                name: "Jane".to_owned(),
+                surname: "Dough".to_owned(),
             },
         ],
     })
@@ -41,12 +41,12 @@ fn no_unnecessary_newlines_array() {
 fn no_unnecessary_newlines_table() {
     assert!(!to_string(&TwoUsers {
         user0: User {
-            name: "John".to_string(),
-            surname: "Doe".to_string(),
+            name: "John".to_owned(),
+            surname: "Doe".to_owned(),
         },
         user1: User {
-            name: "Jane".to_string(),
-            surname: "Dough".to_string(),
+            name: "Jane".to_owned(),
+            surname: "Dough".to_owned(),
         },
     })
     .unwrap()

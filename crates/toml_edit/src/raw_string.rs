@@ -79,7 +79,7 @@ impl RawString {
             RawStringInner::Spanned(span) => {
                 *self = Self::from(input.get(span.clone()).unwrap_or_else(|| {
                     panic!("span {:?} should be in input:\n```\n{}\n```", span, input)
-                }))
+                }));
             }
         }
     }
