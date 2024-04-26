@@ -158,7 +158,7 @@ impl Key {
         self.leaf_decor.despan(input);
         self.dotted_decor.despan(input);
         if let Some(repr) = &mut self.repr {
-            repr.despan(input)
+            repr.despan(input);
         }
     }
 
@@ -359,7 +359,7 @@ impl<'k> KeyMut<'k> {
 
     /// Returns a raw representation.
     #[cfg(feature = "display")]
-    pub fn display_repr(&self) -> Cow<str> {
+    pub fn display_repr(&self) -> Cow<'_, str> {
         self.key.display_repr()
     }
 
@@ -402,7 +402,7 @@ impl<'k> KeyMut<'k> {
 
     /// Auto formats the key.
     pub fn fmt(&mut self) {
-        self.key.fmt()
+        self.key.fmt();
     }
 }
 

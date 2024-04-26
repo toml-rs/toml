@@ -70,7 +70,7 @@ impl Map<String, Value> {
     /// Clears the map, removing all values.
     #[inline]
     pub fn clear(&mut self) {
-        self.map.clear()
+        self.map.clear();
     }
 
     /// Returns a reference to the value corresponding to the key.
@@ -452,13 +452,13 @@ impl<'a> Entry<'a> {
 
 impl<'a> VacantEntry<'a> {
     /// Gets a reference to the key that would be used when inserting a value
-    /// through the VacantEntry.
+    /// through the `VacantEntry`.
     #[inline]
     pub fn key(&self) -> &String {
         self.vacant.key()
     }
 
-    /// Sets the value of the entry with the VacantEntry's key, and returns a
+    /// Sets the value of the entry with the `VacantEntry`'s key, and returns a
     /// mutable reference to it.
     #[inline]
     pub fn insert(self, value: Value) -> &'a mut Value {
@@ -518,7 +518,7 @@ impl<'a> IntoIterator for &'a Map<String, Value> {
     }
 }
 
-/// An iterator over a toml::Map's entries.
+/// An iterator over a `toml::Map`'s entries.
 pub struct Iter<'a> {
     iter: IterImpl<'a>,
 }
@@ -543,7 +543,7 @@ impl<'a> IntoIterator for &'a mut Map<String, Value> {
     }
 }
 
-/// A mutable iterator over a toml::Map's entries.
+/// A mutable iterator over a `toml::Map`'s entries.
 pub struct IterMut<'a> {
     iter: IterMutImpl<'a>,
 }
@@ -568,7 +568,7 @@ impl IntoIterator for Map<String, Value> {
     }
 }
 
-/// An owning iterator over a toml::Map's entries.
+/// An owning iterator over a `toml::Map`'s entries.
 pub struct IntoIter {
     iter: IntoIterImpl,
 }
@@ -582,7 +582,7 @@ delegate_iterator!((IntoIter) => (String, Value));
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An iterator over a toml::Map's keys.
+/// An iterator over a `toml::Map`'s keys.
 pub struct Keys<'a> {
     iter: KeysImpl<'a>,
 }
@@ -596,7 +596,7 @@ delegate_iterator!((Keys<'a>) => &'a String);
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An iterator over a toml::Map's values.
+/// An iterator over a `toml::Map`'s values.
 pub struct Values<'a> {
     iter: ValuesImpl<'a>,
 }

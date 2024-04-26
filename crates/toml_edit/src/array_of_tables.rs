@@ -71,7 +71,7 @@ impl ArrayOfTables {
 
     /// Removes all the tables.
     pub fn clear(&mut self) {
-        self.values.clear()
+        self.values.clear();
     }
 
     /// Returns an optional reference to the table.

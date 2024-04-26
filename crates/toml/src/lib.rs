@@ -140,14 +140,15 @@
 //! [`serde`]: https://serde.rs/
 //! [serde]: https://serde.rs/
 
-#![deny(missing_docs)]
-#![warn(rust_2018_idioms)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 // Makes rustc abort compilation if there are any unsafe blocks in the crate.
 // Presence of this annotation is picked up by tools such as cargo-geiger
 // and lets them ensure that there is indeed no unsafe code as opposed to
 // something they couldn't detect (e.g. unsafe added via macro expansion, etc).
 #![forbid(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![warn(missing_docs)]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::print_stdout)]
 
 pub mod map;
 pub mod value;

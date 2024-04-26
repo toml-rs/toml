@@ -89,7 +89,7 @@ impl<'de> serde::Deserializer<'de> for TableDeserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for TableDeserializer {
+impl<'de> IntoDeserializer<'de, Error> for TableDeserializer {
     type Deserializer = TableDeserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

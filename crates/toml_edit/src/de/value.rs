@@ -11,6 +11,8 @@ use crate::de::Error;
 /// # Example
 ///
 /// ```
+/// # #[cfg(feature = "parse")] {
+/// # #[cfg(feature = "display")] {
 /// use serde::Deserialize;
 ///
 /// #[derive(Deserialize)]
@@ -29,6 +31,8 @@ use crate::de::Error;
 /// let config = Config::deserialize(deserializer).unwrap();
 /// assert_eq!(config.title, "TOML Example");
 /// assert_eq!(config.owner.name, "Lisa");
+/// # }
+/// # }
 /// ```
 pub struct ValueDeserializer {
     input: crate::Item,
@@ -162,7 +166,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
                     e.set_span(span);
                 }
                 e
-            })?
+            })?;
         }
 
         self.deserialize_any(visitor)
@@ -219,7 +223,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ValueDeserializer {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for ValueDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -227,7 +231,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ValueDeserializ
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Value {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for crate::Value {
     type Deserializer = ValueDeserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

@@ -2,25 +2,25 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Recipe {
-    pub name: String,
-    pub description: Option<String>,
+pub(crate) struct Recipe {
+    pub(crate) name: String,
+    pub(crate) description: Option<String>,
     #[serde(default)]
-    pub modules: Vec<Modules>,
+    pub(crate) modules: Vec<Modules>,
     #[serde(default)]
-    pub packages: Vec<Packages>,
+    pub(crate) packages: Vec<Packages>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Modules {
-    pub name: String,
-    pub version: Option<String>,
+pub(crate) struct Modules {
+    pub(crate) name: String,
+    pub(crate) version: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Packages {
-    pub name: String,
-    pub version: Option<String>,
+pub(crate) struct Packages {
+    pub(crate) name: String,
+    pub(crate) version: Option<String>,
 }
 
 #[test]

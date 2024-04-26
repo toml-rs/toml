@@ -24,7 +24,7 @@ macro_rules! as_table {
 /// Used in different `assert*!` macros in combination with `pretty_assertions` crate to make
 /// test failures to show nice diffs.
 #[derive(PartialEq, Eq)]
-struct PrettyString<'a>(pub &'a str);
+struct PrettyString<'a>(pub(crate) &'a str);
 /// Make diff to display string as multi-line string
 impl<'a> fmt::Debug for PrettyString<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -509,7 +509,7 @@ fn test_set_position() {
                 let tab = as_table!(table);
                 tab.set_position(0);
                 let (_, segmented) = tab.iter_mut().next().unwrap();
-                as_table!(segmented).set_position(5)
+                as_table!(segmented).set_position(5);
             }
         }
     })
@@ -535,7 +535,7 @@ fn test_multiple_zero_positions() {
     )
     .running(|root| {
         for (_, table) in root.iter_mut() {
-            as_table!(table).set_position(0)
+            as_table!(table).set_position(0);
         }
     })
     .produces_display(
@@ -561,7 +561,7 @@ fn test_multiple_max_usize_positions() {
     )
     .running(|root| {
         for (_, table) in root.iter_mut() {
-            as_table!(table).set_position(usize::MAX)
+            as_table!(table).set_position(usize::MAX);
         }
     })
     .produces_display(
@@ -718,7 +718,7 @@ fn test_insert_into_inline_table() {
         assert!(b.is_empty());
         b.get_or_insert("hello", "world");
         assert_eq!(b.len(), 1);
-        b.fmt()
+        b.fmt();
     })
     .produces_display(
         r#"

@@ -39,7 +39,7 @@ impl Error {
 
     /// Add key while unwinding
     pub fn add_key(&mut self, key: String) {
-        self.inner.add_key(key)
+        self.inner.add_key(key);
     }
 
     /// What went wrong
@@ -67,7 +67,7 @@ impl serde::de::Error for Error {
 }
 
 impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner.fmt(f)
     }
 }
@@ -106,7 +106,7 @@ where
     from_str(s)
 }
 
-/// Convert a [DocumentMut][crate::DocumentMut] into `T`.
+/// Convert a [`DocumentMut`][crate::DocumentMut] into `T`.
 pub fn from_document<T>(d: impl Into<Deserializer>) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -264,7 +264,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for Deserializer {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -272,7 +272,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for Deserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::DocumentMut {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for crate::DocumentMut {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -280,7 +280,7 @@ impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::Document
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for crate::ImDocument<String> {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for crate::ImDocument<String> {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

@@ -13,6 +13,8 @@ use super::Error;
 /// # Examples
 ///
 /// ```
+/// # #[cfg(feature = "parse")] {
+/// # #[cfg(feature = "display")] {
 /// use serde::Serialize;
 ///
 /// #[derive(Serialize)]
@@ -42,6 +44,8 @@ use super::Error;
 ///     toml_edit::ser::ValueSerializer::new()
 /// ).unwrap();
 /// println!("{}", value)
+/// # }
+/// # }
 /// ```
 #[derive(Default)]
 #[non_exhaustive]

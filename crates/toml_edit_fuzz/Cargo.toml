@@ -19,3 +19,6 @@ toml_edit = { path = "../toml_edit" }
 name = "parse_document"
 path = "parse_document.rs"
 test = false
+
+[lints]
+workspace = true

@@ -15,11 +15,13 @@ pub(crate) unsafe fn from_utf8_unchecked<'b>(
     bytes: &'b [u8],
     safety_justification: &'static str,
 ) -> &'b str {
-    if cfg!(debug_assertions) {
-        // Catch problems more quickly when testing
-        std::str::from_utf8(bytes).expect(safety_justification)
-    } else {
-        std::str::from_utf8_unchecked(bytes)
+    unsafe {
+        if cfg!(debug_assertions) {
+            // Catch problems more quickly when testing
+            std::str::from_utf8(bytes).expect(safety_justification)
+        } else {
+            std::str::from_utf8_unchecked(bytes)
+        }
     }
 }
 

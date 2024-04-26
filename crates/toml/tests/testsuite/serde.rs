@@ -62,7 +62,7 @@ macro_rules! error {
 
 macro_rules! map( ($($k:ident: $v:expr),*) => ({
     let mut _m = Map::new();
-    $(_m.insert(stringify!($k).to_string(), t!(Value::try_from($v)));)*
+    $(_m.insert(stringify!($k).to_owned(), t!(Value::try_from($v)));)*
     _m
 }) );
 
@@ -83,19 +83,19 @@ fn smoke_hyphen() {
         a_b: isize,
     }
 
-    equivalent! {
-        Foo { a_b: 2 },
-        map! { a_b: Value::Integer(2)},
-    }
-
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo2 {
         #[serde(rename = "a-b")]
         a_b: isize,
     }
 
+    equivalent! {
+        Foo { a_b: 2 },
+        map! { a_b: Value::Integer(2)},
+    }
+
     let mut m = Map::new();
-    m.insert("a-b".to_string(), Value::Integer(2));
+    m.insert("a-b".to_owned(), Value::Integer(2));
     equivalent! {
         Foo2 { a_b: 2 },
         m,
@@ -115,11 +115,11 @@ fn nested() {
     }
 
     equivalent! {
-        Foo { a: 2, b: Bar { a: "test".to_string() } },
+        Foo { a: 2, b: Bar { a: "test".to_owned() } },
         map! {
             a: Value::Integer(2),
             b: map! {
-                a: Value::String("test".to_string())
+                a: Value::String("test".to_owned())
             }
         },
     }
@@ -129,7 +129,7 @@ fn nested() {
 fn application_decode_error() {
     #[derive(PartialEq, Debug)]
     struct Range10(usize);
-    impl<'de> serde::Deserialize<'de> for Range10 {
+    impl<'de> Deserialize<'de> for Range10 {
         fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Range10, D::Error> {
             let x: usize = serde::Deserialize::deserialize(d)?;
             if x > 10 {
@@ -140,7 +140,7 @@ fn application_decode_error() {
         }
     }
     let d_good = Value::Integer(5);
-    let d_bad1 = Value::String("not an isize".to_string());
+    let d_bad1 = Value::String("not an isize".to_owned());
     let d_bad2 = Value::Integer(11);
 
     assert_eq!(Range10(5), d_good.try_into().unwrap());
@@ -188,19 +188,19 @@ fn inner_structs_with_options() {
         Foo {
             a: Some(Box::new(Foo {
                 a: None,
-                b: Bar { a: "foo".to_string(), b: 4.5 },
+                b: Bar { a: "foo".to_owned(), b: 4.5 },
             })),
-            b: Bar { a: "bar".to_string(), b: 1.0 },
+            b: Bar { a: "bar".to_owned(), b: 1.0 },
         },
         map! {
             a: map! {
                 b: map! {
-                    a: Value::String("foo".to_string()),
+                    a: Value::String("foo".to_owned()),
                     b: Value::Float(4.5)
                 }
             },
             b: map! {
-                a: Value::String("bar".to_string()),
+                a: Value::String("bar".to_owned()),
                 b: Value::Float(1.0)
             }
         },
@@ -227,13 +227,13 @@ fn hashmap() {
             },
             map: {
                 let mut m = BTreeMap::new();
-                m.insert("bar".to_string(), 4);
-                m.insert("foo".to_string(), 10);
+                m.insert("bar".to_owned(), 4);
+                m.insert("foo".to_owned(), 10);
                 m
             }
         },
         map! {
-            set: Value::Array(vec![Value::String("a".to_string())]),
+            set: Value::Array(vec![Value::String("a".to_owned())]),
             map: map! {
                 bar: Value::Integer(4),
                 foo: Value::Integer(10)
@@ -272,10 +272,16 @@ fn type_errors() {
         bar: isize,
     }
 
+    #[derive(Deserialize)]
+    #[allow(dead_code)]
+    struct Bar {
+        foo: Foo,
+    }
+
     error! {
         Foo,
         map! {
-            bar: Value::String("a".to_string())
+            bar: Value::String("a".to_owned())
         },
         r#"TOML parse error at line 1, column 7
   |
@@ -286,17 +292,11 @@ invalid type: string "a", expected isize
         "invalid type: string \"a\", expected isize\nin `bar`\n"
     }
 
-    #[derive(Deserialize)]
-    #[allow(dead_code)]
-    struct Bar {
-        foo: Foo,
-    }
-
     error! {
         Bar,
         map! {
             foo: map! {
-                bar: Value::String("a".to_string())
+                bar: Value::String("a".to_owned())
             }
         },
         r#"TOML parse error at line 2, column 7
@@ -353,13 +353,13 @@ fn parse_enum() {
     }
 
     equivalent! {
-        Foo { a: E::Baz("foo".to_string()) },
-        map! { a: Value::String("foo".to_string()) },
+        Foo { a: E::Baz("foo".to_owned()) },
+        map! { a: Value::String("foo".to_owned()) },
     }
 
     equivalent! {
-        Foo { a: E::Last(Foo2 { test: "test".to_string() }) },
-        map! { a: map! { test: Value::String("test".to_string()) } },
+        Foo { a: E::Last(Foo2 { test: "test".to_owned() }) },
+        map! { a: map! { test: Value::String("test".to_owned()) } },
     }
 }
 
@@ -379,7 +379,7 @@ fn parse_enum_string() {
 
     equivalent! {
         Foo { a: Sort::Desc },
-        map! { a: Value::String("desc".to_string()) },
+        map! { a: Value::String("desc".to_owned()) },
     }
 }
 
@@ -566,10 +566,10 @@ fn map_key_unit_variants() {
 //     #[derive(Serialize, Deserialize, PartialEq, Debug)]
 //     struct Foo { a: BTreeMap<String, String> }
 //
-//     let v = Foo { a: map! { a, "foo".to_string() } };
+//     let v = Foo { a: map! { a, "foo".to_owned() } };
 //     let mut d = Decoder::new(Table(map! {
 //         a, Table(map! {
-//             a, Value::String("foo".to_string())
+//             a, Value::String("foo".to_owned())
 //         })
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
@@ -582,9 +582,9 @@ fn map_key_unit_variants() {
 //     #[derive(Serialize, Deserialize, PartialEq, Debug)]
 //     struct Foo { a: Vec<String> }
 //
-//     let v = Foo { a: vec!["a".to_string()] };
+//     let v = Foo { a: vec!["a".to_owned()] };
 //     let mut d = Decoder::new(Table(map! {
-//         a, Array(vec![Value::String("a".to_string())])
+//         a, Array(vec![Value::String("a".to_owned())])
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
 //
@@ -747,7 +747,7 @@ fn newtype_key() {
     #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Serialize, Deserialize)]
     struct NewType(String);
 
-    type CustomKeyMap = std::collections::BTreeMap<NewType, u32>;
+    type CustomKeyMap = BTreeMap<NewType, u32>;
 
     equivalent! {
         [
@@ -772,16 +772,16 @@ fn table_structs_empty() {
     let text = "[bar]\n\n[baz]\n\n[bazv]\na = \"foo\"\n\n[foo]\n";
     let value: BTreeMap<String, CanBeEmpty> = toml::from_str(text).unwrap();
     let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
-    expected.insert("bar".to_string(), CanBeEmpty::default());
-    expected.insert("baz".to_string(), CanBeEmpty::default());
+    expected.insert("bar".to_owned(), CanBeEmpty::default());
+    expected.insert("baz".to_owned(), CanBeEmpty::default());
     expected.insert(
-        "bazv".to_string(),
+        "bazv".to_owned(),
         CanBeEmpty {
-            a: Some("foo".to_string()),
+            a: Some("foo".to_owned()),
             b: None,
         },
     );
-    expected.insert("foo".to_string(), CanBeEmpty::default());
+    expected.insert("foo".to_owned(), CanBeEmpty::default());
     assert_eq!(value, expected);
     snapbox::assert_eq(text, toml::to_string(&value).unwrap());
 }
@@ -830,17 +830,17 @@ fn homogeneous_tuple_struct() {
 
     equivalent! {
         map! {
-            obj: Object(vec!["foo".to_string()], vec![], vec!["bar".to_string(), "baz".to_string()])
+            obj: Object(vec!["foo".to_owned()], vec![], vec!["bar".to_owned(), "baz".to_owned()])
         },
         map! {
             obj: Value::Array(vec![
                 Value::Array(vec![
-                    Value::String("foo".to_string()),
+                    Value::String("foo".to_owned()),
                 ]),
                 Value::Array(vec![]),
                 Value::Array(vec![
-                    Value::String("bar".to_string()),
-                    Value::String("baz".to_string()),
+                    Value::String("bar".to_owned()),
+                    Value::String("baz".to_owned()),
                 ]),
             ])
         },
@@ -851,7 +851,7 @@ fn homogeneous_tuple_struct() {
 fn json_interoperability() {
     #[derive(Serialize, Deserialize)]
     struct Foo {
-        any: toml::Value,
+        any: Value,
     }
 
     let _foo: Foo = serde_json::from_str(
@@ -884,7 +884,7 @@ fn error_includes_key() {
 
     #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
     #[serde(untagged, expecting = "expected a boolean or an integer")]
-    pub enum U32OrBool {
+    pub(crate) enum U32OrBool {
         U32(u32),
         Bool(bool),
     }
@@ -997,7 +997,7 @@ fn newline_dotted_table() {
 
     #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
     #[serde(untagged, expecting = "expected a boolean or an integer")]
-    pub enum U32OrBool {
+    pub(crate) enum U32OrBool {
         U32(u32),
         Bool(bool),
     }
@@ -1046,7 +1046,7 @@ fn newline_mixed_tables() {
 
     #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
     #[serde(untagged, expecting = "expected a boolean or an integer")]
-    pub enum U32OrBool {
+    pub(crate) enum U32OrBool {
         U32(u32),
         Bool(bool),
     }
@@ -1174,6 +1174,7 @@ fn table_type_enum_regression_issue_388() {
     }
 
     #[derive(Deserialize)]
+    #[allow(dead_code)]
     enum Compare {
         Gt(u32),
     }
@@ -1216,7 +1217,7 @@ fn serialize_datetime_issue_333() {
 #[test]
 fn datetime_offset_issue_496() {
     let original = "value = 1911-01-01T10:11:12-00:36\n";
-    let toml = original.parse::<toml::Table>().unwrap();
+    let toml = original.parse::<Table>().unwrap();
     let output = toml.to_string();
     snapbox::assert_eq(original, output);
 }

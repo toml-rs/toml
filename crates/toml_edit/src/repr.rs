@@ -51,7 +51,7 @@ where
 
     /// Returns a raw representation.
     #[cfg(feature = "display")]
-    pub fn display_repr(&self) -> Cow<str> {
+    pub fn display_repr(&self) -> Cow<'_, str> {
         self.as_repr()
             .and_then(|r| r.as_raw().as_str())
             .map(Cow::Borrowed)
@@ -160,7 +160,7 @@ impl Repr {
     }
 
     pub(crate) fn despan(&mut self, input: &str) {
-        self.raw_value.despan(input)
+        self.raw_value.despan(input);
     }
 
     #[cfg(feature = "display")]

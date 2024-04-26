@@ -29,7 +29,7 @@ enum CasedString {
     Uppercase(String),
 }
 
-impl<'de> de::Deserialize<'de> for CasedString {
+impl<'de> Deserialize<'de> for CasedString {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
@@ -39,7 +39,7 @@ impl<'de> de::Deserialize<'de> for CasedString {
         impl<'de> de::Visitor<'de> for CasedStringVisitor {
             type Value = CasedString;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("a string")
             }
 
@@ -50,9 +50,9 @@ impl<'de> de::Deserialize<'de> for CasedString {
                 if s.is_empty() {
                     Err(de::Error::invalid_length(0, &"a non-empty string"))
                 } else if s.chars().all(|x| x.is_ascii_lowercase()) {
-                    Ok(CasedString::Lowercase(s.to_string()))
+                    Ok(CasedString::Lowercase(s.to_owned()))
                 } else if s.chars().all(|x| x.is_ascii_uppercase()) {
-                    Ok(CasedString::Uppercase(s.to_string()))
+                    Ok(CasedString::Uppercase(s.to_owned()))
                 } else {
                     Err(de::Error::invalid_value(
                         de::Unexpected::Str(s),

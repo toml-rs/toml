@@ -48,7 +48,7 @@ impl<'de> serde::Deserializer<'de> for ArrayDeserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, crate::de::Error> for ArrayDeserializer {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for ArrayDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {

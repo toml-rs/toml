@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::fmt::{Display, Formatter, Result, Write};
 
-use toml_datetime::*;
+use toml_datetime::Datetime;
 
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
@@ -347,7 +347,7 @@ pub(crate) fn to_string_repr(
                 '\u{a}' => match style {
                     StringStyle::NewlineTriple => output.push('\n'),
                     StringStyle::OnelineSingle => output.push_str("\\n"),
-                    _ => unreachable!(),
+                    StringStyle::OnelineTriple => unreachable!(),
                 },
                 '\u{c}' => output.push_str("\\f"),
                 '\u{d}' => output.push_str("\\r"),
@@ -435,7 +435,7 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
                 if found_singles > max_found_singles {
                     max_found_singles = found_singles;
                 }
-                found_singles = 0
+                found_singles = 0;
             }
             match ch {
                 '\t' => {}

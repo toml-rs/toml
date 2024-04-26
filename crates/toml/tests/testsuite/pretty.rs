@@ -165,7 +165,7 @@ fn error_includes_key() {
 
     #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
     #[serde(untagged, expecting = "expected a boolean or an integer")]
-    pub enum U32OrBool {
+    pub(crate) enum U32OrBool {
         U32(u32),
         Bool(bool),
     }

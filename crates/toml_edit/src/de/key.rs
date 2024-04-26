@@ -13,7 +13,7 @@ impl KeyDeserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for KeyDeserializer {
+impl<'de> IntoDeserializer<'de, Error> for KeyDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -81,7 +81,7 @@ impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
 }
 
 impl<'de> serde::de::EnumAccess<'de> for KeyDeserializer {
-    type Error = super::Error;
+    type Error = Error;
     type Variant = UnitOnly<Self::Error>;
 
     fn variant_seed<T>(self, seed: T) -> Result<(T::Value, Self::Variant), Self::Error>

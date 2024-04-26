@@ -419,13 +419,13 @@ impl MapValueSerializer {
 impl serde::ser::Serializer for &mut MapValueSerializer {
     type Ok = crate::Value;
     type Error = Error;
-    type SerializeSeq = super::SerializeValueArray;
-    type SerializeTuple = super::SerializeValueArray;
-    type SerializeTupleStruct = super::SerializeValueArray;
-    type SerializeTupleVariant = super::SerializeTupleVariant;
-    type SerializeMap = super::SerializeMap;
-    type SerializeStruct = super::SerializeMap;
-    type SerializeStructVariant = super::SerializeStructVariant;
+    type SerializeSeq = SerializeValueArray;
+    type SerializeTuple = SerializeValueArray;
+    type SerializeTupleStruct = SerializeValueArray;
+    type SerializeTupleVariant = SerializeTupleVariant;
+    type SerializeMap = SerializeMap;
+    type SerializeStruct = SerializeMap;
+    type SerializeStructVariant = SerializeStructVariant;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         ValueSerializer::new().serialize_bool(v)
@@ -585,8 +585,8 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
     }
 }
 
-pub type SerializeTupleVariant = SerializeVariant<SerializeValueArray>;
-pub type SerializeStructVariant = SerializeVariant<SerializeMap>;
+pub(crate) type SerializeTupleVariant = SerializeVariant<SerializeValueArray>;
+pub(crate) type SerializeStructVariant = SerializeVariant<SerializeMap>;
 
 pub struct SerializeVariant<T> {
     variant: &'static str,

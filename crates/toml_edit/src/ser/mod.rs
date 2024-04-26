@@ -51,7 +51,7 @@ impl serde::ser::Error for Error {
 }
 
 impl std::fmt::Display for Error {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::UnsupportedType(Some(t)) => write!(formatter, "unsupported {t} type"),
             Self::UnsupportedType(None) => write!(formatter, "unsupported rust type"),
