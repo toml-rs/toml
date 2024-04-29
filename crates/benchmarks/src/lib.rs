@@ -17,7 +17,11 @@ impl<'s> std::fmt::Display for Data<'s> {
     }
 }
 
-pub const MANIFESTS: &[Data<'static>] = &[Data("0-new", NEW), Data("1-medium", MEDIUM)];
+pub const MANIFESTS: &[Data<'static>] = &[
+    Data("0-new", NEW),
+    Data("1-medium", MEDIUM),
+    Data("2-features", FEATURES),
+];
 
 const NEW: &str = r#"
 [package]
@@ -29,6 +33,7 @@ edition = "2018"
 "#;
 
 const MEDIUM: &str = include_str!("Cargo.cargo.toml");
+const FEATURES: &str = include_str!("Cargo.web-sys.toml");
 
 pub mod manifest {
     use std::collections::HashMap;
