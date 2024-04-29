@@ -1,6 +1,7 @@
 [files]
 extend-exclude = [
     "crates/toml_edit/tests/fixtures/**",
+    "crates/benchmarks/src/Cargo.*.toml",
 ]
 
 [default.extend-words]
