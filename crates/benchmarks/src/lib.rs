@@ -81,7 +81,7 @@ pub mod manifest {
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     #[serde(rename_all = "kebab-case")]
     pub(crate) struct Lib {
-        name: String,
+        name: Option<String>,
         #[serde(default)]
         path: Option<String>,
     }
