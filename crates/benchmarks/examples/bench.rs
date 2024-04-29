@@ -28,7 +28,7 @@ fn main() -> Result<(), lexopt::Error> {
 
 struct Args {
     parser: Parser,
-    data: toml_benchmarks::Data,
+    data: toml_benchmarks::Data<'static>,
 }
 
 impl Args {

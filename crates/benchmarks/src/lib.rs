@@ -1,23 +1,23 @@
 #[derive(Copy, Clone, Debug)]
-pub struct Data(&'static str, &'static str);
+pub struct Data<'s>(pub &'s str, pub &'s str);
 
-impl Data {
-    pub const fn name(&self) -> &'static str {
+impl<'s> Data<'s> {
+    pub const fn name(&self) -> &'s str {
         self.0
     }
 
-    pub const fn content(&self) -> &'static str {
+    pub const fn content(&self) -> &'s str {
         self.1
     }
 }
 
-impl std::fmt::Display for Data {
+impl<'s> std::fmt::Display for Data<'s> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.name().fmt(f)
     }
 }
 
-pub const MANIFESTS: &[Data] = &[Data("0-new", NEW), Data("1-medium", MEDIUM)];
+pub const MANIFESTS: &[Data<'static>] = &[Data("0-new", NEW), Data("1-medium", MEDIUM)];
 
 const NEW: &str = r#"
 [package]
