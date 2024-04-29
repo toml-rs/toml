@@ -17,15 +17,13 @@ impl std::fmt::Display for Data {
     }
 }
 
-pub const MANIFESTS: &[Data] = &[Data("0-minimal", MINIMAL), Data("1-medium", MEDIUM)];
+pub const MANIFESTS: &[Data] = &[Data("0-new", NEW), Data("1-medium", MEDIUM)];
 
-const MINIMAL: &str = r#"
+const NEW: &str = r#"
 [package]
 name = "bar"
 version = "0.1.0"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 "#;
