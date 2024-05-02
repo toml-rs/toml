@@ -167,11 +167,11 @@ impl Item {
     // Starting private because the name is unclear
     pub(crate) fn make_item(&mut self) {
         let other = std::mem::take(self);
-        let other = match other.into_table().map(crate::Item::Table) {
+        let other = match other.into_table().map(Item::Table) {
             Ok(i) => i,
             Err(i) => i,
         };
-        let other = match other.into_array_of_tables().map(crate::Item::ArrayOfTables) {
+        let other = match other.into_array_of_tables().map(Item::ArrayOfTables) {
             Ok(i) => i,
             Err(i) => i,
         };

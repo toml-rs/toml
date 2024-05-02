@@ -78,10 +78,10 @@ impl Map<String, Value> {
     /// The key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     #[inline]
-    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&Value>
+    pub fn get<Q>(&self, key: &Q) -> Option<&Value>
     where
         String: Borrow<Q>,
-        Q: Ord + Eq + Hash,
+        Q: Ord + Eq + Hash + ?Sized,
     {
         self.map.get(key)
     }
@@ -91,10 +91,10 @@ impl Map<String, Value> {
     /// The key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     #[inline]
-    pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
     where
         String: Borrow<Q>,
-        Q: Ord + Eq + Hash,
+        Q: Ord + Eq + Hash + ?Sized,
     {
         self.map.contains_key(key)
     }
@@ -104,10 +104,10 @@ impl Map<String, Value> {
     /// The key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     #[inline]
-    pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut Value>
+    pub fn get_mut<Q>(&mut self, key: &Q) -> Option<&mut Value>
     where
         String: Borrow<Q>,
-        Q: Ord + Eq + Hash,
+        Q: Ord + Eq + Hash + ?Sized,
     {
         self.map.get_mut(key)
     }
@@ -130,10 +130,10 @@ impl Map<String, Value> {
     /// The key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     #[inline]
-    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<Value>
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<Value>
     where
         String: Borrow<Q>,
-        Q: Ord + Eq + Hash,
+        Q: Ord + Eq + Hash + ?Sized,
     {
         self.map.remove(key)
     }
@@ -241,10 +241,10 @@ impl PartialEq for Map<String, Value> {
 
 /// Access an element of this map. Panics if the given key is not present in the
 /// map.
-impl<'a, Q: ?Sized> ops::Index<&'a Q> for Map<String, Value>
+impl<'a, Q> ops::Index<&'a Q> for Map<String, Value>
 where
     String: Borrow<Q>,
-    Q: Ord + Eq + Hash,
+    Q: Ord + Eq + Hash + ?Sized,
 {
     type Output = Value;
 
@@ -255,10 +255,10 @@ where
 
 /// Mutably access an element of this map. Panics if the given key is not
 /// present in the map.
-impl<'a, Q: ?Sized> ops::IndexMut<&'a Q> for Map<String, Value>
+impl<'a, Q> ops::IndexMut<&'a Q> for Map<String, Value>
 where
     String: Borrow<Q>,
-    Q: Ord + Eq + Hash,
+    Q: Ord + Eq + Hash + ?Sized,
 {
     fn index_mut(&mut self, index: &Q) -> &mut Value {
         self.map.get_mut(index).expect("no entry found for key")

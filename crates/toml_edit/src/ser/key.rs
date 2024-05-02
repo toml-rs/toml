@@ -75,9 +75,9 @@ impl serde::ser::Serializer for KeySerializer {
         Err(Error::KeyNotString)
     }
 
-    fn serialize_some<T: ?Sized>(self, _value: &T) -> Result<InternalString, Self::Error>
+    fn serialize_some<T>(self, _value: &T) -> Result<InternalString, Self::Error>
     where
-        T: serde::ser::Serialize,
+        T: serde::ser::Serialize + ?Sized,
     {
         Err(Error::KeyNotString)
     }
@@ -99,18 +99,18 @@ impl serde::ser::Serializer for KeySerializer {
         Ok(variant.into())
     }
 
-    fn serialize_newtype_struct<T: ?Sized>(
+    fn serialize_newtype_struct<T>(
         self,
         _name: &'static str,
         value: &T,
     ) -> Result<InternalString, Self::Error>
     where
-        T: serde::ser::Serialize,
+        T: serde::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
 
-    fn serialize_newtype_variant<T: ?Sized>(
+    fn serialize_newtype_variant<T>(
         self,
         _name: &'static str,
         _variant_index: u32,
@@ -118,7 +118,7 @@ impl serde::ser::Serializer for KeySerializer {
         _value: &T,
     ) -> Result<InternalString, Self::Error>
     where
-        T: serde::ser::Serialize,
+        T: serde::ser::Serialize + ?Sized,
     {
         Err(Error::KeyNotString)
     }
