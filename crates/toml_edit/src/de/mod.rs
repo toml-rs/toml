@@ -16,7 +16,6 @@ use array::ArrayDeserializer;
 use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
 use spanned::SpannedDeserializer;
-use table::TableMapAccess;
 use table_enum::TableEnumDeserializer;
 
 pub use value::ValueDeserializer;

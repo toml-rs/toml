@@ -189,12 +189,12 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
             }
             crate::Item::Value(crate::Value::InlineTable(v)) => {
                 if v.is_empty() {
-                    Err(crate::de::Error::custom(
+                    Err(Error::custom(
                         "wanted exactly 1 element, found 0 elements",
                         v.span(),
                     ))
                 } else if v.len() != 1 {
-                    Err(crate::de::Error::custom(
+                    Err(Error::custom(
                         "wanted exactly 1 element, more than 1 element",
                         v.span(),
                     ))
@@ -206,7 +206,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
             crate::Item::Table(v) => v
                 .into_deserializer()
                 .deserialize_enum(name, variants, visitor),
-            e => Err(crate::de::Error::custom("wanted string or table", e.span())),
+            e => Err(Error::custom("wanted string or table", e.span())),
         }
         .map_err(|mut e: Self::Error| {
             if e.span().is_none() {

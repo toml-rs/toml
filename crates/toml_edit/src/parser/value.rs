@@ -10,7 +10,6 @@ use crate::parser::numbers::{float, integer};
 use crate::parser::prelude::*;
 use crate::parser::strings::string;
 use crate::repr::{Formatted, Repr};
-use crate::value as v;
 use crate::RawString;
 use crate::Value;
 
@@ -20,56 +19,56 @@ pub(crate) fn value<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Value, 
         dispatch!{peek(any);
             crate::parser::strings::QUOTATION_MARK |
             crate::parser::strings::APOSTROPHE => string.map(|s| {
-                v::Value::String(Formatted::new(
+                Value::String(Formatted::new(
                     s.into_owned()
                 ))
             }),
-            crate::parser::array::ARRAY_OPEN => array(check).map(v::Value::Array),
-            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table(check).map(v::Value::InlineTable),
+            crate::parser::array::ARRAY_OPEN => array(check).map(Value::Array),
+            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table(check).map(Value::InlineTable),
             // Date/number starts
             b'+' | b'-' | b'0'..=b'9' => {
                 // Uncommon enough not to be worth optimizing at this time
                 alt((
                     date_time
-                        .map(v::Value::from),
+                        .map(Value::from),
                     float
-                        .map(v::Value::from),
+                        .map(Value::from),
                     integer
-                        .map(v::Value::from),
+                        .map(Value::from),
                 ))
             },
             // Report as if they were numbers because its most likely a typo
             b'_' => {
                     integer
-                        .map(v::Value::from)
+                        .map(Value::from)
                 .context(StrContext::Expected(StrContextValue::Description("leading digit")))
             },
             // Report as if they were numbers because its most likely a typo
             b'.' =>  {
                     float
-                        .map(v::Value::from)
+                        .map(Value::from)
                 .context(StrContext::Expected(StrContextValue::Description("leading digit")))
             },
             b't' => {
-                crate::parser::numbers::true_.map(v::Value::from)
+                crate::parser::numbers::true_.map(Value::from)
                     .context(StrContext::Label("string"))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('"')))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('\'')))
             },
             b'f' => {
-                crate::parser::numbers::false_.map(v::Value::from)
+                crate::parser::numbers::false_.map(Value::from)
                     .context(StrContext::Label("string"))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('"')))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('\'')))
             },
             b'i' => {
-                crate::parser::numbers::inf.map(v::Value::from)
+                crate::parser::numbers::inf.map(Value::from)
                     .context(StrContext::Label("string"))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('"')))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('\'')))
             },
             b'n' => {
-                crate::parser::numbers::nan.map(v::Value::from)
+                crate::parser::numbers::nan.map(Value::from)
                     .context(StrContext::Label("string"))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('"')))
                     .context(StrContext::Expected(StrContextValue::CharLiteral('\'')))

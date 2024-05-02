@@ -85,9 +85,9 @@ impl std::error::Error for Error {}
 /// fail, if `T` contains a map with non-string keys, or if `T` attempts to
 /// serialize an unsupported datatype such as an enum, tuple, or tuple struct.
 #[cfg(feature = "display")]
-pub fn to_vec<T: ?Sized>(value: &T) -> Result<Vec<u8>, Error>
+pub fn to_vec<T>(value: &T) -> Result<Vec<u8>, Error>
 where
-    T: serde::ser::Serialize,
+    T: serde::ser::Serialize + ?Sized,
 {
     to_string(value).map(|e| e.into_bytes())
 }
@@ -129,9 +129,9 @@ where
 /// println!("{}", toml)
 /// ```
 #[cfg(feature = "display")]
-pub fn to_string<T: ?Sized>(value: &T) -> Result<String, Error>
+pub fn to_string<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize,
+    T: serde::ser::Serialize + ?Sized,
 {
     to_document(value).map(|e| e.to_string())
 }
@@ -141,9 +141,9 @@ where
 /// This is identical to `to_string` except the output string has a more
 /// "pretty" output. See `ValueSerializer::pretty` for more details.
 #[cfg(feature = "display")]
-pub fn to_string_pretty<T: ?Sized>(value: &T) -> Result<String, Error>
+pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize,
+    T: serde::ser::Serialize + ?Sized,
 {
     let mut document = to_document(value)?;
     pretty::Pretty.visit_document_mut(&mut document);
@@ -153,9 +153,9 @@ where
 /// Serialize the given data structure into a TOML document.
 ///
 /// This would allow custom formatting to be applied, mixing with format preserving edits, etc.
-pub fn to_document<T: ?Sized>(value: &T) -> Result<crate::DocumentMut, Error>
+pub fn to_document<T>(value: &T) -> Result<crate::DocumentMut, Error>
 where
-    T: serde::ser::Serialize,
+    T: serde::ser::Serialize + ?Sized,
 {
     let value = value.serialize(ValueSerializer::new())?;
     let item = crate::Item::Value(value);

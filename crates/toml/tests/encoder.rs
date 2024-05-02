@@ -1,4 +1,5 @@
 #![cfg(all(feature = "parse", feature = "display"))]
+#![allow(dead_code)]
 
 #[derive(Copy, Clone)]
 pub(crate) struct Encoder;
