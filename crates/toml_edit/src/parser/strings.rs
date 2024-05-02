@@ -218,7 +218,8 @@ fn mlb_quotes<'i>(
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
         let res = terminated(b"\"\"", peek(term.by_ref()))
-            // Safety: ???
+            // Safety: terminated returns the output of the first parser here,
+            // which only parses ASCII
             .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
             .parse_next(input);
 
@@ -226,7 +227,8 @@ fn mlb_quotes<'i>(
             Err(winnow::error::ErrMode::Backtrack(_)) => {
                 input.reset(&start);
                 terminated(b"\"", peek(term.by_ref()))
-                    // Safety: ???
+                    // Safety: terminated returns the output of the first parser here,
+                    // which only parses ASCII
                     .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
                     .parse_next(input)
             }
@@ -349,7 +351,8 @@ fn mll_quotes<'i>(
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
         let res = terminated(b"''", peek(term.by_ref()))
-            // Safety: ???
+            // Safety: terminated returns the output of the first parser here,
+            // which only parses ASCII
             .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
             .parse_next(input);
 
@@ -357,7 +360,8 @@ fn mll_quotes<'i>(
             Err(winnow::error::ErrMode::Backtrack(_)) => {
                 input.reset(&start);
                 terminated(b"'", peek(term.by_ref()))
-                    // Safety: ???
+                    // Safety: terminated returns the output of the first parser here,
+                    // which only parses ASCII
                     .map(|b| unsafe { from_utf8_unchecked(b, "`bytes` out non-ASCII") })
                     .parse_next(input)
             }
