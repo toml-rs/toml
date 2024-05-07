@@ -21,7 +21,7 @@ pub enum Item {
 }
 
 impl Item {
-    /// Sets `self` to the given item iff `self` is none and
+    /// Sets `self` to the given item if `self` is none and
     /// returns a mutable reference to `self`.
     pub fn or_insert(&mut self, item: Item) -> &mut Item {
         if self.is_none() {
@@ -177,19 +177,19 @@ impl Item {
         };
         *self = other;
     }
-    /// Returns true iff `self` is a value.
+    /// Returns true if `self` is a value.
     pub fn is_value(&self) -> bool {
         self.as_value().is_some()
     }
-    /// Returns true iff `self` is a table.
+    /// Returns true if `self` is a table.
     pub fn is_table(&self) -> bool {
         self.as_table().is_some()
     }
-    /// Returns true iff `self` is an array of tables.
+    /// Returns true if `self` is an array of tables.
     pub fn is_array_of_tables(&self) -> bool {
         self.as_array_of_tables().is_some()
     }
-    /// Returns true iff `self` is `None`.
+    /// Returns true if `self` is `None`.
     pub fn is_none(&self) -> bool {
         matches!(*self, Item::None)
     }
@@ -201,7 +201,7 @@ impl Item {
         self.as_value().and_then(Value::as_integer)
     }
 
-    /// Returns true iff `self` is an integer.
+    /// Returns true if `self` is an integer.
     pub fn is_integer(&self) -> bool {
         self.as_integer().is_some()
     }
@@ -211,7 +211,7 @@ impl Item {
         self.as_value().and_then(Value::as_float)
     }
 
-    /// Returns true iff `self` is a float.
+    /// Returns true if `self` is a float.
     pub fn is_float(&self) -> bool {
         self.as_float().is_some()
     }
@@ -221,7 +221,7 @@ impl Item {
         self.as_value().and_then(Value::as_bool)
     }
 
-    /// Returns true iff `self` is a boolean.
+    /// Returns true if `self` is a boolean.
     pub fn is_bool(&self) -> bool {
         self.as_bool().is_some()
     }
@@ -231,7 +231,7 @@ impl Item {
         self.as_value().and_then(Value::as_str)
     }
 
-    /// Returns true iff `self` is a string.
+    /// Returns true if `self` is a string.
     pub fn is_str(&self) -> bool {
         self.as_str().is_some()
     }
@@ -241,7 +241,7 @@ impl Item {
         self.as_value().and_then(Value::as_datetime)
     }
 
-    /// Returns true iff `self` is a date-time.
+    /// Returns true if `self` is a date-time.
     pub fn is_datetime(&self) -> bool {
         self.as_datetime().is_some()
     }
@@ -256,7 +256,7 @@ impl Item {
         self.as_value_mut().and_then(Value::as_array_mut)
     }
 
-    /// Returns true iff `self` is an array.
+    /// Returns true if `self` is an array.
     pub fn is_array(&self) -> bool {
         self.as_array().is_some()
     }
@@ -271,7 +271,7 @@ impl Item {
         self.as_value_mut().and_then(Value::as_inline_table_mut)
     }
 
-    /// Returns true iff `self` is an inline table.
+    /// Returns true if `self` is an inline table.
     pub fn is_inline_table(&self) -> bool {
         self.as_inline_table().is_some()
     }
@@ -292,7 +292,7 @@ impl Item {
         }
     }
 
-    /// Returns true iff `self` is either a table, or an inline table.
+    /// Returns true if `self` is either a table, or an inline table.
     pub fn is_table_like(&self) -> bool {
         self.as_table_like().is_some()
     }

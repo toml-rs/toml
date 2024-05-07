@@ -64,7 +64,7 @@ impl ArrayOfTables {
         self.values.len()
     }
 
-    /// Returns true iff `self.len() == 0`.
+    /// Returns true if `self.len() == 0`.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }

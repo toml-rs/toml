@@ -263,7 +263,7 @@ impl InlineTable {
         self.iter().count()
     }
 
-    /// Returns true iff the table is empty.
+    /// Returns true if the table is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -354,7 +354,7 @@ impl InlineTable {
         })
     }
 
-    /// Returns true iff the table contains given key.
+    /// Returns true if the table contains given key.
     pub fn contains_key(&self, key: &str) -> bool {
         if let Some(kv) = self.items.get(key) {
             kv.value.is_value()
