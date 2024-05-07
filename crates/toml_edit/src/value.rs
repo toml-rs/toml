@@ -49,7 +49,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is a string.
+    /// Returns true if `self` is a string.
     pub fn is_str(&self) -> bool {
         self.as_str().is_some()
     }
@@ -62,7 +62,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is an integer.
+    /// Returns true if `self` is an integer.
     pub fn is_integer(&self) -> bool {
         self.as_integer().is_some()
     }
@@ -75,7 +75,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is a float.
+    /// Returns true if `self` is a float.
     pub fn is_float(&self) -> bool {
         self.as_float().is_some()
     }
@@ -88,7 +88,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is a boolean.
+    /// Returns true if `self` is a boolean.
     pub fn is_bool(&self) -> bool {
         self.as_bool().is_some()
     }
@@ -101,7 +101,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is a date-time.
+    /// Returns true if `self` is a date-time.
     pub fn is_datetime(&self) -> bool {
         self.as_datetime().is_some()
     }
@@ -122,7 +122,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is an array.
+    /// Returns true if `self` is an array.
     pub fn is_array(&self) -> bool {
         self.as_array().is_some()
     }
@@ -143,7 +143,7 @@ impl Value {
         }
     }
 
-    /// Returns true iff `self` is an inline table.
+    /// Returns true if `self` is an inline table.
     pub fn is_inline_table(&self) -> bool {
         self.as_inline_table().is_some()
     }

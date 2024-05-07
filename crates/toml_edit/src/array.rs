@@ -132,7 +132,7 @@ impl Array {
         self.values.len()
     }
 
-    /// Return true iff `self.len() == 0`.
+    /// Return true if `self.len() == 0`.
     ///
     /// # Examples
     ///
