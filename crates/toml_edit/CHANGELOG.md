@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.13] - 2024-05-15
+
 ## [0.22.12] - 2024-04-19
 
 ### Fixes
@@ -694,7 +696,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.12...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.13...HEAD
+[0.22.13]: https://github.com/toml-rs/toml/compare/v0.22.12...v0.22.13
 [0.22.12]: https://github.com/toml-rs/toml/compare/v0.22.11...v0.22.12
 [0.22.11]: https://github.com/toml-rs/toml/compare/v0.22.10...v0.22.11
 [0.22.10]: https://github.com/toml-rs/toml/compare/v0.22.9...v0.22.10

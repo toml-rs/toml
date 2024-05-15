@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.6] - 2024-05-15
+
 ## [0.6.5] - 2023-10-23
 
 ### Fixes
@@ -46,7 +48,8 @@ MSRV is now 1.64.0
 ## [0.5.0] - 2022-10-21
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.5...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.6...HEAD
+[0.6.6]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.5...toml_datetime-v0.6.6
 [0.6.5]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.4...toml_datetime-v0.6.5
 [0.6.4]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.3...toml_datetime-v0.6.4
 [0.6.3]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.2...toml_datetime-v0.6.3
