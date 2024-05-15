@@ -11,7 +11,7 @@ fn main() {
                     Ok(()) => "".to_owned(),
                     Err(err) => err,
                 };
-                snapbox::assert_eq_path(expect_path, err);
+                snapbox::assert_eq(snapbox::Data::read_from(&expect_path, None), err);
                 Ok(())
             })
         })
