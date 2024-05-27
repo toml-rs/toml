@@ -364,7 +364,6 @@ impl std::fmt::Display for Item {
 /// ```rust
 /// # #[cfg(feature = "display")] {
 /// # #[cfg(feature = "parse")] {
-/// # use snapbox::assert_eq;
 /// # use toml_edit::*;
 /// let mut table = Table::default();
 /// let mut array = Array::default();
@@ -373,7 +372,7 @@ impl std::fmt::Display for Item {
 /// table["key1"] = value("value1");
 /// table["key2"] = value(42);
 /// table["key3"] = value(array);
-/// assert_eq(table.to_string(),
+/// assert_eq!(table.to_string(),
 /// r#"key1 = "value1"
 /// key2 = 42
 /// key3 = ["hello", '\, world']
