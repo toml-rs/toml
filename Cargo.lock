@@ -617,8 +617,6 @@ checksum = "f37d101fcafc8e73748fd8a1b7048f5979f93d372fd17027d7724c1643bc379b"
 dependencies = [
  "anstream 0.6.14",
  "anstyle",
- "ignore",
- "libtest-mimic",
  "normalize-line-endings",
  "similar",
  "snapbox-macros",
