@@ -22,8 +22,9 @@ other = "world"
     let actual = doc.to_string();
     // `table=` is because we didn't re-format the table key, only the value
     assert_data_eq!(actual, str![[r#"
-        table= { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }
-    "#]].raw());
+table= { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }
+
+"#]].raw());
 }
 
 #[test]
@@ -41,13 +42,18 @@ fn inline_table_to_table() {
     doc.insert("table", Item::Table(t));
 
     let actual = doc.to_string();
-    assert_data_eq!(actual, str![[r#"
-        [table]
-        string = "value"
-        array = [1, 2, 3]
-        inline = { "1" = 1, "2" = 2 }
-        child = { other = "world" }
-    "#]].raw());
+    assert_data_eq!(
+        actual,
+        str![[r#"
+[table]
+string = "value"
+array = [1, 2, 3]
+inline = { "1" = 1, "2" = 2 }
+child = { other = "world" }
+
+"#]]
+        .raw()
+    );
 }
 
 #[test]
@@ -76,6 +82,7 @@ other = "world"
     let actual = doc.to_string();
     // `table=` is because we didn't re-format the table key, only the value
     assert_data_eq!(actual, str![[r#"
-        table= [{ string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }, { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }]
-    "#]].raw());
+table= [{ string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }, { string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, child = { other = "world" } }]
+
+"#]].raw());
 }

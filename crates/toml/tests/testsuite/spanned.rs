@@ -251,11 +251,16 @@ fn deny_unknown_fields() {
 fake = 1"#,
     )
     .unwrap_err();
-    assert_data_eq!(error.to_string(), str![[r#"
-        TOML parse error at line 3, column 1
-          |
-        3 | fake = 1
-          | ^^^^
-        unknown field `fake`, expected `real`
-    "#]].raw());
+    assert_data_eq!(
+        error.to_string(),
+        str![[r#"
+TOML parse error at line 3, column 1
+  |
+3 | fake = 1
+  | ^^^^
+unknown field `fake`, expected `real`
+
+"#]]
+        .raw()
+    );
 }

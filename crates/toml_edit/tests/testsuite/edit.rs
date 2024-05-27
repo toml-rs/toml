@@ -44,7 +44,7 @@ impl Test {
 
     #[track_caller]
     fn produces_display(&self, expected: snapbox::data::Inline) -> &Self {
-        assert_data_eq!(self.doc.to_string(), expected.indent(false).raw());
+        assert_data_eq!(self.doc.to_string(), expected.raw());
         self
     }
 }
@@ -79,6 +79,7 @@ ip = "10.0.0.2"
 dc = "eqdc10"
 
         [other.table]
+
 "#]]);
 }
 
@@ -104,6 +105,7 @@ fn test_inserted_leaf_table_goes_after_last_sibling() {
 
 [dependencies.newthing]
         [dev-dependencies]
+
 "#]]);
 }
 
@@ -117,6 +119,7 @@ fn test_inserting_tables_from_different_parsed_docs() {
         .produces_display(str![[r#"
 [a]
 [b]
+
 "#]]);
 }
 #[test]
@@ -140,6 +143,7 @@ fn test_insert_nonleaf_table() {
 [servers.alpha]
 ip = "10.0.0.1"
 dc = "eqdc10"
+
 "#]]);
 }
 
@@ -170,6 +174,7 @@ fn test_insert_array() {
 hello = "world"
 
 [[bin]]
+
 "#]]);
 }
 
@@ -191,6 +196,7 @@ key2 = 42
 key3 = 8.1415926
 
         [tbl.son]
+
 "#]]);
 }
 
@@ -223,6 +229,7 @@ fn test_remove_leaf_table() {
         [servers.beta]
         ip = "10.0.0.2"
         dc = "eqdc10"
+
 "#]]);
 }
 
@@ -319,6 +326,7 @@ fn test_remove_array_entry() {
 
         [dependencies]
         nom = "4.0" # future is here
+
 "#]]);
 }
 
@@ -352,6 +360,7 @@ fn test_remove_array() {
 
         [dependencies]
         nom = "4.0" # future is here
+
 "#]]);
 }
 
@@ -378,6 +387,7 @@ fn test_remove_value() {
 
         name = "hello"
         documentation = "https://docs.rs/hello"
+
 "#]]);
 }
 
@@ -435,6 +445,7 @@ fn test_sort_values() {
         c = 3
 
         [a.y]
+
 "#]]);
 }
 
@@ -470,6 +481,7 @@ fn test_sort_values_by() {
         b = 2 # as well as this
 
         [a.y]
+
 "#]]);
 }
 
@@ -498,6 +510,7 @@ fn test_set_position() {
         [package]
         [dev-dependencies]
         [dependencies.opencl]
+
 "#]]);
 }
 
@@ -523,6 +536,7 @@ fn test_multiple_zero_positions() {
         [dev-dependencies]
         [dependencies.opencl]
         a=""
+
 "#]]);
 }
 
@@ -548,6 +562,7 @@ fn test_multiple_max_usize_positions() {
         [package]
         [dependencies]
         [dev-dependencies]
+
 "#]]);
 }
 
@@ -605,6 +620,7 @@ fn test_insert_replace_into_array() {
         b = ["hello", "beep",   "zoink"   ,
 "world"
 ,  "yikes"]
+
 "#]]);
 }
 
@@ -633,6 +649,7 @@ fn test_remove_from_array() {
 
         a = [1, 2, 3]
         b = []
+
 "#]]);
 }
 
@@ -697,6 +714,7 @@ fn test_insert_into_inline_table() {
 
         a = { a = 2, c = 3, b = 42 }
         b = { hello = "world" }
+
 "#]]);
 }
 
@@ -725,6 +743,7 @@ fn test_remove_from_inline_table() {
 
         a = {a=2, b = 42}
         b = {}
+
 "#]]);
 }
 
@@ -802,6 +821,7 @@ fn test_insert_dotted_into_std_table() {
         .produces_display(str![[r#"
 [nixpkgs]
 src.git = "https://github.com/nixos/nixpkgs"
+
 "#]]);
 }
 
@@ -820,6 +840,7 @@ fn test_insert_dotted_into_implicit_table() {
         .produces_display(str![[r#"
 [nixpkgs]
 src.git = "https://github.com/nixos/nixpkgs"
+
 "#]]);
 }
 

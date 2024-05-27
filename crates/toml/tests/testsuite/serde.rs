@@ -290,16 +290,18 @@ fn type_errors() {
             bar: Value::String("a".to_owned())
         },
         str![[r#"
-            TOML parse error at line 1, column 7
-              |
-            1 | bar = "a"
-              |       ^^^
-            invalid type: string "a", expected isize
-        "#]],
+TOML parse error at line 1, column 7
+  |
+1 | bar = "a"
+  |       ^^^
+invalid type: string "a", expected isize
+
+"#]],
         str![[r#"
-            invalid type: string "a", expected isize
-            in `bar`
-        "#]]
+invalid type: string "a", expected isize
+in `bar`
+
+"#]]
     }
 
     error! {
@@ -310,16 +312,18 @@ fn type_errors() {
             }
         },
         str![[r#"
-            TOML parse error at line 2, column 7
-              |
-            2 | bar = "a"
-              |       ^^^
-            invalid type: string "a", expected isize
-        "#]],
+TOML parse error at line 2, column 7
+  |
+2 | bar = "a"
+  |       ^^^
+invalid type: string "a", expected isize
+
+"#]],
         str![[r#"
-            invalid type: string "a", expected isize
-            in `foo.bar`
-        "#]]
+invalid type: string "a", expected isize
+in `foo.bar`
+
+"#]]
     }
 }
 
@@ -334,15 +338,17 @@ fn missing_errors() {
         Foo,
         map! { },
         str![[r#"
-            TOML parse error at line 1, column 1
-              |
-            1 | 
-              | ^
-            missing field `bar`
-        "#]],
+TOML parse error at line 1, column 1
+  |
+1 | 
+  | ^
+missing field `bar`
+
+"#]],
         str![[r#"
-            missing field `bar`
-        "#]]
+missing field `bar`
+
+"#]]
     }
 }
 
@@ -420,13 +426,18 @@ fn parse_tuple_variant() {
         ],
     };
     let raw = toml::to_string(&input).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        [[inner]]
-        Int = [1, 1]
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[inner]]
+Int = [1, 1]
 
-        [[inner]]
-        String = ["2", "2"]
-    "#]].raw());
+[[inner]]
+String = ["2", "2"]
+
+"#]]
+        .raw()
+    );
 
     equivalent! {
         Document {
@@ -470,19 +481,24 @@ fn parse_struct_variant() {
         ],
     };
     let raw = toml::to_string(&input).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        [[inner]]
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[inner]]
 
-        [inner.Int]
-        first = 1
-        second = 1
+[inner.Int]
+first = 1
+second = 1
 
-        [[inner]]
+[[inner]]
 
-        [inner.String]
-        first = "2"
-        second = "2"
-    "#]].raw());
+[inner.String]
+first = "2"
+second = "2"
+
+"#]]
+        .raw()
+    );
 
     equivalent! {
         Document {
@@ -918,13 +934,17 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    assert_data_eq!(err.to_string(), str![[r#"
-        TOML parse error at line 8, column 9
-          |
-        8 | debug = 'a'
-          |         ^^^
-        expected a boolean or an integer
-    "#]]);
+    assert_data_eq!(
+        err.to_string(),
+        str![[r#"
+TOML parse error at line 8, column 9
+  |
+8 | debug = 'a'
+  |         ^^^
+expected a boolean or an integer
+
+"#]]
+    );
 
     let res: Result<Package, _> = toml::from_str(
         r#"
@@ -938,13 +958,17 @@ dev = { debug = 'a' }
 "#,
     );
     let err = res.unwrap_err();
-    assert_data_eq!(err.to_string(), str![[r#"
-        TOML parse error at line 8, column 17
-          |
-        8 | dev = { debug = 'a' }
-          |                 ^^^
-        expected a boolean or an integer
-    "#]]);
+    assert_data_eq!(
+        err.to_string(),
+        str![[r#"
+TOML parse error at line 8, column 17
+  |
+8 | dev = { debug = 'a' }
+  |                 ^^^
+expected a boolean or an integer
+
+"#]]
+    );
 }
 
 #[test]
@@ -958,9 +982,13 @@ fn newline_key_value() {
         name: "foo".to_owned(),
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        name = "foo"
-    "#]]);
+    assert_data_eq!(
+        raw,
+        str![[r#"
+name = "foo"
+
+"#]]
+    );
 }
 
 #[test]
@@ -981,10 +1009,14 @@ fn newline_table() {
         },
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        [package]
-        name = "foo"
-    "#]]);
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[package]
+name = "foo"
+
+"#]]
+    );
 }
 
 #[test]
@@ -1019,10 +1051,14 @@ fn newline_dotted_table() {
         },
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        [profile.dev]
-        debug = true
-    "#]]);
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[profile.dev]
+debug = true
+
+"#]]
+    );
 }
 
 #[test]
@@ -1072,17 +1108,21 @@ fn newline_mixed_tables() {
         },
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        cargo_features = []
+    assert_data_eq!(
+        raw,
+        str![[r#"
+cargo_features = []
 
-        [package]
-        name = "foo"
-        version = "1.0.0"
-        authors = []
+[package]
+name = "foo"
+version = "1.0.0"
+authors = []
 
-        [profile.dev]
-        debug = true
-    "#]]);
+[profile.dev]
+debug = true
+
+"#]]
+    );
 }
 
 #[test]
@@ -1109,7 +1149,10 @@ fn integer_too_big() {
     let err = Table::try_from(native.clone()).unwrap_err();
     assert_data_eq!(err.to_string(), str!["u64 value was too large"].raw());
     let err = toml::to_string(&native).unwrap_err();
-    assert_data_eq!(err.to_string(), str!["out-of-range value for u64 type"].raw());
+    assert_data_eq!(
+        err.to_string(),
+        str!["out-of-range value for u64 type"].raw()
+    );
 }
 
 #[test]
@@ -1238,9 +1281,14 @@ fn serialize_array_with_none_value() {
         values: vec![Some(1), Some(2), Some(3)],
     };
     let raw = toml::to_string(&input).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        values = [1, 2, 3]
-    "#]].raw());
+    assert_data_eq!(
+        raw,
+        str![[r#"
+values = [1, 2, 3]
+
+"#]]
+        .raw()
+    );
 
     let input = Document {
         values: vec![Some(1), None, Some(3)],
@@ -1270,19 +1318,24 @@ fn serialize_array_with_optional_struct_field() {
         ],
     };
     let raw = toml::to_string(&input).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        [[values]]
-        x = 0
-        y = 4
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[values]]
+x = 0
+y = 4
 
-        [[values]]
-        x = 2
-        y = 5
+[[values]]
+x = 2
+y = 5
 
-        [[values]]
-        x = 3
-        y = 7
-    "#]].raw());
+[[values]]
+x = 3
+y = 7
+
+"#]]
+        .raw()
+    );
 
     let input = Document {
         values: vec![
@@ -1292,18 +1345,23 @@ fn serialize_array_with_optional_struct_field() {
         ],
     };
     let raw = toml::to_string(&input).unwrap();
-    assert_data_eq!(raw, str![[r#"
-        [[values]]
-        x = 0
-        y = 4
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[values]]
+x = 0
+y = 4
 
-        [[values]]
-        x = 2
+[[values]]
+x = 2
 
-        [[values]]
-        x = 3
-        y = 7
-    "#]].raw());
+[[values]]
+x = 3
+y = 7
+
+"#]]
+        .raw()
+    );
 }
 
 #[test]
@@ -1335,8 +1393,9 @@ fn serialize_array_with_enum_of_optional_struct_field() {
     };
     let raw = toml::to_string(&input).unwrap();
     assert_data_eq!(raw, str![[r#"
-        values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
-    "#]].raw());
+values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
+
+"#]].raw());
 
     let input = Document {
         values: vec![
@@ -1348,8 +1407,9 @@ fn serialize_array_with_enum_of_optional_struct_field() {
     };
     let raw = toml::to_string(&input).unwrap();
     assert_data_eq!(raw, str![[r#"
-        values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
-    "#]].raw());
+values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
+
+"#]].raw());
 }
 
 #[test]

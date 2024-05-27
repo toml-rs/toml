@@ -52,7 +52,7 @@ serde_json = "1.0.116"
 toml-test-harness = "0.4.8"
 toml-test-data = "1.11.0"
 libtest-mimic = "0.7.2"
-snapbox = "0.5.14"
+snapbox = "0.6.0"
 
 [[test]]
 name = "testsuite"

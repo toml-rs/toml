@@ -85,11 +85,12 @@ fn test_key_unification() {
 "#;
     let expected = str![[r#"
 
-        [a]
-        [a.'b'.c]
-        [a.'b'.c.e]
-        [a.'b'.c.d]
-    "#]];
+[a]
+[a.'b'.c]
+[a.'b'.c.e]
+[a.'b'.c.d]
+
+"#]];
     let doc = toml.parse::<DocumentMut>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
@@ -294,63 +295,91 @@ name = "plantain"
 
 #[test]
 fn stray_cr() {
-    bad!("\r", str![[r#"
-        TOML parse error at line 1, column 1
-          |
-        1 | 
-          | ^
+    bad!(
+        "\r",
+        str![[r#"
+TOML parse error at line 1, column 1
+  |
+1 | 
+  | ^
 
-    "#]]);
-    bad!("a = [ \r ]", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = [ 
-         ]
-          |       ^
-        invalid array
-        expected `]`
-    "#]]);
-    bad!("a = \"\"\"\r\"\"\"", str![[r#"
-        TOML parse error at line 1, column 8
-          |
-        1 | a = """
-        """
-          |        ^
-        invalid multiline basic string
-    "#]]);
-    bad!("a = \"\"\"\\  \r  \"\"\"", str![[r#"
-        TOML parse error at line 1, column 10
-          |
-        1 | a = """\  
-          """
-          |          ^
-        invalid escape sequence
-        expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
-    "#]]);
-    bad!("a = '''\r'''", str![[r#"
-        TOML parse error at line 1, column 8
-          |
-        1 | a = '''
-        '''
-          |        ^
-        invalid multiline literal string
-    "#]]);
-    bad!("a = '\r'", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = '
-        '
-          |      ^
-        invalid literal string
-    "#]]);
-    bad!("a = \"\r\"", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = "
-        "
-          |      ^
-        invalid basic string
-    "#]]);
+
+"#]]
+    );
+    bad!(
+        "a = [ \r ]",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = [ 
+ ]
+  |       ^
+invalid array
+expected `]`
+
+"#]]
+    );
+    bad!(
+        "a = \"\"\"\r\"\"\"",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | a = """
+"""
+  |        ^
+invalid multiline basic string
+
+"#]]
+    );
+    bad!(
+        "a = \"\"\"\\  \r  \"\"\"",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | a = """\  
+  """
+  |          ^
+invalid escape sequence
+expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+
+"#]]
+    );
+    bad!(
+        "a = '''\r'''",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | a = '''
+'''
+  |        ^
+invalid multiline literal string
+
+"#]]
+    );
+    bad!(
+        "a = '\r'",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = '
+'
+  |      ^
+invalid literal string
+
+"#]]
+    );
+    bad!(
+        "a = \"\r\"",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = "
+"
+  |      ^
+invalid basic string
+
+"#]]
+    );
 }
 
 #[test]
@@ -379,136 +408,204 @@ fn literal_eats_crlf() {
 
 #[test]
 fn string_no_newline() {
-    bad!("a = \"\n\"", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = "
-          |      ^
-        invalid basic string
-    "#]]);
-    bad!("a = '\n'", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = '
-          |      ^
-        invalid literal string
-    "#]]);
+    bad!(
+        "a = \"\n\"",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = "
+  |      ^
+invalid basic string
+
+"#]]
+    );
+    bad!(
+        "a = '\n'",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = '
+  |      ^
+invalid literal string
+
+"#]]
+    );
 }
 
 #[test]
 fn bad_leading_zeros() {
-    bad!("a = 00", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = 00
-          |      ^
-        expected newline, `#`
-    "#]]);
-    bad!("a = -00", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = -00
-          |       ^
-        expected newline, `#`
-    "#]]);
-    bad!("a = +00", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = +00
-          |       ^
-        expected newline, `#`
-    "#]]);
-    bad!("a = 00.0", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = 00.0
-          |      ^
-        expected newline, `#`
-    "#]]);
-    bad!("a = -00.0", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = -00.0
-          |       ^
-        expected newline, `#`
-    "#]]);
-    bad!("a = +00.0", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = +00.0
-          |       ^
-        expected newline, `#`
-    "#]]);
-    bad!("a = 9223372036854775808", str![[r#"
-        TOML parse error at line 1, column 5
-          |
-        1 | a = 9223372036854775808
-          |     ^
-        number too large to fit in target type
-    "#]]);
-    bad!("a = -9223372036854775809", str![[r#"
-        TOML parse error at line 1, column 5
-          |
-        1 | a = -9223372036854775809
-          |     ^
-        number too small to fit in target type
-    "#]]);
+    bad!(
+        "a = 00",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = 00
+  |      ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "a = -00",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = -00
+  |       ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "a = +00",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = +00
+  |       ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "a = 00.0",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = 00.0
+  |      ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "a = -00.0",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = -00.0
+  |       ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "a = +00.0",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = +00.0
+  |       ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "a = 9223372036854775808",
+        str![[r#"
+TOML parse error at line 1, column 5
+  |
+1 | a = 9223372036854775808
+  |     ^
+number too large to fit in target type
+
+"#]]
+    );
+    bad!(
+        "a = -9223372036854775809",
+        str![[r#"
+TOML parse error at line 1, column 5
+  |
+1 | a = -9223372036854775809
+  |     ^
+number too small to fit in target type
+
+"#]]
+    );
 }
 
 #[test]
 fn bad_floats() {
-    bad!("a = 0.", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = 0.
-          |       ^
-        invalid floating-point number
-        expected digit
-    "#]]);
-    bad!("a = 0.e", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = 0.e
-          |       ^
-        invalid floating-point number
-        expected digit
-    "#]]);
-    bad!("a = 0.E", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | a = 0.E
-          |       ^
-        invalid floating-point number
-        expected digit
-    "#]]);
-    bad!("a = 0.0E", str![[r#"
-        TOML parse error at line 1, column 9
-          |
-        1 | a = 0.0E
-          |         ^
-        invalid floating-point number
-    "#]]);
-    bad!("a = 0.0e", str![[r#"
-        TOML parse error at line 1, column 9
-          |
-        1 | a = 0.0e
-          |         ^
-        invalid floating-point number
-    "#]]);
-    bad!("a = 0.0e-", str![[r#"
-        TOML parse error at line 1, column 10
-          |
-        1 | a = 0.0e-
-          |          ^
-        invalid floating-point number
-    "#]]);
-    bad!("a = 0.0e+", str![[r#"
-        TOML parse error at line 1, column 10
-          |
-        1 | a = 0.0e+
-          |          ^
-        invalid floating-point number
-    "#]]);
+    bad!(
+        "a = 0.",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = 0.
+  |       ^
+invalid floating-point number
+expected digit
+
+"#]]
+    );
+    bad!(
+        "a = 0.e",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = 0.e
+  |       ^
+invalid floating-point number
+expected digit
+
+"#]]
+    );
+    bad!(
+        "a = 0.E",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | a = 0.E
+  |       ^
+invalid floating-point number
+expected digit
+
+"#]]
+    );
+    bad!(
+        "a = 0.0E",
+        str![[r#"
+TOML parse error at line 1, column 9
+  |
+1 | a = 0.0E
+  |         ^
+invalid floating-point number
+
+"#]]
+    );
+    bad!(
+        "a = 0.0e",
+        str![[r#"
+TOML parse error at line 1, column 9
+  |
+1 | a = 0.0e
+  |         ^
+invalid floating-point number
+
+"#]]
+    );
+    bad!(
+        "a = 0.0e-",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | a = 0.0e-
+  |          ^
+invalid floating-point number
+
+"#]]
+    );
+    bad!(
+        "a = 0.0e+",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | a = 0.0e+
+  |          ^
+invalid floating-point number
+
+"#]]
+    );
 }
 
 #[test]
@@ -569,186 +666,282 @@ fn bare_key_names() {
 
 #[test]
 fn bad_keys() {
-    bad!("key\n=3", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | key
-          |    ^
-        expected `.`, `=`
-    "#]]);
-    bad!("key=\n3", str![[r#"
-        TOML parse error at line 1, column 5
-          |
-        1 | key=
-          |     ^
-        invalid string
-        expected `"`, `'`
-    "#]]);
-    bad!("key|=3", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | key|=3
-          |    ^
-        expected `.`, `=`
-    "#]]);
-    bad!("=3", str![[r#"
-        TOML parse error at line 1, column 1
-          |
-        1 | =3
-          | ^
-        invalid key
-    "#]]);
-    bad!("\"\"|=3", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | ""|=3
-          |   ^
-        expected `.`, `=`
-    "#]]);
-    bad!("\"\n\"|=3", str![[r#"
-        TOML parse error at line 1, column 2
-          |
-        1 | "
-          |  ^
-        invalid basic string
-    "#]]);
-    bad!("\"\r\"|=3", str![[r#"
-        TOML parse error at line 1, column 2
-          |
-        1 | "
-        "|=3
-          |  ^
-        invalid basic string
-    "#]]);
-    bad!("''''''=3", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | ''''''=3
-          |   ^
-        expected `.`, `=`
-    "#]]);
-    bad!("\"\"\"\"\"\"=3", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | """"""=3
-          |   ^
-        expected `.`, `=`
-    "#]]);
-    bad!("'''key'''=3", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | '''key'''=3
-          |   ^
-        expected `.`, `=`
-    "#]]);
-    bad!("\"\"\"key\"\"\"=3", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | """key"""=3
-          |   ^
-        expected `.`, `=`
-    "#]]);
+    bad!(
+        "key\n=3",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | key
+  |    ^
+expected `.`, `=`
+
+"#]]
+    );
+    bad!(
+        "key=\n3",
+        str![[r#"
+TOML parse error at line 1, column 5
+  |
+1 | key=
+  |     ^
+invalid string
+expected `"`, `'`
+
+"#]]
+    );
+    bad!(
+        "key|=3",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | key|=3
+  |    ^
+expected `.`, `=`
+
+"#]]
+    );
+    bad!(
+        "=3",
+        str![[r#"
+TOML parse error at line 1, column 1
+  |
+1 | =3
+  | ^
+invalid key
+
+"#]]
+    );
+    bad!(
+        "\"\"|=3",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ""|=3
+  |   ^
+expected `.`, `=`
+
+"#]]
+    );
+    bad!(
+        "\"\n\"|=3",
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | "
+  |  ^
+invalid basic string
+
+"#]]
+    );
+    bad!(
+        "\"\r\"|=3",
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | "
+"|=3
+  |  ^
+invalid basic string
+
+"#]]
+    );
+    bad!(
+        "''''''=3",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ''''''=3
+  |   ^
+expected `.`, `=`
+
+"#]]
+    );
+    bad!(
+        "\"\"\"\"\"\"=3",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | """"""=3
+  |   ^
+expected `.`, `=`
+
+"#]]
+    );
+    bad!(
+        "'''key'''=3",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | '''key'''=3
+  |   ^
+expected `.`, `=`
+
+"#]]
+    );
+    bad!(
+        "\"\"\"key\"\"\"=3",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | """key"""=3
+  |   ^
+expected `.`, `=`
+
+"#]]
+    );
 }
 
 #[test]
 fn bad_table_names() {
-    bad!("[]", str![[r#"
-        TOML parse error at line 1, column 2
-          |
-        1 | []
-          |  ^
-        invalid key
-    "#]]);
-    bad!("[.]", str![[r#"
-        TOML parse error at line 1, column 2
-          |
-        1 | [.]
-          |  ^
-        invalid key
-    "#]]);
-    bad!("[a.]", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | [a.]
-          |   ^
-        invalid table header
-        expected `.`, `]`
-    "#]]);
-    bad!("[!]", str![[r#"
-        TOML parse error at line 1, column 2
-          |
-        1 | [!]
-          |  ^
-        invalid key
-    "#]]);
-    bad!("[\"\n\"]", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | ["
-          |   ^
-        invalid basic string
-    "#]]);
-    bad!("[a.b]\n[a.\"b\"]", str![[r#"
-        TOML parse error at line 2, column 1
-          |
-        2 | [a."b"]
-          | ^
-        invalid table header
-        duplicate key `b` in table `a`
-    "#]]);
-    bad!("[']", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | [']
-          |    ^
-        invalid literal string
-    "#]]);
-    bad!("[''']", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | [''']
-          |    ^
-        invalid table header
-        expected `.`, `]`
-    "#]]);
-    bad!("['''''']", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | ['''''']
-          |    ^
-        invalid table header
-        expected `.`, `]`
-    "#]]);
-    bad!("['''foo''']", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | ['''foo''']
-          |    ^
-        invalid table header
-        expected `.`, `]`
-    "#]]);
-    bad!("[\"\"\"bar\"\"\"]", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | ["""bar"""]
-          |    ^
-        invalid table header
-        expected `.`, `]`
-    "#]]);
-    bad!("['\n']", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | ['
-          |   ^
-        invalid literal string
-    "#]]);
-    bad!("['\r\n']", str![[r#"
-        TOML parse error at line 1, column 3
-          |
-        1 | ['
-          |   ^
-        invalid literal string
-    "#]]);
+    bad!(
+        "[]",
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | []
+  |  ^
+invalid key
+
+"#]]
+    );
+    bad!(
+        "[.]",
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | [.]
+  |  ^
+invalid key
+
+"#]]
+    );
+    bad!(
+        "[a.]",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | [a.]
+  |   ^
+invalid table header
+expected `.`, `]`
+
+"#]]
+    );
+    bad!(
+        "[!]",
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | [!]
+  |  ^
+invalid key
+
+"#]]
+    );
+    bad!(
+        "[\"\n\"]",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ["
+  |   ^
+invalid basic string
+
+"#]]
+    );
+    bad!(
+        "[a.b]\n[a.\"b\"]",
+        str![[r#"
+TOML parse error at line 2, column 1
+  |
+2 | [a."b"]
+  | ^
+invalid table header
+duplicate key `b` in table `a`
+
+"#]]
+    );
+    bad!(
+        "[']",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | [']
+  |    ^
+invalid literal string
+
+"#]]
+    );
+    bad!(
+        "[''']",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | [''']
+  |    ^
+invalid table header
+expected `.`, `]`
+
+"#]]
+    );
+    bad!(
+        "['''''']",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | ['''''']
+  |    ^
+invalid table header
+expected `.`, `]`
+
+"#]]
+    );
+    bad!(
+        "['''foo''']",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | ['''foo''']
+  |    ^
+invalid table header
+expected `.`, `]`
+
+"#]]
+    );
+    bad!(
+        "[\"\"\"bar\"\"\"]",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | ["""bar"""]
+  |    ^
+invalid table header
+expected `.`, `]`
+
+"#]]
+    );
+    bad!(
+        "['\n']",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ['
+  |   ^
+invalid literal string
+
+"#]]
+    );
+    bad!(
+        "['\r\n']",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ['
+  |   ^
+invalid literal string
+
+"#]]
+    );
 }
 
 #[test]
@@ -773,13 +966,17 @@ fn table_names() {
 
 #[test]
 fn invalid_bare_numeral() {
-    bad!("4", str![[r#"
-        TOML parse error at line 1, column 2
-          |
-        1 | 4
-          |  ^
-        expected `.`, `=`
-    "#]]);
+    bad!(
+        "4",
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | 4
+  |  ^
+expected `.`, `=`
+
+"#]]
+    );
 }
 
 #[test]
@@ -790,45 +987,65 @@ fn inline_tables() {
     "a = {a=1,b=2}".parse::<DocumentMut>().unwrap();
     "a = {a=1,b=2,c={}}".parse::<DocumentMut>().unwrap();
 
-    bad!("a = {a=1,}", str![[r#"
-        TOML parse error at line 1, column 9
-          |
-        1 | a = {a=1,}
-          |         ^
-        invalid inline table
-        expected `}`
-    "#]]);
-    bad!("a = {,}", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = {,}
-          |      ^
-        invalid inline table
-        expected `}`
-    "#]]);
-    bad!("a = {a=1,a=1}", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = {a=1,a=1}
-          |      ^
-        duplicate key `a`
-    "#]]);
-    bad!("a = {\n}", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = {
-          |      ^
-        invalid inline table
-        expected `}`
-    "#]]);
-    bad!("a = {", str![[r#"
-        TOML parse error at line 1, column 6
-          |
-        1 | a = {
-          |      ^
-        invalid inline table
-        expected `}`
-    "#]]);
+    bad!(
+        "a = {a=1,}",
+        str![[r#"
+TOML parse error at line 1, column 9
+  |
+1 | a = {a=1,}
+  |         ^
+invalid inline table
+expected `}`
+
+"#]]
+    );
+    bad!(
+        "a = {,}",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = {,}
+  |      ^
+invalid inline table
+expected `}`
+
+"#]]
+    );
+    bad!(
+        "a = {a=1,a=1}",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = {a=1,a=1}
+  |      ^
+duplicate key `a`
+
+"#]]
+    );
+    bad!(
+        "a = {\n}",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = {
+  |      ^
+invalid inline table
+expected `}`
+
+"#]]
+    );
+    bad!(
+        "a = {",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = {
+  |      ^
+invalid inline table
+expected `}`
+
+"#]]
+    );
 
     "a = {a=[\n]}".parse::<DocumentMut>().unwrap();
     "a = {\"a\"=[\n]}".parse::<DocumentMut>().unwrap();
@@ -854,80 +1071,116 @@ fn number_underscores() {
 
 #[test]
 fn bad_underscores() {
-    bad!("foo = 0_", str![[r#"
-        TOML parse error at line 1, column 8
-          |
-        1 | foo = 0_
-          |        ^
-        expected newline, `#`
-    "#]]);
-    bad!("foo = 0__0", str![[r#"
-        TOML parse error at line 1, column 8
-          |
-        1 | foo = 0__0
-          |        ^
-        expected newline, `#`
-    "#]]);
-    bad!("foo = __0", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | foo = __0
-          |       ^
-        invalid integer
-        expected leading digit
-    "#]]);
-    bad!("foo = 1_0_", str![[r#"
-        TOML parse error at line 1, column 11
-          |
-        1 | foo = 1_0_
-          |           ^
-        invalid integer
-        expected digit
-    "#]]);
+    bad!(
+        "foo = 0_",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | foo = 0_
+  |        ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "foo = 0__0",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | foo = 0__0
+  |        ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "foo = __0",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | foo = __0
+  |       ^
+invalid integer
+expected leading digit
+
+"#]]
+    );
+    bad!(
+        "foo = 1_0_",
+        str![[r#"
+TOML parse error at line 1, column 11
+  |
+1 | foo = 1_0_
+  |           ^
+invalid integer
+expected digit
+
+"#]]
+    );
 }
 
 #[test]
 fn bad_unicode_codepoint() {
-    bad!("foo = \"\\uD800\"", str![[r#"
-        TOML parse error at line 1, column 10
-          |
-        1 | foo = "\uD800"
-          |          ^
-        invalid unicode 4-digit hex code
-        value is out of range
-    "#]]);
+    bad!(
+        "foo = \"\\uD800\"",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | foo = "\uD800"
+  |          ^
+invalid unicode 4-digit hex code
+value is out of range
+
+"#]]
+    );
 }
 
 #[test]
 fn bad_strings() {
-    bad!("foo = \"\\uxx\"", str![[r#"
-        TOML parse error at line 1, column 10
-          |
-        1 | foo = "\uxx"
-          |          ^
-        invalid unicode 4-digit hex code
-    "#]]);
-    bad!("foo = \"\\u\"", str![[r#"
-        TOML parse error at line 1, column 10
-          |
-        1 | foo = "\u"
-          |          ^
-        invalid unicode 4-digit hex code
-    "#]]);
-    bad!("foo = \"\\", str![[r#"
-        TOML parse error at line 1, column 8
-          |
-        1 | foo = "\
-          |        ^
-        invalid basic string
-    "#]]);
-    bad!("foo = '", str![[r#"
-        TOML parse error at line 1, column 8
-          |
-        1 | foo = '
-          |        ^
-        invalid literal string
-    "#]]);
+    bad!(
+        "foo = \"\\uxx\"",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | foo = "\uxx"
+  |          ^
+invalid unicode 4-digit hex code
+
+"#]]
+    );
+    bad!(
+        "foo = \"\\u\"",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | foo = "\u"
+  |          ^
+invalid unicode 4-digit hex code
+
+"#]]
+    );
+    bad!(
+        "foo = \"\\",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | foo = "\
+  |        ^
+invalid basic string
+
+"#]]
+    );
+    bad!(
+        "foo = '",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | foo = '
+  |        ^
+invalid literal string
+
+"#]]
+    );
 }
 
 #[test]
@@ -948,36 +1201,52 @@ fn booleans() {
     let table = "foo = false".parse::<DocumentMut>().unwrap();
     assert_eq!(table["foo"].as_bool(), Some(false));
 
-    bad!("foo = true2", str![[r#"
-        TOML parse error at line 1, column 11
-          |
-        1 | foo = true2
-          |           ^
-        expected newline, `#`
-    "#]]);
-    bad!("foo = false2", str![[r#"
-        TOML parse error at line 1, column 12
-          |
-        1 | foo = false2
-          |            ^
-        expected newline, `#`
-    "#]]);
-    bad!("foo = t1", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | foo = t1
-          |       ^
-        invalid string
-        expected `"`, `'`
-    "#]]);
-    bad!("foo = f2", str![[r#"
-        TOML parse error at line 1, column 7
-          |
-        1 | foo = f2
-          |       ^
-        invalid string
-        expected `"`, `'`
-    "#]]);
+    bad!(
+        "foo = true2",
+        str![[r#"
+TOML parse error at line 1, column 11
+  |
+1 | foo = true2
+  |           ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "foo = false2",
+        str![[r#"
+TOML parse error at line 1, column 12
+  |
+1 | foo = false2
+  |            ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "foo = t1",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | foo = t1
+  |       ^
+invalid string
+expected `"`, `'`
+
+"#]]
+    );
+    bad!(
+        "foo = f2",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | foo = f2
+  |       ^
+invalid string
+expected `"`, `'`
+
+"#]]
+    );
 }
 
 #[test]
@@ -989,13 +1258,14 @@ fn bad_nesting() {
         b = 5
         ",
         str![[r#"
-            TOML parse error at line 3, column 9
-              |
-            3 |         [[a]]
-              |         ^
-            invalid table header
-            duplicate key `a` in document root
-        "#]]
+TOML parse error at line 3, column 9
+  |
+3 |         [[a]]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+
+"#]]
     );
     bad!(
         "
@@ -1003,13 +1273,14 @@ fn bad_nesting() {
         [a.b]
         ",
         str![[r#"
-            TOML parse error at line 3, column 9
-              |
-            3 |         [a.b]
-              |         ^
-            invalid table header
-            dotted key `a` attempted to extend non-table type (integer)
-        "#]]
+TOML parse error at line 3, column 9
+  |
+3 |         [a.b]
+  |         ^
+invalid table header
+dotted key `a` attempted to extend non-table type (integer)
+
+"#]]
     );
     bad!(
         "
@@ -1017,13 +1288,14 @@ fn bad_nesting() {
         [a.b]
         ",
         str![[r#"
-            TOML parse error at line 3, column 9
-              |
-            3 |         [a.b]
-              |         ^
-            invalid table header
-            dotted key `a` attempted to extend non-table type (array)
-        "#]]
+TOML parse error at line 3, column 9
+  |
+3 |         [a.b]
+  |         ^
+invalid table header
+dotted key `a` attempted to extend non-table type (array)
+
+"#]]
     );
     bad!(
         "
@@ -1031,13 +1303,14 @@ fn bad_nesting() {
         [[a.b]]
         ",
         str![[r#"
-            TOML parse error at line 3, column 9
-              |
-            3 |         [[a.b]]
-              |         ^
-            invalid table header
-            dotted key `a` attempted to extend non-table type (array)
-        "#]]
+TOML parse error at line 3, column 9
+  |
+3 |         [[a.b]]
+  |         ^
+invalid table header
+dotted key `a` attempted to extend non-table type (array)
+
+"#]]
     );
     bad!(
         "
@@ -1047,13 +1320,14 @@ fn bad_nesting() {
         c = 2
         ",
         str![[r#"
-            TOML parse error at line 4, column 9
-              |
-            4 |         [a.b]
-              |         ^
-            invalid table header
-            duplicate key `b` in table `a`
-        "#]]
+TOML parse error at line 4, column 9
+  |
+4 |         [a.b]
+  |         ^
+invalid table header
+duplicate key `b` in table `a`
+
+"#]]
     );
 }
 
@@ -1068,13 +1342,14 @@ fn bad_table_redefine() {
         [a]
         ",
         str![[r#"
-            TOML parse error at line 6, column 9
-              |
-            6 |         [a]
-              |         ^
-            invalid table header
-            duplicate key `a` in document root
-        "#]]
+TOML parse error at line 6, column 9
+  |
+6 |         [a]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+
+"#]]
     );
     bad!(
         "
@@ -1084,13 +1359,14 @@ fn bad_table_redefine() {
         [a]
         ",
         str![[r#"
-            TOML parse error at line 5, column 9
-              |
-            5 |         [a]
-              |         ^
-            invalid table header
-            duplicate key `a` in document root
-        "#]]
+TOML parse error at line 5, column 9
+  |
+5 |         [a]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+
+"#]]
     );
     bad!(
         "
@@ -1099,13 +1375,14 @@ fn bad_table_redefine() {
         [a.b]
         ",
         str![[r#"
-            TOML parse error at line 4, column 9
-              |
-            4 |         [a.b]
-              |         ^
-            invalid table header
-            duplicate key `b` in table `a`
-        "#]]
+TOML parse error at line 4, column 9
+  |
+4 |         [a.b]
+  |         ^
+invalid table header
+duplicate key `b` in table `a`
+
+"#]]
     );
 
     bad!(
@@ -1115,13 +1392,14 @@ fn bad_table_redefine() {
         [a]
         ",
         str![[r#"
-            TOML parse error at line 4, column 9
-              |
-            4 |         [a]
-              |         ^
-            invalid table header
-            duplicate key `a` in document root
-        "#]]
+TOML parse error at line 4, column 9
+  |
+4 |         [a]
+  |         ^
+invalid table header
+duplicate key `a` in document root
+
+"#]]
     );
 }
 
@@ -1139,63 +1417,88 @@ fn datetimes() {
     t!("2016-09-09T09:09:09.1Z");
     t!("2016-09-09T09:09:09.2+10:00");
     t!("2016-09-09T09:09:09.123456789-02:00");
-    bad!("foo = 2016-09-09T09:09:09.Z", str![[r#"
-        TOML parse error at line 1, column 26
-          |
-        1 | foo = 2016-09-09T09:09:09.Z
-          |                          ^
-        expected newline, `#`
-    "#]]);
-    bad!("foo = 2016-9-09T09:09:09Z", str![[r#"
-        TOML parse error at line 1, column 12
-          |
-        1 | foo = 2016-9-09T09:09:09Z
-          |            ^
-        invalid date-time
-    "#]]);
-    bad!("foo = 2016-09-09T09:09:09+2:00", str![[r#"
-        TOML parse error at line 1, column 27
-          |
-        1 | foo = 2016-09-09T09:09:09+2:00
-          |                           ^
-        invalid time offset
-    "#]]);
-    bad!("foo = 2016-09-09T09:09:09-2:00", str![[r#"
-        TOML parse error at line 1, column 27
-          |
-        1 | foo = 2016-09-09T09:09:09-2:00
-          |                           ^
-        invalid time offset
-    "#]]);
-    bad!("foo = 2016-09-09T09:09:09Z-2:00", str![[r#"
-        TOML parse error at line 1, column 27
-          |
-        1 | foo = 2016-09-09T09:09:09Z-2:00
-          |                           ^
-        expected newline, `#`
-    "#]]);
+    bad!(
+        "foo = 2016-09-09T09:09:09.Z",
+        str![[r#"
+TOML parse error at line 1, column 26
+  |
+1 | foo = 2016-09-09T09:09:09.Z
+  |                          ^
+expected newline, `#`
+
+"#]]
+    );
+    bad!(
+        "foo = 2016-9-09T09:09:09Z",
+        str![[r#"
+TOML parse error at line 1, column 12
+  |
+1 | foo = 2016-9-09T09:09:09Z
+  |            ^
+invalid date-time
+
+"#]]
+    );
+    bad!(
+        "foo = 2016-09-09T09:09:09+2:00",
+        str![[r#"
+TOML parse error at line 1, column 27
+  |
+1 | foo = 2016-09-09T09:09:09+2:00
+  |                           ^
+invalid time offset
+
+"#]]
+    );
+    bad!(
+        "foo = 2016-09-09T09:09:09-2:00",
+        str![[r#"
+TOML parse error at line 1, column 27
+  |
+1 | foo = 2016-09-09T09:09:09-2:00
+  |                           ^
+invalid time offset
+
+"#]]
+    );
+    bad!(
+        "foo = 2016-09-09T09:09:09Z-2:00",
+        str![[r#"
+TOML parse error at line 1, column 27
+  |
+1 | foo = 2016-09-09T09:09:09Z-2:00
+  |                           ^
+expected newline, `#`
+
+"#]]
+    );
 }
 
 #[test]
 fn require_newline_after_value() {
-    bad!("0=0r=false", str![[r#"
-        TOML parse error at line 1, column 4
-          |
-        1 | 0=0r=false
-          |    ^
-        expected newline, `#`
-    "#]]);
+    bad!(
+        "0=0r=false",
+        str![[r#"
+TOML parse error at line 1, column 4
+  |
+1 | 0=0r=false
+  |    ^
+expected newline, `#`
+
+"#]]
+    );
     bad!(
         r#"
 0=""o=""m=""r=""00="0"q="""0"""e="""0"""
 "#,
         str![[r#"
-            TOML parse error at line 2, column 5
-              |
-            2 | 0=""o=""m=""r=""00="0"q="""0"""e="""0"""
-              |     ^
-            expected newline, `#`
-        "#]]
+TOML parse error at line 2, column 5
+  |
+2 | 0=""o=""m=""r=""00="0"q="""0"""e="""0"""
+  |     ^
+expected newline, `#`
+
+"#]]
     );
     bad!(
         r#"
@@ -1205,48 +1508,52 @@ fn require_newline_after_value() {
 0="0"l="0"
 "#,
         str![[r#"
-            TOML parse error at line 3, column 6
-              |
-            3 | 0="0"[[0000l0]]
-              |      ^
-            expected newline, `#`
-        "#]]
+TOML parse error at line 3, column 6
+  |
+3 | 0="0"[[0000l0]]
+  |      ^
+expected newline, `#`
+
+"#]]
     );
     bad!(
         r#"
 0=[0]00=[0,0,0]t=["0","0","0"]s=[1000-00-00T00:00:00Z,2000-00-00T00:00:00Z]
 "#,
         str![[r#"
-            TOML parse error at line 2, column 6
-              |
-            2 | 0=[0]00=[0,0,0]t=["0","0","0"]s=[1000-00-00T00:00:00Z,2000-00-00T00:00:00Z]
-              |      ^
-            expected newline, `#`
-        "#]]
+TOML parse error at line 2, column 6
+  |
+2 | 0=[0]00=[0,0,0]t=["0","0","0"]s=[1000-00-00T00:00:00Z,2000-00-00T00:00:00Z]
+  |      ^
+expected newline, `#`
+
+"#]]
     );
     bad!(
         r#"
 0=0r0=0r=false
 "#,
         str![[r#"
-            TOML parse error at line 2, column 4
-              |
-            2 | 0=0r0=0r=false
-              |    ^
-            expected newline, `#`
-        "#]]
+TOML parse error at line 2, column 4
+  |
+2 | 0=0r0=0r=false
+  |    ^
+expected newline, `#`
+
+"#]]
     );
     bad!(
         r#"
 0=0r0=0r=falsefal=false
 "#,
         str![[r#"
-            TOML parse error at line 2, column 4
-              |
-            2 | 0=0r0=0r=falsefal=false
-              |    ^
-            expected newline, `#`
-        "#]]
+TOML parse error at line 2, column 4
+  |
+2 | 0=0r0=0r=falsefal=false
+  |    ^
+expected newline, `#`
+
+"#]]
     );
 }
 
