@@ -1,4 +1,7 @@
 use serde::Deserialize;
+use snapbox::assert_data_eq;
+use snapbox::prelude::*;
+use snapbox::str;
 
 #[derive(Debug, Deserialize, PartialEq)]
 struct OuterStruct {
@@ -33,90 +36,72 @@ where
 #[test]
 fn invalid_variant_returns_error_with_good_message_string() {
     let error = value_from_str::<TheEnum>("\"NonExistent\"").unwrap_err();
-    snapbox::assert_eq(
-        r#"unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
+    "#]].raw());
 
     let error = toml::from_str::<Val>("val = \"NonExistent\"").unwrap_err();
-    snapbox::assert_eq(
-        r#"TOML parse error at line 1, column 7
-  |
-1 | val = "NonExistent"
-  |       ^^^^^^^^^^^^^
-unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        TOML parse error at line 1, column 7
+          |
+        1 | val = "NonExistent"
+          |       ^^^^^^^^^^^^^
+        unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
+    "#]].raw());
 }
 
 #[test]
 fn invalid_variant_returns_error_with_good_message_inline_table() {
     let error = value_from_str::<TheEnum>("{ NonExistent = {} }").unwrap_err();
-    snapbox::assert_eq(
-        r#"unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
+    "#]].raw());
 
     let error = toml::from_str::<Val>("val = { NonExistent = {} }").unwrap_err();
-    snapbox::assert_eq(
-        r#"TOML parse error at line 1, column 9
-  |
-1 | val = { NonExistent = {} }
-  |         ^^^^^^^^^^^
-unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        TOML parse error at line 1, column 9
+          |
+        1 | val = { NonExistent = {} }
+          |         ^^^^^^^^^^^
+        unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Struct`
+    "#]].raw());
 }
 
 #[test]
 fn extra_field_returns_expected_empty_table_error() {
     let error = value_from_str::<TheEnum>("{ Plain = { extra_field = 404 } }").unwrap_err();
-    snapbox::assert_eq(
-        r#"expected empty table
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        expected empty table
+    "#]].raw());
 
     let error = toml::from_str::<Val>("val = { Plain = { extra_field = 404 } }").unwrap_err();
-    snapbox::assert_eq(
-        r#"TOML parse error at line 1, column 17
-  |
-1 | val = { Plain = { extra_field = 404 } }
-  |                 ^^^^^^^^^^^^^^^^^^^^^
-expected empty table
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        TOML parse error at line 1, column 17
+          |
+        1 | val = { Plain = { extra_field = 404 } }
+          |                 ^^^^^^^^^^^^^^^^^^^^^
+        expected empty table
+    "#]].raw());
 }
 
 #[test]
 fn extra_field_returns_expected_empty_table_error_struct_variant() {
     let error = value_from_str::<TheEnum>("{ Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }")
         .unwrap_err();
-
-    snapbox::assert_eq(
-        r#"unexpected keys in table: extra_0, extra_1, available keys: value
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        unexpected keys in table: extra_0, extra_1, available keys: value
+    "#]].raw());
 
     let error =
         toml::from_str::<Val>("val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }")
             .unwrap_err();
-
-    snapbox::assert_eq(
-        r#"TOML parse error at line 1, column 33
-  |
-1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
-  |                                 ^^^^^^^
-unexpected keys in table: extra_0, extra_1, available keys: value
-"#,
-        error.to_string(),
-    );
+    assert_data_eq!(error.to_string(), str![[r#"
+        TOML parse error at line 1, column 33
+          |
+        1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
+          |                                 ^^^^^^^
+        unexpected keys in table: extra_0, extra_1, available keys: value
+    "#]].raw());
 }
 
 mod enum_unit {

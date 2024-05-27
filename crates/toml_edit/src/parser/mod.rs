@@ -152,6 +152,8 @@ pub(crate) mod prelude {
 #[cfg(feature = "display")]
 mod test {
     use super::*;
+    use snapbox::assert_data_eq;
+    use snapbox::prelude::*;
 
     #[test]
     fn documents() {
@@ -226,7 +228,7 @@ key = "value"
                 }
             };
 
-            snapbox::assert_eq(input, doc.to_string());
+            assert_data_eq!(doc.to_string(), input.raw());
         }
     }
 

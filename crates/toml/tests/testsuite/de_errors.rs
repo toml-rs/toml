@@ -1,11 +1,15 @@
-use serde::{de, Deserialize};
 use std::fmt;
+
+use serde::{de, Deserialize};
+use snapbox::assert_data_eq;
+use snapbox::prelude::*;
+use snapbox::str;
 
 macro_rules! bad {
     ($toml:expr, $ty:ty, $msg:expr) => {
         match toml::from_str::<$ty>($toml) {
             Ok(s) => panic!("parsed to: {:#?}", s),
-            Err(e) => snapbox::assert_eq($msg, e.to_string()),
+            Err(e) => assert_data_eq!(e.to_string(), $msg.raw()),
         }
     };
 }
@@ -83,13 +87,13 @@ fn custom_errors() {
                 # ^
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 2, column 19
-  |
-2 |             p_a = ''
-  |                   ^^
-invalid length 0, expected a non-empty string
-"
+        str![[r#"
+            TOML parse error at line 2, column 19
+              |
+            2 |             p_a = ''
+              |                   ^^
+            invalid length 0, expected a non-empty string
+        "#]]
     );
 
     // Missing field in table.
@@ -99,13 +103,13 @@ invalid length 0, expected a non-empty string
           # ^
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 1, column 1
-  |
-1 | 
-  | ^
-missing field `p_b`
-"
+        str![[r#"
+            TOML parse error at line 1, column 1
+              |
+            1 | 
+              | ^
+            missing field `p_b`
+        "#]]
     );
 
     // Invalid type in p_b.
@@ -116,13 +120,13 @@ missing field `p_b`
                 # ^
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 3, column 19
-  |
-3 |             p_b = 1
-  |                   ^
-invalid type: integer `1`, expected a sequence
-"
+        str![[r#"
+            TOML parse error at line 3, column 19
+              |
+            3 |             p_b = 1
+              |                   ^
+            invalid type: integer `1`, expected a sequence
+        "#]]
     );
 
     // Sub-table in Vec is missing a field.
@@ -135,13 +139,13 @@ invalid type: integer `1`, expected a sequence
             ]
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 4, column 17
-  |
-4 |                 {c_a = 'a'}
-  |                 ^^^^^^^^^^^
-missing field `c_b`
-"
+        str![[r#"
+            TOML parse error at line 4, column 17
+              |
+            4 |                 {c_a = 'a'}
+              |                 ^^^^^^^^^^^
+            missing field `c_b`
+        "#]]
     );
 
     // Sub-table in Vec has a field with a bad value.
@@ -154,13 +158,13 @@ missing field `c_b`
             ]
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 4, column 35
-  |
-4 |                 {c_a = 'a', c_b = '*'}
-  |                                   ^^^
-invalid value: string \"*\", expected all lowercase or all uppercase
-"
+        str![[r#"
+            TOML parse error at line 4, column 35
+              |
+            4 |                 {c_a = 'a', c_b = '*'}
+              |                                   ^^^
+            invalid value: string "*", expected all lowercase or all uppercase
+        "#]]
     );
 
     // Sub-table in Vec is missing a field.
@@ -174,13 +178,13 @@ invalid value: string \"*\", expected all lowercase or all uppercase
             ]
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 5, column 17
-  |
-5 |                 {c_a = 'aa'}
-  |                 ^^^^^^^^^^^^
-missing field `c_b`
-"
+        str![[r#"
+            TOML parse error at line 5, column 17
+              |
+            5 |                 {c_a = 'aa'}
+              |                 ^^^^^^^^^^^^
+            missing field `c_b`
+        "#]]
     );
 
     // Sub-table in the middle of a Vec is missing a field.
@@ -195,13 +199,13 @@ missing field `c_b`
             ]
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 5, column 17
-  |
-5 |                 {c_a = 'aa'},
-  |                 ^^^^^^^^^^^^
-missing field `c_b`
-"
+        str![[r#"
+            TOML parse error at line 5, column 17
+              |
+            5 |                 {c_a = 'aa'},
+              |                 ^^^^^^^^^^^^
+            missing field `c_b`
+        "#]]
     );
 
     // Sub-table in the middle of a Vec has a field with a bad value.
@@ -216,13 +220,13 @@ missing field `c_b`
             ]
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 5, column 36
-  |
-5 |                 {c_a = 'aa', c_b = 1},
-  |                                    ^
-invalid type: integer `1`, expected a string
-"
+        str![[r#"
+            TOML parse error at line 5, column 36
+              |
+            5 |                 {c_a = 'aa', c_b = 1},
+              |                                    ^
+            invalid type: integer `1`, expected a string
+        "#]]
     );
 
     // Sub-table in the middle of a Vec has an extra field.
@@ -238,13 +242,13 @@ invalid type: integer `1`, expected a string
             ]
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 5, column 42
-  |
-5 |                 {c_a = 'aa', c_b = 'bb', c_d = 'd'},
-  |                                          ^^^
-unknown field `c_d`, expected `c_a` or `c_b`
-"
+        str![[r#"
+            TOML parse error at line 5, column 42
+              |
+            5 |                 {c_a = 'aa', c_b = 'bb', c_d = 'd'},
+              |                                          ^^^
+            unknown field `c_d`, expected `c_a` or `c_b`
+        "#]]
     );
 
     // Sub-table in the middle of a Vec is missing a field.
@@ -267,13 +271,13 @@ unknown field `c_d`, expected `c_a` or `c_b`
             c_b = 'bbbb'
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 6, column 13
-  |
-6 |             [[p_b]]
-  |             ^^^^^^^
-missing field `c_b`
-"
+        str![[r#"
+            TOML parse error at line 6, column 13
+              |
+            6 |             [[p_b]]
+              |             ^^^^^^^
+            missing field `c_b`
+        "#]]
     );
 
     // Sub-table in the middle of a Vec has a field with a bad value.
@@ -292,13 +296,13 @@ missing field `c_b`
             c_b = 'bbb'
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 8, column 19
-  |
-8 |             c_b = '*'
-  |                   ^^^
-invalid value: string \"*\", expected all lowercase or all uppercase
-"
+        str![[r#"
+            TOML parse error at line 8, column 19
+              |
+            8 |             c_b = '*'
+              |                   ^^^
+            invalid value: string "*", expected all lowercase or all uppercase
+        "#]]
     );
 
     // Sub-table in the middle of a Vec has an extra field.
@@ -320,13 +324,13 @@ invalid value: string \"*\", expected all lowercase or all uppercase
             c_b = 'bbbb'
         ",
         Parent<CasedString>,
-        "\
-TOML parse error at line 8, column 13
-  |
-8 |             c_d = 'dd' # unknown field
-  |             ^^^
-unknown field `c_d`, expected `c_a` or `c_b`
-"
+        str![[r#"
+            TOML parse error at line 8, column 13
+              |
+            8 |             c_d = 'dd' # unknown field
+              |             ^^^
+            unknown field `c_d`, expected `c_a` or `c_b`
+        "#]]
     );
 }
 
@@ -338,13 +342,13 @@ fn serde_derive_deserialize_errors() {
           # ^
         ",
         Parent<String>,
-        "\
-TOML parse error at line 1, column 1
-  |
-1 | 
-  | ^
-missing field `p_b`
-"
+        str![[r#"
+            TOML parse error at line 1, column 1
+              |
+            1 | 
+              | ^
+            missing field `p_b`
+        "#]]
     );
 
     bad!(
@@ -356,13 +360,13 @@ missing field `p_b`
             ]
         ",
         Parent<String>,
-        "\
-TOML parse error at line 4, column 17
-  |
-4 |                 {c_a = ''}
-  |                 ^^^^^^^^^^
-missing field `c_b`
-"
+        str![[r#"
+            TOML parse error at line 4, column 17
+              |
+            4 |                 {c_a = ''}
+              |                 ^^^^^^^^^^
+            missing field `c_b`
+        "#]]
     );
 
     bad!(
@@ -374,13 +378,13 @@ missing field `c_b`
             ]
         ",
         Parent<String>,
-        "\
-TOML parse error at line 4, column 34
-  |
-4 |                 {c_a = '', c_b = 1}
-  |                                  ^
-invalid type: integer `1`, expected a string
-"
+        str![[r#"
+            TOML parse error at line 4, column 34
+              |
+            4 |                 {c_a = '', c_b = 1}
+              |                                  ^
+            invalid type: integer `1`, expected a string
+        "#]]
     );
 
     // FIXME: This location could be better.
@@ -393,13 +397,13 @@ invalid type: integer `1`, expected a string
             ]
         ",
         Parent<String>,
-        "\
-TOML parse error at line 4, column 38
-  |
-4 |                 {c_a = '', c_b = '', c_d = ''},
-  |                                      ^^^
-unknown field `c_d`, expected `c_a` or `c_b`
-"
+        str![[r#"
+            TOML parse error at line 4, column 38
+              |
+            4 |                 {c_a = '', c_b = '', c_d = ''},
+              |                                      ^^^
+            unknown field `c_d`, expected `c_a` or `c_b`
+        "#]]
     );
 
     bad!(
@@ -411,13 +415,13 @@ unknown field `c_d`, expected `c_a` or `c_b`
             ]
         ",
         Parent<String>,
-        "\
-TOML parse error at line 4, column 34
-  |
-4 |                 {c_a = '', c_b = 1, c_d = ''},
-  |                                  ^
-invalid type: integer `1`, expected a string
-"
+        str![[r#"
+            TOML parse error at line 4, column 34
+              |
+            4 |                 {c_a = '', c_b = 1, c_d = ''},
+              |                                  ^
+            invalid type: integer `1`, expected a string
+        "#]]
     );
 }
 
@@ -431,13 +435,13 @@ fn error_handles_crlf() {
          a = 2\r\n\
          ",
         toml::Value,
-        "\
-TOML parse error at line 5, column 1
-  |
-5 | a = 2
-  | ^
-duplicate key `a` in table `t2`
-"
+        str![[r#"
+            TOML parse error at line 5, column 1
+              |
+            5 | a = 2
+              | ^
+            duplicate key `a` in table `t2`
+        "#]]
     );
 
     // Should be the same as above.
@@ -449,12 +453,12 @@ duplicate key `a` in table `t2`
          a = 2\n\
          ",
         toml::Value,
-        "\
-TOML parse error at line 5, column 1
-  |
-5 | a = 2
-  | ^
-duplicate key `a` in table `t2`
-"
+        str![[r#"
+            TOML parse error at line 5, column 1
+              |
+            5 | a = 2
+              | ^
+            duplicate key `a` in table `t2`
+        "#]]
     );
 }

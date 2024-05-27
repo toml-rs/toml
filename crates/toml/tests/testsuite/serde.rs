@@ -1,8 +1,11 @@
+use std::collections::BTreeMap;
+
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
-use std::collections::BTreeMap;
-
+use snapbox::assert_data_eq;
+use snapbox::prelude::*;
+use snapbox::str;
 use toml::map::Map;
 use toml::Table;
 use toml::Value;
@@ -23,7 +26,10 @@ macro_rules! equivalent {
 
         // Through a string equivalent
         println!("to_string");
-        snapbox::assert_eq(t!(toml::to_string(&literal)), t!(toml::to_string(&toml)));
+        assert_data_eq!(
+            t!(toml::to_string(&toml)),
+            t!(toml::to_string(&literal)).raw()
+        );
         println!("literal, from_str(toml)");
         assert_eq!(literal, t!(toml::from_str(&t!(toml::to_string(&toml)))));
         println!("toml, from_str(literal)");
@@ -49,13 +55,13 @@ macro_rules! error {
         println!("attempting parsing");
         match toml::from_str::<$ty>(&$toml.to_string()) {
             Ok(_) => panic!("successful"),
-            Err(e) => snapbox::assert_eq($msg_parse, e.to_string()),
+            Err(e) => assert_data_eq!(e.to_string(), $msg_parse.raw()),
         }
 
         println!("attempting toml decoding");
         match $toml.try_into::<$ty>() {
             Ok(_) => panic!("successful"),
-            Err(e) => snapbox::assert_eq($msg_decode, e.to_string()),
+            Err(e) => assert_data_eq!(e.to_string(), $msg_decode.raw()),
         }
     }};
 }
@@ -283,13 +289,17 @@ fn type_errors() {
         map! {
             bar: Value::String("a".to_owned())
         },
-        r#"TOML parse error at line 1, column 7
-  |
-1 | bar = "a"
-  |       ^^^
-invalid type: string "a", expected isize
-"#,
-        "invalid type: string \"a\", expected isize\nin `bar`\n"
+        str![[r#"
+            TOML parse error at line 1, column 7
+              |
+            1 | bar = "a"
+              |       ^^^
+            invalid type: string "a", expected isize
+        "#]],
+        str![[r#"
+            invalid type: string "a", expected isize
+            in `bar`
+        "#]]
     }
 
     error! {
@@ -299,13 +309,17 @@ invalid type: string "a", expected isize
                 bar: Value::String("a".to_owned())
             }
         },
-        r#"TOML parse error at line 2, column 7
-  |
-2 | bar = "a"
-  |       ^^^
-invalid type: string "a", expected isize
-"#,
-        "invalid type: string \"a\", expected isize\nin `foo.bar`\n"
+        str![[r#"
+            TOML parse error at line 2, column 7
+              |
+            2 | bar = "a"
+              |       ^^^
+            invalid type: string "a", expected isize
+        "#]],
+        str![[r#"
+            invalid type: string "a", expected isize
+            in `foo.bar`
+        "#]]
     }
 }
 
@@ -319,13 +333,16 @@ fn missing_errors() {
     error! {
         Foo,
         map! { },
-        r#"TOML parse error at line 1, column 1
-  |
-1 | 
-  | ^
-missing field `bar`
-"#,
-        "missing field `bar`\n"
+        str![[r#"
+            TOML parse error at line 1, column 1
+              |
+            1 | 
+              | ^
+            missing field `bar`
+        "#]],
+        str![[r#"
+            missing field `bar`
+        "#]]
     }
 }
 
@@ -402,14 +419,14 @@ fn parse_tuple_variant() {
             Enum::String("2".to_owned(), "2".to_owned()),
         ],
     };
-    let expected = "[[inner]]
-Int = [1, 1]
-
-[[inner]]
-String = [\"2\", \"2\"]
-";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        [[inner]]
+        Int = [1, 1]
+
+        [[inner]]
+        String = ["2", "2"]
+    "#]].raw());
 
     equivalent! {
         Document {
@@ -452,20 +469,20 @@ fn parse_struct_variant() {
             },
         ],
     };
-    let expected = "[[inner]]
-
-[inner.Int]
-first = 1
-second = 1
-
-[[inner]]
-
-[inner.String]
-first = \"2\"
-second = \"2\"
-";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        [[inner]]
+
+        [inner.Int]
+        first = 1
+        second = 1
+
+        [[inner]]
+
+        [inner.String]
+        first = "2"
+        second = "2"
+    "#]].raw());
 
     equivalent! {
         Document {
@@ -783,7 +800,7 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_owned(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    snapbox::assert_eq(text, toml::to_string(&value).unwrap());
+    assert_data_eq!(toml::to_string(&value).unwrap(), text.raw());
 }
 
 #[test]
@@ -901,15 +918,13 @@ debug = 'a'
 "#,
     );
     let err = res.unwrap_err();
-    snapbox::assert_eq(
-        r#"TOML parse error at line 8, column 9
-  |
-8 | debug = 'a'
-  |         ^^^
-expected a boolean or an integer
-"#,
-        err.to_string(),
-    );
+    assert_data_eq!(err.to_string(), str![[r#"
+        TOML parse error at line 8, column 9
+          |
+        8 | debug = 'a'
+          |         ^^^
+        expected a boolean or an integer
+    "#]]);
 
     let res: Result<Package, _> = toml::from_str(
         r#"
@@ -923,15 +938,13 @@ dev = { debug = 'a' }
 "#,
     );
     let err = res.unwrap_err();
-    snapbox::assert_eq(
-        r#"TOML parse error at line 8, column 17
-  |
-8 | dev = { debug = 'a' }
-  |                 ^^^
-expected a boolean or an integer
-"#,
-        err.to_string(),
-    );
+    assert_data_eq!(err.to_string(), str![[r#"
+        TOML parse error at line 8, column 17
+          |
+        8 | dev = { debug = 'a' }
+          |                 ^^^
+        expected a boolean or an integer
+    "#]]);
 }
 
 #[test]
@@ -945,11 +958,9 @@ fn newline_key_value() {
         name: "foo".to_owned(),
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    snapbox::assert_eq(
-        r#"name = "foo"
-"#,
-        raw,
-    );
+    assert_data_eq!(raw, str![[r#"
+        name = "foo"
+    "#]]);
 }
 
 #[test]
@@ -970,12 +981,10 @@ fn newline_table() {
         },
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    snapbox::assert_eq(
-        r#"[package]
-name = "foo"
-"#,
-        raw,
-    );
+    assert_data_eq!(raw, str![[r#"
+        [package]
+        name = "foo"
+    "#]]);
 }
 
 #[test]
@@ -1010,12 +1019,10 @@ fn newline_dotted_table() {
         },
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    snapbox::assert_eq(
-        r#"[profile.dev]
-debug = true
-"#,
-        raw,
-    );
+    assert_data_eq!(raw, str![[r#"
+        [profile.dev]
+        debug = true
+    "#]]);
 }
 
 #[test]
@@ -1065,19 +1072,17 @@ fn newline_mixed_tables() {
         },
     };
     let raw = toml::to_string_pretty(&package).unwrap();
-    snapbox::assert_eq(
-        r#"cargo_features = []
+    assert_data_eq!(raw, str![[r#"
+        cargo_features = []
 
-[package]
-name = "foo"
-version = "1.0.0"
-authors = []
+        [package]
+        name = "foo"
+        version = "1.0.0"
+        authors = []
 
-[profile.dev]
-debug = true
-"#,
-        raw,
-    );
+        [profile.dev]
+        debug = true
+    "#]]);
 }
 
 #[test]
@@ -1102,9 +1107,9 @@ fn integer_too_big() {
 
     let native = Foo { a_b: u64::MAX };
     let err = Table::try_from(native.clone()).unwrap_err();
-    snapbox::assert_eq("u64 value was too large", err.to_string());
+    assert_data_eq!(err.to_string(), str!["u64 value was too large"].raw());
     let err = toml::to_string(&native).unwrap_err();
-    snapbox::assert_eq("out-of-range value for u64 type", err.to_string());
+    assert_data_eq!(err.to_string(), str!["out-of-range value for u64 type"].raw());
 }
 
 #[test]
@@ -1150,7 +1155,7 @@ fn float_max() {
 fn unsupported_root_type() {
     let native = "value";
     let err = toml::to_string_pretty(&native).unwrap_err();
-    snapbox::assert_eq("unsupported rust type", err.to_string());
+    assert_data_eq!(err.to_string(), str!["unsupported rust type"].raw());
 }
 
 #[test]
@@ -1162,7 +1167,7 @@ fn unsupported_nested_type() {
 
     let native = Foo { unused: () };
     let err = toml::to_string_pretty(&native).unwrap_err();
-    snapbox::assert_eq("unsupported unit type", err.to_string());
+    assert_data_eq!(err.to_string(), str!["unsupported unit type"].raw());
 }
 
 #[test]
@@ -1219,7 +1224,7 @@ fn datetime_offset_issue_496() {
     let original = "value = 1911-01-01T10:11:12-00:36\n";
     let toml = original.parse::<Table>().unwrap();
     let output = toml.to_string();
-    snapbox::assert_eq(original, output);
+    assert_data_eq!(output, original.raw());
 }
 
 #[test]
@@ -1232,15 +1237,16 @@ fn serialize_array_with_none_value() {
     let input = Document {
         values: vec![Some(1), Some(2), Some(3)],
     };
-    let expected = "values = [1, 2, 3]\n";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        values = [1, 2, 3]
+    "#]].raw());
 
     let input = Document {
         values: vec![Some(1), None, Some(3)],
     };
     let err = toml::to_string(&input).unwrap_err();
-    snapbox::assert_eq("unsupported None value", err.to_string());
+    assert_data_eq!(err.to_string(), str!["unsupported None value"].raw());
 }
 
 #[test]
@@ -1263,21 +1269,20 @@ fn serialize_array_with_optional_struct_field() {
             OptionalField { x: 3, y: Some(7) },
         ],
     };
-    let expected = "\
-[[values]]
-x = 0
-y = 4
-
-[[values]]
-x = 2
-y = 5
-
-[[values]]
-x = 3
-y = 7
-";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        [[values]]
+        x = 0
+        y = 4
+
+        [[values]]
+        x = 2
+        y = 5
+
+        [[values]]
+        x = 3
+        y = 7
+    "#]].raw());
 
     let input = Document {
         values: vec![
@@ -1286,20 +1291,19 @@ y = 7
             OptionalField { x: 3, y: Some(7) },
         ],
     };
-    let expected = "\
-[[values]]
-x = 0
-y = 4
-
-[[values]]
-x = 2
-
-[[values]]
-x = 3
-y = 7
-";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        [[values]]
+        x = 0
+        y = 4
+
+        [[values]]
+        x = 2
+
+        [[values]]
+        x = 3
+        y = 7
+    "#]].raw());
 }
 
 #[test]
@@ -1329,10 +1333,10 @@ fn serialize_array_with_enum_of_optional_struct_field() {
             Choice::Optional(OptionalField { x: 3, y: Some(7) }),
         ],
     };
-    let expected = "values = [{ Optional = { x = 0, y = 4 } }, \"Empty\", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
-";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
+    "#]].raw());
 
     let input = Document {
         values: vec![
@@ -1342,10 +1346,10 @@ fn serialize_array_with_enum_of_optional_struct_field() {
             Choice::Optional(OptionalField { x: 3, y: Some(7) }),
         ],
     };
-    let expected = "values = [{ Optional = { x = 0, y = 4 } }, \"Empty\", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
-";
     let raw = toml::to_string(&input).unwrap();
-    snapbox::assert_eq(expected, raw);
+    assert_data_eq!(raw, str![[r#"
+        values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
+    "#]].raw());
 }
 
 #[test]

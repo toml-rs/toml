@@ -1,5 +1,6 @@
 use serde::ser::Serialize;
-use snapbox::assert_eq;
+use snapbox::assert_data_eq;
+use snapbox::prelude::*;
 
 const NO_PRETTY: &str = "\
 [example]
@@ -18,7 +19,7 @@ fn no_pretty() {
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
-    assert_eq(toml, &result);
+    assert_data_eq!(&result, toml.raw());
 }
 
 const PRETTY_STD: &str = "\
@@ -44,7 +45,7 @@ fn pretty_std() {
     value
         .serialize(toml::Serializer::pretty(&mut result))
         .unwrap();
-    assert_eq(toml, &result);
+    assert_data_eq!(&result, toml.raw());
 }
 
 const PRETTY_TRICKY: &str = r#"[example]
@@ -82,7 +83,7 @@ fn pretty_tricky() {
     value
         .serialize(toml::Serializer::pretty(&mut result))
         .unwrap();
-    assert_eq(toml, &result);
+    assert_data_eq!(&result, toml.raw());
 }
 
 const PRETTY_TABLE_ARRAY: &str = r#"[[array]]
@@ -106,7 +107,7 @@ fn pretty_table_array() {
     value
         .serialize(toml::Serializer::pretty(&mut result))
         .unwrap();
-    assert_eq(toml, &result);
+    assert_data_eq!(&result, toml.raw());
 }
 
 const TABLE_ARRAY: &str = r#"[[array]]
@@ -128,7 +129,7 @@ fn table_array() {
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
-    assert_eq(toml, &result);
+    assert_data_eq!(&result, toml.raw());
 }
 
 const PRETTY_EMPTY_TABLE: &str = r#"[example]
@@ -140,7 +141,7 @@ fn pretty_empty_table() {
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
-    assert_eq(toml, &result);
+    assert_data_eq!(&result, toml.raw());
 }
 
 #[test]
@@ -180,5 +181,5 @@ debug = true
 
     let pkg: Package = toml::from_str(raw).unwrap();
     let pretty = toml::to_string_pretty(&pkg).unwrap();
-    assert_eq(raw, pretty);
+    assert_data_eq!(pretty, raw.raw());
 }
