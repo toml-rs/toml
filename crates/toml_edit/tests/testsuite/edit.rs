@@ -200,6 +200,36 @@ key3 = 8.1415926
 "#]]);
 }
 
+#[test]
+fn test_insert_key_with_quotes() {
+    given(
+        r#"
+        [package]
+        name = "foo"
+
+        [target]
+        "#,
+    )
+    .running(|root| {
+        root["target"]["cfg(target_os = \"linux\")"] = table();
+        root["target"]["cfg(target_os = \"linux\")"]["dependencies"] = table();
+        root["target"]["cfg(target_os = \"linux\")"]["dependencies"]["name"] = value("dep");
+    })
+    .produces_display(str![[r#"
+
+        [package]
+        name = "foo"
+
+        [target]
+
+[target.'cfg(target_os = "linux")']
+
+[target.'cfg(target_os = "linux")'.dependencies]
+name = "dep"
+        
+"#]]);
+}
+
 // removal
 
 #[test]
