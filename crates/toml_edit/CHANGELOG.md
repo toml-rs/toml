@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Allow inferring keys as string literals
+- Prefer string literals if it avoids escaping double-quotes
+
 ## [0.22.13] - 2024-05-15
 
 ## [0.22.12] - 2024-04-19
