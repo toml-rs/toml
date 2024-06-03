@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.14] - 2024-06-03
+
 ### Fixes
 
 - Allow inferring keys as string literals
@@ -701,7 +703,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.13...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.14...HEAD
+[0.22.14]: https://github.com/toml-rs/toml/compare/v0.22.13...v0.22.14
 [0.22.13]: https://github.com/toml-rs/toml/compare/v0.22.12...v0.22.13
 [0.22.12]: https://github.com/toml-rs/toml/compare/v0.22.11...v0.22.12
 [0.22.11]: https://github.com/toml-rs/toml/compare/v0.22.10...v0.22.11

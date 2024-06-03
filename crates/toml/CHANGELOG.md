@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.14] - 2024-06-03
+
 ### Fixes
 
 - Allow inferring keys as string literals
@@ -244,7 +246,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.13...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.14...HEAD
+[0.8.14]: https://github.com/toml-rs/toml/compare/toml-v0.8.13...toml-v0.8.14
 [0.8.13]: https://github.com/toml-rs/toml/compare/toml-v0.8.12...toml-v0.8.13
 [0.8.12]: https://github.com/toml-rs/toml/compare/toml-v0.8.11...toml-v0.8.12
 [0.8.11]: https://github.com/toml-rs/toml/compare/toml-v0.8.10...toml-v0.8.11
