@@ -439,6 +439,9 @@ fn infer_style(value: &str) -> (StringStyle, bool) {
             }
             match ch {
                 '\t' => {}
+                '"' => {
+                    prefer_literal = true;
+                }
                 '\\' => {
                     prefer_literal = true;
                 }

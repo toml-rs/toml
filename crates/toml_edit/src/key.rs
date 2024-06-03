@@ -289,17 +289,13 @@ fn to_key_repr(key: &str) -> Repr {
             crate::encode::to_string_repr(
                 key,
                 Some(crate::encode::StringStyle::OnelineSingle),
-                Some(false),
+                None,
             )
         }
     }
     #[cfg(not(feature = "parse"))]
     {
-        crate::encode::to_string_repr(
-            key,
-            Some(crate::encode::StringStyle::OnelineSingle),
-            Some(false),
-        )
+        crate::encode::to_string_repr(key, Some(crate::encode::StringStyle::OnelineSingle), None)
     }
 }
 

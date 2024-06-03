@@ -75,7 +75,7 @@ fn table() {
         }
         .to_string(),
         "\"foo.bar\" = 2\n\
-         \"foo\\\"bar\" = 2\n"
+         'foo\"bar' = 2\n"
     );
     assert_eq!(
         map! {

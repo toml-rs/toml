@@ -222,9 +222,9 @@ fn test_insert_key_with_quotes() {
 
         [target]
 
-[target."cfg(target_os = \"linux\")"]
+[target.'cfg(target_os = "linux")']
 
-[target."cfg(target_os = \"linux\")".dependencies]
+[target.'cfg(target_os = "linux")'.dependencies]
 name = "dep"
         
 "#]]);
