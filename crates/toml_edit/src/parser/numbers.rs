@@ -336,8 +336,8 @@ mod test {
             ("0xF", 15),
             ("0o0_755", 493),
             ("0b1_0_1", 5),
-            (&std::i64::MIN.to_string()[..], std::i64::MIN),
-            (&std::i64::MAX.to_string()[..], std::i64::MAX),
+            (&i64::MIN.to_string()[..], i64::MIN),
+            (&i64::MAX.to_string()[..], i64::MAX),
         ];
         for &(input, expected) in &cases {
             dbg!(input);
@@ -361,7 +361,7 @@ mod test {
         } else {
             dbg!(expected);
             dbg!(actual);
-            assert!((expected - actual).abs() < std::f64::EPSILON);
+            assert!((expected - actual).abs() < f64::EPSILON);
         }
     }
 
@@ -376,15 +376,15 @@ mod test {
             ("-2E-2", -2E-2),
             ("6.626e-34", 6.626e-34),
             ("9_224_617.445_991_228_313", 9_224_617.445_991_227),
-            ("-1.7976931348623157e+308", std::f64::MIN),
-            ("1.7976931348623157e+308", std::f64::MAX),
+            ("-1.7976931348623157e+308", f64::MIN),
+            ("1.7976931348623157e+308", f64::MAX),
             ("nan", f64::NAN.copysign(1.0)),
             ("+nan", f64::NAN.copysign(1.0)),
             ("-nan", f64::NAN.copysign(-1.0)),
             ("inf", f64::INFINITY),
             ("+inf", f64::INFINITY),
             ("-inf", f64::NEG_INFINITY),
-            // ("1e+400", std::f64::INFINITY),
+            // ("1e+400", f64::INFINITY),
         ];
         for &(input, expected) in &cases {
             dbg!(input);
