@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Write out the `Decor` for the root `Table` (accessible through `DocumentMut`)
+
 ## [0.22.14] - 2024-06-03
 
 ### Fixes
