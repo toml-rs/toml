@@ -504,6 +504,7 @@ fn decorate_table(table: &mut Table) {
 }
 
 // `key1 = value1`
+pub(crate) const DEFAULT_ROOT_DECOR: (&str, &str) = ("", "");
 pub(crate) const DEFAULT_KEY_DECOR: (&str, &str) = ("", " ");
 pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
 pub(crate) const DEFAULT_KEY_PATH_DECOR: (&str, &str) = ("", "");

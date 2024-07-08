@@ -41,12 +41,112 @@ impl Test {
         }
         self
     }
+    fn running_on_doc<F>(&mut self, func: F) -> &mut Self
+    where
+        F: Fn(&mut DocumentMut),
+    {
+        {
+            func(&mut self.doc);
+        }
+        self
+    }
 
     #[track_caller]
     fn produces_display(&self, expected: snapbox::data::Inline) -> &Self {
         assert_data_eq!(self.doc.to_string(), expected.raw());
         self
     }
+}
+
+#[test]
+fn test_add_root_decor() {
+    given(
+        r#"[package]
+name = "hello"
+version = "1.0.0"
+
+[[bin]]
+name = "world"
+path = "src/bin/world/main.rs"
+
+[dependencies]
+nom = "4.0" # future is here
+
+[[bin]]
+name = "delete me please"
+path = "src/bin/dmp/main.rs""#,
+    )
+    .running_on_doc(|document| {
+        document.decor_mut().set_prefix("# Some Header\n\n");
+        document.decor_mut().set_suffix("# Some Footer");
+        document.set_trailing("\n\ntrailing...");
+    })
+    .produces_display(str![[r#"
+# Some Header
+
+[package]
+name = "hello"
+version = "1.0.0"
+
+[[bin]]
+name = "world"
+path = "src/bin/world/main.rs"
+
+[dependencies]
+nom = "4.0" # future is here
+
+[[bin]]
+name = "delete me please"
+path = "src/bin/dmp/main.rs"
+# Some Footer
+
+trailing...
+"#]]);
+}
+
+/// Tests that default decor is None for both suffix and prefix and that this means empty strings
+#[test]
+fn test_no_root_decor() {
+    given(
+        r#"[package]
+name = "hello"
+version = "1.0.0"
+
+[[bin]]
+name = "world"
+path = "src/bin/world/main.rs"
+
+[dependencies]
+nom = "4.0" # future is here
+
+[[bin]]
+name = "delete me please"
+path = "src/bin/dmp/main.rs""#,
+    )
+    .running_on_doc(|document| {
+        assert!(document.decor().prefix().is_none());
+        assert!(document.decor().suffix().is_none());
+        document.set_trailing("\n\ntrailing...");
+    })
+    .produces_display(str![[r#"
+[package]
+name = "hello"
+version = "1.0.0"
+
+[[bin]]
+name = "world"
+path = "src/bin/world/main.rs"
+
+[dependencies]
+nom = "4.0" # future is here
+
+[[bin]]
+name = "delete me please"
+path = "src/bin/dmp/main.rs"
+
+
+trailing...
+"#]]);
 }
 
 // insertion
