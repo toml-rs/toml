@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.15] - 2024-07-08
+
 ### Features
 
 - Write out the `Decor` for the root `Table` (accessible through `DocumentMut`)
@@ -707,7 +709,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.14...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.15...HEAD
+[0.22.15]: https://github.com/toml-rs/toml/compare/v0.22.14...v0.22.15
 [0.22.14]: https://github.com/toml-rs/toml/compare/v0.22.13...v0.22.14
 [0.22.13]: https://github.com/toml-rs/toml/compare/v0.22.12...v0.22.13
 [0.22.12]: https://github.com/toml-rs/toml/compare/v0.22.11...v0.22.12
