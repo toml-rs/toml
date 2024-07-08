@@ -6,7 +6,9 @@ use toml_datetime::Datetime;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{Formatted, Repr, ValueRepr};
-use crate::table::{DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_TABLE_DECOR};
+use crate::table::{
+    DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_ROOT_DECOR, DEFAULT_TABLE_DECOR,
+};
 use crate::value::{
     DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
 };
@@ -197,6 +199,9 @@ pub(crate) fn encode_value(
 
 impl Display for DocumentMut {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let decor = self.decor();
+        decor.prefix_encode(f, None, DEFAULT_ROOT_DECOR.0)?;
+
         let mut path = Vec::new();
         let mut last_position = 0;
         let mut tables = Vec::new();
@@ -214,6 +219,7 @@ impl Display for DocumentMut {
         for (_, table, path, is_array) in tables {
             visit_table(f, None, table, &path, is_array, &mut first_table)?;
         }
+        decor.suffix_encode(f, None, DEFAULT_ROOT_DECOR.1)?;
         self.trailing().encode_with_default(f, None, "")
     }
 }
