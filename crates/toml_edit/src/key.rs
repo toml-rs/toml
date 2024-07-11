@@ -53,7 +53,10 @@ impl Key {
         Self::try_parse_path(repr)
     }
 
-    pub(crate) fn with_repr_unchecked(mut self, repr: Repr) -> Self {
+    /// While creating the `Key`, add `Repr` to it
+    ///
+    /// Useful in custom parsers.
+    pub fn with_repr_unchecked(mut self, repr: Repr) -> Self {
         self.repr = Some(repr);
         self
     }

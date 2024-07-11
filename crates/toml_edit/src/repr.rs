@@ -141,7 +141,10 @@ pub struct Repr {
 }
 
 impl Repr {
-    pub(crate) fn new_unchecked(raw: impl Into<RawString>) -> Self {
+    /// Create a new TOML-encoded value
+    ///
+    /// Useful in custom parsers.
+    pub fn new_unchecked(raw: impl Into<RawString>) -> Self {
         Repr {
             raw_value: raw.into(),
         }
