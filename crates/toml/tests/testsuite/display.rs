@@ -1,4 +1,9 @@
+use serde::Deserialize;
+use snapbox::assert_data_eq;
+use snapbox::prelude::*;
+use snapbox::str;
 use toml::map::Map;
+use toml::Value;
 use toml::Value::{Array, Boolean, Float, Integer, String, Table};
 
 macro_rules! map( ($($k:expr => $v:expr),*) => ({
@@ -113,4 +118,65 @@ fn table() {
         "test = [2]\n\
          test2 = 2\n"
     );
+}
+
+#[test]
+fn string_roundtrip() {
+    assert_string_round_trip(r#""""#, str![[r#""""#]]);
+    assert_string_round_trip(r#""a""#, str![[r#""a""#]]);
+
+    assert_string_round_trip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
+    assert_string_round_trip(
+        r#""lf \n lf""#,
+        str![[r#"
+"""
+lf 
+ lf"""
+"#]],
+    );
+    assert_string_round_trip(
+        r#""crlf \r\n crlf""#,
+        str![[r#"
+"""
+crlf /r
+ crlf"""
+"#]],
+    );
+    assert_string_round_trip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
+    assert_string_round_trip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
+    assert_string_round_trip(
+        r#""backslash \\ backslash""#,
+        str!["'backslash / backslash'"],
+    );
+
+    assert_string_round_trip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
+    assert_string_round_trip(
+        r#""triple squote ''' triple squote""#,
+        str![[r#""triple squote ''' triple squote""#]],
+    );
+    assert_string_round_trip(r#""end squote '""#, str![[r#""end squote '""#]]);
+
+    assert_string_round_trip(r#""quote \" quote""#, str![[r#"'quote " quote'"#]]);
+    assert_string_round_trip(
+        r#""triple quote \"\"\" triple quote""#,
+        str![[r#"'triple quote """ triple quote'"#]],
+    );
+    assert_string_round_trip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
+}
+
+#[track_caller]
+fn assert_string_round_trip(input: &str, expected: impl IntoData) {
+    let value = Value::deserialize(toml::de::ValueDeserializer::new(input)).unwrap();
+    let actual = value.to_string();
+    let _ = Value::deserialize(toml::de::ValueDeserializer::new(input)).unwrap_or_else(|_err| {
+        panic!(
+            "invalid value:
+```
+{actual}
+```
+"
+        )
+    });
+    let expected = expected.into_data();
+    assert_data_eq!(actual, expected);
 }
