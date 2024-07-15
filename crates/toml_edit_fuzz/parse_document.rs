@@ -2,9 +2,9 @@
 
 use toml_edit::DocumentMut;
 
-libfuzzer_sys::fuzz_target!(|data| {
+libfuzzer_sys::fuzz_target!(|data: &[u8]| -> libfuzzer_sys::Corpus {
     let Ok(data) = std::str::from_utf8(data) else {
-        return;
+        return libfuzzer_sys::Corpus::Reject;
     };
 
     println!("parsing: {data:?}");
@@ -12,7 +12,7 @@ libfuzzer_sys::fuzz_target!(|data| {
         Ok(doc) => doc,
         Err(err) => {
             println!("{err}");
-            return;
+            return libfuzzer_sys::Corpus::Keep;
         }
     };
     let toml = doc.to_string();
@@ -26,4 +26,5 @@ libfuzzer_sys::fuzz_target!(|data| {
     );
     let doc = doc.unwrap();
     assert_eq!(doc.to_string(), toml);
+    libfuzzer_sys::Corpus::Keep
 });
