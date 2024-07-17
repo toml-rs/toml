@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Correctly encode TOML keys with mixed quotes
+
 ## [0.22.15] - 2024-07-08
 
 ### Features
