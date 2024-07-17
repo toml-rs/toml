@@ -1607,42 +1607,247 @@ clippy.exhaustive_enums = "warn"
 }
 
 #[test]
-fn string_roundtrip() {
-    assert_string_round_trip(r#""""#, str![[r#""""#]]);
-    assert_string_round_trip(r#""a""#, str![[r#""a""#]]);
+fn string_repr_roundtrip() {
+    assert_string_repr_roundtrip(r#""""#, str![[r#""""#]]);
+    assert_string_repr_roundtrip(r#""a""#, str![[r#""a""#]]);
 
-    assert_string_round_trip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
-    assert_string_round_trip(r#""lf \n lf""#, str![[r#""lf /n lf""#]]);
-    assert_string_round_trip(r#""crlf \r\n crlf""#, str![[r#""crlf /r/n crlf""#]]);
-    assert_string_round_trip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
-    assert_string_round_trip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
-    assert_string_round_trip(
+    assert_string_repr_roundtrip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
+    assert_string_repr_roundtrip(r#""lf \n lf""#, str![[r#""lf /n lf""#]]);
+    assert_string_repr_roundtrip(r#""crlf \r\n crlf""#, str![[r#""crlf /r/n crlf""#]]);
+    assert_string_repr_roundtrip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
+    assert_string_repr_roundtrip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
+    assert_string_repr_roundtrip(
         r#""backslash \\ backslash""#,
         str![[r#""backslash // backslash""#]],
     );
 
-    assert_string_round_trip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
-    assert_string_round_trip(
+    assert_string_repr_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
+    assert_string_repr_roundtrip(
         r#""triple squote ''' triple squote""#,
         str![[r#""triple squote ''' triple squote""#]],
     );
-    assert_string_round_trip(r#""end squote '""#, str![[r#""end squote '""#]]);
+    assert_string_repr_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
 
-    assert_string_round_trip(r#""quote \" quote""#, str![[r#""quote /" quote""#]]);
-    assert_string_round_trip(
+    assert_string_repr_roundtrip(r#""quote \" quote""#, str![[r#""quote /" quote""#]]);
+    assert_string_repr_roundtrip(
         r#""triple quote \"\"\" triple quote""#,
         str![[r#""triple quote /"/"/" triple quote""#]],
     );
-    assert_string_round_trip(r#""end quote \"""#, str![[r#""end quote /"""#]]);
+    assert_string_repr_roundtrip(r#""end quote \"""#, str![[r#""end quote /"""#]]);
+    assert_string_repr_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#""quoted /"content/" quoted""#]],
+    );
+    assert_string_repr_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_string_repr_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#""mixed quoted /"start/" 'end'' mixed quote""#]],
+    );
 }
 
 #[track_caller]
-fn assert_string_round_trip(input: &str, expected: impl IntoData) {
+fn assert_string_repr_roundtrip(input: &str, expected: impl IntoData) {
     let value: Value = input.parse().unwrap();
     let actual = value.to_string();
     let _: Value = actual.parse().unwrap_or_else(|_err| {
         panic!(
-            "invalid document:
+            "invalid `Value`:
+```
+{actual}
+```
+"
+        )
+    });
+    let expected = expected.into_data();
+    assert_data_eq!(actual, expected);
+}
+
+#[test]
+fn string_value_roundtrip() {
+    assert_string_value_roundtrip(r#""""#, str![[r#""""#]]);
+    assert_string_value_roundtrip(r#""a""#, str![[r#""a""#]]);
+
+    assert_string_value_roundtrip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
+    assert_string_value_roundtrip(
+        r#""lf \n lf""#,
+        str![[r#"
+"""
+lf 
+ lf"""
+"#]],
+    );
+    assert_string_value_roundtrip(
+        r#""crlf \r\n crlf""#,
+        str![[r#"
+"""
+crlf /r
+ crlf"""
+"#]],
+    );
+    assert_string_value_roundtrip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
+    assert_string_value_roundtrip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
+    assert_string_value_roundtrip(
+        r#""backslash \\ backslash""#,
+        str!["'backslash / backslash'"],
+    );
+
+    assert_string_value_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
+    assert_string_value_roundtrip(
+        r#""triple squote ''' triple squote""#,
+        str![[r#""triple squote ''' triple squote""#]],
+    );
+    assert_string_value_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
+
+    assert_string_value_roundtrip(r#""quote \" quote""#, str![[r#"'quote " quote'"#]]);
+    assert_string_value_roundtrip(
+        r#""triple quote \"\"\" triple quote""#,
+        str![[r#"'triple quote """ triple quote'"#]],
+    );
+    assert_string_value_roundtrip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
+    assert_string_value_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#"'quoted "content" quoted'"#]],
+    );
+    assert_string_value_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_string_value_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#"'''mixed quoted "start" 'end'' mixed quote'''"#]],
+    );
+}
+
+#[track_caller]
+fn assert_string_value_roundtrip(input: &str, expected: impl IntoData) {
+    let value: Value = input.parse().unwrap();
+    let value = Value::from(value.as_str().unwrap()); // Remove repr
+    let actual = value.to_string();
+    let _: Value = actual.parse().unwrap_or_else(|_err| {
+        panic!(
+            "invalid `Value`:
+```
+{actual}
+```
+"
+        )
+    });
+    let expected = expected.into_data();
+    assert_data_eq!(actual, expected);
+}
+
+#[test]
+fn key_repr_roundtrip() {
+    assert_key_repr_roundtrip(r#""""#, str![[r#""""#]]);
+    assert_key_repr_roundtrip(r#""a""#, str![[r#""a""#]]);
+
+    assert_key_repr_roundtrip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
+    assert_key_repr_roundtrip(r#""lf \n lf""#, str![[r#""lf /n lf""#]]);
+    assert_key_repr_roundtrip(r#""crlf \r\n crlf""#, str![[r#""crlf /r/n crlf""#]]);
+    assert_key_repr_roundtrip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
+    assert_key_repr_roundtrip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
+    assert_key_repr_roundtrip(
+        r#""backslash \\ backslash""#,
+        str![[r#""backslash // backslash""#]],
+    );
+
+    assert_key_repr_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
+    assert_key_repr_roundtrip(
+        r#""triple squote ''' triple squote""#,
+        str![[r#""triple squote ''' triple squote""#]],
+    );
+    assert_key_repr_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
+
+    assert_key_repr_roundtrip(r#""quote \" quote""#, str![[r#""quote /" quote""#]]);
+    assert_key_repr_roundtrip(
+        r#""triple quote \"\"\" triple quote""#,
+        str![[r#""triple quote /"/"/" triple quote""#]],
+    );
+    assert_key_repr_roundtrip(r#""end quote \"""#, str![[r#""end quote /"""#]]);
+    assert_key_repr_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#""quoted /"content/" quoted""#]],
+    );
+    assert_key_repr_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_key_repr_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#""mixed quoted /"start/" 'end'' mixed quote""#]],
+    );
+}
+
+#[track_caller]
+fn assert_key_repr_roundtrip(input: &str, expected: impl IntoData) {
+    let value: Key = input.parse().unwrap();
+    let actual = value.to_string();
+    let _: Key = actual.parse().unwrap_or_else(|_err| {
+        panic!(
+            "invalid `Key`:
+```
+{actual}
+```
+"
+        )
+    });
+    let expected = expected.into_data();
+    assert_data_eq!(actual, expected);
+}
+
+#[test]
+fn key_value_roundtrip() {
+    assert_key_value_roundtrip(r#""""#, str![[r#""""#]]);
+    assert_key_value_roundtrip(r#""a""#, str!["a"]);
+
+    assert_key_value_roundtrip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
+    assert_key_value_roundtrip(r#""lf \n lf""#, str![[r#""lf /n lf""#]]);
+    assert_key_value_roundtrip(r#""crlf \r\n crlf""#, str![[r#""crlf /r/n crlf""#]]);
+    assert_key_value_roundtrip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
+    assert_key_value_roundtrip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
+    assert_key_value_roundtrip(
+        r#""backslash \\ backslash""#,
+        str!["'backslash / backslash'"],
+    );
+
+    assert_key_value_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
+    assert_key_value_roundtrip(
+        r#""triple squote ''' triple squote""#,
+        str![[r#""triple squote ''' triple squote""#]],
+    );
+    assert_key_value_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
+
+    assert_key_value_roundtrip(r#""quote \" quote""#, str![[r#"'quote " quote'"#]]);
+    assert_key_value_roundtrip(
+        r#""triple quote \"\"\" triple quote""#,
+        str![[r#"'triple quote """ triple quote'"#]],
+    );
+    assert_key_value_roundtrip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
+    assert_key_value_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#"'quoted "content" quoted'"#]],
+    );
+    assert_key_value_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_key_value_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#""mixed quoted /"start/" 'end'' mixed quote""#]],
+    );
+}
+
+#[track_caller]
+fn assert_key_value_roundtrip(input: &str, expected: impl IntoData) {
+    let value: Key = input.parse().unwrap();
+    let value = Key::new(value.get()); // Remove repr
+    let actual = value.to_string();
+    let _: Key = actual.parse().unwrap_or_else(|_err| {
+        panic!(
+            "invalid `Key`:
 ```
 {actual}
 ```

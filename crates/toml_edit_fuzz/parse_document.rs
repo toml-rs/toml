@@ -7,24 +7,48 @@ libfuzzer_sys::fuzz_target!(|data: &[u8]| -> libfuzzer_sys::Corpus {
         return libfuzzer_sys::Corpus::Reject;
     };
 
-    println!("parsing: {data:?}");
     let doc = match data.parse::<DocumentMut>() {
         Ok(doc) => doc,
         Err(err) => {
-            println!("{err}");
+            println!(
+                "parse error: {err}
+
+data:
+```toml
+{data}
+```
+"
+            );
             return libfuzzer_sys::Corpus::Keep;
         }
     };
     let toml = doc.to_string();
-    println!("parsing: {toml:?}");
     let doc = toml.parse::<DocumentMut>();
     assert!(
         doc.is_ok(),
-        "Failed to parse `doc.to_string()`: {}\n```\n{}\n```",
+        "parse error: {}
+
+data:
+```toml
+{data}
+```
+
+doc.to_string():
+```toml
+{}
+```",
         doc.unwrap_err(),
         toml
     );
     let doc = doc.unwrap();
-    assert_eq!(doc.to_string(), toml);
+    assert_eq!(
+        doc.to_string(),
+        toml,
+        "data:
+```toml
+{data}
+```
+"
+    );
     libfuzzer_sys::Corpus::Keep
 });

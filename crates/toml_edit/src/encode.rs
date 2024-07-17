@@ -332,12 +332,7 @@ pub(crate) fn to_string_repr(
     style: Option<StringStyle>,
     literal: Option<bool>,
 ) -> Repr {
-    let (style, literal) = match (style, literal) {
-        (Some(style), Some(literal)) => (style, literal),
-        (_, Some(literal)) => (infer_style(value).0, literal),
-        (Some(style), _) => (style, infer_style(value).1),
-        (_, _) => infer_style(value),
-    };
+    let (style, literal) = infer_style(value, style, literal);
 
     let mut output = String::with_capacity(value.len() * 2);
     if literal {
@@ -415,7 +410,38 @@ impl StringStyle {
     }
 }
 
-fn infer_style(value: &str) -> (StringStyle, bool) {
+fn infer_style(
+    value: &str,
+    style: Option<StringStyle>,
+    literal: Option<bool>,
+) -> (StringStyle, bool) {
+    match (style, literal) {
+        (Some(style), Some(literal)) => (style, literal),
+        (None, Some(literal)) => (infer_all_style(value).0, literal),
+        (Some(style), None) => {
+            let literal = infer_literal(value);
+            (style, literal)
+        }
+        (None, None) => infer_all_style(value),
+    }
+}
+
+fn infer_literal(value: &str) -> bool {
+    #[cfg(feature = "parse")]
+    {
+        use winnow::stream::ContainsToken as _;
+        (value.contains('"') | value.contains('\\'))
+            && value
+                .chars()
+                .all(|c| crate::parser::strings::LITERAL_CHAR.contains_token(c))
+    }
+    #[cfg(not(feature = "parse"))]
+    {
+        false
+    }
+}
+
+fn infer_all_style(value: &str) -> (StringStyle, bool) {
     // We need to determine:
     // - if we are a "multi-line" pretty (if there are \n)
     // - if ['''] appears if multi or ['] if single
@@ -525,5 +551,47 @@ impl ValueRepr for bool {
 impl ValueRepr for Datetime {
     fn to_repr(&self) -> Repr {
         Repr::new_unchecked(self.to_string())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        #[cfg(feature = "parse")]
+        fn parseable_string(string in "\\PC*") {
+            let string = Value::from(string);
+            let encoded = string.to_string();
+            let _: Value = encoded.parse().unwrap_or_else(|err| {
+                panic!("error: {err}
+
+string:
+```
+{string}
+```
+")
+            });
+        }
+    }
+
+    proptest! {
+        #[test]
+        #[cfg(feature = "parse")]
+        fn parseable_key(string in "\\PC*") {
+            let string = Key::new(string);
+            let encoded = string.to_string();
+            let _: Key = encoded.parse().unwrap_or_else(|err| {
+                panic!("error: {err}
+
+string:
+```
+{string}
+```
+")
+            });
+        }
     }
 }
