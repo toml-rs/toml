@@ -332,12 +332,7 @@ pub(crate) fn to_string_repr(
     style: Option<StringStyle>,
     literal: Option<bool>,
 ) -> Repr {
-    let (style, literal) = match (style, literal) {
-        (Some(style), Some(literal)) => (style, literal),
-        (_, Some(literal)) => (infer_style(value).0, literal),
-        (Some(style), _) => (style, infer_style(value).1),
-        (_, _) => infer_style(value),
-    };
+    let (style, literal) = infer_style(value, style, literal);
 
     let mut output = String::with_capacity(value.len() * 2);
     if literal {
@@ -415,7 +410,20 @@ impl StringStyle {
     }
 }
 
-fn infer_style(value: &str) -> (StringStyle, bool) {
+fn infer_style(
+    value: &str,
+    style: Option<StringStyle>,
+    literal: Option<bool>,
+) -> (StringStyle, bool) {
+    match (style, literal) {
+        (Some(style), Some(literal)) => (style, literal),
+        (_, Some(literal)) => (infer_all_style(value).0, literal),
+        (Some(style), _) => (style, infer_all_style(value).1),
+        (_, _) => infer_all_style(value),
+    }
+}
+
+fn infer_all_style(value: &str) -> (StringStyle, bool) {
     // We need to determine:
     // - if we are a "multi-line" pretty (if there are \n)
     // - if ['''] appears if multi or ['] if single
