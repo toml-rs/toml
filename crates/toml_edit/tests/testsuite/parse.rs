@@ -1652,3 +1652,65 @@ fn assert_string_repr_roundtrip(input: &str, expected: impl IntoData) {
     let expected = expected.into_data();
     assert_data_eq!(actual, expected);
 }
+
+#[test]
+fn string_value_roundtrip() {
+    assert_string_value_roundtrip(r#""""#, str![[r#""""#]]);
+    assert_string_value_roundtrip(r#""a""#, str![[r#""a""#]]);
+
+    assert_string_value_roundtrip(r#""tab \t tab""#, str![[r#""tab /t tab""#]]);
+    assert_string_value_roundtrip(
+        r#""lf \n lf""#,
+        str![[r#"
+"""
+lf 
+ lf"""
+"#]],
+    );
+    assert_string_value_roundtrip(
+        r#""crlf \r\n crlf""#,
+        str![[r#"
+"""
+crlf /r
+ crlf"""
+"#]],
+    );
+    assert_string_value_roundtrip(r#""bell \b bell""#, str![[r#""bell /b bell""#]]);
+    assert_string_value_roundtrip(r#""feed \f feed""#, str![[r#""feed /f feed""#]]);
+    assert_string_value_roundtrip(
+        r#""backslash \\ backslash""#,
+        str!["'backslash / backslash'"],
+    );
+
+    assert_string_value_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
+    assert_string_value_roundtrip(
+        r#""triple squote ''' triple squote""#,
+        str![[r#""triple squote ''' triple squote""#]],
+    );
+    assert_string_value_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
+
+    assert_string_value_roundtrip(r#""quote \" quote""#, str![[r#"'quote " quote'"#]]);
+    assert_string_value_roundtrip(
+        r#""triple quote \"\"\" triple quote""#,
+        str![[r#"'triple quote """ triple quote'"#]],
+    );
+    assert_string_value_roundtrip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
+}
+
+#[track_caller]
+fn assert_string_value_roundtrip(input: &str, expected: impl IntoData) {
+    let value: Value = input.parse().unwrap();
+    let value = Value::from(value.as_str().unwrap()); // Remove repr
+    let actual = value.to_string();
+    let _: Value = actual.parse().unwrap_or_else(|_err| {
+        panic!(
+            "invalid `Value`:
+```
+{actual}
+```
+"
+        )
+    });
+    let expected = expected.into_data();
+    assert_data_eq!(actual, expected);
+}
