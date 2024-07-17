@@ -1634,6 +1634,18 @@ fn string_repr_roundtrip() {
         str![[r#""triple quote /"/"/" triple quote""#]],
     );
     assert_string_repr_roundtrip(r#""end quote \"""#, str![[r#""end quote /"""#]]);
+    assert_string_repr_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#""quoted /"content/" quoted""#]],
+    );
+    assert_string_repr_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_string_repr_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#""mixed quoted /"start/" 'end'' mixed quote""#]],
+    );
 }
 
 #[track_caller]
@@ -1695,6 +1707,18 @@ crlf /r
         str![[r#"'triple quote """ triple quote'"#]],
     );
     assert_string_value_roundtrip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
+    assert_string_value_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#"'quoted "content" quoted'"#]],
+    );
+    assert_string_value_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_string_value_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#"'''mixed quoted "start" 'end'' mixed quote'''"#]],
+    );
 }
 
 #[track_caller]
@@ -1743,6 +1767,18 @@ fn key_repr_roundtrip() {
         str![[r#""triple quote /"/"/" triple quote""#]],
     );
     assert_key_repr_roundtrip(r#""end quote \"""#, str![[r#""end quote /"""#]]);
+    assert_key_repr_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#""quoted /"content/" quoted""#]],
+    );
+    assert_key_repr_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    assert_key_repr_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#""mixed quoted /"start/" 'end'' mixed quote""#]],
+    );
 }
 
 #[track_caller]
@@ -1790,6 +1826,20 @@ fn key_value_roundtrip() {
         str![[r#"'triple quote """ triple quote'"#]],
     );
     assert_key_value_roundtrip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
+    assert_key_value_roundtrip(
+        r#""quoted \"content\" quoted""#,
+        str![[r#"'quoted "content" quoted'"#]],
+    );
+    assert_key_value_roundtrip(
+        r#""squoted 'content' squoted""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    /*
+    assert_key_value_roundtrip(
+        r#""mixed quoted \"start\" 'end'' mixed quote""#,
+        str![[r#""squoted 'content' squoted""#]],
+    );
+    */
 }
 
 #[track_caller]
