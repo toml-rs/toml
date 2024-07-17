@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.16] - 2024-07-17
+
 ### Fixes
 
 - Correctly encode TOML keys with mixed quotes
@@ -713,7 +715,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.15...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.16...HEAD
+[0.22.16]: https://github.com/toml-rs/toml/compare/v0.22.15...v0.22.16
 [0.22.15]: https://github.com/toml-rs/toml/compare/v0.22.14...v0.22.15
 [0.22.14]: https://github.com/toml-rs/toml/compare/v0.22.13...v0.22.14
 [0.22.13]: https://github.com/toml-rs/toml/compare/v0.22.12...v0.22.13

@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.15] - 2024-07-17
+
 ### Fixes
 
 - Correctly encode TOML keys with mixed quotes
@@ -250,7 +252,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.14...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.15...HEAD
+[0.8.15]: https://github.com/toml-rs/toml/compare/toml-v0.8.14...toml-v0.8.15
 [0.8.14]: https://github.com/toml-rs/toml/compare/toml-v0.8.13...toml-v0.8.14
 [0.8.13]: https://github.com/toml-rs/toml/compare/toml-v0.8.12...toml-v0.8.13
 [0.8.12]: https://github.com/toml-rs/toml/compare/toml-v0.8.11...toml-v0.8.12
