@@ -538,3 +538,45 @@ impl ValueRepr for Datetime {
         Repr::new_unchecked(self.to_string())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        #[cfg(feature = "parse")]
+        fn parseable_string(string in "\\PC*") {
+            let string = Value::from(string);
+            let encoded = string.to_string();
+            let _: Value = encoded.parse().unwrap_or_else(|err| {
+                panic!("error: {err}
+
+string:
+```
+{string}
+```
+")
+            });
+        }
+    }
+
+    proptest! {
+        #[test]
+        #[cfg(feature = "parse")]
+        fn parseable_key(string in "\\PC*") {
+            let string = Key::new(string);
+            let encoded = string.to_string();
+            let _: Key = encoded.parse().unwrap_or_else(|err| {
+                panic!("error: {err}
+
+string:
+```
+{string}
+```
+")
+            });
+        }
+    }
+}
