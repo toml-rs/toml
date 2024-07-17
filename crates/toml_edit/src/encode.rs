@@ -419,11 +419,15 @@ fn infer_style(
         (Some(style), Some(literal)) => (style, literal),
         (None, Some(literal)) => (infer_all_style(value).0, literal),
         (Some(style), None) => {
-            let literal = !value.contains('\'') && (value.contains('"') | value.contains('\\'));
+            let literal = infer_literal(value);
             (style, literal)
         }
         (None, None) => infer_all_style(value),
     }
+}
+
+fn infer_literal(value: &str) -> bool {
+    !value.contains('\'') && (value.contains('"') | value.contains('\\'))
 }
 
 fn infer_all_style(value: &str) -> (StringStyle, bool) {
