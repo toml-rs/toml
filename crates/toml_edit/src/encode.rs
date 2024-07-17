@@ -418,7 +418,10 @@ fn infer_style(
     match (style, literal) {
         (Some(style), Some(literal)) => (style, literal),
         (None, Some(literal)) => (infer_all_style(value).0, literal),
-        (Some(style), None) => (style, infer_all_style(value).1),
+        (Some(style), None) => {
+            let literal = !value.contains('\'') && (value.contains('"') | value.contains('\\'));
+            (style, literal)
+        }
         (None, None) => infer_all_style(value),
     }
 }

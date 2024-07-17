@@ -1834,12 +1834,10 @@ fn key_value_roundtrip() {
         r#""squoted 'content' squoted""#,
         str![[r#""squoted 'content' squoted""#]],
     );
-    /*
     assert_key_value_roundtrip(
         r#""mixed quoted \"start\" 'end'' mixed quote""#,
-        str![[r#""squoted 'content' squoted""#]],
+        str![[r#""mixed quoted /"start/" 'end'' mixed quote""#]],
     );
-    */
 }
 
 #[track_caller]
