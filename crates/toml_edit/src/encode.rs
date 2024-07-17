@@ -427,7 +427,18 @@ fn infer_style(
 }
 
 fn infer_literal(value: &str) -> bool {
-    !value.contains('\'') && (value.contains('"') | value.contains('\\'))
+    #[cfg(feature = "parse")]
+    {
+        use winnow::stream::ContainsToken as _;
+        (value.contains('"') | value.contains('\\'))
+            && value
+                .chars()
+                .all(|c| crate::parser::strings::LITERAL_CHAR.contains_token(c))
+    }
+    #[cfg(not(feature = "parse"))]
+    {
+        false
+    }
 }
 
 fn infer_all_style(value: &str) -> (StringStyle, bool) {
