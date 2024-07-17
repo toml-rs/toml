@@ -1642,7 +1642,7 @@ fn assert_string_round_trip(input: &str, expected: impl IntoData) {
     let actual = value.to_string();
     let _: Value = actual.parse().unwrap_or_else(|_err| {
         panic!(
-            "invalid document:
+            "invalid `Value`:
 ```
 {actual}
 ```
