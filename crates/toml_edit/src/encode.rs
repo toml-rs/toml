@@ -417,9 +417,9 @@ fn infer_style(
 ) -> (StringStyle, bool) {
     match (style, literal) {
         (Some(style), Some(literal)) => (style, literal),
-        (_, Some(literal)) => (infer_all_style(value).0, literal),
-        (Some(style), _) => (style, infer_all_style(value).1),
-        (_, _) => infer_all_style(value),
+        (None, Some(literal)) => (infer_all_style(value).0, literal),
+        (Some(style), None) => (style, infer_all_style(value).1),
+        (None, None) => infer_all_style(value),
     }
 }
 
