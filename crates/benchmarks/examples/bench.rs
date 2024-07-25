@@ -38,10 +38,7 @@ impl Args {
         let mut parser = Parser::Document;
 
         let mut args = lexopt::Parser::from_env();
-        let mut data = toml_benchmarks::MANIFESTS
-            .iter()
-            .find(|d| d.name() == "1-medium")
-            .unwrap();
+        let mut data_name = "1-medium".to_owned();
         while let Some(arg) = args.next()? {
             match arg {
                 Long("parser") => {
@@ -59,18 +56,18 @@ impl Args {
                     };
                 }
                 Long("manifest") => {
-                    let name = args.value()?;
-                    data = toml_benchmarks::MANIFESTS
-                        .iter()
-                        .find(|d| d.name() == name)
-                        .ok_or_else(|| lexopt::Error::UnexpectedValue {
-                            option: "manifest".to_owned(),
-                            value: name.clone(),
-                        })?;
+                    data_name = args.value()?.string()?;
                 }
                 _ => return Err(arg.unexpected()),
             }
         }
+        let data = toml_benchmarks::MANIFESTS
+            .iter()
+            .find(|d| d.name() == data_name)
+            .ok_or_else(|| lexopt::Error::UnexpectedValue {
+                option: "manifest".to_owned(),
+                value: data_name.into(),
+            })?;
 
         Ok(Self {
             parser,
