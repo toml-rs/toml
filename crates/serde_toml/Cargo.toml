@@ -15,5 +15,8 @@ include.workspace = true
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[package.metadata.release]
+release = false
+
 [lints]
 workspace = true
