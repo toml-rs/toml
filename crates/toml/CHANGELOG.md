@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.16] - 2024-07-25
+
 ## [0.8.15] - 2024-07-17
 
 ### Fixes
@@ -252,7 +254,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.15...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.16...HEAD
+[0.8.16]: https://github.com/toml-rs/toml/compare/toml-v0.8.15...toml-v0.8.16
 [0.8.15]: https://github.com/toml-rs/toml/compare/toml-v0.8.14...toml-v0.8.15
 [0.8.14]: https://github.com/toml-rs/toml/compare/toml-v0.8.13...toml-v0.8.14
 [0.8.13]: https://github.com/toml-rs/toml/compare/toml-v0.8.12...toml-v0.8.13
