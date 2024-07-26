@@ -116,7 +116,7 @@ impl crate::InlineTable {
 }
 
 pub(crate) struct TableMapAccess {
-    iter: indexmap::map::IntoIter<crate::InternalString, crate::table::TableKeyValue>,
+    iter: indexmap::map::IntoIter<crate::Key, crate::Item>,
     span: Option<std::ops::Range<usize>>,
     value: Option<(crate::Key, crate::Item)>,
 }
@@ -140,16 +140,17 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess {
     {
         match self.iter.next() {
             Some((k, v)) => {
+                let key_span = k.span();
                 let ret = seed
-                    .deserialize(super::KeyDeserializer::new(k, v.key.span()))
+                    .deserialize(super::KeyDeserializer::new(k.clone(), key_span.clone()))
                     .map(Some)
                     .map_err(|mut e: Self::Error| {
                         if e.span().is_none() {
-                            e.set_span(v.key.span());
+                            e.set_span(key_span);
                         }
                         e
                     });
-                self.value = Some((v.key, v.value));
+                self.value = Some((k, v));
                 ret
             }
             None => Ok(None),
@@ -201,12 +202,12 @@ impl<'de> serde::de::EnumAccess<'de> for TableMapAccess {
             .deserialize(key.into_deserializer())
             .map_err(|mut e: Self::Error| {
                 if e.span().is_none() {
-                    e.set_span(value.key.span());
+                    e.set_span(key.span());
                 }
                 e
             })?;
 
-        let variant = super::TableEnumDeserializer::new(value.value);
+        let variant = super::TableEnumDeserializer::new(value);
 
         Ok((val, variant))
     }

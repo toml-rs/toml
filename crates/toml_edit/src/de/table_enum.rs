@@ -101,19 +101,13 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                     .items
                     .into_iter()
                     .enumerate()
-                    .map(
-                        |(index, (_, value))| match value.key.get().parse::<usize>() {
-                            Ok(key_index) if key_index == index => Ok(value.value),
-                            Ok(_) | Err(_) => Err(Error::custom(
-                                format!(
-                                    "expected table key `{}`, but was `{}`",
-                                    index,
-                                    value.key.get()
-                                ),
-                                value.key.span(),
-                            )),
-                        },
-                    )
+                    .map(|(index, (key, value))| match key.get().parse::<usize>() {
+                        Ok(key_index) if key_index == index => Ok(value),
+                        Ok(_) | Err(_) => Err(Error::custom(
+                            format!("expected table key `{}`, but was `{}`", index, key.get()),
+                            key.span(),
+                        )),
+                    })
                     .collect();
                 let tuple_values = tuple_values?;
 
@@ -135,19 +129,13 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                     .items
                     .into_iter()
                     .enumerate()
-                    .map(
-                        |(index, (_, value))| match value.key.get().parse::<usize>() {
-                            Ok(key_index) if key_index == index => Ok(value.value),
-                            Ok(_) | Err(_) => Err(Error::custom(
-                                format!(
-                                    "expected table key `{}`, but was `{}`",
-                                    index,
-                                    value.key.get()
-                                ),
-                                value.key.span(),
-                            )),
-                        },
-                    )
+                    .map(|(index, (key, value))| match key.get().parse::<usize>() {
+                        Ok(key_index) if key_index == index => Ok(value),
+                        Ok(_) | Err(_) => Err(Error::custom(
+                            format!("expected table key `{}`, but was `{}`", index, key.get()),
+                            key.span(),
+                        )),
+                    })
                     .collect();
                 let tuple_values = tuple_values?;
 
