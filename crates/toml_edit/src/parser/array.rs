@@ -63,9 +63,10 @@ pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
 }
 
 pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Value> {
-    (ws_comment_newline.span(), value, ws_comment_newline.span())
-        .map(|(ws1, v, ws2)| v.decorated(RawString::with_span(ws1), RawString::with_span(ws2)))
-        .parse_next(input)
+    let prefix = ws_comment_newline.span().parse_next(input)?;
+    let value = value.parse_next(input)?;
+    let suffix = ws_comment_newline.span().parse_next(input)?;
+    Ok(value.decorated(RawString::with_span(prefix), RawString::with_span(suffix)))
 }
 
 #[cfg(test)]
