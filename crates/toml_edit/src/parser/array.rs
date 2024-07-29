@@ -36,9 +36,8 @@ const ARRAY_CLOSE: u8 = b']';
 // array-sep = ws %x2C ws  ; , Comma
 const ARRAY_SEP: u8 = b',';
 
-// note: this rule is modified
-// array-values = [ ( array-value array-sep array-values ) /
-//                  array-value / ws-comment-newline ]
+// array-values =  ws-comment-newline val ws-comment-newline array-sep array-values
+// array-values =/ ws-comment-newline val ws-comment-newline [ array-sep ]
 pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
     let array = separated(0.., array_value, ARRAY_SEP).parse_next(input)?;
     let mut array = Array::with_vec(array);
