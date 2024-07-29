@@ -328,7 +328,7 @@ fn ml_literal_body<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
 
 // mll-content = mll-char / newline
 fn mll_content(input: &mut Input<'_>) -> PResult<u8> {
-    alt((one_of(MLL_CHAR), newline)).parse_next(input)
+    alt((one_of(MLL_CHAR), newline.value(b'\n'))).parse_next(input)
 }
 
 // mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
