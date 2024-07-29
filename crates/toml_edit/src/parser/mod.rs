@@ -92,56 +92,41 @@ pub(crate) mod prelude {
         winnow::Located::new(winnow::BStr::new(s))
     }
 
-    #[cfg(not(feature = "unbounded"))]
     #[derive(Copy, Clone, Debug, Default)]
     pub(crate) struct RecursionCheck {
+        #[cfg(not(feature = "unbounded"))]
         current: usize,
     }
 
     #[cfg(not(feature = "unbounded"))]
     const LIMIT: usize = 80;
 
-    #[cfg(not(feature = "unbounded"))]
-    impl RecursionCheck {
-        pub(crate) fn check_depth(depth: usize) -> Result<(), super::error::CustomError> {
-            if depth < LIMIT {
-                Ok(())
-            } else {
-                Err(super::error::CustomError::RecursionLimitExceeded)
-            }
-        }
-
-        pub(crate) fn recursing(
-            mut self,
-            input: &mut Input<'_>,
-        ) -> Result<Self, winnow::error::ErrMode<ContextError>> {
-            self.current += 1;
-            if self.current < LIMIT {
-                Ok(self)
-            } else {
-                Err(winnow::error::ErrMode::from_external_error(
-                    input,
-                    winnow::error::ErrorKind::Eof,
-                    super::error::CustomError::RecursionLimitExceeded,
-                ))
-            }
-        }
-    }
-
-    #[cfg(feature = "unbounded")]
-    #[derive(Copy, Clone, Debug, Default)]
-    pub(crate) struct RecursionCheck {}
-
-    #[cfg(feature = "unbounded")]
     impl RecursionCheck {
         pub(crate) fn check_depth(_depth: usize) -> Result<(), super::error::CustomError> {
+            #[cfg(not(feature = "unbounded"))]
+            if LIMIT <= _depth {
+                return Err(super::error::CustomError::RecursionLimitExceeded);
+            }
+
             Ok(())
         }
 
+        #[allow(unused_mut)]
         pub(crate) fn recursing(
-            self,
+            mut self,
             _input: &mut Input<'_>,
         ) -> Result<Self, winnow::error::ErrMode<ContextError>> {
+            #[cfg(not(feature = "unbounded"))]
+            {
+                self.current += 1;
+                if LIMIT <= self.current {
+                    return Err(winnow::error::ErrMode::from_external_error(
+                        _input,
+                        winnow::error::ErrorKind::Eof,
+                        super::error::CustomError::RecursionLimitExceeded,
+                    ));
+                }
+            }
             Ok(self)
         }
     }
