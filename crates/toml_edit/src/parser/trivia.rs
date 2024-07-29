@@ -93,20 +93,12 @@ pub(crate) fn ws_newlines<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
 pub(crate) fn ws_comment_newline<'i>(input: &mut Input<'i>) -> PResult<&'i [u8]> {
-    repeat(
-        0..,
-        alt((
-            repeat(
-                1..,
-                alt((take_while(1.., WSCHAR), newline.value(&b"\n"[..]))),
-            )
-            .map(|()| ()),
-            comment.void(),
-        )),
+    (
+        repeat(0.., (take_while(0.., WSCHAR), opt(comment), newline)).map(|()| ()),
+        take_while(0.., WSCHAR),
     )
-    .map(|()| ())
-    .recognize()
-    .parse_next(input)
+        .recognize()
+        .parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
