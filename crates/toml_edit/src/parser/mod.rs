@@ -124,7 +124,8 @@ pub(crate) mod prelude {
                         _input,
                         winnow::error::ErrorKind::Eof,
                         super::error::CustomError::RecursionLimitExceeded,
-                    ));
+                    )
+                    .cut());
                 }
             }
             Ok(self)
