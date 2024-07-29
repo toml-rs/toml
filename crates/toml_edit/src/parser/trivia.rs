@@ -1,11 +1,15 @@
 use std::ops::RangeInclusive;
 
 use winnow::combinator::alt;
+use winnow::combinator::empty;
 use winnow::combinator::eof;
+use winnow::combinator::fail;
 use winnow::combinator::opt;
+use winnow::combinator::peek;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::prelude::*;
+use winnow::token::any;
 use winnow::token::one_of;
 use winnow::token::take_while;
 
@@ -50,69 +54,60 @@ pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
 pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 // comment = comment-start-symbol *non-eol
-pub(crate) fn comment<'i>(input: &mut Input<'i>) -> PResult<&'i [u8]> {
+pub(crate) fn comment(input: &mut Input<'_>) -> PResult<()> {
     (COMMENT_START_SYMBOL, take_while(0.., NON_EOL))
-        .recognize()
+        .void()
         .parse_next(input)
 }
 
 // newline = ( %x0A /              ; LF
 //             %x0D.0A )           ; CRLF
-pub(crate) fn newline(input: &mut Input<'_>) -> PResult<u8> {
-    alt((
-        one_of(LF).value(b'\n'),
-        (one_of(CR), one_of(LF)).value(b'\n'),
-    ))
+pub(crate) fn newline(input: &mut Input<'_>) -> PResult<()> {
+    dispatch! {any;
+        b'\n' => empty,
+        b'\r' => one_of(LF).void(),
+        _ => fail,
+    }
     .parse_next(input)
 }
 pub(crate) const LF: u8 = b'\n';
 pub(crate) const CR: u8 = b'\r';
 
 // ws-newline       = *( wschar / newline )
-pub(crate) fn ws_newline<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
+pub(crate) fn ws_newline(input: &mut Input<'_>) -> PResult<()> {
     repeat(
         0..,
         alt((newline.value(&b"\n"[..]), take_while(1.., WSCHAR))),
     )
     .map(|()| ())
-    .recognize()
-    .map(|b| unsafe { from_utf8_unchecked(b, "`is_wschar` and `newline` filters out on-ASCII") })
     .parse_next(input)
 }
 
 // ws-newlines      = newline *( wschar / newline )
-pub(crate) fn ws_newlines<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
-    (newline, ws_newline)
-        .recognize()
-        .map(|b| unsafe {
-            from_utf8_unchecked(b, "`is_wschar` and `newline` filters out on-ASCII")
-        })
-        .parse_next(input)
+pub(crate) fn ws_newlines(input: &mut Input<'_>) -> PResult<()> {
+    (newline, ws_newline).void().parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
-pub(crate) fn ws_comment_newline<'i>(input: &mut Input<'i>) -> PResult<&'i [u8]> {
-    repeat(
-        0..,
-        alt((
-            repeat(
-                1..,
-                alt((take_while(1.., WSCHAR), newline.value(&b"\n"[..]))),
-            )
-            .map(|()| ()),
-            comment.void(),
-        )),
-    )
-    .map(|()| ())
-    .recognize()
+pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> PResult<()> {
+    let _ = ws.parse_next(input)?;
+
+    dispatch! {opt(peek(any));
+        Some(b'#') => (comment, newline, ws_comment_newline).void(),
+        Some(b'\n') => (newline, ws_comment_newline).void(),
+        Some(b'\r') => (newline, ws_comment_newline).void(),
+        _ => empty,
+    }
     .parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
 // line-ending = newline / eof
-pub(crate) fn line_ending<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
-    alt((newline.value("\n"), eof.value(""))).parse_next(input)
+pub(crate) fn line_ending(input: &mut Input<'_>) -> PResult<()> {
+    alt((newline.value("\n"), eof.value("")))
+        .void()
+        .parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
@@ -151,7 +146,7 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let parsed = ws_comment_newline.parse(new_input(input));
+            let parsed = ws_comment_newline.recognize().parse(new_input(input));
             assert!(parsed.is_ok(), "{:?}", parsed);
             let parsed = parsed.unwrap();
             assert_eq!(parsed, input.as_bytes());
