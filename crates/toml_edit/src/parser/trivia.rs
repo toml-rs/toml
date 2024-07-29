@@ -1,11 +1,14 @@
 use std::ops::RangeInclusive;
 
 use winnow::combinator::alt;
+use winnow::combinator::empty;
 use winnow::combinator::eof;
+use winnow::combinator::fail;
 use winnow::combinator::opt;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::prelude::*;
+use winnow::token::any;
 use winnow::token::one_of;
 use winnow::token::take_while;
 
@@ -59,7 +62,12 @@ pub(crate) fn comment(input: &mut Input<'_>) -> PResult<()> {
 // newline = ( %x0A /              ; LF
 //             %x0D.0A )           ; CRLF
 pub(crate) fn newline(input: &mut Input<'_>) -> PResult<()> {
-    alt((one_of(LF).void(), (one_of(CR), one_of(LF)).void())).parse_next(input)
+    dispatch! {any;
+        b'\n' => empty,
+        b'\r' => one_of(LF).void(),
+        _ => fail,
+    }
+    .parse_next(input)
 }
 pub(crate) const LF: u8 = b'\n';
 pub(crate) const CR: u8 = b'\r';
