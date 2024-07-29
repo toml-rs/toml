@@ -153,10 +153,10 @@ fn ml_basic_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
         "ml-basic-string",
         delimited(
             ML_BASIC_STRING_DELIM,
-            preceded(opt(newline), cut_err(ml_basic_body)),
-            cut_err(ML_BASIC_STRING_DELIM),
-        )
-        .context(StrContext::Label("multiline basic string")),
+            preceded(opt(newline), cut_err(ml_basic_body))
+                .context(StrContext::Label("multiline basic string")),
+            cut_err(ML_BASIC_STRING_DELIM).context(StrContext::Label("multiline basic string")),
+        ),
     )
     .parse_next(input)
 }
@@ -296,10 +296,10 @@ fn ml_literal_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
                 } else {
                     Cow::Borrowed(t)
                 }
-            })),
-            cut_err(ML_LITERAL_STRING_DELIM),
-        )
-        .context(StrContext::Label("multiline literal string")),
+            }))
+            .context(StrContext::Label("multiline literal string")),
+            cut_err(ML_LITERAL_STRING_DELIM).context(StrContext::Label("multiline literal string")),
+        ),
     )
     .parse_next(input)
 }
