@@ -6,7 +6,7 @@ use winnow::combinator::trace;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::{Array, Item, RawString, Value};
+use crate::{Array, Item, RawString};
 
 use crate::parser::prelude::*;
 
@@ -43,12 +43,7 @@ pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
     (
         opt(
             (separated(1.., array_value, ARRAY_SEP), opt(ARRAY_SEP)).map(
-                |(v, trailing): (Vec<Value>, Option<u8>)| {
-                    (
-                        Array::with_vec(v.into_iter().map(Item::Value).collect()),
-                        trailing.is_some(),
-                    )
-                },
+                |(v, trailing): (Vec<Item>, Option<u8>)| (Array::with_vec(v), trailing.is_some()),
             ),
         ),
         ws_comment_newline.span(),
@@ -62,11 +57,13 @@ pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
         .parse_next(input)
 }
 
-pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Value> {
+pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Item> {
     let prefix = ws_comment_newline.span().parse_next(input)?;
     let value = value.parse_next(input)?;
     let suffix = ws_comment_newline.span().parse_next(input)?;
-    Ok(value.decorated(RawString::with_span(prefix), RawString::with_span(suffix)))
+    let value = value.decorated(RawString::with_span(prefix), RawString::with_span(suffix));
+    let value = Item::Value(value);
+    Ok(value)
 }
 
 #[cfg(test)]
