@@ -13,17 +13,18 @@ use crate::parser::prelude::*;
 // ;; Array
 
 // array = array-open array-values array-close
-pub(crate) fn array<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Array, ContextError> {
+pub(crate) fn array<'i>(input: &mut Input<'i>) -> PResult<Array> {
     trace("array", move |input: &mut Input<'i>| {
         delimited(
             ARRAY_OPEN,
-            cut_err(array_values(check)),
+            cut_err(array_values),
             cut_err(ARRAY_CLOSE)
                 .context(StrContext::Label("array"))
                 .context(StrContext::Expected(StrContextValue::CharLiteral(']'))),
         )
         .parse_next(input)
     })
+    .parse_next(input)
 }
 
 // note: we're omitting ws and newlines here, because
@@ -38,46 +39,33 @@ const ARRAY_SEP: u8 = b',';
 // note: this rule is modified
 // array-values = [ ( array-value array-sep array-values ) /
 //                  array-value / ws-comment-newline ]
-pub(crate) fn array_values<'i>(
-    check: RecursionCheck,
-) -> impl Parser<Input<'i>, Array, ContextError> {
-    move |input: &mut Input<'i>| {
-        let check = check.recursing(input)?;
-        (
-            opt((
-                separated(1.., array_value(check), ARRAY_SEP),
-                opt(ARRAY_SEP),
-            )
-                .map(|(v, trailing): (Vec<Value>, Option<u8>)| {
+pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
+    (
+        opt(
+            (separated(1.., array_value, ARRAY_SEP), opt(ARRAY_SEP)).map(
+                |(v, trailing): (Vec<Value>, Option<u8>)| {
                     (
                         Array::with_vec(v.into_iter().map(Item::Value).collect()),
                         trailing.is_some(),
                     )
-                })),
-            ws_comment_newline.span(),
-        )
-            .try_map::<_, _, std::str::Utf8Error>(|(array, trailing)| {
-                let (mut array, comma) = array.unwrap_or_default();
-                array.set_trailing_comma(comma);
-                array.set_trailing(RawString::with_span(trailing));
-                Ok(array)
-            })
-            .parse_next(input)
-    }
+                },
+            ),
+        ),
+        ws_comment_newline.span(),
+    )
+        .try_map::<_, _, std::str::Utf8Error>(|(array, trailing)| {
+            let (mut array, comma) = array.unwrap_or_default();
+            array.set_trailing_comma(comma);
+            array.set_trailing(RawString::with_span(trailing));
+            Ok(array)
+        })
+        .parse_next(input)
 }
 
-pub(crate) fn array_value<'i>(
-    check: RecursionCheck,
-) -> impl Parser<Input<'i>, Value, ContextError> {
-    move |input: &mut Input<'i>| {
-        (
-            ws_comment_newline.span(),
-            value(check),
-            ws_comment_newline.span(),
-        )
-            .map(|(ws1, v, ws2)| v.decorated(RawString::with_span(ws1), RawString::with_span(ws2)))
-            .parse_next(input)
-    }
+pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Value> {
+    (ws_comment_newline.span(), value, ws_comment_newline.span())
+        .map(|(ws1, v, ws2)| v.decorated(RawString::with_span(ws1), RawString::with_span(ws2)))
+        .parse_next(input)
 }
 
 #[cfg(test)]
@@ -125,7 +113,7 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let mut parsed = array(Default::default()).parse(new_input(input));
+            let mut parsed = array.parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }
@@ -138,7 +126,7 @@ mod test {
         let invalid_inputs = [r#"["#, r#"[,]"#, r#"[,2]"#, r#"[1e165,,]"#];
         for input in invalid_inputs {
             dbg!(input);
-            let mut parsed = array(Default::default()).parse(new_input(input));
+            let mut parsed = array.parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }

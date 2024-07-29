@@ -18,19 +18,18 @@ use indexmap::map::Entry;
 // ;; Inline Table
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
-pub(crate) fn inline_table<'i>(
-    check: RecursionCheck,
-) -> impl Parser<Input<'i>, InlineTable, ContextError> {
+pub(crate) fn inline_table<'i>(input: &mut Input<'i>) -> PResult<InlineTable> {
     trace("inline-table", move |input: &mut Input<'i>| {
         delimited(
             INLINE_TABLE_OPEN,
-            cut_err(inline_table_keyvals(check).try_map(|(kv, p)| table_from_pairs(kv, p))),
+            cut_err(inline_table_keyvals.try_map(|(kv, p)| table_from_pairs(kv, p))),
             cut_err(INLINE_TABLE_CLOSE)
                 .context(StrContext::Label("inline table"))
                 .context(StrContext::Expected(StrContextValue::CharLiteral('}'))),
         )
         .parse_next(input)
     })
+    .parse_next(input)
 }
 
 fn table_from_pairs(
@@ -118,50 +117,43 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 // ( key keyval-sep val inline-table-sep inline-table-keyvals-non-empty ) /
 // ( key keyval-sep val )
 
-fn inline_table_keyvals<'i>(
-    check: RecursionCheck,
-) -> impl Parser<Input<'i>, (Vec<(Vec<Key>, TableKeyValue)>, RawString), ContextError> {
-    move |input: &mut Input<'i>| {
-        let check = check.recursing(input)?;
-        (
-            separated(0.., keyval(check), INLINE_TABLE_SEP),
-            ws.span().map(RawString::with_span),
-        )
-            .parse_next(input)
-    }
+fn inline_table_keyvals(
+    input: &mut Input<'_>,
+) -> PResult<(Vec<(Vec<Key>, TableKeyValue)>, RawString)> {
+    (
+        separated(0.., keyval, INLINE_TABLE_SEP),
+        ws.span().map(RawString::with_span),
+    )
+        .parse_next(input)
 }
 
-fn keyval<'i>(
-    check: RecursionCheck,
-) -> impl Parser<Input<'i>, (Vec<Key>, TableKeyValue), ContextError> {
-    move |input: &mut Input<'i>| {
-        (
-            key,
-            cut_err((
-                one_of(KEYVAL_SEP)
-                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
-                    .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
-                (ws.span(), value(check), ws.span()),
-            )),
-        )
-            .map(|(key, (_, v))| {
-                let mut path = key;
-                let key = path.pop().expect("grammar ensures at least 1");
+fn keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, TableKeyValue)> {
+    (
+        key,
+        cut_err((
+            one_of(KEYVAL_SEP)
+                .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
+            (ws.span(), value, ws.span()),
+        )),
+    )
+        .map(|(key, (_, v))| {
+            let mut path = key;
+            let key = path.pop().expect("grammar ensures at least 1");
 
-                let (pre, v, suf) = v;
-                let pre = RawString::with_span(pre);
-                let suf = RawString::with_span(suf);
-                let v = v.decorated(pre, suf);
-                (
-                    path,
-                    TableKeyValue {
-                        key,
-                        value: Item::Value(v),
-                    },
-                )
-            })
-            .parse_next(input)
-    }
+            let (pre, v, suf) = v;
+            let pre = RawString::with_span(pre);
+            let suf = RawString::with_span(suf);
+            let v = v.decorated(pre, suf);
+            (
+                path,
+                TableKeyValue {
+                    key,
+                    value: Item::Value(v),
+                },
+            )
+        })
+        .parse_next(input)
 }
 
 #[cfg(test)]
@@ -181,7 +173,7 @@ mod test {
         ];
         for input in inputs {
             dbg!(input);
-            let mut parsed = inline_table(Default::default()).parse(new_input(input));
+            let mut parsed = inline_table.parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }
@@ -194,7 +186,7 @@ mod test {
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
             dbg!(input);
-            let mut parsed = inline_table(Default::default()).parse(new_input(input));
+            let mut parsed = inline_table.parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }

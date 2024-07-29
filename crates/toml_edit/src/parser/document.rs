@@ -109,7 +109,7 @@ pub(crate) fn parse_keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, TableKey
                     .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
                 (
                     ws.span(),
-                    value(RecursionCheck::default()),
+                    value,
                     line_trailing
                         .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
                         .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),

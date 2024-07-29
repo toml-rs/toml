@@ -23,7 +23,7 @@ pub(crate) fn parse_document<S: AsRef<str>>(raw: S) -> Result<crate::ImDocument<
     let state = RefCell::new(state::ParseState::new());
     let state_ref = &state;
     document::document(state_ref)
-        .parse(b)
+        .parse(b.clone())
         .map_err(|e| TomlError::new(e, b))?;
     let doc = state
         .into_inner()
@@ -36,7 +36,7 @@ pub(crate) fn parse_key(raw: &str) -> Result<crate::Key, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let result = key::simple_key.parse(b);
+    let result = key::simple_key.parse(b.clone());
     match result {
         Ok((raw, key)) => {
             Ok(crate::Key::new(key).with_repr_unchecked(crate::Repr::new_unchecked(raw)))
@@ -49,7 +49,7 @@ pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let result = key::key.parse(b);
+    let result = key::key.parse(b.clone());
     match result {
         Ok(mut keys) => {
             for key in &mut keys {
@@ -65,7 +65,7 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
     use prelude::*;
 
     let b = new_input(raw);
-    let parsed = value::value(RecursionCheck::default()).parse(b);
+    let parsed = value::value.parse(b.clone());
     match parsed {
         Ok(mut value) => {
             // Only take the repr and not decor, as its probably not intended
@@ -86,13 +86,16 @@ pub(crate) mod prelude {
     pub(crate) use winnow::PResult;
     pub(crate) use winnow::Parser;
 
-    pub(crate) type Input<'b> = winnow::Located<&'b winnow::BStr>;
+    pub(crate) type Input<'b> = winnow::Stateful<winnow::Located<&'b winnow::BStr>, RecursionCheck>;
 
     pub(crate) fn new_input(s: &str) -> Input<'_> {
-        winnow::Located::new(winnow::BStr::new(s))
+        winnow::Stateful {
+            input: winnow::Located::new(winnow::BStr::new(s)),
+            state: Default::default(),
+        }
     }
 
-    #[derive(Copy, Clone, Debug, Default)]
+    #[derive(Clone, Debug, Default, PartialEq, Eq)]
     pub(crate) struct RecursionCheck {
         #[cfg(not(feature = "unbounded"))]
         current: usize,
@@ -111,24 +114,40 @@ pub(crate) mod prelude {
             Ok(())
         }
 
-        #[allow(unused_mut)]
-        pub(crate) fn recursing(
-            mut self,
-            _input: &mut Input<'_>,
-        ) -> Result<Self, winnow::error::ErrMode<ContextError>> {
+        fn enter(&mut self) -> Result<(), super::error::CustomError> {
             #[cfg(not(feature = "unbounded"))]
             {
                 self.current += 1;
                 if LIMIT <= self.current {
-                    return Err(winnow::error::ErrMode::from_external_error(
-                        _input,
-                        winnow::error::ErrorKind::Eof,
-                        super::error::CustomError::RecursionLimitExceeded,
-                    )
-                    .cut());
+                    return Err(super::error::CustomError::RecursionLimitExceeded);
                 }
             }
-            Ok(self)
+            Ok(())
+        }
+
+        fn exit(&mut self) {
+            #[cfg(not(feature = "unbounded"))]
+            {
+                self.current -= 1;
+            }
+        }
+    }
+
+    pub(crate) fn check_recursion<'b, O>(
+        mut parser: impl Parser<Input<'b>, O, ContextError>,
+    ) -> impl Parser<Input<'b>, O, ContextError> {
+        move |input: &mut Input<'b>| {
+            input.state.enter().map_err(|err| {
+                winnow::error::ErrMode::from_external_error(
+                    input,
+                    winnow::error::ErrorKind::Eof,
+                    err,
+                )
+                .cut()
+            })?;
+            let result = parser.parse_next(input);
+            input.state.exit();
+            result
         }
     }
 }
