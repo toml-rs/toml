@@ -14,17 +14,16 @@ use crate::RawString;
 use crate::Value;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
-pub(crate) fn value<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Value, ContextError> {
-    move |input: &mut Input<'i>| {
-        dispatch!{peek(any);
+pub(crate) fn value(input: &mut Input<'_>) -> PResult<Value> {
+    dispatch! {peek(any);
             crate::parser::strings::QUOTATION_MARK |
             crate::parser::strings::APOSTROPHE => string.map(|s| {
                 Value::String(Formatted::new(
                     s.into_owned()
                 ))
             }),
-            crate::parser::array::ARRAY_OPEN => array(check).map(Value::Array),
-            crate::parser::inline_table::INLINE_TABLE_OPEN => inline_table(check).map(Value::InlineTable),
+            crate::parser::array::ARRAY_OPEN => check_recursion(array).map(Value::Array),
+            crate::parser::inline_table::INLINE_TABLE_OPEN => check_recursion(inline_table).map(Value::InlineTable),
             // Date/number starts
             b'+' | b'-' | b'0'..=b'9' => {
                 // Uncommon enough not to be worth optimizing at this time
@@ -80,10 +79,9 @@ pub(crate) fn value<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Value, 
                     .context(StrContext::Expected(StrContextValue::CharLiteral('\'')))
             },
     }
-        .with_span()
-        .map(|(value, span)| apply_raw(value, span))
-        .parse_next(input)
-    }
+    .with_span()
+    .map(|(value, span)| apply_raw(value, span))
+    .parse_next(input)
 }
 
 fn apply_raw(mut val: Value, span: std::ops::Range<usize>) -> Value {
@@ -146,7 +144,7 @@ trimmed in raw strings.
         ];
         for input in inputs {
             dbg!(input);
-            let mut parsed = value(Default::default()).parse(new_input(input));
+            let mut parsed = value.parse(new_input(input));
             if let Ok(parsed) = &mut parsed {
                 parsed.despan(input);
             }
