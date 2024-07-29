@@ -40,21 +40,16 @@ const ARRAY_SEP: u8 = b',';
 // array-values = [ ( array-value array-sep array-values ) /
 //                  array-value / ws-comment-newline ]
 pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
-    (
-        opt(
-            (separated(1.., array_value, ARRAY_SEP), opt(ARRAY_SEP)).map(
-                |(v, trailing): (Vec<Item>, Option<u8>)| (Array::with_vec(v), trailing.is_some()),
-            ),
-        ),
-        ws_comment_newline.span(),
-    )
-        .try_map::<_, _, std::str::Utf8Error>(|(array, trailing)| {
-            let (mut array, comma) = array.unwrap_or_default();
-            array.set_trailing_comma(comma);
-            array.set_trailing(RawString::with_span(trailing));
-            Ok(array)
-        })
-        .parse_next(input)
+    let array = opt((separated(1.., array_value, ARRAY_SEP), opt(ARRAY_SEP))
+        .map(|(v, trailing): (Vec<Item>, Option<u8>)| (Array::with_vec(v), trailing.is_some())))
+    .parse_next(input)?;
+
+    let trailing = ws_comment_newline.span().parse_next(input)?;
+
+    let (mut array, comma) = array.unwrap_or_default();
+    array.set_trailing_comma(comma);
+    array.set_trailing(RawString::with_span(trailing));
+    Ok(array)
 }
 
 pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Item> {
