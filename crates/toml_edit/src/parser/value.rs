@@ -81,12 +81,12 @@ pub(crate) fn value<'i>(check: RecursionCheck) -> impl Parser<Input<'i>, Value, 
             },
     }
         .with_span()
-        .try_map(|(value, span)| apply_raw(value, span))
+        .map(|(value, span)| apply_raw(value, span))
         .parse_next(input)
     }
 }
 
-fn apply_raw(mut val: Value, span: std::ops::Range<usize>) -> Result<Value, std::str::Utf8Error> {
+fn apply_raw(mut val: Value, span: std::ops::Range<usize>) -> Value {
     match val {
         Value::String(ref mut f) => {
             let raw = RawString::with_span(span);
@@ -116,7 +116,7 @@ fn apply_raw(mut val: Value, span: std::ops::Range<usize>) -> Result<Value, std:
         }
     };
     val.decorate("", "");
-    Ok(val)
+    val
 }
 
 #[cfg(test)]
