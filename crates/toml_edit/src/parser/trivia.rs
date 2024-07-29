@@ -5,6 +5,7 @@ use winnow::combinator::empty;
 use winnow::combinator::eof;
 use winnow::combinator::fail;
 use winnow::combinator::opt;
+use winnow::combinator::peek;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::prelude::*;
@@ -90,12 +91,15 @@ pub(crate) fn ws_newlines(input: &mut Input<'_>) -> PResult<()> {
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
 pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> PResult<()> {
-    (
-        repeat(0.., (take_while(0.., WSCHAR), opt(comment), newline)).map(|()| ()),
-        take_while(0.., WSCHAR),
-    )
-        .void()
-        .parse_next(input)
+    let _ = ws.parse_next(input)?;
+
+    dispatch! {opt(peek(any));
+        Some(b'#') => (comment, newline, ws_comment_newline).void(),
+        Some(b'\n') => (newline, ws_comment_newline).void(),
+        Some(b'\r') => (newline, ws_comment_newline).void(),
+        _ => empty,
+    }
+    .parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
