@@ -321,7 +321,7 @@ fn ml_literal_body<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
         .map(|()| ()),
         opt(mll_quotes(ML_LITERAL_STRING_DELIM.void())),
     )
-        .recognize()
+        .take()
         .try_map(std::str::from_utf8)
         .parse_next(input)
 }

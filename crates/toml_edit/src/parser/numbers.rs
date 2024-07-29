@@ -78,7 +78,7 @@ pub(crate) fn dec_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 digit.void(),
             )),
         )
-            .recognize()
+            .take()
             .map(|b: &[u8]| unsafe {
                 from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII")
             })
@@ -112,7 +112,7 @@ pub(crate) fn hex_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 )
                 .map(|()| ()),
             ))
-            .recognize(),
+            .take(),
         )
         .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
         .context(StrContext::Label("hexadecimal integer")),
@@ -145,7 +145,7 @@ pub(crate) fn oct_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 )
                 .map(|()| ()),
             ))
-            .recognize(),
+            .take(),
         )
         .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
         .context(StrContext::Label("octal integer")),
@@ -179,7 +179,7 @@ pub(crate) fn bin_int<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
                 )
                 .map(|()| ()),
             ))
-            .recognize(),
+            .take(),
         )
         .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
         .context(StrContext::Label("binary integer")),
@@ -214,7 +214,7 @@ pub(crate) fn float_<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
         dec_int,
         alt((exp.void(), (frac.void(), opt(exp.void())).void())),
     )
-        .recognize()
+        .take()
         .map(|b: &[u8]| unsafe {
             from_utf8_unchecked(
                 b,
@@ -232,7 +232,7 @@ pub(crate) fn frac<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
         cut_err(zero_prefixable_int)
             .context(StrContext::Expected(StrContextValue::Description("digit"))),
     )
-        .recognize()
+        .take()
         .map(|b: &[u8]| unsafe {
             from_utf8_unchecked(
                 b,
@@ -260,7 +260,7 @@ pub(crate) fn zero_prefixable_int<'i>(input: &mut Input<'i>) -> PResult<&'i str>
         )
         .map(|()| ()),
     )
-        .recognize()
+        .take()
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") })
         .parse_next(input)
 }
@@ -273,7 +273,7 @@ pub(crate) fn exp<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
         opt(one_of([b'+', b'-'])),
         cut_err(zero_prefixable_int),
     )
-        .recognize()
+        .take()
         .map(|b: &[u8]| unsafe {
             from_utf8_unchecked(
                 b,
