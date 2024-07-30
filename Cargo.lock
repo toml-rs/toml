@@ -765,7 +765,7 @@ dependencies = [
  "serde",
  "serde-untagged",
  "serde_derive",
- "toml 0.8.16",
+ "toml 0.8.17",
 ]
 
 [[package]]
@@ -884,7 +884,7 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.16"
+version = "0.8.17"
 dependencies = [
  "indexmap",
  "serde",
@@ -939,7 +939,7 @@ dependencies = [
  "serde",
  "serde_json",
  "toml 0.5.11",
- "toml 0.8.16",
+ "toml 0.8.17",
  "toml_edit",
 ]
 
