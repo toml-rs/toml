@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- impl Serialize/Deserialize for Date/Time
+
 ## [0.6.7] - 2024-07-25
 
 ## [0.6.6] - 2024-05-15
