@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Speed up whitespace parsing
+- Speed up empty array parsing
+- Speed up general array parsing
+- Speed up general value parsing
+
+### Features
+
+- impl Serialize/Deserialize for Date/Time
+
+### Fixes
+
+- When recursion depth is reached, be sure to show that error rather than something else
+
 ## [0.8.16] - 2024-07-25
 
 ## [0.8.15] - 2024-07-17
