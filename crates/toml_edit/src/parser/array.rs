@@ -1,6 +1,7 @@
 use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
+use winnow::combinator::peek;
 use winnow::combinator::separated;
 use winnow::combinator::trace;
 
@@ -39,6 +40,11 @@ const ARRAY_SEP: u8 = b',';
 // array-values =  ws-comment-newline val ws-comment-newline array-sep array-values
 // array-values =/ ws-comment-newline val ws-comment-newline [ array-sep ]
 pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
+    if peek(opt(ARRAY_CLOSE)).parse_next(input)?.is_some() {
+        // Optimize for empty arrays, avoiding `value` from being expected to fail
+        return Ok(Array::new());
+    }
+
     let array = separated(0.., array_value, ARRAY_SEP).parse_next(input)?;
     let mut array = Array::with_vec(array);
     if !array.is_empty() {
