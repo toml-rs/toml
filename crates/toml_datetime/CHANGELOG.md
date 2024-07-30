@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.8] - 2024-07-30
+
 ### Features
 
 - impl Serialize/Deserialize for Date/Time
@@ -54,7 +56,8 @@ MSRV is now 1.64.0
 ## [0.5.0] - 2022-10-21
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.8...HEAD
+[0.6.8]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.7...toml_datetime-v0.6.8
 [0.6.7]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.6...toml_datetime-v0.6.7
 [0.6.6]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.5...toml_datetime-v0.6.6
 [0.6.5]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.4...toml_datetime-v0.6.5
