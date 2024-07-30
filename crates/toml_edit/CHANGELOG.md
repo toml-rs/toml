@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Speed up whitespace parsing
+- Speed up empty array parsing
+- Speed up general array parsing
+- Speed up general value parsing
+
+### Fixes
+
+- When recursion depth is reached, be sure to show that error rather than something else
+
 ## [0.22.17] - 2024-07-25
 
 ## [0.22.16] - 2024-07-17
