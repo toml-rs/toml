@@ -1271,6 +1271,114 @@ fn datetime_offset_issue_496() {
 }
 
 #[test]
+fn serialize_date() {
+    use toml::value::Date;
+
+    #[derive(Serialize)]
+    struct Document {
+        date: Date,
+    }
+
+    let input = Document {
+        date: Date {
+            year: 2024,
+            month: 1,
+            day: 1,
+        },
+    };
+    let raw = toml::to_string(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+date = 2024-01-01
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn serialize_time() {
+    use toml::value::Time;
+
+    #[derive(Serialize)]
+    struct Document {
+        date: Time,
+    }
+
+    let input = Document {
+        date: Time {
+            hour: 5,
+            minute: 0,
+            second: 0,
+            nanosecond: 0,
+        },
+    };
+    let raw = toml::to_string(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+date = 05:00:00
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn deserialize_date() {
+    use toml::value::Date;
+
+    #[derive(Debug, Deserialize)]
+    struct Document {
+        date: Date,
+    }
+
+    let document: Document = toml::from_str("date = 2024-01-01").unwrap();
+    assert_eq!(
+        document.date,
+        Date {
+            year: 2024,
+            month: 1,
+            day: 1
+        }
+    );
+
+    let err = toml::from_str::<Document>("date = 2024-01-01T05:00:00").unwrap_err();
+    assert_data_eq!(
+        err.message(),
+        str!["invalid type: local datetime, expected local date"]
+    );
+}
+
+#[test]
+fn deserialize_time() {
+    use toml::value::Time;
+
+    #[derive(Debug, Deserialize)]
+    struct Document {
+        time: Time,
+    }
+
+    let document: Document = toml::from_str("time = 05:00:00").unwrap();
+    assert_eq!(
+        document.time,
+        Time {
+            hour: 5,
+            minute: 0,
+            second: 0,
+            nanosecond: 0,
+        }
+    );
+
+    let err = toml::from_str::<Document>("time = 2024-01-01T05:00:00").unwrap_err();
+    assert_data_eq!(
+        err.message(),
+        str!["invalid type: local datetime, expected local time"]
+    );
+}
+
+#[test]
 fn serialize_array_with_none_value() {
     #[derive(Serialize)]
     struct Document {

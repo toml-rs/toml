@@ -184,6 +184,37 @@ pub enum Offset {
     },
 }
 
+impl Datetime {
+    #[cfg(feature = "serde")]
+    fn type_name(&self) -> &'static str {
+        match (
+            self.date.is_some(),
+            self.time.is_some(),
+            self.offset.is_some(),
+        ) {
+            (true, true, true) => "offset datetime",
+            (true, true, false) => "local datetime",
+            (true, false, false) => Date::type_name(),
+            (false, true, false) => Time::type_name(),
+            _ => unreachable!("unsupported datetime combination"),
+        }
+    }
+}
+
+impl Date {
+    #[cfg(feature = "serde")]
+    fn type_name() -> &'static str {
+        "local date"
+    }
+}
+
+impl Time {
+    #[cfg(feature = "serde")]
+    fn type_name() -> &'static str {
+        "local time"
+    }
+}
+
 impl From<Date> for Datetime {
     fn from(other: Date) -> Self {
         Datetime {
@@ -481,6 +512,26 @@ impl ser::Serialize for Datetime {
 }
 
 #[cfg(feature = "serde")]
+impl ser::Serialize for Date {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        Datetime::from(*self).serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl ser::Serialize for Time {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        Datetime::from(*self).serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
 impl<'de> de::Deserialize<'de> for Datetime {
     fn deserialize<D>(deserializer: D) -> Result<Datetime, D::Error>
     where
@@ -510,6 +561,46 @@ impl<'de> de::Deserialize<'de> for Datetime {
 
         static FIELDS: [&str; 1] = [FIELD];
         deserializer.deserialize_struct(NAME, &FIELDS, DatetimeVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> de::Deserialize<'de> for Date {
+    fn deserialize<D>(deserializer: D) -> Result<Date, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        match Datetime::deserialize(deserializer)? {
+            Datetime {
+                date: Some(date),
+                time: None,
+                offset: None,
+            } => Ok(date),
+            datetime => Err(de::Error::invalid_type(
+                de::Unexpected::Other(datetime.type_name()),
+                &Self::type_name(),
+            )),
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> de::Deserialize<'de> for Time {
+    fn deserialize<D>(deserializer: D) -> Result<Time, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        match Datetime::deserialize(deserializer)? {
+            Datetime {
+                date: None,
+                time: Some(time),
+                offset: None,
+            } => Ok(time),
+            datetime => Err(de::Error::invalid_type(
+                de::Unexpected::Other(datetime.type_name()),
+                &Self::type_name(),
+            )),
+        }
     }
 }
 
