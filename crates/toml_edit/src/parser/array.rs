@@ -1,12 +1,13 @@
 use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
+use winnow::combinator::peek;
 use winnow::combinator::separated;
 use winnow::combinator::trace;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
-use crate::{Array, Item, RawString, Value};
+use crate::{Array, Item, RawString};
 
 use crate::parser::prelude::*;
 
@@ -36,36 +37,33 @@ const ARRAY_CLOSE: u8 = b']';
 // array-sep = ws %x2C ws  ; , Comma
 const ARRAY_SEP: u8 = b',';
 
-// note: this rule is modified
-// array-values = [ ( array-value array-sep array-values ) /
-//                  array-value / ws-comment-newline ]
+// array-values =  ws-comment-newline val ws-comment-newline array-sep array-values
+// array-values =/ ws-comment-newline val ws-comment-newline [ array-sep ]
 pub(crate) fn array_values(input: &mut Input<'_>) -> PResult<Array> {
-    (
-        opt(
-            (separated(1.., array_value, ARRAY_SEP), opt(ARRAY_SEP)).map(
-                |(v, trailing): (Vec<Value>, Option<u8>)| {
-                    (
-                        Array::with_vec(v.into_iter().map(Item::Value).collect()),
-                        trailing.is_some(),
-                    )
-                },
-            ),
-        ),
-        ws_comment_newline.span(),
-    )
-        .try_map::<_, _, std::str::Utf8Error>(|(array, trailing)| {
-            let (mut array, comma) = array.unwrap_or_default();
-            array.set_trailing_comma(comma);
-            array.set_trailing(RawString::with_span(trailing));
-            Ok(array)
-        })
-        .parse_next(input)
+    if peek(opt(ARRAY_CLOSE)).parse_next(input)?.is_some() {
+        // Optimize for empty arrays, avoiding `value` from being expected to fail
+        return Ok(Array::new());
+    }
+
+    let array = separated(0.., array_value, ARRAY_SEP).parse_next(input)?;
+    let mut array = Array::with_vec(array);
+    if !array.is_empty() {
+        let comma = opt(ARRAY_SEP).parse_next(input)?.is_some();
+        array.set_trailing_comma(comma);
+    }
+    let trailing = ws_comment_newline.span().parse_next(input)?;
+    array.set_trailing(RawString::with_span(trailing));
+
+    Ok(array)
 }
 
-pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Value> {
-    (ws_comment_newline.span(), value, ws_comment_newline.span())
-        .map(|(ws1, v, ws2)| v.decorated(RawString::with_span(ws1), RawString::with_span(ws2)))
-        .parse_next(input)
+pub(crate) fn array_value(input: &mut Input<'_>) -> PResult<Item> {
+    let prefix = ws_comment_newline.span().parse_next(input)?;
+    let value = value.parse_next(input)?;
+    let suffix = ws_comment_newline.span().parse_next(input)?;
+    let value = value.decorated(RawString::with_span(prefix), RawString::with_span(suffix));
+    let value = Item::Value(value);
+    Ok(value)
 }
 
 #[cfg(test)]
