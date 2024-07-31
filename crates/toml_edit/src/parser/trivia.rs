@@ -9,6 +9,7 @@ use winnow::combinator::peek;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::prelude::*;
+use winnow::stream::Stream as _;
 use winnow::token::any;
 use winnow::token::one_of;
 use winnow::token::take_while;
@@ -91,15 +92,26 @@ pub(crate) fn ws_newlines(input: &mut Input<'_>) -> PResult<()> {
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
 pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> PResult<()> {
-    let _ = ws.parse_next(input)?;
+    let mut start = input.checkpoint();
+    loop {
+        let _ = ws.parse_next(input)?;
 
-    dispatch! {opt(peek(any));
-        Some(b'#') => (comment, newline, ws_comment_newline).void(),
-        Some(b'\n') => (newline, ws_comment_newline).void(),
-        Some(b'\r') => (newline, ws_comment_newline).void(),
-        _ => empty,
+        dispatch! {opt(peek(any));
+            Some(b'#') => (comment, newline).void(),
+            Some(b'\n') => (newline).void(),
+            Some(b'\r') => (newline).void(),
+            _ => empty,
+        }
+        .parse_next(input)?;
+
+        let end = input.checkpoint();
+        if start == end {
+            break;
+        }
+        start = end;
     }
-    .parse_next(input)
+
+    Ok(())
 }
 
 // note: this rule is not present in the original grammar
