@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Fix regression in 0.22.19
+
 ## [0.8.18] - 2024-07-31
 
 ### Fixes
