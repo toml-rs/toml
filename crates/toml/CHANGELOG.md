@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.19] - 2024-07-31
+
 ### Performance
 
 - Fix regression in 0.22.19
@@ -281,7 +283,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.18...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.19...HEAD
+[0.8.19]: https://github.com/toml-rs/toml/compare/toml-v0.8.18...toml-v0.8.19
 [0.8.18]: https://github.com/toml-rs/toml/compare/toml-v0.8.17...toml-v0.8.18
 [0.8.17]: https://github.com/toml-rs/toml/compare/toml-v0.8.16...toml-v0.8.17
 [0.8.16]: https://github.com/toml-rs/toml/compare/toml-v0.8.15...toml-v0.8.16
