@@ -1,8 +1,7 @@
 use crate::key::Key;
 use crate::parser::error::CustomError;
 use crate::repr::Decor;
-use crate::table::TableKeyValue;
-use crate::{ArrayOfTables, ImDocument, InternalString, Item, RawString, Table};
+use crate::{ArrayOfTables, ImDocument, Item, RawString, Table};
 
 pub(crate) struct ParseState {
     root: Table,
@@ -56,24 +55,23 @@ impl ParseState {
     pub(crate) fn on_keyval(
         &mut self,
         path: Vec<Key>,
-        mut kv: TableKeyValue,
+        (mut key, value): (Key, Item),
     ) -> Result<(), CustomError> {
         {
             let mut prefix = self.trailing.take();
             let prefix = match (
                 prefix.take(),
-                kv.key.leaf_decor.prefix().and_then(|d| d.span()),
+                key.leaf_decor.prefix().and_then(|d| d.span()),
             ) {
                 (Some(p), Some(k)) => Some(p.start..k.end),
                 (Some(p), None) | (None, Some(p)) => Some(p),
                 (None, None) => None,
             };
-            kv.key
-                .leaf_decor
+            key.leaf_decor
                 .set_prefix(prefix.map(RawString::with_span).unwrap_or_default());
         }
 
-        if let (Some(existing), Some(value)) = (self.current_table.span(), kv.value.span()) {
+        if let (Some(existing), Some(value)) = (self.current_table.span(), value.span()) {
             self.current_table.span = Some((existing.start)..(value.end));
         }
         let table = &mut self.current_table;
@@ -83,20 +81,19 @@ impl ParseState {
         let mixed_table_types = table.is_dotted() == path.is_empty();
         if mixed_table_types {
             return Err(CustomError::DuplicateKey {
-                key: kv.key.get().into(),
+                key: key.get().into(),
                 table: None,
             });
         }
 
-        let key: InternalString = kv.key.get_internal().into();
         match table.items.entry(key) {
             indexmap::map::Entry::Vacant(o) => {
-                o.insert(kv);
+                o.insert(value);
             }
             indexmap::map::Entry::Occupied(o) => {
                 // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"
                 return Err(CustomError::DuplicateKey {
-                    key: o.key().as_str().into(),
+                    key: o.key().get().into(),
                     table: Some(self.current_table_path.clone()),
                 });
             }

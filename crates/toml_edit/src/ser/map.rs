@@ -131,7 +131,7 @@ impl serde::ser::SerializeStruct for SerializeDatetime {
 #[doc(hidden)]
 pub struct SerializeInlineTable {
     items: crate::table::KeyValuePairs,
-    key: Option<crate::InternalString>,
+    key: Option<crate::Key>,
 }
 
 impl SerializeInlineTable {
@@ -170,11 +170,8 @@ impl serde::ser::SerializeMap for SerializeInlineTable {
         match res {
             Ok(item) => {
                 let key = self.key.take().unwrap();
-                let kv = crate::table::TableKeyValue::new(
-                    crate::Key::new(&key),
-                    crate::Item::Value(item),
-                );
-                self.items.insert(key, kv);
+                let item = crate::Item::Value(item);
+                self.items.insert(key, item);
             }
             Err(e) => {
                 if !(e == Error::UnsupportedNone && value_serializer.is_none) {
@@ -202,11 +199,8 @@ impl serde::ser::SerializeStruct for SerializeInlineTable {
         let res = value.serialize(&mut value_serializer);
         match res {
             Ok(item) => {
-                let kv = crate::table::TableKeyValue::new(
-                    crate::Key::new(key),
-                    crate::Item::Value(item),
-                );
-                self.items.insert(crate::InternalString::from(key), kv);
+                let item = crate::Item::Value(item);
+                self.items.insert(crate::Key::new(key), item);
             }
             Err(e) => {
                 if !(e == Error::UnsupportedNone && value_serializer.is_none) {
@@ -613,11 +607,8 @@ impl serde::ser::SerializeTupleVariant for SerializeVariant<SerializeValueArray>
     fn end(self) -> Result<Self::Ok, Self::Error> {
         let inner = serde::ser::SerializeSeq::end(self.inner)?;
         let mut items = crate::table::KeyValuePairs::new();
-        let kv = crate::table::TableKeyValue::new(
-            crate::Key::new(self.variant),
-            crate::Item::Value(inner),
-        );
-        items.insert(crate::InternalString::from(self.variant), kv);
+        let value = crate::Item::Value(inner);
+        items.insert(crate::Key::new(self.variant), value);
         Ok(crate::Value::InlineTable(crate::InlineTable::with_pairs(
             items,
         )))
@@ -640,11 +631,8 @@ impl serde::ser::SerializeStructVariant for SerializeVariant<SerializeMap> {
     fn end(self) -> Result<Self::Ok, Self::Error> {
         let inner = serde::ser::SerializeStruct::end(self.inner)?;
         let mut items = crate::table::KeyValuePairs::new();
-        let kv = crate::table::TableKeyValue::new(
-            crate::Key::new(self.variant),
-            crate::Item::Value(inner),
-        );
-        items.insert(crate::InternalString::from(self.variant), kv);
+        let value = crate::Item::Value(inner);
+        items.insert(crate::Key::new(self.variant), value);
         Ok(crate::Value::InlineTable(crate::InlineTable::with_pairs(
             items,
         )))

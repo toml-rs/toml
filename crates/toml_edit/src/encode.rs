@@ -237,17 +237,17 @@ where
         callback(table, path, is_array_of_tables)?;
     }
 
-    for kv in table.items.values() {
-        match kv.value {
+    for (key, value) in table.items.iter() {
+        match value {
             Item::Table(ref t) => {
-                let key = kv.key.clone();
+                let key = key.clone();
                 path.push(key);
                 visit_nested_tables(t, path, false, callback)?;
                 path.pop();
             }
             Item::ArrayOfTables(ref a) => {
                 for t in a.iter() {
-                    let key = kv.key.clone();
+                    let key = key.clone();
                     path.push(key);
                     visit_nested_tables(t, path, true, callback)?;
                     path.pop();

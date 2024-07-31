@@ -4,11 +4,11 @@ use super::Error;
 
 pub(crate) struct KeyDeserializer {
     span: Option<std::ops::Range<usize>>,
-    key: crate::InternalString,
+    key: crate::Key,
 }
 
 impl KeyDeserializer {
-    pub(crate) fn new(key: crate::InternalString, span: Option<std::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(key: crate::Key, span: Option<std::ops::Range<usize>>) -> Self {
         KeyDeserializer { span, key }
     }
 }
@@ -56,7 +56,7 @@ impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
     {
         if serde_spanned::__unstable::is_spanned(name, fields) {
             if let Some(span) = self.span.clone() {
-                return visitor.visit_map(super::SpannedDeserializer::new(self.key.as_str(), span));
+                return visitor.visit_map(super::SpannedDeserializer::new(self.key.get(), span));
             }
         }
         self.deserialize_any(visitor)

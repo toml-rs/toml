@@ -1,9 +1,8 @@
 use std::ops;
 
 use crate::key::Key;
-use crate::table::TableKeyValue;
 use crate::DocumentMut;
-use crate::{value, InlineTable, InternalString, Item, Table, Value};
+use crate::{value, InlineTable, Item, Table, Value};
 
 // copied from
 // https://github.com/serde-rs/json/blob/master/src/value/index.rs
@@ -39,34 +38,21 @@ impl Index for str {
             Item::Value(ref v) => v
                 .as_inline_table()
                 .and_then(|t| t.items.get(self))
-                .and_then(|kv| {
-                    if !kv.value.is_none() {
-                        Some(&kv.value)
-                    } else {
-                        None
-                    }
-                }),
+                .and_then(|value| if !value.is_none() { Some(value) } else { None }),
             _ => None,
         }
     }
     fn index_mut<'v>(&self, v: &'v mut Item) -> Option<&'v mut Item> {
         if let Item::None = *v {
             let mut t = InlineTable::default();
-            t.items.insert(
-                InternalString::from(self),
-                TableKeyValue::new(Key::new(self), Item::None),
-            );
+            t.items.insert(Key::new(self), Item::None);
             *v = value(Value::InlineTable(t));
         }
         match *v {
             Item::Table(ref mut t) => Some(t.entry(self).or_insert(Item::None)),
-            Item::Value(ref mut v) => v.as_inline_table_mut().map(|t| {
-                &mut t
-                    .items
-                    .entry(InternalString::from(self))
-                    .or_insert_with(|| TableKeyValue::new(Key::new(self), Item::None))
-                    .value
-            }),
+            Item::Value(ref mut v) => v
+                .as_inline_table_mut()
+                .map(|t| t.items.entry(Key::new(self)).or_insert_with(|| Item::None)),
             _ => None,
         }
     }

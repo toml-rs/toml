@@ -292,10 +292,10 @@ pub(crate) fn validate_struct_keys(
     fields: &'static [&'static str],
 ) -> Result<(), Error> {
     let extra_fields = table
-        .iter()
-        .filter_map(|(key, val)| {
-            if !fields.contains(&key.as_str()) {
-                Some(val.clone())
+        .keys()
+        .filter_map(|key| {
+            if !fields.contains(&key.get()) {
+                Some(key.clone())
             } else {
                 None
             }
@@ -310,12 +310,12 @@ pub(crate) fn validate_struct_keys(
                 "unexpected keys in table: {}, available keys: {}",
                 extra_fields
                     .iter()
-                    .map(|k| k.key.get())
+                    .map(|k| k.get())
                     .collect::<Vec<_>>()
                     .join(", "),
                 fields.join(", "),
             ),
-            extra_fields[0].key.span(),
+            extra_fields[0].span(),
         ))
     }
 }

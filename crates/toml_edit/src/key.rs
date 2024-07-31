@@ -86,10 +86,6 @@ impl Key {
         &self.key
     }
 
-    pub(crate) fn get_internal(&self) -> &InternalString {
-        &self.key
-    }
-
     /// Returns key raw representation, if available.
     pub fn as_repr(&self) -> Option<&Repr> {
         self.repr.as_ref()
@@ -202,6 +198,13 @@ impl std::ops::Deref for Key {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
+        self.get()
+    }
+}
+
+impl std::borrow::Borrow<str> for Key {
+    #[inline]
+    fn borrow(&self) -> &str {
         self.get()
     }
 }

@@ -17,7 +17,6 @@ use crate::parser::state::ParseState;
 use crate::parser::table::table;
 use crate::parser::trivia::{comment, line_ending, line_trailing, newline, ws};
 use crate::parser::value::value;
-use crate::table::TableKeyValue;
 use crate::Item;
 use crate::RawString;
 
@@ -98,7 +97,7 @@ pub(crate) fn keyval<'s, 'i>(
 }
 
 // keyval = key keyval-sep val
-pub(crate) fn parse_keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, TableKeyValue)> {
+pub(crate) fn parse_keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, (Key, Item))> {
     trace(
         "keyval",
         (
@@ -124,13 +123,7 @@ pub(crate) fn parse_keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, TableKey
                 let pre = RawString::with_span(pre);
                 let suf = RawString::with_span(suf);
                 let v = v.decorated(pre, suf);
-                Ok((
-                    path,
-                    TableKeyValue {
-                        key,
-                        value: Item::Value(v),
-                    },
-                ))
+                Ok((path, (key, Item::Value(v))))
             }),
     )
     .parse_next(input)

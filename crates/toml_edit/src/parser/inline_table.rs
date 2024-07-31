@@ -10,8 +10,7 @@ use crate::parser::key::key;
 use crate::parser::prelude::*;
 use crate::parser::trivia::ws;
 use crate::parser::value::value;
-use crate::table::TableKeyValue;
-use crate::{InlineTable, InternalString, Item, RawString, Value};
+use crate::{InlineTable, Item, RawString, Value};
 
 use indexmap::map::Entry;
 
@@ -33,7 +32,7 @@ pub(crate) fn inline_table<'i>(input: &mut Input<'i>) -> PResult<InlineTable> {
 }
 
 fn table_from_pairs(
-    v: Vec<(Vec<Key>, TableKeyValue)>,
+    v: Vec<(Vec<Key>, (Key, Item))>,
     preamble: RawString,
 ) -> Result<InlineTable, CustomError> {
     let mut root = InlineTable::new();
@@ -41,26 +40,25 @@ fn table_from_pairs(
     // Assuming almost all pairs will be directly in `root`
     root.items.reserve(v.len());
 
-    for (path, kv) in v {
+    for (path, (key, value)) in v {
         let table = descend_path(&mut root, &path)?;
 
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
         let mixed_table_types = table.is_dotted() == path.is_empty();
         if mixed_table_types {
             return Err(CustomError::DuplicateKey {
-                key: kv.key.get().into(),
+                key: key.get().into(),
                 table: None,
             });
         }
 
-        let key: InternalString = kv.key.get_internal().into();
         match table.items.entry(key) {
             Entry::Vacant(o) => {
-                o.insert(kv);
+                o.insert(value);
             }
             Entry::Occupied(o) => {
                 return Err(CustomError::DuplicateKey {
-                    key: o.key().as_str().into(),
+                    key: o.key().get().into(),
                     table: None,
                 });
             }
@@ -119,7 +117,7 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 fn inline_table_keyvals(
     input: &mut Input<'_>,
-) -> PResult<(Vec<(Vec<Key>, TableKeyValue)>, RawString)> {
+) -> PResult<(Vec<(Vec<Key>, (Key, Item))>, RawString)> {
     (
         separated(0.., keyval, INLINE_TABLE_SEP),
         ws.span().map(RawString::with_span),
@@ -127,7 +125,7 @@ fn inline_table_keyvals(
         .parse_next(input)
 }
 
-fn keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, TableKeyValue)> {
+fn keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, (Key, Item))> {
     (
         key,
         cut_err((
@@ -145,13 +143,7 @@ fn keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, TableKeyValue)> {
             let pre = RawString::with_span(pre);
             let suf = RawString::with_span(suf);
             let v = v.decorated(pre, suf);
-            (
-                path,
-                TableKeyValue {
-                    key,
-                    value: Item::Value(v),
-                },
-            )
+            (path, (key, Item::Value(v)))
         })
         .parse_next(input)
 }
