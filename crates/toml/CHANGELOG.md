@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.18] - 2024-07-31
+
 ### Fixes
 
 - Prevent a stack overflow when parsing very large files
@@ -275,7 +277,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.17...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.18...HEAD
+[0.8.18]: https://github.com/toml-rs/toml/compare/toml-v0.8.17...toml-v0.8.18
 [0.8.17]: https://github.com/toml-rs/toml/compare/toml-v0.8.16...toml-v0.8.17
 [0.8.16]: https://github.com/toml-rs/toml/compare/toml-v0.8.15...toml-v0.8.16
 [0.8.15]: https://github.com/toml-rs/toml/compare/toml-v0.8.14...toml-v0.8.15
