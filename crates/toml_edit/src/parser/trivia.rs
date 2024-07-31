@@ -96,13 +96,13 @@ pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> PResult<()> {
     loop {
         let _ = ws.parse_next(input)?;
 
-        dispatch! {opt(peek(any));
-            Some(b'#') => (comment, newline).void(),
-            Some(b'\n') => (newline).void(),
-            Some(b'\r') => (newline).void(),
-            _ => empty,
+        let next_token = opt(peek(any)).parse_next(input)?;
+        match next_token {
+            Some(b'#') => (comment, newline).void().parse_next(input)?,
+            Some(b'\n') => (newline).void().parse_next(input)?,
+            Some(b'\r') => (newline).void().parse_next(input)?,
+            _ => break,
         }
-        .parse_next(input)?;
 
         let end = input.checkpoint();
         if start == end {
