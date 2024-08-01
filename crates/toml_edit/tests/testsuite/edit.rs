@@ -1475,7 +1475,7 @@ fn table_under_inline() {
     assert_data_eq!(
         doc.to_string(),
         str![[r#"
-tool = {}
+tool = { typst-test.tests = "tests" }
 
 "#]]
     );

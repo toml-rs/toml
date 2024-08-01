@@ -99,6 +99,34 @@ impl Table {
         }
     }
 
+    pub(crate) fn append_all_values<'s>(
+        &'s self,
+        parent: &[&'s Key],
+        values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
+    ) {
+        for (key, value) in self.items.iter() {
+            let mut path = parent.to_vec();
+            path.push(key);
+            match value {
+                Item::Table(table) => {
+                    table.append_all_values(&path, values);
+                }
+                Item::Value(value) => {
+                    if let Some(table) = value.as_inline_table() {
+                        if table.is_dotted() {
+                            table.append_values(&path, values);
+                        } else {
+                            values.push((path, value));
+                        }
+                    } else {
+                        values.push((path, value));
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
     /// Auto formats the table.
     pub fn fmt(&mut self) {
         decorate_table(self);
