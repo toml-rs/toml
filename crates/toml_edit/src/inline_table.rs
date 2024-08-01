@@ -71,6 +71,9 @@ impl InlineTable {
                 Item::Value(value) => {
                     values.push((path, value));
                 }
+                Item::Table(table) => {
+                    table.append_all_values(&path, values);
+                }
                 _ => {}
             }
         }
