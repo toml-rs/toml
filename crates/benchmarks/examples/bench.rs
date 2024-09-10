@@ -2,6 +2,14 @@ fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
 
     match args.parser {
+        Parser::Tokens => {
+            let mut tokenizer = ::toml_parse::lexer::Tokenizer::new(args.data.content());
+            while let Ok(Some(_token)) = tokenizer.next() {
+                let _token = std::hint::black_box(_token);
+                #[cfg(debug_assertions)] // Don't interefere with profiling
+                println!("{_token:?}");
+            }
+        }
         Parser::Document => {
             let _doc = args
                 .data
@@ -47,6 +55,7 @@ impl Args {
                 Long("parser") => {
                     let value = args.value()?;
                     parser = match &value.to_str() {
+                        Some("tokens") => Parser::Tokens,
                         Some("document") => Parser::Document,
                         Some("de") => Parser::De,
                         Some("table") => Parser::Table,
@@ -80,6 +89,7 @@ impl Args {
 }
 
 enum Parser {
+    Tokens,
     Document,
     De,
     Table,

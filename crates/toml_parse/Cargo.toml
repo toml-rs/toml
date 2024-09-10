@@ -4,8 +4,6 @@ version = "0.1.0"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Yet another format-preserving TOML parser."
-authors = ["Andronik Ordian <write@reusable.software>", "Ed Page <eopage@gmail.com>"]
-autotests = false
 repository.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -28,3 +26,6 @@ pre-release-replacements = [
 
 [features]
 default = []
+
+[dev-dependencies]
+snapbox = "0.6.0"

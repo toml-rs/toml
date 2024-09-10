@@ -1,5 +1,17 @@
 #![allow(elided_lifetimes_in_paths)]
 
+mod toml_parse {
+    use toml_benchmarks::{Data, MANIFESTS};
+
+    #[divan::bench(args=MANIFESTS)]
+    fn tokens(sample: &Data<'static>) {
+        let mut tokenizer = ::toml_parse::lexer::Tokenizer::new(sample.content());
+        while let Ok(Some(token)) = tokenizer.next() {
+            std::hint::black_box(token);
+        }
+    }
+}
+
 mod toml_edit {
     use toml_benchmarks::{manifest, Data, MANIFESTS};
 
