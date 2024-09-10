@@ -12,10 +12,8 @@ mod toml_parse {
             .with_inputs(|| gen(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
-                let mut tokenizer = ::toml_parse::lexer::Tokenizer::new(&sample);
-                while let Ok(Some(token)) = tokenizer.next() {
-                    std::hint::black_box(token);
-                }
+                let source = ::toml_parse::Source::new(&sample);
+                source.lex().last()
             });
     }
 }

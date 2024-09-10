@@ -10,6 +10,7 @@ release = false
 
 [features]
 default = []
+simd = ["toml_parse/simd"]
 
 [dependencies]
 serde = { version = "1.0.197", features = ["derive"] }

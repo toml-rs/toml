@@ -1,543 +1,457 @@
-use std::borrow::Cow;
-use std::char;
-use std::str;
-use std::string;
-use std::string::String as StdString;
-
-use self::Token::*;
+//! Lex TOML tokens
 
 #[cfg(test)]
 mod test;
 mod token;
 
+use winnow::stream::AsBStr as _;
+use winnow::stream::ContainsToken as _;
+use winnow::stream::FindSlice as _;
+use winnow::stream::Location;
+use winnow::stream::Stream as _;
+
+use crate::Span;
+
 pub use token::Token;
+pub use token::TokenKind;
 
-/// A span, designating a range of bytes where a token is located.
-#[derive(Eq, PartialEq, Debug, Clone, Copy)]
-pub struct Span {
-    /// The start of the range.
-    pub start: usize,
-    /// The end of the range (exclusive).
-    pub end: usize,
+pub struct Lexer<'i> {
+    stream: Stream<'i>,
 }
 
-impl From<Span> for (usize, usize) {
-    fn from(Span { start, end }: Span) -> (usize, usize) {
-        (start, end)
+impl<'i> Lexer<'i> {
+    pub(crate) fn new(input: &'i str) -> Self {
+        Lexer {
+            stream: Stream::new(input),
+        }
     }
 }
 
-#[derive(Eq, PartialEq, Debug)]
-pub enum Error {
-    InvalidCharInString(usize, char),
-    InvalidEscape(usize, char),
-    InvalidHexEscape(usize, char),
-    InvalidEscapeValue(usize, u32),
-    NewlineInString(usize),
-    Unexpected(usize, char),
-    UnterminatedString(usize),
-    NewlineInTableKey(usize),
-    MultilineStringKey(usize),
-    Wanted {
-        at: usize,
-        expected: &'static str,
-        found: &'static str,
-    },
-}
+impl Iterator for Lexer<'_> {
+    type Item = Token;
 
-#[derive(Clone)]
-pub struct Tokenizer<'a> {
-    input: &'a str,
-    chars: CrlfFold<'a>,
-}
-
-#[derive(Clone)]
-struct CrlfFold<'a> {
-    chars: str::CharIndices<'a>,
-}
-
-#[derive(Debug)]
-enum MaybeString {
-    NotEscaped(usize),
-    Owned(string::String),
-}
-
-impl<'a> Tokenizer<'a> {
-    pub fn new(input: &'a str) -> Tokenizer<'a> {
-        let mut t = Tokenizer {
-            input,
-            chars: CrlfFold {
-                chars: input.char_indices(),
-            },
-        };
-        // Eat utf-8 BOM
-        t.eatc('\u{feff}');
-        t
-    }
-
-    pub fn next(&mut self) -> Result<Option<(Span, Token<'a>)>, Error> {
-        let (start, token) = match self.one() {
-            Some((start, '\n')) => (start, Newline),
-            Some((start, ' ')) => (start, self.whitespace_token(start)),
-            Some((start, '\t')) => (start, self.whitespace_token(start)),
-            Some((start, '#')) => (start, self.comment_token(start)),
-            Some((start, '=')) => (start, Equals),
-            Some((start, '.')) => (start, Period),
-            Some((start, ',')) => (start, Comma),
-            Some((start, ':')) => (start, Colon),
-            Some((start, '+')) => (start, Plus),
-            Some((start, '{')) => (start, LeftBrace),
-            Some((start, '}')) => (start, RightBrace),
-            Some((start, '[')) => (start, LeftBracket),
-            Some((start, ']')) => (start, RightBracket),
-            Some((start, '\'')) => {
-                return self
-                    .literal_string(start)
-                    .map(|t| Some((self.step_span(start), t)))
-            }
-            Some((start, '"')) => {
-                return self
-                    .basic_string(start)
-                    .map(|t| Some((self.step_span(start), t)))
-            }
-            Some((start, ch)) if is_keylike(ch) => (start, self.keylike(start)),
-
-            Some((start, ch)) => return Err(Error::Unexpected(start, ch)),
-            None => return Ok(None),
-        };
-
-        let span = self.step_span(start);
-        Ok(Some((span, token)))
-    }
-
-    pub fn peek(&mut self) -> Result<Option<(Span, Token<'a>)>, Error> {
-        self.clone().next()
-    }
-
-    pub fn eat(&mut self, expected: Token<'a>) -> Result<bool, Error> {
-        self.eat_spanned(expected).map(|s| s.is_some())
-    }
-
-    /// Eat a value, returning it's span if it was consumed.
-    pub fn eat_spanned(&mut self, expected: Token<'a>) -> Result<Option<Span>, Error> {
-        let span = match self.peek()? {
-            Some((span, ref found)) if expected == *found => span,
-            Some(_) => return Ok(None),
-            None => return Ok(None),
-        };
-
-        drop(self.next());
-        Ok(Some(span))
-    }
-
-    pub fn expect(&mut self, expected: Token<'a>) -> Result<(), Error> {
-        // ignore span
-        let _ = self.expect_spanned(expected)?;
-        Ok(())
-    }
-
-    /// Expect the given token returning its span.
-    pub fn expect_spanned(&mut self, expected: Token<'a>) -> Result<Span, Error> {
-        let current = self.current();
-        match self.next()? {
-            Some((span, found)) => {
-                if expected == found {
-                    Ok(span)
+    fn next(&mut self) -> Option<Self::Item> {
+        let token = self.stream.as_bstr().first()?;
+        let token = match token {
+            b'.' => lex_ascii_char(&mut self.stream, TokenKind::Dot),
+            b'=' => lex_ascii_char(&mut self.stream, TokenKind::Equals),
+            b',' => lex_ascii_char(&mut self.stream, TokenKind::Comma),
+            b'[' => lex_ascii_char(&mut self.stream, TokenKind::LeftSquareBracket),
+            b']' => lex_ascii_char(&mut self.stream, TokenKind::RightSquareBracket),
+            b'{' => lex_ascii_char(&mut self.stream, TokenKind::LeftCurlyBracket),
+            b'}' => lex_ascii_char(&mut self.stream, TokenKind::RightCurlyBracket),
+            b' ' => lex_whitespace(&mut self.stream),
+            b'\t' => lex_whitespace(&mut self.stream),
+            b'#' => lex_comment(&mut self.stream),
+            b'\r' => lex_crlf(&mut self.stream),
+            b'\n' => lex_ascii_char(&mut self.stream, TokenKind::Newline),
+            b'\'' => {
+                if self.stream.starts_with(ML_LITERAL_STRING_DELIM) {
+                    lex_ml_literal_string(&mut self.stream)
                 } else {
-                    Err(Error::Wanted {
-                        at: current,
-                        expected: expected.describe(),
-                        found: found.describe(),
-                    })
+                    lex_literal_string(&mut self.stream)
                 }
             }
-            None => Err(Error::Wanted {
-                at: self.input.len(),
-                expected: expected.describe(),
-                found: "eof",
-            }),
-        }
-    }
-
-    pub fn table_key(&mut self) -> Result<(Span, Cow<'a, str>), Error> {
-        let current = self.current();
-        match self.next()? {
-            Some((span, Token::Keylike(k))) => Ok((span, k.into())),
-            Some((
-                span,
-                Token::String {
-                    src,
-                    val,
-                    multiline,
-                },
-            )) => {
-                let offset = self.substr_offset(src);
-                if multiline {
-                    return Err(Error::MultilineStringKey(offset));
-                }
-                match src.find('\n') {
-                    None => Ok((span, val)),
-                    Some(i) => Err(Error::NewlineInTableKey(offset + i)),
+            b'"' => {
+                if self.stream.starts_with(ML_BASIC_STRING_DELIM) {
+                    lex_ml_basic_string(&mut self.stream)
+                } else {
+                    lex_basic_string(&mut self.stream)
                 }
             }
-            Some((_, other)) => Err(Error::Wanted {
-                at: current,
-                expected: "a table key",
-                found: other.describe(),
-            }),
-            None => Err(Error::Wanted {
-                at: self.input.len(),
-                expected: "a table key",
-                found: "eof",
-            }),
-        }
+            _ => lex_atom(&mut self.stream),
+        };
+        Some(token)
+    }
+}
+
+pub(crate) type Stream<'i> = winnow::stream::LocatingSlice<&'i str>;
+
+/// Process an ASCII character token
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream` must be non-empty
+/// - `stream[0]` must be ASCII
+fn lex_ascii_char(stream: &mut Stream<'_>, kind: TokenKind) -> Token {
+    debug_assert!(!stream.is_empty());
+    let start = stream.current_token_start();
+
+    let offset = 1; // an ascii character
+    stream.next_slice(offset);
+
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(kind, span)
+}
+
+/// Process Whitespace
+///
+/// ```bnf
+/// ;; Whitespace
+///
+/// ws = *wschar
+/// wschar =  %x20  ; Space
+/// wschar =/ %x09  ; Horizontal tab
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream` must be non-empty
+fn lex_whitespace(stream: &mut Stream<'_>) -> Token {
+    debug_assert!(!stream.is_empty());
+    let start = stream.current_token_start();
+
+    let offset = stream
+        .as_bstr()
+        .offset_for(|b| !WSCHAR.contains_token(b))
+        .unwrap_or(stream.eof_offset());
+    stream.next_slice(offset);
+
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::Whitespace, span)
+}
+
+/// ```bnf
+/// wschar =  %x20  ; Space
+/// wschar =/ %x09  ; Horizontal tab
+/// ```
+pub(crate) const WSCHAR: (u8, u8) = (b' ', b'\t');
+
+/// Process Comment
+///
+/// ```bnf
+/// ;; Comment
+///
+/// comment-start-symbol = %x23 ; #
+/// non-ascii = %x80-D7FF / %xE000-10FFFF
+/// non-eol = %x09 / %x20-7F / non-ascii
+///
+/// comment = comment-start-symbol *non-eol
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream[0] == b'#'`
+fn lex_comment(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
+
+    let offset = stream
+        .as_bytes()
+        .find_slice((b'\r', b'\n'))
+        .map(|s| s.start)
+        .unwrap_or_else(|| stream.eof_offset());
+    stream.next_slice(offset);
+
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::Comment, span)
+}
+
+/// `comment-start-symbol = %x23 ; #`
+pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
+
+/// Process Newline
+///
+/// ```bnf
+/// ;; Newline
+///
+/// newline =  %x0A     ; LF
+/// newline =/ %x0D.0A  ; CRLF
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream[0] == b'\r'`
+fn lex_crlf(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
+
+    let mut offset = '\r'.len_utf8();
+    let has_lf = stream.as_bstr().get(1) == Some(&b'\n');
+    if has_lf {
+        offset += '\n'.len_utf8();
     }
 
-    pub fn eat_whitespace(&mut self) -> Result<(), Error> {
-        while self.eatc(' ') || self.eatc('\t') {
-            // ...
-        }
-        Ok(())
-    }
+    stream.next_slice(offset);
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
 
-    pub fn eat_comment(&mut self) -> Result<bool, Error> {
-        if !self.eatc('#') {
-            return Ok(false);
-        }
-        drop(self.comment_token(0));
-        self.eat_newline_or_eof().map(|()| true)
-    }
+    Token::new(TokenKind::Newline, span)
+}
 
-    pub fn eat_newline_or_eof(&mut self) -> Result<(), Error> {
-        let current = self.current();
-        match self.next()? {
-            None | Some((_, Token::Newline)) => Ok(()),
-            Some((_, other)) => Err(Error::Wanted {
-                at: current,
-                expected: "newline",
-                found: other.describe(),
-            }),
-        }
-    }
+/// Process literal string
+///
+/// ```bnf
+/// ;; Literal String
+///
+/// literal-string = apostrophe *literal-char apostrophe
+///
+/// apostrophe = %x27 ; ' apostrophe
+///
+/// literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream[0] == b'\''`
+fn lex_literal_string(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
 
-    pub fn skip_to_newline(&mut self) {
-        loop {
-            match self.one() {
-                Some((_, '\n')) | None => break,
-                _ => {}
+    let offset = 1; // APOSTROPHE
+    stream.next_slice(offset);
+
+    let offset = match stream.as_bstr().find_slice((APOSTROPHE, b'\n')) {
+        Some(span) => {
+            if stream.as_bstr()[span.start] == APOSTROPHE {
+                span.end
+            } else {
+                span.start
             }
         }
+        None => stream.eof_offset(),
+    };
+    stream.next_slice(offset);
+
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::LiteralString, span)
+}
+
+/// `apostrophe = %x27 ; ' apostrophe`
+pub(crate) const APOSTROPHE: u8 = b'\'';
+
+/// Process multi-line literal string
+///
+/// ```bnf
+/// ;; Multiline Literal String
+///
+/// ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
+///                     ml-literal-string-delim
+/// ml-literal-string-delim = 3apostrophe
+/// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
+///
+/// mll-content = mll-char / newline
+/// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
+/// mll-quotes = 1*2apostrophe
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream.starts_with(ML_LITERAL_STRING_DELIM)`
+fn lex_ml_literal_string(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
+
+    let offset = ML_LITERAL_STRING_DELIM.len();
+    stream.next_slice(offset);
+
+    let offset = match stream.as_bstr().find_slice(ML_LITERAL_STRING_DELIM) {
+        Some(span) => span.end,
+        None => stream.eof_offset(),
+    };
+    stream.next_slice(offset);
+
+    if stream.as_bstr().peek_token() == Some(APOSTROPHE) {
+        let offset = 1;
+        stream.next_slice(offset);
+        if stream.as_bstr().peek_token() == Some(APOSTROPHE) {
+            let offset = 1;
+            stream.next_slice(offset);
+        }
     }
 
-    fn eatc(&mut self, ch: char) -> bool {
-        match self.chars.clone().next() {
-            Some((_, ch2)) if ch == ch2 => {
-                self.one();
-                true
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::MlLiteralString, span)
+}
+
+/// `ml-literal-string-delim = 3apostrophe`
+pub(crate) const ML_LITERAL_STRING_DELIM: &str = "'''";
+
+/// Process basic string
+///
+/// ```bnf
+/// ;; Basic String
+///
+/// basic-string = quotation-mark *basic-char quotation-mark
+///
+/// quotation-mark = %x22            ; "
+///
+/// basic-char = basic-unescaped / escaped
+/// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// escaped = escape escape-seq-char
+///
+/// escape = %x5C                   ; \
+/// escape-seq-char =  %x22         ; "    quotation mark  U+0022
+/// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
+/// escape-seq-char =/ %x62         ; b    backspace       U+0008
+/// escape-seq-char =/ %x66         ; f    form feed       U+000C
+/// escape-seq-char =/ %x6E         ; n    line feed       U+000A
+/// escape-seq-char =/ %x72         ; r    carriage return U+000D
+/// escape-seq-char =/ %x74         ; t    tab             U+0009
+/// escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
+/// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream[0] == b'"'`
+fn lex_basic_string(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
+
+    let offset = 1; // QUOTATION_MARK
+    stream.next_slice(offset);
+
+    loop {
+        // newline is present for error recovery
+        match stream.as_bstr().find_slice((QUOTATION_MARK, ESCAPE, b'\n')) {
+            Some(span) => {
+                let found = stream.as_bstr()[span.start];
+                if found == QUOTATION_MARK {
+                    let offset = span.end;
+                    stream.next_slice(offset);
+                    break;
+                } else if found == ESCAPE {
+                    let offset = span.end;
+                    stream.next_slice(offset);
+
+                    let peek = stream.as_bstr().peek_token();
+                    match peek {
+                        Some(ESCAPE) | Some(QUOTATION_MARK) => {
+                            let offset = 1; // ESCAPE / QUOTATION_MARK
+                            stream.next_slice(offset);
+                        }
+                        _ => {}
+                    }
+                    continue;
+                } else if found == b'\n' {
+                    let offset = span.start;
+                    stream.next_slice(offset);
+                    break;
+                } else {
+                    unreachable!("found `{found}`");
+                }
             }
-            _ => false,
-        }
-    }
-
-    pub fn current(&mut self) -> usize {
-        self.chars
-            .clone()
-            .next()
-            .map(|i| i.0)
-            .unwrap_or_else(|| self.input.len())
-    }
-
-    pub fn input(&self) -> &'a str {
-        self.input
-    }
-
-    fn whitespace_token(&mut self, start: usize) -> Token<'a> {
-        while self.eatc(' ') || self.eatc('\t') {
-            // ...
-        }
-        Whitespace(&self.input[start..self.current()])
-    }
-
-    fn comment_token(&mut self, start: usize) -> Token<'a> {
-        while let Some((_, ch)) = self.chars.clone().next() {
-            if ch != '\t' && !('\u{20}'..='\u{10ffff}').contains(&ch) {
+            None => {
+                stream.finish();
                 break;
             }
-            self.one();
         }
-        Comment(&self.input[start..self.current()])
     }
 
-    #[allow(clippy::type_complexity)]
-    fn read_string(
-        &mut self,
-        delim: char,
-        start: usize,
-        new_ch: &mut dyn FnMut(
-            &mut Tokenizer<'_>,
-            &mut MaybeString,
-            bool,
-            usize,
-            char,
-        ) -> Result<(), Error>,
-    ) -> Result<Token<'a>, Error> {
-        let mut multiline = false;
-        if self.eatc(delim) {
-            if self.eatc(delim) {
-                multiline = true;
-            } else {
-                return Ok(String {
-                    src: &self.input[start..start + 2],
-                    val: Cow::Borrowed(""),
-                    multiline: false,
-                });
-            }
-        }
-        let mut val = MaybeString::NotEscaped(self.current());
-        let mut n = 0;
-        'outer: loop {
-            n += 1;
-            match self.one() {
-                Some((i, '\n')) => {
-                    if multiline {
-                        if self.input.as_bytes()[i] == b'\r' {
-                            val.to_owned(&self.input[..i]);
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::BasicString, span)
+}
+
+/// `quotation-mark = %x22            ; "`
+pub(crate) const QUOTATION_MARK: u8 = b'"';
+
+/// `escape = %x5C                   ; \`
+pub(crate) const ESCAPE: u8 = b'\\';
+
+/// Process multi-line basic string
+///
+/// ```bnf
+/// ;; Multiline Basic String
+///
+/// ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
+///                   ml-basic-string-delim
+/// ml-basic-string-delim = 3quotation-mark
+/// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
+///
+/// mlb-content = mlb-char / newline / mlb-escaped-nl
+/// mlb-char = mlb-unescaped / escaped
+/// mlb-quotes = 1*2quotation-mark
+/// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// mlb-escaped-nl = escape ws newline *( wschar / newline )
+/// ```
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream.starts_with(ML_BASIC_STRING_DELIM)`
+fn lex_ml_basic_string(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
+
+    let offset = ML_BASIC_STRING_DELIM.len();
+    stream.next_slice(offset);
+
+    loop {
+        // newline is present for error recovery
+        match stream.as_bstr().find_slice((ML_BASIC_STRING_DELIM, "\\")) {
+            Some(span) => {
+                let found = stream.as_bstr()[span.start];
+                if found == QUOTATION_MARK {
+                    let offset = span.end;
+                    stream.next_slice(offset);
+                    break;
+                } else if found == ESCAPE {
+                    let offset = span.end;
+                    stream.next_slice(offset);
+
+                    let peek = stream.as_bstr().peek_token();
+                    match peek {
+                        Some(ESCAPE) | Some(QUOTATION_MARK) => {
+                            let offset = 1; // ESCAPE / QUOTATION_MARK
+                            stream.next_slice(offset);
                         }
-                        if n == 1 {
-                            val = MaybeString::NotEscaped(self.current());
-                        } else {
-                            val.push('\n');
-                        }
-                        continue;
-                    } else {
-                        return Err(Error::NewlineInString(i));
+                        _ => {}
                     }
+                    continue;
+                } else {
+                    unreachable!("found `{found}`");
                 }
-                Some((mut i, ch)) if ch == delim => {
-                    if multiline {
-                        if !self.eatc(delim) {
-                            val.push(delim);
-                            continue 'outer;
-                        }
-                        if !self.eatc(delim) {
-                            val.push(delim);
-                            val.push(delim);
-                            continue 'outer;
-                        }
-                        if self.eatc(delim) {
-                            val.push(delim);
-                            i += 1;
-                        }
-                        if self.eatc(delim) {
-                            val.push(delim);
-                            i += 1;
-                        }
-                    }
-                    return Ok(String {
-                        src: &self.input[start..self.current()],
-                        val: val.into_cow(&self.input[..i]),
-                        multiline,
-                    });
-                }
-                Some((i, c)) => new_ch(self, &mut val, multiline, i, c)?,
-                None => return Err(Error::UnterminatedString(start)),
             }
-        }
-    }
-
-    fn literal_string(&mut self, start: usize) -> Result<Token<'a>, Error> {
-        self.read_string('\'', start, &mut |_me, val, _multi, i, ch| {
-            if ch == '\u{09}' || (('\u{20}'..='\u{10ffff}').contains(&ch) && ch != '\u{7f}') {
-                val.push(ch);
-                Ok(())
-            } else {
-                Err(Error::InvalidCharInString(i, ch))
-            }
-        })
-    }
-
-    fn basic_string(&mut self, start: usize) -> Result<Token<'a>, Error> {
-        self.read_string('"', start, &mut |me, val, multi, i, ch| match ch {
-            '\\' => {
-                val.to_owned(&me.input[..i]);
-                match me.chars.next() {
-                    Some((_, '"')) => val.push('"'),
-                    Some((_, '\\')) => val.push('\\'),
-                    Some((_, 'b')) => val.push('\u{8}'),
-                    Some((_, 'f')) => val.push('\u{c}'),
-                    Some((_, 'n')) => val.push('\n'),
-                    Some((_, 'r')) => val.push('\r'),
-                    Some((_, 't')) => val.push('\t'),
-                    Some((i, c @ 'u')) | Some((i, c @ 'U')) => {
-                        let len = if c == 'u' { 4 } else { 8 };
-                        val.push(me.hex(start, i, len)?);
-                    }
-                    Some((i, c @ ' ')) | Some((i, c @ '\t')) | Some((i, c @ '\n')) if multi => {
-                        if c != '\n' {
-                            while let Some((_, ch)) = me.chars.clone().next() {
-                                match ch {
-                                    ' ' | '\t' => {
-                                        me.chars.next();
-                                        continue;
-                                    }
-                                    '\n' => {
-                                        me.chars.next();
-                                        break;
-                                    }
-                                    _ => return Err(Error::InvalidEscape(i, c)),
-                                }
-                            }
-                        }
-                        while let Some((_, ch)) = me.chars.clone().next() {
-                            match ch {
-                                ' ' | '\t' | '\n' => {
-                                    me.chars.next();
-                                }
-                                _ => break,
-                            }
-                        }
-                    }
-                    Some((i, c)) => return Err(Error::InvalidEscape(i, c)),
-                    None => return Err(Error::UnterminatedString(start)),
-                }
-                Ok(())
-            }
-            ch if ch == '\u{09}' || (('\u{20}'..='\u{10ffff}').contains(&ch) && ch != '\u{7f}') => {
-                val.push(ch);
-                Ok(())
-            }
-            _ => Err(Error::InvalidCharInString(i, ch)),
-        })
-    }
-
-    fn hex(&mut self, start: usize, i: usize, len: usize) -> Result<char, Error> {
-        let mut buf = StdString::with_capacity(len);
-        for _ in 0..len {
-            match self.one() {
-                Some((_, ch)) if ch as u32 <= 0x7F && ch.is_ascii_hexdigit() => buf.push(ch),
-                Some((i, ch)) => return Err(Error::InvalidHexEscape(i, ch)),
-                None => return Err(Error::UnterminatedString(start)),
-            }
-        }
-        let val = u32::from_str_radix(&buf, 16).unwrap();
-        match char::from_u32(val) {
-            Some(ch) => Ok(ch),
-            None => Err(Error::InvalidEscapeValue(i, val)),
-        }
-    }
-
-    fn keylike(&mut self, start: usize) -> Token<'a> {
-        while let Some((_, ch)) = self.peek_one() {
-            if !is_keylike(ch) {
+            None => {
+                stream.finish();
                 break;
             }
-            self.one();
         }
-        Keylike(&self.input[start..self.current()])
+    }
+    if stream.as_bstr().peek_token() == Some(QUOTATION_MARK) {
+        let offset = 1;
+        stream.next_slice(offset);
+        if stream.as_bstr().peek_token() == Some(QUOTATION_MARK) {
+            let offset = 1;
+            stream.next_slice(offset);
+        }
     }
 
-    pub fn substr_offset(&self, s: &'a str) -> usize {
-        assert!(s.len() <= self.input.len());
-        let a = self.input.as_ptr() as usize;
-        let b = s.as_ptr() as usize;
-        assert!(a <= b);
-        b - a
-    }
-
-    /// Calculate the span of a single character.
-    fn step_span(&mut self, start: usize) -> Span {
-        let end = self
-            .peek_one()
-            .map(|t| t.0)
-            .unwrap_or_else(|| self.input.len());
-        Span { start, end }
-    }
-
-    /// Peek one char without consuming it.
-    fn peek_one(&mut self) -> Option<(usize, char)> {
-        self.chars.clone().next()
-    }
-
-    /// Take one char.
-    pub fn one(&mut self) -> Option<(usize, char)> {
-        self.chars.next()
-    }
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::MlBasicString, span)
 }
 
-impl<'a> Iterator for CrlfFold<'a> {
-    type Item = (usize, char);
+/// `ml-basic-string-delim = 3quotation-mark`
+pub(crate) const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
 
-    fn next(&mut self) -> Option<(usize, char)> {
-        self.chars.next().map(|(i, c)| {
-            if c == '\r' {
-                let mut attempt = self.chars.clone();
-                if let Some((_, '\n')) = attempt.next() {
-                    self.chars = attempt;
-                    return (i, '\n');
-                }
-            }
-            (i, c)
-        })
-    }
-}
+/// Process Atom
+///
+/// This is everything else
+///
+/// # Safety
+///
+/// - `stream` must be UTF-8
+/// - `stream` must be non-empty
+fn lex_atom(stream: &mut Stream<'_>) -> Token {
+    let start = stream.current_token_start();
 
-impl MaybeString {
-    fn push(&mut self, ch: char) {
-        match *self {
-            MaybeString::NotEscaped(..) => {}
-            MaybeString::Owned(ref mut s) => s.push(ch),
-        }
-    }
+    const TOKEN_START: &[u8] = b".=,[]{} \t#\r\n)'\"";
+    let offset = stream
+        .as_bstr()
+        .offset_for(|b| TOKEN_START.contains_token(b))
+        .unwrap_or_else(|| stream.eof_offset());
+    stream.next_slice(offset);
 
-    #[allow(clippy::wrong_self_convention)]
-    fn to_owned(&mut self, input: &str) {
-        match *self {
-            MaybeString::NotEscaped(start) => {
-                *self = MaybeString::Owned(input[start..].to_owned());
-            }
-            MaybeString::Owned(..) => {}
-        }
-    }
-
-    fn into_cow(self, input: &str) -> Cow<'_, str> {
-        match self {
-            MaybeString::NotEscaped(start) => Cow::Borrowed(&input[start..]),
-            MaybeString::Owned(s) => Cow::Owned(s),
-        }
-    }
-}
-
-fn is_keylike(ch: char) -> bool {
-    ('A'..='Z').contains(&ch)
-        || ('a'..='z').contains(&ch)
-        || ('0'..='9').contains(&ch)
-        || ch == '-'
-        || ch == '_'
-}
-
-impl<'a> Token<'a> {
-    pub fn describe(&self) -> &'static str {
-        match *self {
-            Token::Keylike(_) => "an identifier",
-            Token::Equals => "an equals",
-            Token::Period => "a period",
-            Token::Comment(_) => "a comment",
-            Token::Newline => "a newline",
-            Token::Whitespace(_) => "whitespace",
-            Token::Comma => "a comma",
-            Token::RightBrace => "a right brace",
-            Token::LeftBrace => "a left brace",
-            Token::RightBracket => "a right bracket",
-            Token::LeftBracket => "a left bracket",
-            Token::String { multiline, .. } => {
-                if multiline {
-                    "a multiline string"
-                } else {
-                    "a string"
-                }
-            }
-            Token::Colon => "a colon",
-            Token::Plus => "a plus",
-        }
-    }
+    let end = stream.previous_token_end();
+    let span = Span::new_unchecked(start, end);
+    Token::new(TokenKind::Atom, span)
 }

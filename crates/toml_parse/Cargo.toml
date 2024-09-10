@@ -25,7 +25,16 @@ pre-release-replacements = [
 ]
 
 [features]
-default = []
+default = ["std"]
+alloc = []
+std = ["alloc"]
+simd = ["winnow/simd"]
+
+[dependencies]
+winnow = { version = "0.7.6", default-features = false }
 
 [dev-dependencies]
 snapbox = "0.6.0"
+
+[lints]
+workspace = true

@@ -1,25 +1,81 @@
-use std::borrow::Cow;
+//! Lexed TOML tokens
 
-#[derive(Eq, PartialEq, Debug)]
-pub enum Token<'a> {
-    Whitespace(&'a str),
-    Newline,
-    Comment(&'a str),
+use super::Span;
+use super::APOSTROPHE;
+use super::COMMENT_START_SYMBOL;
+use super::QUOTATION_MARK;
+use super::WSCHAR;
 
-    Equals,
-    Period,
-    Comma,
-    Colon,
-    Plus,
-    LeftBrace,
-    RightBrace,
-    LeftBracket,
-    RightBracket,
+/// An unvalidated TOML Token
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct Token {
+    pub(super) kind: TokenKind,
+    pub(super) span: Span,
+}
 
-    Keylike(&'a str),
-    String {
-        src: &'a str,
-        val: Cow<'a, str>,
-        multiline: bool,
-    },
+impl Token {
+    pub(super) fn new(kind: TokenKind, span: Span) -> Self {
+        Self { kind, span }
+    }
+
+    #[inline(always)]
+    pub fn kind(&self) -> TokenKind {
+        self.kind
+    }
+
+    #[inline(always)]
+    pub fn span(&self) -> Span {
+        self.span
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[repr(u8)]
+pub enum TokenKind {
+    /// Either for dotted-key or float
+    Dot = b'.',
+    /// Key-value separator
+    Equals = b'=',
+    /// Value separator
+    Comma = b',',
+    /// Either array or standard-table start
+    LeftSquareBracket = b'[',
+    /// Either array or standard-table end
+    RightSquareBracket = b']',
+    /// Inline table start
+    LeftCurlyBracket = b'{',
+    /// Inline table end
+    RightCurlyBracket = b'}',
+    Whitespace = WSCHAR.0,
+    Comment = COMMENT_START_SYMBOL,
+    Newline = b'\n',
+    LiteralString = APOSTROPHE,
+    BasicString = QUOTATION_MARK,
+    MlLiteralString = 1,
+    MlBasicString,
+
+    /// Anything else
+    Atom,
+}
+
+impl TokenKind {
+    pub const fn description(&self) -> &'static str {
+        match self {
+            TokenKind::Dot => "`.`",
+            TokenKind::Equals => "`=`",
+            TokenKind::Comma => "`,`",
+            TokenKind::LeftSquareBracket => "`[`",
+            TokenKind::RightSquareBracket => "`]`",
+            TokenKind::LeftCurlyBracket => "`{`",
+            TokenKind::RightCurlyBracket => "`}`",
+            TokenKind::Whitespace => "whitedpace",
+            TokenKind::Comment => "comment",
+            TokenKind::Newline => "newline",
+            TokenKind::LiteralString => "literal string",
+            TokenKind::BasicString => "basic string",
+            TokenKind::MlLiteralString => "multi-line literal string",
+            TokenKind::MlBasicString => "multi-line basic string",
+            TokenKind::Atom => "token",
+        }
+    }
 }
