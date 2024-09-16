@@ -342,6 +342,18 @@ impl FromStr for Item {
     }
 }
 
+impl<'b> From<&'b Item> for Item {
+    fn from(s: &'b Item) -> Self {
+        s.clone()
+    }
+}
+
+impl<V: Into<Value>> From<V> for Item {
+    fn from(s: V) -> Self {
+        Item::Value(s.into())
+    }
+}
+
 #[cfg(feature = "display")]
 impl std::fmt::Display for Item {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
