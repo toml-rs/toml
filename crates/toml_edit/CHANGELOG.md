@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.21] - 2024-09-17
+
 ### Performance
 
 - Reduce key allocations
@@ -751,7 +753,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.20...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.21...HEAD
+[0.22.21]: https://github.com/toml-rs/toml/compare/v0.22.20...v0.22.21
 [0.22.20]: https://github.com/toml-rs/toml/compare/v0.22.19...v0.22.20
 [0.22.19]: https://github.com/toml-rs/toml/compare/v0.22.18...v0.22.19
 [0.22.18]: https://github.com/toml-rs/toml/compare/v0.22.17...v0.22.18
