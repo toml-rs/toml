@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Reduce key allocations
+
+### Features
+
+- Allow creating a table from `Item`s and not just `Value`s
+- Allow creating `Item`s from any type thnat can create a `Value`
+
 ## [0.22.20] - 2024-07-31
 
 ### Performance
