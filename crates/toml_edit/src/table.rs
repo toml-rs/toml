@@ -442,17 +442,17 @@ impl std::fmt::Display for Table {
     }
 }
 
-impl<K: Into<Key>, V: Into<Value>> Extend<(K, V)> for Table {
+impl<K: Into<Key>, V: Into<Item>> Extend<(K, V)> for Table {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
         for (key, value) in iter {
             let key = key.into();
-            let value = Item::Value(value.into());
+            let value = value.into();
             self.items.insert(key, value);
         }
     }
 }
 
-impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Table {
+impl<K: Into<Key>, V: Into<Item>> FromIterator<(K, V)> for Table {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = (K, V)>,
