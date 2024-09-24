@@ -980,3 +980,49 @@ fn sorting_with_references() {
     let mut array = toml_edit::Array::from_iter(values);
     array.sort_by(|lhs, rhs| lhs.as_str().cmp(&rhs.as_str()));
 }
+
+#[test]
+fn table_str_key_whitespace() {
+    let mut document = "bookmark = 1010".parse::<DocumentMut>().unwrap();
+
+    let key: &str = "bookmark";
+
+    document.insert(key, array());
+    let table = document[key].as_array_of_tables_mut().unwrap();
+
+    let mut bookmark_table = Table::new();
+    bookmark_table["name"] = value("test.swf".to_owned());
+    table.push(bookmark_table);
+
+    assert_data_eq!(
+        document.to_string(),
+        str![[r#"
+[[bookmark]]
+name = "test.swf"
+
+"#]]
+    );
+}
+
+#[test]
+fn table_key_decor_whitespace() {
+    let mut document = "bookmark = 1010".parse::<DocumentMut>().unwrap();
+
+    let key = Key::parse("  bookmark   ").unwrap().remove(0);
+
+    document.insert_formatted(&key, array());
+    let table = document[&key].as_array_of_tables_mut().unwrap();
+
+    let mut bookmark_table = Table::new();
+    bookmark_table["name"] = value("test.swf".to_owned());
+    table.push(bookmark_table);
+
+    assert_data_eq!(
+        document.to_string(),
+        str![[r#"
+[[  bookmark   ]]
+name = "test.swf"
+
+"#]]
+    );
+}
