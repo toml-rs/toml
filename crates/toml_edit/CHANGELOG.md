@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix regression in 0.22.21 where `*Table::insert*` would incorrectly use the existing format of a key
+
 ## [0.22.21] - 2024-09-17
 
 ### Performance
