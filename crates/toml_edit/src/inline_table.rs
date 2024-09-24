@@ -381,20 +381,37 @@ impl InlineTable {
 
     /// Inserts a key-value pair into the map.
     pub fn insert(&mut self, key: impl Into<InternalString>, value: Value) -> Option<Value> {
-        let key = Key::new(key.into());
+        use indexmap::map::MutableEntryKey;
+        let key = Key::new(key);
         let value = Item::Value(value);
-        self.items
-            .insert(key, value)
-            .and_then(|old| old.into_value().ok())
+        match self.items.entry(key.clone()) {
+            indexmap::map::Entry::Occupied(mut entry) => {
+                entry.key_mut().fmt();
+                let old = std::mem::replace(entry.get_mut(), value);
+                old.into_value().ok()
+            }
+            indexmap::map::Entry::Vacant(entry) => {
+                entry.insert(value);
+                None
+            }
+        }
     }
 
     /// Inserts a key-value pair into the map.
     pub fn insert_formatted(&mut self, key: &Key, value: Value) -> Option<Value> {
-        let key = key.to_owned();
+        use indexmap::map::MutableEntryKey;
         let value = Item::Value(value);
-        self.items
-            .insert(key, value)
-            .and_then(|old| old.into_value().ok())
+        match self.items.entry(key.clone()) {
+            indexmap::map::Entry::Occupied(mut entry) => {
+                *entry.key_mut() = key.clone();
+                let old = std::mem::replace(entry.get_mut(), value);
+                old.into_value().ok()
+            }
+            indexmap::map::Entry::Vacant(entry) => {
+                entry.insert(value);
+                None
+            }
+        }
     }
 
     /// Removes an item given the key.

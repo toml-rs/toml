@@ -997,7 +997,7 @@ fn table_str_key_whitespace() {
     assert_data_eq!(
         document.to_string(),
         str![[r#"
-[[bookmark ]]
+[[bookmark]]
 name = "test.swf"
 
 "#]]
@@ -1020,7 +1020,7 @@ fn table_key_decor_whitespace() {
     assert_data_eq!(
         document.to_string(),
         str![[r#"
-[[bookmark ]]
+[[  bookmark   ]]
 name = "test.swf"
 
 "#]]

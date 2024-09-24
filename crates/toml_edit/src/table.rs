@@ -393,14 +393,35 @@ impl Table {
 
     /// Inserts a key-value pair into the map.
     pub fn insert(&mut self, key: &str, item: Item) -> Option<Item> {
+        use indexmap::map::MutableEntryKey;
         let key = Key::new(key);
-        self.items.insert(key, item)
+        match self.items.entry(key.clone()) {
+            indexmap::map::Entry::Occupied(mut entry) => {
+                entry.key_mut().fmt();
+                let old = std::mem::replace(entry.get_mut(), item);
+                Some(old)
+            }
+            indexmap::map::Entry::Vacant(entry) => {
+                entry.insert(item);
+                None
+            }
+        }
     }
 
     /// Inserts a key-value pair into the map.
     pub fn insert_formatted(&mut self, key: &Key, item: Item) -> Option<Item> {
-        let key = key.to_owned();
-        self.items.insert(key, item)
+        use indexmap::map::MutableEntryKey;
+        match self.items.entry(key.clone()) {
+            indexmap::map::Entry::Occupied(mut entry) => {
+                *entry.key_mut() = key.clone();
+                let old = std::mem::replace(entry.get_mut(), item);
+                Some(old)
+            }
+            indexmap::map::Entry::Vacant(entry) => {
+                entry.insert(item);
+                None
+            }
+        }
     }
 
     /// Removes an item given the key.
