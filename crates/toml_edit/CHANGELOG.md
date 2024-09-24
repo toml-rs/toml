@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.22] - 2024-09-24
+
 ### Fixes
 
 - Fix regression in 0.22.21 where `*Table::insert*` would incorrectly use the existing format of a key
@@ -757,7 +759,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.21...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.22...HEAD
+[0.22.22]: https://github.com/toml-rs/toml/compare/v0.22.21...v0.22.22
 [0.22.21]: https://github.com/toml-rs/toml/compare/v0.22.20...v0.22.21
 [0.22.20]: https://github.com/toml-rs/toml/compare/v0.22.19...v0.22.20
 [0.22.19]: https://github.com/toml-rs/toml/compare/v0.22.18...v0.22.19
