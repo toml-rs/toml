@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Loosen the order that fields can be emitted by a deserializer
+
 ## [0.6.7] - 2024-07-25
 
 ## [0.6.6] - 2024-05-15
