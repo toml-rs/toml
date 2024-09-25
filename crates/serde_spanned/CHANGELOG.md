@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.8] - 2024-09-25
+
 ### Fixes
 
 - Loosen the order that fields can be emitted by a deserializer
@@ -44,7 +46,8 @@ MSRV is now 1.64.0
 ## [0.6.0] - 2023-01-20
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.8...HEAD
+[0.6.8]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.7...serde_spanned-v0.6.8
 [0.6.7]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.6...serde_spanned-v0.6.7
 [0.6.6]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.5...serde_spanned-v0.6.6
 [0.6.5]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.4...serde_spanned-v0.6.5
