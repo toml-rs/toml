@@ -182,25 +182,46 @@ where
             where
                 V: serde::de::MapAccess<'de>,
             {
-                if visitor.next_key()? != Some(START_FIELD) {
-                    return Err(serde::de::Error::custom("spanned start key not found"));
+                let mut start: Option<usize> = None;
+                let mut end: Option<usize> = None;
+                let mut value: Option<T> = None;
+                while let Some(key) = visitor.next_key()? {
+                    match key {
+                        START_FIELD => {
+                            if start.is_some() {
+                                return Err(serde::de::Error::duplicate_field(START_FIELD));
+                            }
+                            start = Some(visitor.next_value()?);
+                        }
+                        END_FIELD => {
+                            if end.is_some() {
+                                return Err(serde::de::Error::duplicate_field(END_FIELD));
+                            }
+                            end = Some(visitor.next_value()?);
+                        }
+                        VALUE_FIELD => {
+                            if value.is_some() {
+                                return Err(serde::de::Error::duplicate_field(VALUE_FIELD));
+                            }
+                            value = Some(visitor.next_value()?);
+                        }
+                        field => {
+                            return Err(serde::de::Error::unknown_field(
+                                field,
+                                &[START_FIELD, END_FIELD, VALUE_FIELD],
+                            ));
+                        }
+                    }
                 }
-                let start: usize = visitor.next_value()?;
-
-                if visitor.next_key()? != Some(END_FIELD) {
-                    return Err(serde::de::Error::custom("spanned end key not found"));
+                match (start, end, value) {
+                    (Some(start), Some(end), Some(value)) => Ok(Spanned {
+                        span: start..end,
+                        value,
+                    }),
+                    (None, _, _) => Err(serde::de::Error::missing_field(START_FIELD)),
+                    (_, None, _) => Err(serde::de::Error::missing_field(END_FIELD)),
+                    (_, _, None) => Err(serde::de::Error::missing_field(VALUE_FIELD)),
                 }
-                let end: usize = visitor.next_value()?;
-
-                if visitor.next_key()? != Some(VALUE_FIELD) {
-                    return Err(serde::de::Error::custom("spanned value key not found"));
-                }
-                let value: T = visitor.next_value()?;
-
-                Ok(Spanned {
-                    span: start..end,
-                    value,
-                })
             }
         }
 
