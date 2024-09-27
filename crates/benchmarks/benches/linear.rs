@@ -32,7 +32,7 @@ mod map {
     fn gen(num_entries: usize) -> String {
         let mut s = String::new();
         for i in 0..num_entries {
-            s += &format!("[header_no_{}]\n", i);
+            s += &format!("[header_no_{i}]\n");
             s += "entry = 42\n";
         }
         s

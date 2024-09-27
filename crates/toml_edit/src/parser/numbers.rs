@@ -393,7 +393,7 @@ mod test {
 
             let overflow = "9e99999";
             let parsed = float.parse(new_input(overflow));
-            assert!(parsed.is_err(), "{:?}", parsed);
+            assert!(parsed.is_err(), "{parsed:?}");
         }
     }
 }

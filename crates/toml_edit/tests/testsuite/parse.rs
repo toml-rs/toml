@@ -955,7 +955,7 @@ fn table_names() {
     "
     .parse::<DocumentMut>()
     .unwrap();
-    println!("{:?}", a);
+    println!("{a:?}");
     let _ = &a["a"]["b"];
     let _ = &a["f f"];
     let _ = &a["f.f"];

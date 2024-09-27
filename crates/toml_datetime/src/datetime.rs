@@ -238,16 +238,16 @@ impl From<Time> for Datetime {
 impl fmt::Display for Datetime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(ref date) = self.date {
-            write!(f, "{}", date)?;
+            write!(f, "{date}")?;
         }
         if let Some(ref time) = self.time {
             if self.date.is_some() {
                 write!(f, "T")?;
             }
-            write!(f, "{}", time)?;
+            write!(f, "{time}")?;
         }
         if let Some(ref offset) = self.offset {
-            write!(f, "{}", offset)?;
+            write!(f, "{offset}")?;
         }
         Ok(())
     }
@@ -282,7 +282,7 @@ impl fmt::Display for Offset {
                 }
                 let hours = minutes / 60;
                 let minutes = minutes % 60;
-                write!(f, "{}{:02}:{:02}", sign, hours, minutes)
+                write!(f, "{sign}{hours:02}:{minutes:02}")
             }
         }
     }

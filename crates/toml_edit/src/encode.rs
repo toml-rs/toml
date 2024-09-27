@@ -24,7 +24,7 @@ pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -
         repr.encode(buf, input)?;
     } else {
         let repr = this.display_repr();
-        write!(buf, "{}", repr)?;
+        write!(buf, "{repr}")?;
     };
 
     Ok(())
@@ -109,7 +109,7 @@ pub(crate) fn encode_formatted<T: ValueRepr>(
         repr.encode(buf, input)?;
     } else {
         let repr = this.display_repr();
-        write!(buf, "{}", repr)?;
+        write!(buf, "{repr}")?;
     };
 
     decor.suffix_encode(buf, input, default_decor.1)?;
@@ -533,9 +533,9 @@ fn to_f64_repr(f: f64) -> Repr {
         (false, false, true) => "0.0".to_owned(),
         (_, false, false) => {
             if f % 1.0 == 0.0 {
-                format!("{}.0", f)
+                format!("{f}.0")
             } else {
-                format!("{}", f)
+                format!("{f}")
             }
         }
     };

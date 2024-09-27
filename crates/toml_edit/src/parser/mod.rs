@@ -226,10 +226,7 @@ key = "value"
             let doc = match parsed {
                 Ok(doc) => doc,
                 Err(err) => {
-                    panic!(
-                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
-                        err, input
-                    )
+                    panic!("Parse error: {err:?}\nFailed to parse:\n```\n{input}\n```")
                 }
             };
 
@@ -251,10 +248,7 @@ authors = []
             match parsed {
                 Ok(_) => (),
                 Err(err) => {
-                    panic!(
-                        "Parse error: {:?}\nFailed to parse:\n```\n{}\n```",
-                        err, input
-                    )
+                    panic!("Parse error: {err:?}\nFailed to parse:\n```\n{input}\n```")
                 }
             }
         }
@@ -267,7 +261,7 @@ $"#];
         for input in invalid_inputs {
             dbg!(input);
             let parsed = parse_document(input).map(|d| d.into_mut());
-            assert!(parsed.is_err(), "Input: {:?}", input);
+            assert!(parsed.is_err(), "Input: {input:?}");
         }
     }
 }

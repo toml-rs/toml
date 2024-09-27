@@ -915,7 +915,7 @@ mod internal {
         settings.visit_table_mut(&mut table);
 
         let doc: toml_edit::DocumentMut = table.into();
-        write!(dst, "{}", doc).unwrap();
+        write!(dst, "{doc}").unwrap();
 
         Ok(())
     }
@@ -1067,7 +1067,7 @@ mod internal {
 
         let value = value.map_err(Error::wrap)?;
 
-        write!(dst, "{}", value).unwrap();
+        write!(dst, "{value}").unwrap();
 
         Ok(())
     }

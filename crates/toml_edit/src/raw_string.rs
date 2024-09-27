@@ -46,9 +46,9 @@ impl RawString {
         match &self.0 {
             RawStringInner::Empty => "",
             RawStringInner::Explicit(s) => s.as_str(),
-            RawStringInner::Spanned(span) => input.get(span.clone()).unwrap_or_else(|| {
-                panic!("span {:?} should be in input:\n```\n{}\n```", span, input)
-            }),
+            RawStringInner::Spanned(span) => input
+                .get(span.clone())
+                .unwrap_or_else(|| panic!("span {span:?} should be in input:\n```\n{input}\n```")),
         }
     }
 
@@ -63,7 +63,7 @@ impl RawString {
             RawStringInner::Spanned(span) => {
                 if let Some(input) = input {
                     input.get(span.clone()).unwrap_or_else(|| {
-                        panic!("span {:?} should be in input:\n```\n{}\n```", span, input)
+                        panic!("span {span:?} should be in input:\n```\n{input}\n```")
                     })
                 } else {
                     default
@@ -78,7 +78,7 @@ impl RawString {
             RawStringInner::Explicit(_) => {}
             RawStringInner::Spanned(span) => {
                 *self = Self::from(input.get(span.clone()).unwrap_or_else(|| {
-                    panic!("span {:?} should be in input:\n```\n{}\n```", span, input)
+                    panic!("span {span:?} should be in input:\n```\n{input}\n```")
                 }));
             }
         }
@@ -88,7 +88,7 @@ impl RawString {
     pub(crate) fn encode(&self, buf: &mut dyn std::fmt::Write, input: &str) -> std::fmt::Result {
         let raw = self.to_str(input);
         for part in raw.split('\r') {
-            write!(buf, "{}", part)?;
+            write!(buf, "{part}")?;
         }
         Ok(())
     }
@@ -102,7 +102,7 @@ impl RawString {
     ) -> std::fmt::Result {
         let raw = self.to_str_with_default(input, default);
         for part in raw.split('\r') {
-            write!(buf, "{}", part)?;
+            write!(buf, "{part}")?;
         }
         Ok(())
     }
@@ -119,8 +119,8 @@ impl std::fmt::Debug for RawString {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         match &self.0 {
             RawStringInner::Empty => write!(formatter, "empty"),
-            RawStringInner::Explicit(s) => write!(formatter, "{:?}", s),
-            RawStringInner::Spanned(s) => write!(formatter, "{:?}", s),
+            RawStringInner::Explicit(s) => write!(formatter, "{s:?}"),
+            RawStringInner::Spanned(s) => write!(formatter, "{s:?}"),
         }
     }
 }

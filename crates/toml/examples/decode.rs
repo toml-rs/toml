@@ -50,5 +50,5 @@ fn main() {
     "#;
 
     let decoded: Config = toml::from_str(toml_str).unwrap();
-    println!("{:#?}", decoded);
+    println!("{decoded:#?}");
 }

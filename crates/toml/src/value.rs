@@ -530,7 +530,7 @@ impl<'de> de::Deserialize<'de> for Value {
                     if let crate::map::Entry::Vacant(vacant) = map.entry(&key) {
                         vacant.insert(visitor.next_value()?);
                     } else {
-                        let msg = format!("duplicate key: `{}`", key);
+                        let msg = format!("duplicate key: `{key}`");
                         return Err(de::Error::custom(msg));
                     }
                 }
@@ -808,7 +808,7 @@ impl<'de> de::VariantAccess<'de> for MapEnumDeserializer {
                 if values.len() == len {
                     de::Deserializer::deserialize_seq(values.into_deserializer(), visitor)
                 } else {
-                    Err(Error::custom(format!("expected tuple with length {}", len)))
+                    Err(Error::custom(format!("expected tuple with length {len}")))
                 }
             }
             Value::Table(values) => {
@@ -818,8 +818,7 @@ impl<'de> de::VariantAccess<'de> for MapEnumDeserializer {
                     .map(|(index, (key, value))| match key.parse::<usize>() {
                         Ok(key_index) if key_index == index => Ok(value),
                         Ok(_) | Err(_) => Err(Error::custom(format!(
-                            "expected table key `{}`, but was `{}`",
-                            index, key
+                            "expected table key `{index}`, but was `{key}`"
                         ))),
                     })
                     .collect();
@@ -828,7 +827,7 @@ impl<'de> de::VariantAccess<'de> for MapEnumDeserializer {
                 if tuple_values.len() == len {
                     de::Deserializer::deserialize_seq(tuple_values.into_deserializer(), visitor)
                 } else {
-                    Err(Error::custom(format!("expected tuple with length {}", len)))
+                    Err(Error::custom(format!("expected tuple with length {len}")))
                 }
             }
             e => Err(Error::custom(format!(

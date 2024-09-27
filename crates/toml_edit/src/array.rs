@@ -287,7 +287,7 @@ impl Array {
     pub fn replace_formatted(&mut self, index: usize, v: Value) -> Value {
         match mem::replace(&mut self.values[index], Item::Value(v)) {
             Item::Value(old_value) => old_value,
-            x => panic!("non-value item {:?} in an array", x),
+            x => panic!("non-value item {x:?} in an array"),
         }
     }
 
@@ -307,7 +307,7 @@ impl Array {
         let removed = self.values.remove(index);
         match removed {
             Item::Value(v) => v,
-            x => panic!("non-value item {:?} in an array", x),
+            x => panic!("non-value item {x:?} in an array"),
         }
     }
 
