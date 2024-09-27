@@ -74,7 +74,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                     )
                 } else {
                     Err(Error::custom(
-                        format!("expected tuple with length {}", len),
+                        format!("expected tuple with length {len}"),
                         values_span,
                     ))
                 }
@@ -90,7 +90,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                     )
                 } else {
                     Err(Error::custom(
-                        format!("expected tuple with length {}", len),
+                        format!("expected tuple with length {len}"),
                         values_span,
                     ))
                 }
@@ -118,7 +118,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                     )
                 } else {
                     Err(Error::custom(
-                        format!("expected tuple with length {}", len),
+                        format!("expected tuple with length {len}"),
                         values_span,
                     ))
                 }
@@ -146,7 +146,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer {
                     )
                 } else {
                     Err(Error::custom(
-                        format!("expected tuple with length {}", len),
+                        format!("expected tuple with length {len}"),
                         values_span,
                     ))
                 }

@@ -250,7 +250,7 @@ fn main() {
 
     println!("** visit_mut example");
     visit_mut_example(&mut document);
-    println!("{}", document);
+    println!("{document}");
 }
 
 #[cfg(test)]
@@ -280,5 +280,5 @@ fn visit_mut_correct() {
     let mut document: DocumentMut = INPUT.parse().expect("input is valid TOML");
 
     visit_mut_example(&mut document);
-    assert_eq!(format!("{}", document), VISIT_MUT_OUTPUT);
+    assert_eq!(format!("{document}"), VISIT_MUT_OUTPUT);
 }

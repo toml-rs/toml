@@ -82,7 +82,7 @@ fn test_spanned_field() {
     );
 
     for expected in good_datetimes() {
-        let s = format!("foo = {}", expected);
+        let s = format!("foo = {expected}");
         good::<Datetime>(&s, expected, None);
     }
     // ending at something other than the absolute end

@@ -14,7 +14,7 @@ macro_rules! bad {
 #[test]
 fn times() {
     fn dogood(s: &str, serialized: &str) {
-        let to_parse = format!("foo = {}", s);
+        let to_parse = format!("foo = {s}");
         let document = to_parse.parse::<toml_edit::DocumentMut>().unwrap();
         assert_eq!(
             document["foo"].as_datetime().unwrap().to_string(),

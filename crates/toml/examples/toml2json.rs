@@ -21,7 +21,7 @@ fn main() {
             let json = convert(toml);
             println!("{}", serde_json::to_string_pretty(&json).unwrap());
         }
-        Err(error) => println!("failed to parse TOML: {}", error),
+        Err(error) => println!("failed to parse TOML: {error}"),
     }
 }
 
