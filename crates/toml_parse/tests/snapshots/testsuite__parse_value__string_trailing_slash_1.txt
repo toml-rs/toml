@@ -1,0 +1,29 @@
+EventResults {
+    input: "\"\"\"\\\n       \"\"\"",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..15,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 15..15,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..15,
+            description: "multi-line basic string",
+            expected: [],
+            unexpected: 0..15,
+        },
+        ParseError {
+            context: 15..15,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 15..15,
+        },
+    ],
+}

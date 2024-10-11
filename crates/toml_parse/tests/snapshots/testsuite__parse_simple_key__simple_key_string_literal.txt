@@ -1,0 +1,29 @@
+EventResults {
+    input: "'hello\\n '",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..10,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..10,
+            description: "literal string",
+            expected: [],
+            unexpected: 0..10,
+        },
+        ParseError {
+            context: 10..10,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 10..10,
+        },
+    ],
+}

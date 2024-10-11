@@ -1,0 +1,29 @@
+EventResults {
+    input: "9223372036854775807",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..19,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 19..19,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..19,
+            description: "token",
+            expected: [],
+            unexpected: 0..19,
+        },
+        ParseError {
+            context: 19..19,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 19..19,
+        },
+    ],
+}

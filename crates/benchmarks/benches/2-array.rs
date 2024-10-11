@@ -16,6 +16,25 @@ mod toml_parse {
                 source.lex().last()
             });
     }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn events(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| {
+                let source = ::toml_parse::Source::new(&sample);
+                let tokens = source.lex().into_vec();
+                let mut errors = Vec::with_capacity(tokens.len());
+                ::toml_parse::parser::parse_document(
+                    &tokens,
+                    &mut |event| {
+                        std::hint::black_box(event);
+                    },
+                    &mut errors,
+                );
+            });
+    }
 }
 
 mod toml_edit {

@@ -1,0 +1,29 @@
+EventResults {
+    input: "-nan",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..4,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 4..4,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..4,
+            description: "token",
+            expected: [],
+            unexpected: 0..4,
+        },
+        ParseError {
+            context: 4..4,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 4..4,
+        },
+    ],
+}

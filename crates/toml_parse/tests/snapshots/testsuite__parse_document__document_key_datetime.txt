@@ -1,0 +1,106 @@
+EventResults {
+    input: "foo = 1979-05-27 # Comment\n",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..3,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..16,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 17..26,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 27..27,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..3,
+            description: "token",
+            expected: [],
+            unexpected: 0..3,
+        },
+        ParseError {
+            context: 3..4,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 3..4,
+        },
+        ParseError {
+            context: 4..5,
+            description: "`=`",
+            expected: [],
+            unexpected: 4..5,
+        },
+        ParseError {
+            context: 5..6,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 5..6,
+        },
+        ParseError {
+            context: 6..16,
+            description: "token",
+            expected: [],
+            unexpected: 6..16,
+        },
+        ParseError {
+            context: 16..17,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 16..17,
+        },
+        ParseError {
+            context: 17..26,
+            description: "comment",
+            expected: [],
+            unexpected: 17..26,
+        },
+        ParseError {
+            context: 26..27,
+            description: "newline",
+            expected: [],
+            unexpected: 26..27,
+        },
+        ParseError {
+            context: 27..27,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 27..27,
+        },
+    ],
+}

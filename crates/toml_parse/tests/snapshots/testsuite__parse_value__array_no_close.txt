@@ -1,0 +1,29 @@
+EventResults {
+    input: "[",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..1,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`[`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..1,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 1..1,
+        },
+    ],
+}

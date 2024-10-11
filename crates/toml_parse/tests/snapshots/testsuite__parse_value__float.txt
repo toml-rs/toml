@@ -1,0 +1,51 @@
+EventResults {
+    input: "3.1419",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..6,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "token",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..2,
+            description: "`.`",
+            expected: [],
+            unexpected: 1..2,
+        },
+        ParseError {
+            context: 2..6,
+            description: "token",
+            expected: [],
+            unexpected: 2..6,
+        },
+        ParseError {
+            context: 6..6,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 6..6,
+        },
+    ],
+}

@@ -1,0 +1,183 @@
+EventResults {
+    input: "{ hello = \"a\" world = \"b\" }",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..7,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..13,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 14..19,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 20..21,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 22..25,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 25..26,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 27..27,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`{`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..2,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 1..2,
+        },
+        ParseError {
+            context: 2..7,
+            description: "token",
+            expected: [],
+            unexpected: 2..7,
+        },
+        ParseError {
+            context: 7..8,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 7..8,
+        },
+        ParseError {
+            context: 8..9,
+            description: "`=`",
+            expected: [],
+            unexpected: 8..9,
+        },
+        ParseError {
+            context: 9..10,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 9..10,
+        },
+        ParseError {
+            context: 10..13,
+            description: "basic string",
+            expected: [],
+            unexpected: 10..13,
+        },
+        ParseError {
+            context: 13..14,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 13..14,
+        },
+        ParseError {
+            context: 14..19,
+            description: "token",
+            expected: [],
+            unexpected: 14..19,
+        },
+        ParseError {
+            context: 19..20,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 19..20,
+        },
+        ParseError {
+            context: 20..21,
+            description: "`=`",
+            expected: [],
+            unexpected: 20..21,
+        },
+        ParseError {
+            context: 21..22,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 21..22,
+        },
+        ParseError {
+            context: 22..25,
+            description: "basic string",
+            expected: [],
+            unexpected: 22..25,
+        },
+        ParseError {
+            context: 25..26,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 25..26,
+        },
+        ParseError {
+            context: 26..27,
+            description: "`}`",
+            expected: [],
+            unexpected: 26..27,
+        },
+        ParseError {
+            context: 27..27,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 27..27,
+        },
+    ],
+}

@@ -1,0 +1,106 @@
+EventResults {
+    input: "[ 100, -2,]",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..5,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 7..9,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 11..11,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`[`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..2,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 1..2,
+        },
+        ParseError {
+            context: 2..5,
+            description: "token",
+            expected: [],
+            unexpected: 2..5,
+        },
+        ParseError {
+            context: 5..6,
+            description: "`,`",
+            expected: [],
+            unexpected: 5..6,
+        },
+        ParseError {
+            context: 6..7,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 6..7,
+        },
+        ParseError {
+            context: 7..9,
+            description: "token",
+            expected: [],
+            unexpected: 7..9,
+        },
+        ParseError {
+            context: 9..10,
+            description: "`,`",
+            expected: [],
+            unexpected: 9..10,
+        },
+        ParseError {
+            context: 10..11,
+            description: "`]`",
+            expected: [],
+            unexpected: 10..11,
+        },
+        ParseError {
+            context: 11..11,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 11..11,
+        },
+    ],
+}

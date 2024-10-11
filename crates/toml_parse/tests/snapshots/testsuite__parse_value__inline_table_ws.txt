@@ -1,0 +1,51 @@
+EventResults {
+    input: "{   }",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..4,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 5..5,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`{`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..4,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 1..4,
+        },
+        ParseError {
+            context: 4..5,
+            description: "`}`",
+            expected: [],
+            unexpected: 4..5,
+        },
+        ParseError {
+            context: 5..5,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 5..5,
+        },
+    ],
+}

@@ -85,7 +85,7 @@ impl<'i> Raw<'i> {
 }
 
 /// Location within the original document
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
     start: usize,
     end: usize,
@@ -191,6 +191,31 @@ impl SourceIndex for &crate::lexer::Token {
     }
 }
 
+impl SourceIndex for crate::parser::Event {
+    fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
+        (&self).get(source)
+    }
+
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        unsafe { (&self).get_unchecked(source) }
+    }
+}
+
+impl SourceIndex for &crate::parser::Event {
+    fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
+        source.get_raw_str(self.span()).map(Raw::new_unchecked)
+    }
+
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        let raw = unsafe { source.get_raw_str_unchecked(self.span()) };
+        Raw::new_unchecked(raw)
+    }
+}
+
 mod sealed {
     pub trait Sealed {}
 
@@ -198,4 +223,6 @@ mod sealed {
     impl Sealed for &crate::Span {}
     impl Sealed for crate::lexer::Token {}
     impl Sealed for &crate::lexer::Token {}
+    impl Sealed for crate::parser::Event {}
+    impl Sealed for &crate::parser::Event {}
 }

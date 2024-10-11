@@ -1,0 +1,205 @@
+EventResults {
+    input: "[# comment\n# comment2\n    1\n\n#sd\n,\n# comment3\n\n]",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 11..21,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 22..26,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 27..28,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 28..29,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 29..32,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 32..33,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 33..34,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 34..35,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 35..45,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 45..46,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 46..47,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 47..48,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 48..48,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`[`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..10,
+            description: "comment",
+            expected: [],
+            unexpected: 1..10,
+        },
+        ParseError {
+            context: 10..11,
+            description: "newline",
+            expected: [],
+            unexpected: 10..11,
+        },
+        ParseError {
+            context: 11..21,
+            description: "comment",
+            expected: [],
+            unexpected: 11..21,
+        },
+        ParseError {
+            context: 21..22,
+            description: "newline",
+            expected: [],
+            unexpected: 21..22,
+        },
+        ParseError {
+            context: 22..26,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 22..26,
+        },
+        ParseError {
+            context: 26..27,
+            description: "token",
+            expected: [],
+            unexpected: 26..27,
+        },
+        ParseError {
+            context: 27..28,
+            description: "newline",
+            expected: [],
+            unexpected: 27..28,
+        },
+        ParseError {
+            context: 28..29,
+            description: "newline",
+            expected: [],
+            unexpected: 28..29,
+        },
+        ParseError {
+            context: 29..32,
+            description: "comment",
+            expected: [],
+            unexpected: 29..32,
+        },
+        ParseError {
+            context: 32..33,
+            description: "newline",
+            expected: [],
+            unexpected: 32..33,
+        },
+        ParseError {
+            context: 33..34,
+            description: "`,`",
+            expected: [],
+            unexpected: 33..34,
+        },
+        ParseError {
+            context: 34..35,
+            description: "newline",
+            expected: [],
+            unexpected: 34..35,
+        },
+        ParseError {
+            context: 35..45,
+            description: "comment",
+            expected: [],
+            unexpected: 35..45,
+        },
+        ParseError {
+            context: 45..46,
+            description: "newline",
+            expected: [],
+            unexpected: 45..46,
+        },
+        ParseError {
+            context: 46..47,
+            description: "newline",
+            expected: [],
+            unexpected: 46..47,
+        },
+        ParseError {
+            context: 47..48,
+            description: "`]`",
+            expected: [],
+            unexpected: 47..48,
+        },
+        ParseError {
+            context: 48..48,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 48..48,
+        },
+    ],
+}

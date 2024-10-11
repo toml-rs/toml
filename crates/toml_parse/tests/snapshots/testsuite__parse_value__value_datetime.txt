@@ -1,0 +1,51 @@
+EventResults {
+    input: "1979-05-27T00:32:00.999999",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..19,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 20..26,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 26..26,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..19,
+            description: "token",
+            expected: [],
+            unexpected: 0..19,
+        },
+        ParseError {
+            context: 19..20,
+            description: "`.`",
+            expected: [],
+            unexpected: 19..20,
+        },
+        ParseError {
+            context: 20..26,
+            description: "token",
+            expected: [],
+            unexpected: 20..26,
+        },
+        ParseError {
+            context: 26..26,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 26..26,
+        },
+    ],
+}

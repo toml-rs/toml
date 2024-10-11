@@ -1,0 +1,117 @@
+EventResults {
+    input: "[\"a\", \"b\", \"c\"]",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..4,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..9,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 11..14,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 15..15,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`[`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..4,
+            description: "basic string",
+            expected: [],
+            unexpected: 1..4,
+        },
+        ParseError {
+            context: 4..5,
+            description: "`,`",
+            expected: [],
+            unexpected: 4..5,
+        },
+        ParseError {
+            context: 5..6,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 5..6,
+        },
+        ParseError {
+            context: 6..9,
+            description: "basic string",
+            expected: [],
+            unexpected: 6..9,
+        },
+        ParseError {
+            context: 9..10,
+            description: "`,`",
+            expected: [],
+            unexpected: 9..10,
+        },
+        ParseError {
+            context: 10..11,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 10..11,
+        },
+        ParseError {
+            context: 11..14,
+            description: "basic string",
+            expected: [],
+            unexpected: 11..14,
+        },
+        ParseError {
+            context: 14..15,
+            description: "`]`",
+            expected: [],
+            unexpected: 14..15,
+        },
+        ParseError {
+            context: 15..15,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 15..15,
+        },
+    ],
+}

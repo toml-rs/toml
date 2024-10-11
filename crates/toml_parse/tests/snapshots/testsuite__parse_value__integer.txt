@@ -1,0 +1,29 @@
+EventResults {
+    input: "42",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..2,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..2,
+            description: "token",
+            expected: [],
+            unexpected: 0..2,
+        },
+        ParseError {
+            context: 2..2,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 2..2,
+        },
+    ],
+}

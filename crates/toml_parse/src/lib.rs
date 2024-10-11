@@ -14,10 +14,16 @@ extern crate alloc;
 #[macro_use]
 mod macros;
 
+mod error;
 mod source;
 
+pub mod decode;
 pub mod lexer;
+pub mod parser;
 
+pub use error::ErrorSink;
+pub use error::Expected;
+pub use error::ParseError;
 pub use source::Raw;
 pub use source::Source;
 pub use source::SourceIndex;

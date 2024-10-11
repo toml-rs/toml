@@ -1,0 +1,106 @@
+EventResults {
+    input: "hello.world = \"a\"\n",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..5,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..11,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 14..17,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 18..18,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..5,
+            description: "token",
+            expected: [],
+            unexpected: 0..5,
+        },
+        ParseError {
+            context: 5..6,
+            description: "`.`",
+            expected: [],
+            unexpected: 5..6,
+        },
+        ParseError {
+            context: 6..11,
+            description: "token",
+            expected: [],
+            unexpected: 6..11,
+        },
+        ParseError {
+            context: 11..12,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 11..12,
+        },
+        ParseError {
+            context: 12..13,
+            description: "`=`",
+            expected: [],
+            unexpected: 12..13,
+        },
+        ParseError {
+            context: 13..14,
+            description: "whitedpace",
+            expected: [],
+            unexpected: 13..14,
+        },
+        ParseError {
+            context: 14..17,
+            description: "basic string",
+            expected: [],
+            unexpected: 14..17,
+        },
+        ParseError {
+            context: 17..18,
+            description: "newline",
+            expected: [],
+            unexpected: 17..18,
+        },
+        ParseError {
+            context: 18..18,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 18..18,
+        },
+    ],
+}

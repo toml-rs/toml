@@ -1,0 +1,29 @@
+EventResults {
+    input: "'''\nThe first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n'''",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..93,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 93..93,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..93,
+            description: "multi-line literal string",
+            expected: [],
+            unexpected: 0..93,
+        },
+        ParseError {
+            context: 93..93,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 93..93,
+        },
+    ],
+}

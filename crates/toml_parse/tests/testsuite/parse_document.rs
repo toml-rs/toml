@@ -1,0 +1,150 @@
+use snapbox::file;
+
+use toml_parse::parser::*;
+use toml_parse::Source;
+
+#[track_caller]
+fn t(input: &str, expected: impl snapbox::data::IntoData) {
+    dbg!(input);
+    let mut actual = crate::EventResults::new(input);
+
+    let doc = Source::new(input);
+    let tokens = doc.lex().into_vec();
+    parse_document(&tokens, &mut actual.events, &mut actual.errors);
+
+    actual.validate(expected);
+}
+
+#[test]
+fn document_empty() {
+    t("", file![_].raw());
+}
+
+#[test]
+fn document_ws() {
+    t(r#"  "#, file![_].raw());
+}
+
+#[test]
+fn document_key_string() {
+    t(
+        r#"hello.world = "a"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_key_string_comment() {
+    t(
+        r#" hello = 'darkness' # my old friend
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table() {
+    t(
+        r#"[parent . child]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_key_datetime() {
+    t(
+        r#"foo = 1979-05-27 # Comment
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_bom() {
+    t(
+        "\u{FEFF}
+[package]
+name = \"foo\"
+version = \"0.0.1\"
+authors = []
+",
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_complex() {
+    t(
+        r#"
+# This is a TOML document.
+
+title = "TOML Example"
+
+    [owner]
+    name = "Tom Preston-Werner"
+    dob = 1979-05-27T07:32:00-08:00 # First class dates
+
+    [database]
+    server = "192.168.1.1"
+    ports = [ 8001, 8001, 8002 ]
+    connection_max = 5000
+    enabled = true
+
+    [servers]
+
+    # Indentation (tabs and/or spaces) is allowed but not required
+[servers.alpha]
+    ip = "10.0.0.1"
+    dc = "eqdc10"
+
+    [servers.beta]
+    ip = "10.0.0.2"
+    dc = "eqdc10"
+
+    [clients]
+    data = [ ["gamma", "delta"], [1, 2] ]
+
+    # Line breaks are OK when inside arrays
+hosts = [
+    "alpha",
+    "omega"
+]
+
+   'some.weird .stuff'   =  """
+                         like
+                         that
+                      #   """ # this broke my syntax highlighting
+   " also. like " = '''
+that
+'''
+   double = 2e39 # this number looks familiar
+# trailing comment"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_invalid() {
+    t(
+        r#" hello = 'darkness' # my old friend
+$"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_invalid_comment() {
+    t(
+        " hello = 'darkness' # my old\0 friend
+",
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_invalid_cr() {
+    t(" hello = 'darkness' # my old friend\r", file![_].raw());
+}

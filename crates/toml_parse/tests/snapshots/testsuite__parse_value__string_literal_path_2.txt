@@ -1,0 +1,29 @@
+EventResults {
+    input: "'\\\\ServerX\\admin$\\system32\\'",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..28,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 28..28,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..28,
+            description: "literal string",
+            expected: [],
+            unexpected: 0..28,
+        },
+        ParseError {
+            context: 28..28,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 28..28,
+        },
+    ],
+}

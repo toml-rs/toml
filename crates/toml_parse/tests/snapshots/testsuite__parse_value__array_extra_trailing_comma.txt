@@ -1,0 +1,73 @@
+EventResults {
+    input: "[1e165,,]",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 9..9,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "`[`",
+            expected: [],
+            unexpected: 0..1,
+        },
+        ParseError {
+            context: 1..6,
+            description: "token",
+            expected: [],
+            unexpected: 1..6,
+        },
+        ParseError {
+            context: 6..7,
+            description: "`,`",
+            expected: [],
+            unexpected: 6..7,
+        },
+        ParseError {
+            context: 7..8,
+            description: "`,`",
+            expected: [],
+            unexpected: 7..8,
+        },
+        ParseError {
+            context: 8..9,
+            description: "`]`",
+            expected: [],
+            unexpected: 8..9,
+        },
+        ParseError {
+            context: 9..9,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 9..9,
+        },
+    ],
+}

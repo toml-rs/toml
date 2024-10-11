@@ -1,0 +1,29 @@
+EventResults {
+    input: "1e+400",
+    events: [
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 0..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..6,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..6,
+            description: "token",
+            expected: [],
+            unexpected: 0..6,
+        },
+        ParseError {
+            context: 6..6,
+            description: "end-of-input",
+            expected: [],
+            unexpected: 6..6,
+        },
+    ],
+}

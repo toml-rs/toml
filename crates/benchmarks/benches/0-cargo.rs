@@ -8,6 +8,20 @@ mod toml_parse {
         let source = ::toml_parse::Source::new(sample.content());
         source.lex().last()
     }
+
+    #[divan::bench(args=MANIFESTS)]
+    fn events(sample: &Data<'static>) {
+        let source = ::toml_parse::Source::new(sample.content());
+        let tokens = source.lex().into_vec();
+        let mut errors = Vec::with_capacity(tokens.len());
+        ::toml_parse::parser::parse_document(
+            &tokens,
+            &mut |event| {
+                std::hint::black_box(event);
+            },
+            &mut errors,
+        );
+    }
 }
 
 mod toml_edit {
