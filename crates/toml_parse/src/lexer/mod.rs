@@ -34,7 +34,12 @@ impl<'i> Lexer<'i> {
 
     #[cfg(feature = "alloc")]
     pub fn into_vec(self) -> Vec<Token> {
-        let mut vec = Vec::new();
+        #![allow(unused_qualifications)] // due to MSRV of 1.66
+        let capacity = core::cmp::min(
+            self.stream.len(),
+            usize::MAX / core::mem::size_of::<Token>(),
+        );
+        let mut vec = Vec::with_capacity(capacity);
         vec.extend(self);
         vec
     }
