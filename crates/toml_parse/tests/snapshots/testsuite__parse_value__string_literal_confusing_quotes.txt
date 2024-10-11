@@ -2,28 +2,12 @@ EventResults {
     input: "''''one_quote''''",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                MlLiteralString,
+            ),
             span: 0..17,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 17..17,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..17,
-            description: "multi-line literal string",
-            expected: [],
-            unexpected: 0..17,
-        },
-        ParseError {
-            context: 17..17,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 17..17,
-        },
-    ],
+    errors: [],
 }

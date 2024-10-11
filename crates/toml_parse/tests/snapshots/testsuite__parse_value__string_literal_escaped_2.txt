@@ -2,28 +2,12 @@ EventResults {
     input: "'''I [dw]on't need \\d{2} apples'''",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                MlLiteralString,
+            ),
             span: 0..34,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 34..34,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..34,
-            description: "multi-line literal string",
-            expected: [],
-            unexpected: 0..34,
-        },
-        ParseError {
-            context: 34..34,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 34..34,
-        },
-    ],
+    errors: [],
 }

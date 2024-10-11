@@ -2,50 +2,10 @@ EventResults {
     input: "00:32:00.999999",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
-            span: 0..8,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 8..9,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 9..15,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 15..15,
+            span: 0..15,
         },
     ],
-    errors: [
-        ParseError {
-            context: 0..8,
-            description: "token",
-            expected: [],
-            unexpected: 0..8,
-        },
-        ParseError {
-            context: 8..9,
-            description: "`.`",
-            expected: [],
-            unexpected: 8..9,
-        },
-        ParseError {
-            context: 9..15,
-            description: "token",
-            expected: [],
-            unexpected: 9..15,
-        },
-        ParseError {
-            context: 15..15,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 15..15,
-        },
-    ],
+    errors: [],
 }

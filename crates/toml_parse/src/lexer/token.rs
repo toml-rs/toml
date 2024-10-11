@@ -5,6 +5,7 @@ use super::APOSTROPHE;
 use super::COMMENT_START_SYMBOL;
 use super::QUOTATION_MARK;
 use super::WSCHAR;
+use crate::decode::Encoding;
 
 /// An unvalidated TOML Token
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -88,6 +89,27 @@ impl TokenKind {
             TokenKind::MlBasicString => "multi-line basic string",
             TokenKind::Atom => "token",
             TokenKind::Eof => "end-of-input",
+        }
+    }
+
+    pub fn encoding(&self) -> Option<Encoding> {
+        match self {
+            TokenKind::LiteralString => Some(Encoding::LiteralString),
+            TokenKind::BasicString => Some(Encoding::BasicString),
+            TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
+            TokenKind::MlBasicString => Some(Encoding::MlBasicString),
+            TokenKind::Atom
+            | TokenKind::LeftSquareBracket
+            | TokenKind::RightSquareBracket
+            | TokenKind::Dot
+            | TokenKind::Equals
+            | TokenKind::Comma
+            | TokenKind::RightCurlyBracket
+            | TokenKind::LeftCurlyBracket
+            | TokenKind::Whitespace
+            | TokenKind::Newline
+            | TokenKind::Comment
+            | TokenKind::Eof => None,
         }
     }
 }

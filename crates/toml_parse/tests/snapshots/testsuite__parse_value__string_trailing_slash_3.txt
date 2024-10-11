@@ -2,28 +2,12 @@ EventResults {
     input: "\"\"\"\\\n       The quick brown \\\n       fox jumps over \\\n       the lazy dog.\\\n       \"\"\"",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
             span: 0..86,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 86..86,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..86,
-            description: "multi-line basic string",
-            expected: [],
-            unexpected: 0..86,
-        },
-        ParseError {
-            context: 86..86,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 86..86,
-        },
-    ],
+    errors: [],
 }

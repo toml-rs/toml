@@ -1,17 +1,15 @@
 EventResults {
     input: "",
-    events: [
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 0..0,
-        },
-    ],
+    events: [],
     errors: [
         ParseError {
             context: 0..0,
-            description: "end-of-input",
-            expected: [],
+            description: "key-value pair",
+            expected: [
+                Description(
+                    "value",
+                ),
+            ],
             unexpected: 0..0,
         },
     ],

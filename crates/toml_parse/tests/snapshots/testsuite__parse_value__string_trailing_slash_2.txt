@@ -2,28 +2,12 @@ EventResults {
     input: "\"\"\"\n\\\n  \\\n\"\"\"",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
             span: 0..13,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 13..13,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..13,
-            description: "multi-line basic string",
-            expected: [],
-            unexpected: 0..13,
-        },
-        ParseError {
-            context: 13..13,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 13..13,
-        },
-    ],
+    errors: [],
 }

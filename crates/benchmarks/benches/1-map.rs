@@ -25,7 +25,7 @@ mod toml_parse {
             .bench_values(|sample| {
                 let source = ::toml_parse::Source::new(&sample);
                 let tokens = source.lex().into_vec();
-                let mut errors = Vec::with_capacity(tokens.len());
+                let mut errors = Vec::new();
                 ::toml_parse::parser::parse_document(
                     &tokens,
                     &mut |event| {

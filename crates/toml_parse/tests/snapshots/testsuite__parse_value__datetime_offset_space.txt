@@ -2,50 +2,10 @@ EventResults {
     input: "1979-05-27 07:32:00Z",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
-            span: 0..10,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 10..11,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 11..20,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 20..20,
+            span: 0..20,
         },
     ],
-    errors: [
-        ParseError {
-            context: 0..10,
-            description: "token",
-            expected: [],
-            unexpected: 0..10,
-        },
-        ParseError {
-            context: 10..11,
-            description: "whitedpace",
-            expected: [],
-            unexpected: 10..11,
-        },
-        ParseError {
-            context: 11..20,
-            description: "token",
-            expected: [],
-            unexpected: 11..20,
-        },
-        ParseError {
-            context: 20..20,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 20..20,
-        },
-    ],
+    errors: [],
 }

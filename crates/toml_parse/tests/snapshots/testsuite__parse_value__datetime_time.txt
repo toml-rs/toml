@@ -2,28 +2,10 @@ EventResults {
     input: "07:32:00",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 0..8,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 8..8,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..8,
-            description: "token",
-            expected: [],
-            unexpected: 0..8,
-        },
-        ParseError {
-            context: 8..8,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 8..8,
-        },
-    ],
+    errors: [],
 }

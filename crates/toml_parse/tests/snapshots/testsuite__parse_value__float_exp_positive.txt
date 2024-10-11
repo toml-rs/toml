@@ -2,28 +2,10 @@ EventResults {
     input: "5e+22",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 0..5,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 5..5,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..5,
-            description: "token",
-            expected: [],
-            unexpected: 0..5,
-        },
-        ParseError {
-            context: 5..5,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 5..5,
-        },
-    ],
+    errors: [],
 }

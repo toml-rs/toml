@@ -2,28 +2,10 @@ EventResults {
     input: "0o0_755",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 0..7,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 7..7,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..7,
-            description: "token",
-            expected: [],
-            unexpected: 0..7,
-        },
-        ParseError {
-            context: 7..7,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 7..7,
-        },
-    ],
+    errors: [],
 }

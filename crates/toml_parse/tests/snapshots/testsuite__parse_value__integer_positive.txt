@@ -2,28 +2,10 @@ EventResults {
     input: "+99",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 0..3,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 3..3,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..3,
-            description: "token",
-            expected: [],
-            unexpected: 0..3,
-        },
-        ParseError {
-            context: 3..3,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 3..3,
-        },
-    ],
+    errors: [],
 }

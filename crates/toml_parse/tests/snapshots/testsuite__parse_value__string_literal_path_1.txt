@@ -2,28 +2,12 @@ EventResults {
     input: "'C:\\Users\\nodejs\\templates'",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                LiteralString,
+            ),
             span: 0..27,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 27..27,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..27,
-            description: "literal string",
-            expected: [],
-            unexpected: 0..27,
-        },
-        ParseError {
-            context: 27..27,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 27..27,
-        },
-    ],
+    errors: [],
 }

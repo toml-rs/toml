@@ -2,28 +2,12 @@ EventResults {
     input: "\"Jos\\u00E9\\n\"",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
             span: 0..13,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 13..13,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..13,
-            description: "basic string",
-            expected: [],
-            unexpected: 0..13,
-        },
-        ParseError {
-            context: 13..13,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 13..13,
-        },
-    ],
+    errors: [],
 }

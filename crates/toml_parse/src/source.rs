@@ -111,6 +111,20 @@ impl Span {
     pub fn end(&self) -> usize {
         self.end
     }
+
+    pub fn before(&self) -> Self {
+        Self::new_unchecked(self.start, self.start)
+    }
+
+    pub fn after(&self) -> Self {
+        Self::new_unchecked(self.end, self.end)
+    }
+
+    /// Extend this `Raw` to the end of `after`
+    #[must_use]
+    pub(crate) fn append(&self, after: Self) -> Self {
+        Self::new_unchecked(self.start, after.end)
+    }
 }
 
 impl core::fmt::Debug for Span {

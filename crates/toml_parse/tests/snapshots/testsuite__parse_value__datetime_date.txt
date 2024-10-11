@@ -2,28 +2,10 @@ EventResults {
     input: "1979-05-27",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 0..10,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 10..10,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..10,
-            description: "token",
-            expected: [],
-            unexpected: 0..10,
-        },
-        ParseError {
-            context: 10..10,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 10..10,
-        },
-    ],
+    errors: [],
 }

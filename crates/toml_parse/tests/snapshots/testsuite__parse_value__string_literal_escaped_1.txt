@@ -2,28 +2,12 @@ EventResults {
     input: "'<\\i\\c*\\s*>'",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                LiteralString,
+            ),
             span: 0..12,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 12..12,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..12,
-            description: "literal string",
-            expected: [],
-            unexpected: 0..12,
-        },
-        ParseError {
-            context: 12..12,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 12..12,
-        },
-    ],
+    errors: [],
 }

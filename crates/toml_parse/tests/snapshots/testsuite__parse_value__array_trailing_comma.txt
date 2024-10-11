@@ -2,61 +2,25 @@ EventResults {
     input: "[1,]",
     events: [
         Event {
-            kind: Error,
+            kind: ArrayOpen,
             encoding: None,
             span: 0..1,
         },
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 1..2,
         },
         Event {
-            kind: Error,
+            kind: ValueSep,
             encoding: None,
             span: 2..3,
         },
         Event {
-            kind: Error,
+            kind: ArrayClose,
             encoding: None,
             span: 3..4,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 4..4,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..1,
-            description: "`[`",
-            expected: [],
-            unexpected: 0..1,
-        },
-        ParseError {
-            context: 1..2,
-            description: "token",
-            expected: [],
-            unexpected: 1..2,
-        },
-        ParseError {
-            context: 2..3,
-            description: "`,`",
-            expected: [],
-            unexpected: 2..3,
-        },
-        ParseError {
-            context: 3..4,
-            description: "`]`",
-            expected: [],
-            unexpected: 3..4,
-        },
-        ParseError {
-            context: 4..4,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 4..4,
-        },
-    ],
+    errors: [],
 }

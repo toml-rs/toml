@@ -13,7 +13,7 @@ mod toml_parse {
     fn events(sample: &Data<'static>) {
         let source = ::toml_parse::Source::new(sample.content());
         let tokens = source.lex().into_vec();
-        let mut errors = Vec::with_capacity(tokens.len());
+        let mut errors = Vec::new();
         ::toml_parse::parser::parse_document(
             &tokens,
             &mut |event| {

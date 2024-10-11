@@ -2,50 +2,10 @@ EventResults {
     input: "9_224_617.445_991_228_313",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
-            span: 0..9,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 9..10,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 10..25,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 25..25,
+            span: 0..25,
         },
     ],
-    errors: [
-        ParseError {
-            context: 0..9,
-            description: "token",
-            expected: [],
-            unexpected: 0..9,
-        },
-        ParseError {
-            context: 9..10,
-            description: "`.`",
-            expected: [],
-            unexpected: 9..10,
-        },
-        ParseError {
-            context: 10..25,
-            description: "token",
-            expected: [],
-            unexpected: 10..25,
-        },
-        ParseError {
-            context: 25..25,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 25..25,
-        },
-    ],
+    errors: [],
 }

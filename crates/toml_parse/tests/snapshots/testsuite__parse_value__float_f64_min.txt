@@ -2,50 +2,10 @@ EventResults {
     input: "-1.7976931348623157e+308",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
-            span: 0..2,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 2..3,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 3..24,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 24..24,
+            span: 0..24,
         },
     ],
-    errors: [
-        ParseError {
-            context: 0..2,
-            description: "token",
-            expected: [],
-            unexpected: 0..2,
-        },
-        ParseError {
-            context: 2..3,
-            description: "`.`",
-            expected: [],
-            unexpected: 2..3,
-        },
-        ParseError {
-            context: 3..24,
-            description: "token",
-            expected: [],
-            unexpected: 3..24,
-        },
-        ParseError {
-            context: 24..24,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 24..24,
-        },
-    ],
+    errors: [],
 }

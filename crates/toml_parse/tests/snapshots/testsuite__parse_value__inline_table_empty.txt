@@ -2,39 +2,15 @@ EventResults {
     input: "{}",
     events: [
         Event {
-            kind: Error,
+            kind: InlineTableOpen,
             encoding: None,
             span: 0..1,
         },
         Event {
-            kind: Error,
+            kind: InlineTableClose,
             encoding: None,
             span: 1..2,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 2..2,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..1,
-            description: "`{`",
-            expected: [],
-            unexpected: 0..1,
-        },
-        ParseError {
-            context: 1..2,
-            description: "`}`",
-            expected: [],
-            unexpected: 1..2,
-        },
-        ParseError {
-            context: 2..2,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 2..2,
-        },
-    ],
+    errors: [],
 }

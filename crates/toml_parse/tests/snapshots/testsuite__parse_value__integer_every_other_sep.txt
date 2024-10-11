@@ -2,28 +2,10 @@ EventResults {
     input: "1_2_3_4_5",
     events: [
         Event {
-            kind: Error,
+            kind: Scalar,
             encoding: None,
             span: 0..9,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 9..9,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..9,
-            description: "token",
-            expected: [],
-            unexpected: 0..9,
-        },
-        ParseError {
-            context: 9..9,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 9..9,
-        },
-    ],
+    errors: [],
 }

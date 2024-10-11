@@ -2,28 +2,12 @@ EventResults {
     input: "\"\"\"\nRoses are red\nViolets are blue\"\"\"",
     events: [
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
             span: 0..37,
         },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 37..37,
-        },
     ],
-    errors: [
-        ParseError {
-            context: 0..37,
-            description: "multi-line basic string",
-            expected: [],
-            unexpected: 0..37,
-        },
-        ParseError {
-            context: 37..37,
-            description: "end-of-input",
-            expected: [],
-            unexpected: 37..37,
-        },
-    ],
+    errors: [],
 }
