@@ -8,6 +8,9 @@ rust-version.workspace = true
 [package.metadata.release]
 release = false
 
+[features]
+default = []
+
 [dependencies]
 serde = { version = "1.0.197", features = ["derive"] }
 
@@ -20,11 +23,15 @@ lexopt = "0.3.0"
 divan = "0.1.14"
 
 [[bench]]
-name = "cargo"
+name = "0-cargo"
 harness = false
 
 [[bench]]
-name = "linear"
+name = "1-map"
+harness = false
+
+[[bench]]
+name = "2-array"
 harness = false
 
 [lints]
