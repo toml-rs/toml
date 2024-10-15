@@ -83,7 +83,11 @@ impl From<Error> for crate::TomlError {
     }
 }
 
-impl std::error::Error for Error {}
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.inner)
+    }
+}
 
 /// Convert a TOML [documents][crate::DocumentMut] into `T`.
 #[cfg(feature = "parse")]
