@@ -135,7 +135,7 @@ impl Map<String, Value> {
         String: Borrow<Q>,
         Q: Ord + Eq + Hash + ?Sized,
     {
-        self.map.remove(key)
+        self.map.shift_remove(key)
     }
 
     /// Retains only the elements specified by the `keep` predicate.
@@ -501,7 +501,7 @@ impl<'a> OccupiedEntry<'a> {
     /// Takes the value of the entry out of the map, and returns it.
     #[inline]
     pub fn remove(self) -> Value {
-        self.occupied.remove()
+        self.occupied.shift_remove()
     }
 }
 

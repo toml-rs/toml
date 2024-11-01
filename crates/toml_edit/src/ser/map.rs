@@ -1,6 +1,7 @@
 use super::{Error, KeySerializer, SerializeValueArray, ValueSerializer};
 
 #[doc(hidden)]
+#[allow(clippy::large_enum_variant)]
 pub enum SerializeMap {
     Datetime(SerializeDatetime),
     Table(SerializeInlineTable),
