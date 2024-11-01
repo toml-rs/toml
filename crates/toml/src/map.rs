@@ -135,7 +135,14 @@ impl Map<String, Value> {
         String: Borrow<Q>,
         Q: Ord + Eq + Hash + ?Sized,
     {
-        self.map.remove(key)
+        #[cfg(not(feature = "preserve_order"))]
+        {
+            self.map.remove(key)
+        }
+        #[cfg(feature = "preserve_order")]
+        {
+            self.map.shift_remove(key)
+        }
     }
 
     /// Retains only the elements specified by the `keep` predicate.
@@ -501,7 +508,14 @@ impl<'a> OccupiedEntry<'a> {
     /// Takes the value of the entry out of the map, and returns it.
     #[inline]
     pub fn remove(self) -> Value {
-        self.occupied.remove()
+        #[cfg(not(feature = "preserve_order"))]
+        {
+            self.occupied.remove()
+        }
+        #[cfg(feature = "preserve_order")]
+        {
+            self.occupied.shift_remove()
+        }
     }
 }
 
