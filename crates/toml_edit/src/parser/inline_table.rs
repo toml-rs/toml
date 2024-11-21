@@ -174,6 +174,25 @@ mod test {
     }
 
     #[test]
+    fn inline_table_reordering() {
+        let inputs = [
+            (
+                r#"{ hello.world = "a", goodbye = "b", hello.moon = "c" }"#,
+                // note the stylistic change, hello.moon has a space before its comma
+                r#"{ hello.world = "a", hello.moon = "c" , goodbye = "b"}"#,
+            )
+        ];
+        for (input, expected) in inputs {
+            dbg!(input);
+            let mut parsed = inline_table.parse(new_input(input));
+            if let Ok(parsed) = &mut parsed {
+                parsed.despan(input);
+            }
+            assert_eq!(parsed.map(|a| a.to_string()), Ok(expected.to_owned()));
+        }
+    }
+
+    #[test]
     fn invalid_inline_tables() {
         let invalid_inputs = [r#"{a = 1e165"#, r#"{ hello = "world", a = 2, hello = 1}"#];
         for input in invalid_inputs {
