@@ -35,6 +35,7 @@ pub(crate) trait GetTableValues {
                 _ => {}
             }
         }
+        sort_values_by_position(values);
     }
 }
 
@@ -136,6 +137,29 @@ where
         key.set_position(Some(pos));
         recursive_step(value);
     }
+}
+
+fn sort_values_by_position<'s>(values: &mut [(Vec<&'s Key>, &'s Value)]) {
+    /*
+    `Vec::sort_by_key` works because we add the position to _every_ item's key during parsing,
+    so keys without positions would be either:
+       1. non-leaf keys (i.e. "foo" or "bar" in dotted key "foo.bar.baz")
+       2. custom keys added to the doc without an explicit position
+    In the case of (1), we'd never see it since we only look at the last
+    key in a dotted-key. So, we can safely return a constant value for these cases.
+
+    To support the most intuitive behavior, we return the maximum usize, placing
+    position=None items at the end, so when you insert it without position, it
+    appends it to the end.
+     */
+    values.sort_by_key(|(key_path, _)| {
+        return match key_path.last().map(|x| x.position) {
+            // unwrap "last()" -> unwrap "position"
+            Some(Some(pos)) => pos,
+            // either last() = None, or position = None
+            _ => usize::MAX
+        };
+    });
 }
 
 impl TryFrom<&Item> for Value {

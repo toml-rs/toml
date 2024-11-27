@@ -217,6 +217,20 @@ key = "value"
 "#,
             r#"hello.world = "a"
 "#,
+            r#"
+hello.world = "a"
+goodbye = "b"
+hello.moon = "c"
+"#,
+            r#"
+tool1.featureA = "foo"
+# note this must match the above line, ask Dave why
+tool2.featureA = "foo"
+
+# these two values must always add to 9 because reasons
+tool1.featureB = -1
+tool3.featureB = 10
+"#,
             r#"foo = 1979-05-27 # Comment
 "#,
         ];
@@ -231,55 +245,6 @@ key = "value"
             };
 
             assert_data_eq!(doc.to_string(), input.raw());
-        }
-    }
-    #[test]
-    fn documents_reordering() {
-        let documents = [
-            (
-                r#"
-hello.world = "a"
-goodbye = "b"
-hello.moon = "c"
-"#,
-                r#"
-hello.world = "a"
-hello.moon = "c"
-goodbye = "b"
-"#,
-            ),
-            (r#"
-tool1.featureA = "foo"
-# note this must match the above line, ask Dave why
-tool2.featureA = "foo"
-
-# these two values must always add to 9 because reasons
-tool1.featureB = -1
-tool3.featureB = 10
-"#,
-             // these comments have now completely lost their meaning
-             r#"
-tool1.featureA = "foo"
-
-# these two values must always add to 9 because reasons
-tool1.featureB = -1
-# note this must match the above line, ask Dave why
-tool2.featureA = "foo"
-tool3.featureB = 10
-"#
-            ),
-        ];
-        for (input, expected) in documents {
-            dbg!(input);
-            let parsed = parse_document(input).map(|d| d.into_mut());
-            let doc = match parsed {
-                Ok(doc) => doc,
-                Err(err) => {
-                    panic!("Parse error: {err:?}\nFailed to parse:\n```\n{input}\n```")
-                }
-            };
-
-            assert_data_eq!(doc.to_string(), expected.raw());
         }
     }
 

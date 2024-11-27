@@ -1076,7 +1076,6 @@ tool2.featureA = "foo"
 tool1.featureB = -1
 tool3.featureB = 10
 "#)
-        //language=none
     .running_on_doc(|doc| {
         let first_tool_k = "tool1";
         let second_tool_k = "tool3";
@@ -1101,18 +1100,82 @@ tool3.featureB = 10
         root[first_tool_k][feature_k] = Item::from(split_val);
         root[second_tool_k][feature_k] = Item::from(split_val2);
     })
-    // these comments have now completely lost their meaning
     .produces_display(str![[
         r#"
 
 tool1.featureA = "foo"
+# note this must match the above line, ask Dave why
+tool2.featureA = "foo"
 
 # these two values must always add to 9 because reasons
 tool1.featureB = 4
-# note this must match the above line, ask Dave why
-tool2.featureA = "foo"
 tool3.featureB = 5
 
 "#
     ]]);
+}
+
+#[test]
+fn insert_key_with_position() {
+    given(r#"foo.bar = 1
+
+foo.baz.qwer = "a"
+goodbye = { forever="no" }
+
+foo.pub = 2
+foo.baz.asdf = "b"
+"#)
+    .running_on_doc(|doc| {
+        let root = doc.as_table_mut();
+        let (_, foo_v) = root.get_key_value_mut("foo").unwrap();
+        let foo = as_table!(foo_v);
+        let (_, foo_baz_v) = foo.get_key_value_mut("baz").unwrap();
+        let foo_baz = as_table!(foo_baz_v);
+
+        let foo_baz_asdf_v = foo_baz.remove("asdf").unwrap();
+        let foo_baz_asdf_k = Key::new("asdf").with_position(Some(0));
+
+        foo_baz.insert_formatted(&foo_baz_asdf_k, foo_baz_asdf_v);
+    })
+    .produces_display(str![[r#"foo.bar = 1
+foo.baz.asdf = "b"
+
+foo.baz.qwer = "a"
+goodbye = { forever="no" }
+
+foo.pub = 2
+
+"#]]);
+}
+
+#[test]
+fn insert_key_with_position_none() {
+    given(r#"foo.bar = 1
+
+foo.baz.qwer = "a"
+goodbye = { forever="no" }
+
+foo.pub = 2
+foo.baz.asdf = "b"
+"#)
+    .running_on_doc(|doc| {
+        let root = doc.as_table_mut();
+        let (_, foo_v) = root.get_key_value_mut("foo").unwrap();
+        let foo = as_table!(foo_v);
+        let (_, foo_baz_v) = foo.get_key_value_mut("baz").unwrap();
+        let foo_baz = as_table!(foo_baz_v);
+
+        let foo_baz_asdf_v = foo_baz.remove("qwer").unwrap();
+        let foo_baz_asdf_k = Key::new("qwer").with_position(None);
+
+        foo_baz.insert_formatted(&foo_baz_asdf_k, foo_baz_asdf_v);
+    })
+    .produces_display(str![[r#"foo.bar = 1
+goodbye = { forever="no" }
+
+foo.pub = 2
+foo.baz.asdf = "b"
+foo.baz.qwer = "a"
+
+"#]]);
 }

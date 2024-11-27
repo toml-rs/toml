@@ -1616,15 +1616,7 @@ rust.explicit_outlives_requirements = "warn"
 clippy.doc_markdown = "warn"
 clippy.exhaustive_enums = "warn"
 "###;
-    let expected = r###"
-rust.unsafe_op_in_unsafe_fn = "deny"
-rust.explicit_outlives_requirements = "warn"
-
-clippy.cast_lossless = "warn"
-
-clippy.doc_markdown = "warn"
-clippy.exhaustive_enums = "warn"
-"###;
+    let expected = input;
 
     let manifest: DocumentMut = input.parse().unwrap();
     let actual = manifest.to_string();
