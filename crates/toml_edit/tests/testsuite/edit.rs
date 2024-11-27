@@ -26,8 +26,10 @@ struct Test {
 
 fn given(input: &str) -> Test {
     let doc = input.parse::<DocumentMut>();
-    assert!(doc.is_ok());
-    Test { doc: doc.unwrap() }
+    match doc {
+        Err(e) => panic!("{}", e),
+        _ => Test { doc: doc.unwrap() }
+    }
 }
 
 impl Test {
