@@ -243,7 +243,7 @@ impl PartialEq<str> for Key {
     }
 }
 
-impl<'s> PartialEq<&'s str> for Key {
+impl PartialEq<&str> for Key {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.get(), *other)
@@ -339,7 +339,7 @@ pub struct KeyMut<'k> {
     key: &'k mut Key,
 }
 
-impl<'k> KeyMut<'k> {
+impl KeyMut<'_> {
     /// Returns the parsed key value.
     pub fn get(&self) -> &str {
         self.key.get()
@@ -405,7 +405,7 @@ impl<'k> KeyMut<'k> {
     }
 }
 
-impl<'k> std::ops::Deref for KeyMut<'k> {
+impl std::ops::Deref for KeyMut<'_> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -413,7 +413,7 @@ impl<'k> std::ops::Deref for KeyMut<'k> {
     }
 }
 
-impl<'s> PartialEq<str> for KeyMut<'s> {
+impl PartialEq<str> for KeyMut<'_> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.get(), other)
@@ -427,7 +427,7 @@ impl<'s> PartialEq<&'s str> for KeyMut<'s> {
     }
 }
 
-impl<'s> PartialEq<String> for KeyMut<'s> {
+impl PartialEq<String> for KeyMut<'_> {
     #[inline]
     fn eq(&self, other: &String) -> bool {
         PartialEq::eq(self.get(), other.as_str())
@@ -435,7 +435,7 @@ impl<'s> PartialEq<String> for KeyMut<'s> {
 }
 
 #[cfg(feature = "display")]
-impl<'k> std::fmt::Display for KeyMut<'k> {
+impl std::fmt::Display for KeyMut<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(&self.key, f)
     }

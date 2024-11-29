@@ -108,7 +108,7 @@ impl<'de> de::Deserializer<'de> for Table {
     }
 }
 
-impl<'de> de::IntoDeserializer<'de, crate::de::Error> for Table {
+impl de::IntoDeserializer<'_, crate::de::Error> for Table {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self {

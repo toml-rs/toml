@@ -13,7 +13,7 @@ impl KeyDeserializer {
     }
 }
 
-impl<'de> IntoDeserializer<'de, Error> for KeyDeserializer {
+impl IntoDeserializer<'_, Error> for KeyDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {

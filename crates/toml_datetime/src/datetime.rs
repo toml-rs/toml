@@ -615,7 +615,7 @@ impl<'de> de::Deserialize<'de> for DatetimeKey {
     {
         struct FieldVisitor;
 
-        impl<'de> de::Visitor<'de> for FieldVisitor {
+        impl de::Visitor<'_> for FieldVisitor {
             type Value = ();
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -653,7 +653,7 @@ impl<'de> de::Deserialize<'de> for DatetimeFromString {
     {
         struct Visitor;
 
-        impl<'de> de::Visitor<'de> for Visitor {
+        impl de::Visitor<'_> for Visitor {
             type Value = DatetimeFromString;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

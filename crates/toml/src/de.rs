@@ -106,7 +106,7 @@ impl<'a> Deserializer<'a> {
 }
 
 #[cfg(feature = "parse")]
-impl<'de, 'a> serde::Deserializer<'de> for Deserializer<'a> {
+impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -218,7 +218,7 @@ impl<'a> ValueDeserializer<'a> {
 }
 
 #[cfg(feature = "parse")]
-impl<'de, 'a> serde::Deserializer<'de> for ValueDeserializer<'a> {
+impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>

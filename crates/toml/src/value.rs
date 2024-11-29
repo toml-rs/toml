@@ -318,7 +318,7 @@ pub trait Sealed {}
 impl Sealed for usize {}
 impl Sealed for str {}
 impl Sealed for String {}
-impl<'a, T: Sealed + ?Sized> Sealed for &'a T {}
+impl<T: Sealed + ?Sized> Sealed for &T {}
 
 impl Index for usize {
     fn index<'a>(&self, val: &'a Value) -> Option<&'a Value> {
@@ -362,7 +362,7 @@ impl Index for String {
     }
 }
 
-impl<'s, T> Index for &'s T
+impl<T> Index for &T
 where
     T: Index + ?Sized,
 {
@@ -854,7 +854,7 @@ impl<'de> de::VariantAccess<'de> for MapEnumDeserializer {
     }
 }
 
-impl<'de> IntoDeserializer<'de, crate::de::Error> for Value {
+impl IntoDeserializer<'_, crate::de::Error> for Value {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self {
@@ -1408,7 +1408,7 @@ struct DatetimeOrTable<'a> {
     key: &'a mut String,
 }
 
-impl<'a, 'de> de::DeserializeSeed<'de> for DatetimeOrTable<'a> {
+impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable<'_> {
     type Value = bool;
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -1419,7 +1419,7 @@ impl<'a, 'de> de::DeserializeSeed<'de> for DatetimeOrTable<'a> {
     }
 }
 
-impl<'a, 'de> de::Visitor<'de> for DatetimeOrTable<'a> {
+impl de::Visitor<'_> for DatetimeOrTable<'_> {
     type Value = bool;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -263,7 +263,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer {
+impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -271,7 +271,7 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for crate::DocumentMut {
+impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -279,7 +279,7 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for crate::DocumentMut {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for crate::ImDocument<String> {
+impl serde::de::IntoDeserializer<'_, Error> for crate::ImDocument<String> {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

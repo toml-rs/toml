@@ -773,7 +773,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeSeq for SerializeDocumentArray<'d> {
+    impl serde::ser::SerializeSeq for SerializeDocumentArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -789,7 +789,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTuple for SerializeDocumentArray<'d> {
+    impl serde::ser::SerializeTuple for SerializeDocumentArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -805,7 +805,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentArray<'d> {
+    impl serde::ser::SerializeTupleVariant for SerializeDocumentArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -821,7 +821,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleStruct for SerializeDocumentArray<'d> {
+    impl serde::ser::SerializeTupleStruct for SerializeDocumentArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -857,7 +857,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
+    impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -880,7 +880,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
+    impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -938,7 +938,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
+    impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -954,7 +954,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTuple for SerializeValueArray<'d> {
+    impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -970,7 +970,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleVariant for SerializeValueArray<'d> {
+    impl serde::ser::SerializeTupleVariant for SerializeValueArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -986,7 +986,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeTupleStruct for SerializeValueArray<'d> {
+    impl serde::ser::SerializeTupleStruct for SerializeValueArray<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -1020,7 +1020,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeMap for SerializeValueTable<'d> {
+    impl serde::ser::SerializeMap for SerializeValueTable<'_> {
         type Ok = ();
         type Error = Error;
 
@@ -1043,7 +1043,7 @@ mod internal {
         }
     }
 
-    impl<'d> serde::ser::SerializeStruct for SerializeValueTable<'d> {
+    impl serde::ser::SerializeStruct for SerializeValueTable<'_> {
         type Ok = ();
         type Error = Error;
 

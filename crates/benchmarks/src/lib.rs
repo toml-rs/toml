@@ -11,7 +11,7 @@ impl<'s> Data<'s> {
     }
 }
 
-impl<'s> std::fmt::Display for Data<'s> {
+impl std::fmt::Display for Data<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.name().fmt(f)
     }

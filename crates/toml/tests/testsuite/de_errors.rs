@@ -40,7 +40,7 @@ impl<'de> Deserialize<'de> for CasedString {
     {
         struct CasedStringVisitor;
 
-        impl<'de> de::Visitor<'de> for CasedStringVisitor {
+        impl de::Visitor<'_> for CasedStringVisitor {
             type Value = CasedString;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

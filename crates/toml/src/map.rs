@@ -248,7 +248,7 @@ impl PartialEq for Map<String, Value> {
 
 /// Access an element of this map. Panics if the given key is not present in the
 /// map.
-impl<'a, Q> ops::Index<&'a Q> for Map<String, Value>
+impl<Q> ops::Index<&Q> for Map<String, Value>
 where
     String: Borrow<Q>,
     Q: Ord + Eq + Hash + ?Sized,
@@ -262,7 +262,7 @@ where
 
 /// Mutably access an element of this map. Panics if the given key is not
 /// present in the map.
-impl<'a, Q> ops::IndexMut<&'a Q> for Map<String, Value>
+impl<Q> ops::IndexMut<&Q> for Map<String, Value>
 where
     String: Borrow<Q>,
     Q: Ord + Eq + Hash + ?Sized,
