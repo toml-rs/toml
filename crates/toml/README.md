@@ -5,7 +5,7 @@
 
 A [serde]-compatible [TOML][toml] decoder and encoder for Rust.
 
-For format-preserving edits or finer control over output, see [toml_edit]
+For format-preserving editing or finer control over output, see [toml_edit]
 
 [serde]: https://serde.rs/
 [toml]: https://github.com/toml-lang/toml
