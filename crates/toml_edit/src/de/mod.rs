@@ -21,7 +21,7 @@ use table_enum::TableEnumDeserializer;
 pub use value::ValueDeserializer;
 
 /// Errors that can occur when deserializing a type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Error {
     inner: crate::TomlError,
 }
@@ -66,6 +66,12 @@ impl serde::de::Error for Error {
 }
 
 impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl std::fmt::Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner.fmt(f)
     }

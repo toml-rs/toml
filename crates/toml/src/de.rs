@@ -46,7 +46,7 @@ where
 }
 
 /// Errors that can occur when deserializing a type.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Error {
     inner: crate::edit::de::Error,
 }
@@ -82,6 +82,12 @@ impl serde::de::Error for Error {
 }
 
 impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl std::fmt::Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner.fmt(f)
     }

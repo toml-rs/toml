@@ -74,7 +74,7 @@ where
 }
 
 /// Errors that can occur when serializing a type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Error {
     pub(crate) inner: crate::edit::ser::Error,
 }
@@ -120,6 +120,12 @@ impl serde::ser::Error for Error {
 }
 
 impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl std::fmt::Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner.fmt(f)
     }
