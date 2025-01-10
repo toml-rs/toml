@@ -86,11 +86,11 @@ pub(crate) mod prelude {
     pub(crate) use winnow::PResult;
     pub(crate) use winnow::Parser;
 
-    pub(crate) type Input<'b> = winnow::Stateful<winnow::Located<&'b winnow::BStr>, RecursionCheck>;
+    pub(crate) type Input<'b> = winnow::Stateful<winnow::stream::Located<&'b winnow::BStr>, RecursionCheck>;
 
     pub(crate) fn new_input(s: &str) -> Input<'_> {
         winnow::Stateful {
-            input: winnow::Located::new(winnow::BStr::new(s)),
+            input: winnow::stream::Located::new(winnow::BStr::new(s)),
             state: Default::default(),
         }
     }
