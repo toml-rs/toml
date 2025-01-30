@@ -28,7 +28,7 @@ use crate::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_A
 // ;; String
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
-pub(crate) fn string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+pub(crate) fn string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     trace(
         "string",
         alt((
@@ -44,7 +44,7 @@ pub(crate) fn string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 // ;; Basic String
 
 // basic-string = quotation-mark *basic-char quotation-mark
-pub(crate) fn basic_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+pub(crate) fn basic_string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     trace("basic-string", |input: &mut Input<'i>| {
         let _ = one_of(QUOTATION_MARK).parse_next(input)?;
 
@@ -69,7 +69,7 @@ pub(crate) fn basic_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 pub(crate) const QUOTATION_MARK: u8 = b'"';
 
 // basic-char = basic-unescaped / escaped
-fn basic_chars<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+fn basic_chars<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     alt((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
@@ -91,7 +91,7 @@ pub(crate) const BASIC_UNESCAPED: (
 ) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
 // escaped = escape escape-seq-char
-fn escaped(input: &mut Input<'_>) -> PResult<char> {
+fn escaped(input: &mut Input<'_>) -> ModalResult<char> {
     preceded(ESCAPE, escape_seq_char).parse_next(input)
 }
 
@@ -107,7 +107,7 @@ pub(crate) const ESCAPE: u8 = b'\\';
 // escape-seq-char =/ %x74         ; t    tab             U+0009
 // escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
-fn escape_seq_char(input: &mut Input<'_>) -> PResult<char> {
+fn escape_seq_char(input: &mut Input<'_>) -> ModalResult<char> {
     dispatch! {any;
         b'b' => empty.value('\u{8}'),
         b'f' => empty.value('\u{c}'),
@@ -135,7 +135,7 @@ fn escape_seq_char(input: &mut Input<'_>) -> PResult<char> {
     .parse_next(input)
 }
 
-pub(crate) fn hexescape<const N: usize>(input: &mut Input<'_>) -> PResult<char> {
+pub(crate) fn hexescape<const N: usize>(input: &mut Input<'_>) -> ModalResult<char> {
     take_while(0..=N, HEXDIG)
         .verify(|b: &[u8]| b.len() == N)
         .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`is_ascii_digit` filters out on-ASCII") })
@@ -148,7 +148,7 @@ pub(crate) fn hexescape<const N: usize>(input: &mut Input<'_>) -> PResult<char> 
 
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
-fn ml_basic_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+fn ml_basic_string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     trace(
         "ml-basic-string",
         delimited(
@@ -165,7 +165,7 @@ fn ml_basic_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 pub(crate) const ML_BASIC_STRING_DELIM: &[u8] = b"\"\"\"";
 
 // ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
-fn ml_basic_body<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+fn ml_basic_body<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     let mut c = Cow::Borrowed("");
     if let Some(ci) = opt(mlb_content).parse_next(input)? {
         c = ci;
@@ -195,7 +195,7 @@ fn ml_basic_body<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 
 // mlb-content = mlb-char / newline / mlb-escaped-nl
 // mlb-char = mlb-unescaped / escaped
-fn mlb_content<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+fn mlb_content<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     alt((
         // Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
@@ -212,8 +212,8 @@ fn mlb_content<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 
 // mlb-quotes = 1*2quotation-mark
 fn mlb_quotes<'i>(
-    mut term: impl Parser<Input<'i>, (), ContextError>,
-) -> impl Parser<Input<'i>, &'i str, ContextError> {
+    mut term: impl ModalParser<Input<'i>, (), ContextError>,
+) -> impl ModalParser<Input<'i>, &'i str, ContextError> {
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
         let res = terminated(b"\"\"", peek(term.by_ref()))
@@ -246,7 +246,7 @@ pub(crate) const MLB_UNESCAPED: (
 // it will be trimmed along with all whitespace
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
-fn mlb_escaped_nl(input: &mut Input<'_>) -> PResult<()> {
+fn mlb_escaped_nl(input: &mut Input<'_>) -> ModalResult<()> {
     repeat(1.., (ESCAPE, ws, ws_newlines))
         .map(|()| ())
         .value(())
@@ -256,7 +256,7 @@ fn mlb_escaped_nl(input: &mut Input<'_>) -> PResult<()> {
 // ;; Literal String
 
 // literal-string = apostrophe *literal-char apostrophe
-pub(crate) fn literal_string<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
+pub(crate) fn literal_string<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
     trace(
         "literal-string",
         delimited(
@@ -285,7 +285,7 @@ pub(crate) const LITERAL_CHAR: (
 
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
-fn ml_literal_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
+fn ml_literal_string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
     trace(
         "ml-literal-string",
         delimited(
@@ -308,7 +308,7 @@ fn ml_literal_string<'i>(input: &mut Input<'i>) -> PResult<Cow<'i, str>> {
 pub(crate) const ML_LITERAL_STRING_DELIM: &[u8] = b"'''";
 
 // ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
-fn ml_literal_body<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
+fn ml_literal_body<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
     (
         repeat(0.., mll_content).map(|()| ()),
         repeat(
@@ -327,7 +327,7 @@ fn ml_literal_body<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
 }
 
 // mll-content = mll-char / newline
-fn mll_content(input: &mut Input<'_>) -> PResult<u8> {
+fn mll_content(input: &mut Input<'_>) -> ModalResult<u8> {
     alt((one_of(MLL_CHAR), newline.value(b'\n'))).parse_next(input)
 }
 
@@ -341,8 +341,8 @@ const MLL_CHAR: (
 
 // mll-quotes = 1*2apostrophe
 fn mll_quotes<'i>(
-    mut term: impl Parser<Input<'i>, (), ContextError>,
-) -> impl Parser<Input<'i>, &'i str, ContextError> {
+    mut term: impl ModalParser<Input<'i>, (), ContextError>,
+) -> impl ModalParser<Input<'i>, &'i str, ContextError> {
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
         let res = terminated(b"''", peek(term.by_ref()))

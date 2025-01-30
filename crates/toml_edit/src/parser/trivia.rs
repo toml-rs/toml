@@ -9,7 +9,6 @@ use winnow::combinator::peek;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::prelude::*;
-use winnow::stream::Stream as _;
 use winnow::token::any;
 use winnow::token::one_of;
 use winnow::token::take_while;
@@ -35,7 +34,7 @@ pub(crate) unsafe fn from_utf8_unchecked<'b>(
 pub(crate) const WSCHAR: (u8, u8) = (b' ', b'\t');
 
 // ws = *wschar
-pub(crate) fn ws<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
+pub(crate) fn ws<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
     take_while(0.., WSCHAR)
         .map(|b| unsafe { from_utf8_unchecked(b, "`is_wschar` filters out on-ASCII") })
         .parse_next(input)
@@ -55,7 +54,7 @@ pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
 pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 // comment = comment-start-symbol *non-eol
-pub(crate) fn comment(input: &mut Input<'_>) -> PResult<()> {
+pub(crate) fn comment(input: &mut Input<'_>) -> ModalResult<()> {
     (COMMENT_START_SYMBOL, take_while(0.., NON_EOL))
         .void()
         .parse_next(input)
@@ -63,7 +62,7 @@ pub(crate) fn comment(input: &mut Input<'_>) -> PResult<()> {
 
 // newline = ( %x0A /              ; LF
 //             %x0D.0A )           ; CRLF
-pub(crate) fn newline(input: &mut Input<'_>) -> PResult<()> {
+pub(crate) fn newline(input: &mut Input<'_>) -> ModalResult<()> {
     dispatch! {any;
         b'\n' => empty,
         b'\r' => one_of(LF).void(),
@@ -75,7 +74,7 @@ pub(crate) const LF: u8 = b'\n';
 pub(crate) const CR: u8 = b'\r';
 
 // ws-newline       = *( wschar / newline )
-pub(crate) fn ws_newline(input: &mut Input<'_>) -> PResult<()> {
+pub(crate) fn ws_newline(input: &mut Input<'_>) -> ModalResult<()> {
     repeat(
         0..,
         alt((newline.value(&b"\n"[..]), take_while(1.., WSCHAR))),
@@ -85,13 +84,13 @@ pub(crate) fn ws_newline(input: &mut Input<'_>) -> PResult<()> {
 }
 
 // ws-newlines      = newline *( wschar / newline )
-pub(crate) fn ws_newlines(input: &mut Input<'_>) -> PResult<()> {
+pub(crate) fn ws_newlines(input: &mut Input<'_>) -> ModalResult<()> {
     (newline, ws_newline).void().parse_next(input)
 }
 
 // note: this rule is not present in the original grammar
 // ws-comment-newline = *( ws-newline-nonempty / comment )
-pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> PResult<()> {
+pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> ModalResult<()> {
     let mut start = input.checkpoint();
     loop {
         let _ = ws.parse_next(input)?;
@@ -116,7 +115,7 @@ pub(crate) fn ws_comment_newline(input: &mut Input<'_>) -> PResult<()> {
 
 // note: this rule is not present in the original grammar
 // line-ending = newline / eof
-pub(crate) fn line_ending(input: &mut Input<'_>) -> PResult<()> {
+pub(crate) fn line_ending(input: &mut Input<'_>) -> ModalResult<()> {
     alt((newline.value("\n"), eof.value("")))
         .void()
         .parse_next(input)
@@ -124,7 +123,7 @@ pub(crate) fn line_ending(input: &mut Input<'_>) -> PResult<()> {
 
 // note: this rule is not present in the original grammar
 // line-trailing = ws [comment] skip-line-ending
-pub(crate) fn line_trailing(input: &mut Input<'_>) -> PResult<std::ops::Range<usize>> {
+pub(crate) fn line_trailing(input: &mut Input<'_>) -> ModalResult<std::ops::Range<usize>> {
     terminated((ws, opt(comment)).span(), line_ending).parse_next(input)
 }
 

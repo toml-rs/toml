@@ -17,7 +17,7 @@ use indexmap::map::Entry;
 // ;; Inline Table
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
-pub(crate) fn inline_table<'i>(input: &mut Input<'i>) -> PResult<InlineTable> {
+pub(crate) fn inline_table<'i>(input: &mut Input<'i>) -> ModalResult<InlineTable> {
     trace("inline-table", move |input: &mut Input<'i>| {
         delimited(
             INLINE_TABLE_OPEN,
@@ -117,7 +117,7 @@ pub(crate) const KEYVAL_SEP: u8 = b'=';
 
 fn inline_table_keyvals(
     input: &mut Input<'_>,
-) -> PResult<(Vec<(Vec<Key>, (Key, Item))>, RawString)> {
+) -> ModalResult<(Vec<(Vec<Key>, (Key, Item))>, RawString)> {
     (
         separated(0.., keyval, INLINE_TABLE_SEP),
         ws.span().map(RawString::with_span),
@@ -125,7 +125,7 @@ fn inline_table_keyvals(
         .parse_next(input)
 }
 
-fn keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, (Key, Item))> {
+fn keyval(input: &mut Input<'_>) -> ModalResult<(Vec<Key>, (Key, Item))> {
     (
         key,
         cut_err((
