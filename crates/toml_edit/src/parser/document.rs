@@ -97,7 +97,7 @@ pub(crate) fn keyval<'s, 'i>(
 }
 
 // keyval = key keyval-sep val
-pub(crate) fn parse_keyval(input: &mut Input<'_>) -> PResult<(Vec<Key>, (Key, Item))> {
+pub(crate) fn parse_keyval(input: &mut Input<'_>) -> ModalResult<(Vec<Key>, (Key, Item))> {
     trace(
         "keyval",
         (

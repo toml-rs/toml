@@ -14,7 +14,7 @@ use crate::RawString;
 use crate::Value;
 
 // val = string / boolean / array / inline-table / date-time / float / integer
-pub(crate) fn value(input: &mut Input<'_>) -> PResult<Value> {
+pub(crate) fn value(input: &mut Input<'_>) -> ModalResult<Value> {
     dispatch! {peek(any);
             crate::parser::strings::QUOTATION_MARK |
             crate::parser::strings::APOSTROPHE => string.map(|s| {

@@ -17,7 +17,7 @@ use crate::RawString;
 
 // key = simple-key / dotted-key
 // dotted-key = simple-key 1*( dot-sep simple-key )
-pub(crate) fn key(input: &mut Input<'_>) -> PResult<Vec<Key>> {
+pub(crate) fn key(input: &mut Input<'_>) -> ModalResult<Vec<Key>> {
     let mut key_path = trace(
         "dotted-key",
         separated(
@@ -68,7 +68,7 @@ pub(crate) fn key(input: &mut Input<'_>) -> PResult<Vec<Key>> {
 
 // simple-key = quoted-key / unquoted-key
 // quoted-key = basic-string / literal-string
-pub(crate) fn simple_key(input: &mut Input<'_>) -> PResult<(RawString, InternalString)> {
+pub(crate) fn simple_key(input: &mut Input<'_>) -> ModalResult<(RawString, InternalString)> {
     trace(
         "simple-key",
         dispatch! {peek(any);
@@ -87,7 +87,7 @@ pub(crate) fn simple_key(input: &mut Input<'_>) -> PResult<(RawString, InternalS
 }
 
 // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
-fn unquoted_key<'i>(input: &mut Input<'i>) -> PResult<&'i str> {
+fn unquoted_key<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
     trace(
         "unquoted-key",
         take_while(1.., UNQUOTED_CHAR)
