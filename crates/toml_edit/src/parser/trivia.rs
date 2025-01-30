@@ -9,7 +9,6 @@ use winnow::combinator::peek;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::prelude::*;
-use winnow::stream::Stream as _;
 use winnow::token::any;
 use winnow::token::one_of;
 use winnow::token::take_while;

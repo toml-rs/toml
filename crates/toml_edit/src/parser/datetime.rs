@@ -74,13 +74,9 @@ fn full_date_(input: &mut Input<'_>) -> ModalResult<Date> {
     };
     if max_days_in_month < day {
         input.reset(&day_start);
-        #[expect(deprecated)]
-        return Err(winnow::error::ErrMode::from_external_error(
-            input,
-            winnow::error::ErrorKind::Verify,
-            CustomError::OutOfRange,
-        )
-        .cut());
+        return Err(
+            winnow::error::ErrMode::from_external_error(input, CustomError::OutOfRange).cut(),
+        );
     }
 
     Ok(Date { year, month, day })

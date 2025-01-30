@@ -139,15 +139,10 @@ pub(crate) mod prelude {
         mut parser: impl ModalParser<Input<'b>, O, ContextError>,
     ) -> impl ModalParser<Input<'b>, O, ContextError> {
         move |input: &mut Input<'b>| {
-            input.state.enter().map_err(|err| {
-                #[allow(deprecated)]
-                winnow::error::ErrMode::from_external_error(
-                    input,
-                    winnow::error::ErrorKind::Eof,
-                    err,
-                )
-                .cut()
-            })?;
+            input
+                .state
+                .enter()
+                .map_err(|err| winnow::error::ErrMode::from_external_error(input, err).cut())?;
             let result = parser.parse_next(input);
             input.state.exit();
             result
