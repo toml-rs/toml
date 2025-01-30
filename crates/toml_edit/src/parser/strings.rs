@@ -212,8 +212,8 @@ fn mlb_content<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
 
 // mlb-quotes = 1*2quotation-mark
 fn mlb_quotes<'i>(
-    mut term: impl Parser<Input<'i>, (), ContextError>,
-) -> impl Parser<Input<'i>, &'i str, ContextError> {
+    mut term: impl ModalParser<Input<'i>, (), ContextError>,
+) -> impl ModalParser<Input<'i>, &'i str, ContextError> {
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
         let res = terminated(b"\"\"", peek(term.by_ref()))
@@ -341,8 +341,8 @@ const MLL_CHAR: (
 
 // mll-quotes = 1*2apostrophe
 fn mll_quotes<'i>(
-    mut term: impl Parser<Input<'i>, (), ContextError>,
-) -> impl Parser<Input<'i>, &'i str, ContextError> {
+    mut term: impl ModalParser<Input<'i>, (), ContextError>,
+) -> impl ModalParser<Input<'i>, &'i str, ContextError> {
     move |input: &mut Input<'i>| {
         let start = input.checkpoint();
         let res = terminated(b"''", peek(term.by_ref()))

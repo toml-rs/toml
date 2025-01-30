@@ -83,8 +83,9 @@ pub(crate) mod prelude {
     pub(crate) use winnow::error::FromExternalError;
     pub(crate) use winnow::error::StrContext;
     pub(crate) use winnow::error::StrContextValue;
+    pub(crate) use winnow::ModalParser;
     pub(crate) use winnow::ModalResult;
-    pub(crate) use winnow::Parser;
+    pub(crate) use winnow::Parser as _;
 
     pub(crate) type Input<'b> =
         winnow::Stateful<winnow::LocatingSlice<&'b winnow::BStr>, RecursionCheck>;
@@ -135,8 +136,8 @@ pub(crate) mod prelude {
     }
 
     pub(crate) fn check_recursion<'b, O>(
-        mut parser: impl Parser<Input<'b>, O, ContextError>,
-    ) -> impl Parser<Input<'b>, O, ContextError> {
+        mut parser: impl ModalParser<Input<'b>, O, ContextError>,
+    ) -> impl ModalParser<Input<'b>, O, ContextError> {
         move |input: &mut Input<'b>| {
             input.state.enter().map_err(|err| {
                 #[allow(deprecated)]
