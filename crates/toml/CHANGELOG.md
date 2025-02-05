@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Map::get_key_value`
+
 ## [0.8.19] - 2024-07-31
 
 ### Performance
