@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.20] - 2025-02-05
+
 ### Features
 
 - Add `Map::get_key_value`
@@ -287,7 +289,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.19...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.20...HEAD
+[0.8.20]: https://github.com/toml-rs/toml/compare/toml-v0.8.19...toml-v0.8.20
 [0.8.19]: https://github.com/toml-rs/toml/compare/toml-v0.8.18...toml-v0.8.19
 [0.8.18]: https://github.com/toml-rs/toml/compare/toml-v0.8.17...toml-v0.8.18
 [0.8.17]: https://github.com/toml-rs/toml/compare/toml-v0.8.16...toml-v0.8.17
