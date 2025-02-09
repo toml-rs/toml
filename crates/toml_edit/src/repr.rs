@@ -90,6 +90,64 @@ where
     }
 }
 
+impl Formatted<i64> {
+    /// Creates a new hexadecimal (uppercase) formatted integer value.
+    /// Returns `None` if the `value` is negative.
+    pub fn new_hex_upper(value: i64) -> Option<Self> {
+        if value >= 0 {
+            Some(Self {
+                value,
+                repr: Some(Repr::new_unchecked(format!("{:#X}", value))),
+                decor: Default::default(),
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Creates a new hexadecimal (lowercase) formatted integer value.
+    /// Returns `None` if the `value` is negative.
+    pub fn new_hex_lower(value: i64) -> Option<Self> {
+        if value >= 0 {
+            Some(Self {
+                value,
+                repr: Some(Repr::new_unchecked(format!("{:#x}", value))),
+                decor: Default::default(),
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Creates a new octal formatted integer value.
+    /// Returns `None` if the `value` is negative.
+    pub fn new_oct(value: i64) -> Option<Self> {
+        if value >= 0 {
+            Some(Self {
+                value,
+                repr: Some(Repr::new_unchecked(format!("{:#o}", value))),
+                decor: Default::default(),
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Creates a new binary formatted integer value.
+    /// Returns `None` if the `value` is negative.
+    pub fn new_bin(value: i64) -> Option<Self> {
+        if value >= 0 {
+            Some(Self {
+                value,
+                repr: Some(Repr::new_unchecked(format!("{:#b}", value))),
+                decor: Default::default(),
+            })
+        } else {
+            None
+        }
+    }
+}
+
 impl<T> std::fmt::Debug for Formatted<T>
 where
     T: std::fmt::Debug,

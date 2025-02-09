@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml_edit::{array, table, value, DocumentMut, Item, Key, Table, Value};
+use toml_edit::{array, table, value, DocumentMut, Formatted, Item, Key, Table, Value};
 
 macro_rules! parse_key {
     ($s:expr) => {{
@@ -1025,4 +1025,33 @@ name = "test.swf"
 
 "#]]
     );
+}
+
+#[test]
+fn integer_bases() {
+    given(r#"[table]"#)
+        .running(|root| {
+            let table = root.get_mut("table").unwrap().as_table_mut().unwrap();
+
+            table["hex_upper"] = Value::Integer(Formatted::new_hex_upper(42).unwrap()).into();
+            table["hex_lower"] = Value::Integer(Formatted::new_hex_lower(42).unwrap()).into();
+            table["octal"] = Value::Integer(Formatted::new_oct(42).unwrap()).into();
+            table["binary"] = Value::Integer(Formatted::new_bin(42).unwrap()).into();
+        })
+        .produces_display(str![[r#"
+[table]
+hex_upper = 0x2A
+hex_lower = 0x2a
+octal = 0o52
+binary = 0b101010
+
+"#]]);
+}
+
+#[test]
+fn integer_bases_reject_negative() {
+    assert_eq!(Formatted::new_hex_upper(-42), None);
+    assert_eq!(Formatted::new_hex_lower(-42), None);
+    assert_eq!(Formatted::new_oct(-42), None);
+    assert_eq!(Formatted::new_bin(-42), None);
 }
