@@ -348,6 +348,18 @@ impl<'b> From<&'b Item> for Item {
     }
 }
 
+impl From<Table> for Item {
+    fn from(s: Table) -> Self {
+        Item::Table(s)
+    }
+}
+
+impl From<ArrayOfTables> for Item {
+    fn from(s: ArrayOfTables) -> Self {
+        Item::ArrayOfTables(s)
+    }
+}
+
 impl<V: Into<Value>> From<V> for Item {
     fn from(s: V) -> Self {
         Item::Value(s.into())
