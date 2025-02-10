@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Allow creating `Item`s from types it wraps
+
 ## [0.22.23] - 2025-01-30
 
 ### Internal
