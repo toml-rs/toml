@@ -5,8 +5,7 @@ use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableLike};
 use crate::{InternalString, Item, KeyMut, RawString, Table, Value};
 
-/// Type representing a TOML inline table,
-/// payload of the `Value::InlineTable` variant
+/// A TOML [`Value`] that contains a collection of [`Key`]/[`Value`] pairs
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
@@ -511,11 +510,11 @@ fn decorate_inline_table(table: &mut InlineTable) {
     }
 }
 
-/// An owned iterator type over key/value pairs of an inline table.
+/// An owned iterator type over an [`InlineTable`]'s [`Key`]/[`Value`] pairs
 pub type InlineTableIntoIter = Box<dyn Iterator<Item = (InternalString, Value)>>;
-/// An iterator type over key/value pairs of an inline table.
+/// An iterator type over [`InlineTable`]'s [`Key`]/[`Value`] pairs
 pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
-/// A mutable iterator type over key/value pairs of an inline table.
+/// A mutable iterator type over [`InlineTable`]'s [`Key`]/[`Value`] pairs
 pub type InlineTableIterMut<'a> = Box<dyn Iterator<Item = (KeyMut<'a>, &'a mut Value)> + 'a>;
 
 impl TableLike for InlineTable {
@@ -613,7 +612,7 @@ impl TableLike for InlineTable {
 // `{ key1 = value1, ... }`
 pub(crate) const DEFAULT_INLINE_KEY_DECOR: (&str, &str) = (" ", " ");
 
-/// A view into a single location in a map, which may be vacant or occupied.
+/// A view into a single location in an [`InlineTable`], which may be vacant or occupied.
 pub enum InlineEntry<'a> {
     /// An occupied Entry.
     Occupied(InlineOccupiedEntry<'a>),
@@ -659,7 +658,7 @@ impl<'a> InlineEntry<'a> {
     }
 }
 
-/// A view into a single occupied location in a `IndexMap`.
+/// A view into a single occupied location in an [`InlineTable`].
 pub struct InlineOccupiedEntry<'a> {
     entry: indexmap::map::OccupiedEntry<'a, Key, Item>,
 }
@@ -714,7 +713,7 @@ impl<'a> InlineOccupiedEntry<'a> {
     }
 }
 
-/// A view into a single empty location in a `IndexMap`.
+/// A view into a single empty location in an [`InlineTable`].
 pub struct InlineVacantEntry<'a> {
     entry: indexmap::map::VacantEntry<'a, Key, Item>,
 }
