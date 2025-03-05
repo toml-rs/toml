@@ -7,7 +7,8 @@ use crate::repr::Decor;
 use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{InlineTable, InternalString, Item, KeyMut, Value};
 
-/// Type representing a TOML non-inline table
+/// A TOML table, a top-level collection of key/[`Value`] pairs under a header and logical
+/// sub-tables
 #[derive(Clone, Debug, Default)]
 pub struct Table {
     // Comments/spaces before and after the header
@@ -524,11 +525,11 @@ pub(crate) const DEFAULT_KEY_DECOR: (&str, &str) = ("", " ");
 pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
 pub(crate) const DEFAULT_KEY_PATH_DECOR: (&str, &str) = ("", "");
 
-/// An owned iterator type over `Table`'s key/value pairs.
+/// An owned iterator type over [`Table`]'s [`Key`]/[`Item`] pairs
 pub type IntoIter = Box<dyn Iterator<Item = (InternalString, Item)>>;
-/// An iterator type over `Table`'s key/value pairs.
+/// An iterator type over [`Table`]'s [`Key`]/[`Item`] pairs
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
-/// A mutable iterator type over `Table`'s key/value pairs.
+/// A mutable iterator type over [`Table`]'s [`Key`]/[`Item`] pairs
 pub type IterMut<'a> = Box<dyn Iterator<Item = (KeyMut<'a>, &'a mut Item)> + 'a>;
 
 /// This trait represents either a `Table`, or an `InlineTable`.
@@ -664,7 +665,7 @@ impl TableLike for Table {
     }
 }
 
-/// A view into a single location in a map, which may be vacant or occupied.
+/// A view into a single location in a [`Table`], which may be vacant or occupied.
 pub enum Entry<'a> {
     /// An occupied Entry.
     Occupied(OccupiedEntry<'a>),
@@ -710,7 +711,7 @@ impl<'a> Entry<'a> {
     }
 }
 
-/// A view into a single occupied location in a `IndexMap`.
+/// A view into a single occupied location in a [`Table`].
 pub struct OccupiedEntry<'a> {
     pub(crate) entry: indexmap::map::OccupiedEntry<'a, Key, Item>,
 }
@@ -764,7 +765,7 @@ impl<'a> OccupiedEntry<'a> {
     }
 }
 
-/// A view into a single empty location in a `IndexMap`.
+/// A view into a single empty location in a [`Table`].
 pub struct VacantEntry<'a> {
     pub(crate) entry: indexmap::map::VacantEntry<'a, Key, Item>,
 }

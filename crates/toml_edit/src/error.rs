@@ -1,7 +1,7 @@
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result};
 
-/// Type representing a TOML parse error
+/// A TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,

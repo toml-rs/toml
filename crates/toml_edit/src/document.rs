@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::table::Iter;
 use crate::{Item, RawString, Table};
 
-/// Type representing a parsed TOML document
+/// The root TOML [`Table`], containing [`Key`][crate::Key]/[`Value`][crate::Value] pairs and all other logic [`Table`]s
 #[derive(Debug, Clone)]
 pub struct ImDocument<S> {
     pub(crate) root: Item,
@@ -105,7 +105,7 @@ impl<S> std::ops::Deref for ImDocument<S> {
     }
 }
 
-/// Type representing a TOML document
+/// The editable root TOML [`Table`], containing [`Key`][crate::Key]/[`Value`][crate::Value] pairs and all other logic [`Table`]s
 #[derive(Debug, Clone)]
 pub struct DocumentMut {
     pub(crate) root: Item,

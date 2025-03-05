@@ -4,7 +4,8 @@ use std::str::FromStr;
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
 
-/// Key as part of a Key/Value Pair or a table header.
+/// For Key/[`Value`][crate::Value] pairs under a [`Table`][crate::Table] header or inside an
+/// [`InlineTable`][crate::InlineTable]
 ///
 /// # Examples
 ///
@@ -333,7 +334,7 @@ impl From<Key> for InternalString {
     }
 }
 
-/// A mutable reference to a `Key`'s formatting
+/// A mutable reference to a [`Key`]'s formatting
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct KeyMut<'k> {
     key: &'k mut Key,
