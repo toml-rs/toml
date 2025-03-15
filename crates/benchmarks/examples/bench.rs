@@ -4,7 +4,7 @@ fn main() -> Result<(), lexopt::Error> {
     match args.parser {
         Parser::Tokens => {
             let source = ::toml_parse::Source::new(args.data.content());
-            let _tokens = source.lex().collect::<Vec<_>>();
+            let _tokens = source.lex().into_vec();
             let _tokens = std::hint::black_box(_tokens);
             #[cfg(debug_assertions)] // Don't interefere with profiling
             println!("{_tokens:?}");

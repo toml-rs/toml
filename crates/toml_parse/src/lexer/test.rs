@@ -625,7 +625,7 @@ Token {
 #[track_caller]
 fn t(input: &str, expected: impl IntoData) {
     let source = crate::Source::new(input);
-    let actual = source.lex().collect::<Vec<_>>();
+    let actual = source.lex().into_vec();
     assert_data_eq!(actual.to_debug(), expected);
 
     if !actual.is_empty() {

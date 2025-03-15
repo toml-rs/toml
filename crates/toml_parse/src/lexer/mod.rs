@@ -1,8 +1,12 @@
 //! Lex TOML tokens
 
 #[cfg(test)]
+#[cfg(feature = "std")]
 mod test;
 mod token;
+
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 
 use winnow::stream::AsBStr as _;
 use winnow::stream::ContainsToken as _;
@@ -26,6 +30,13 @@ impl<'i> Lexer<'i> {
             stream: Stream::new(input),
             eof: false,
         }
+    }
+
+    #[cfg(feature = "alloc")]
+    pub fn into_vec(self) -> Vec<Token> {
+        let mut vec = Vec::new();
+        vec.extend(self);
+        vec
     }
 }
 
