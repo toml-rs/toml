@@ -8,6 +8,9 @@ use self::Token::*;
 
 #[cfg(test)]
 mod test;
+mod token;
+
+pub use token::Token;
 
 /// A span, designating a range of bytes where a token is located.
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
@@ -22,30 +25,6 @@ impl From<Span> for (usize, usize) {
     fn from(Span { start, end }: Span) -> (usize, usize) {
         (start, end)
     }
-}
-
-#[derive(Eq, PartialEq, Debug)]
-pub enum Token<'a> {
-    Whitespace(&'a str),
-    Newline,
-    Comment(&'a str),
-
-    Equals,
-    Period,
-    Comma,
-    Colon,
-    Plus,
-    LeftBrace,
-    RightBrace,
-    LeftBracket,
-    RightBracket,
-
-    Keylike(&'a str),
-    String {
-        src: &'a str,
-        val: Cow<'a, str>,
-        multiline: bool,
-    },
 }
 
 #[derive(Eq, PartialEq, Debug)]
