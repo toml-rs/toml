@@ -8,18 +8,18 @@ fn main() -> Result<(), lexopt::Error> {
                 .content()
                 .parse::<toml_edit::DocumentMut>()
                 .unwrap();
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             drop(_doc);
         }
         Parser::De => {
             let _doc =
                 toml::from_str::<toml_benchmarks::manifest::Manifest>(args.data.content()).unwrap();
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             drop(_doc);
         }
         Parser::Table => {
             let _doc = args.data.content().parse::<toml::Table>().unwrap();
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             drop(_doc);
         }
     }
