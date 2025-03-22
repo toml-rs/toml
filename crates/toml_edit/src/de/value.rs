@@ -239,8 +239,10 @@ impl serde::de::IntoDeserializer<'_, Error> for crate::Value {
     }
 }
 
-impl crate::Item {
-    pub(crate) fn into_deserializer(self) -> ValueDeserializer {
+impl serde::de::IntoDeserializer<'_, Error> for crate::Item {
+    type Deserializer = ValueDeserializer;
+
+    fn into_deserializer(self) -> Self::Deserializer {
         ValueDeserializer::new(self)
     }
 }
