@@ -6,6 +6,7 @@ use serde::de::{DeserializeOwned, IntoDeserializer};
 
 mod array;
 mod datetime;
+mod item;
 mod key;
 mod spanned;
 mod table;

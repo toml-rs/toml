@@ -3,43 +3,42 @@ use serde::de::IntoDeserializer as _;
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
 
-/// Deserialization implementation for TOML [values][crate::Value].
+/// Deserialization implementation for TOML [items][crate::Item].
 ///
 /// Can be created either directly from TOML strings, using [`std::str::FromStr`],
-/// or from parsed [values][crate::Value] using [`serde::de::IntoDeserializer::into_deserializer`].
+/// or from parsed [items][crate::Item] using [`serde::de::IntoDeserializer::into_deserializer`].
 ///
 /// # Example
 ///
 /// ```
 /// # #[cfg(feature = "parse")] {
 /// # #[cfg(feature = "display")] {
-/// use serde::Deserialize;
+/// use serde::{Deserialize, de::IntoDeserializer};
 ///
 /// #[derive(Deserialize)]
 /// struct Config {
 ///     title: String,
-///     owner: Owner,
+///     owner: String,
 /// }
 ///
-/// #[derive(Deserialize)]
-/// struct Owner {
-///     name: String,
-/// }
+/// let mut table = toml_edit::Table::new();
+/// table.insert("title", "TOML Example".into());
+/// table.insert("owner", "Lisa".into());
 ///
-/// let value = r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#;
-/// let deserializer = value.parse::<toml_edit::de::ValueDeserializer>().unwrap();
+/// let deserializer = toml_edit::Item::Table(table).into_deserializer();
 /// let config = Config::deserialize(deserializer).unwrap();
 /// assert_eq!(config.title, "TOML Example");
-/// assert_eq!(config.owner.name, "Lisa");
+/// assert_eq!(config.owner, "Lisa");
 /// # }
 /// # }
 /// ```
-pub struct ValueDeserializer {
+// TODO: fix the example
+pub struct ItemDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
 }
 
-impl ValueDeserializer {
+impl ItemDeserializer {
     pub(crate) fn new(input: crate::Item) -> Self {
         Self {
             input,
@@ -53,9 +52,9 @@ impl ValueDeserializer {
     }
 }
 
-// Note: this is wrapped by `toml::de::ValueDeserializer` and any trait methods
+// Note: this is wrapped by `toml::de::ItemDeserializer` and any trait methods
 // implemented here need to be wrapped there
-impl<'de> serde::Deserializer<'de> for ValueDeserializer {
+impl<'de> serde::Deserializer<'de> for ItemDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -223,7 +222,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for ValueDeserializer {
+impl serde::de::IntoDeserializer<'_, Error> for ItemDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -231,21 +230,10 @@ impl serde::de::IntoDeserializer<'_, Error> for ValueDeserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::Value {
-    type Deserializer = ValueDeserializer;
+impl serde::de::IntoDeserializer<'_, Error> for crate::Item {
+    type Deserializer = ItemDeserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
-        ValueDeserializer::new(crate::Item::Value(self))
-    }
-}
-
-#[cfg(feature = "parse")]
-impl std::str::FromStr for ValueDeserializer {
-    type Err = Error;
-
-    /// Parses a value from a &str
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let v = crate::parser::parse_value(s).map_err(Error::from)?;
-        Ok(v.into_deserializer())
+        ItemDeserializer::new(self)
     }
 }
