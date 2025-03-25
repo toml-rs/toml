@@ -32,7 +32,6 @@ use crate::de::Error;
 /// # }
 /// # }
 /// ```
-// TODO: fix the example
 pub struct ItemDeserializer {
     input: crate::Item,
     validate_struct_keys: bool,
