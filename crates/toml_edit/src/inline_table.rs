@@ -81,7 +81,13 @@ impl InlineTable {
         decorate_inline_table(self);
     }
 
-    /// Sorts the key/value pairs by key.
+    /// Sorts [Key]/[Value]-pairs of the table
+    ///
+    /// <div class="warning">
+    ///
+    /// This is not recursive.
+    ///
+    /// </div>
     pub fn sort_values(&mut self) {
         // Assuming standard tables have their position set and this won't negatively impact them
         self.items.sort_keys();
@@ -95,10 +101,16 @@ impl InlineTable {
         }
     }
 
-    /// Sort Key/Value Pairs of the table using the using the comparison function `compare`.
+    /// Sort [Key]/[Value]-pairs of the table using the using the comparison function `compare`
     ///
     /// The comparison function receives two key and value pairs to compare (you can sort by keys or
     /// values or their combination as needed).
+    ///
+    /// <div class="warning">
+    ///
+    /// This is not recursive.
+    ///
+    /// </div>
     pub fn sort_values_by<F>(&mut self, mut compare: F)
     where
         F: FnMut(&Key, &Value, &Key, &Value) -> std::cmp::Ordering,
