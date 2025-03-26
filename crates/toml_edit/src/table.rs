@@ -104,9 +104,16 @@ impl Table {
         decorate_table(self);
     }
 
-    /// Sorts Key/Value Pairs of the table.
+    /// Sorts [Key]/[Value]-pairs of the table
     ///
-    /// Doesn't affect subtables or subarrays.
+    /// <div class="warning">
+    ///
+    /// This sorts the syntactic table (everything under the `[header]`) and not the logical map of
+    /// key-value pairs.
+    /// This does not affect the order of [sub-tables][Table] or [sub-arrays][crate::ArrayOfTables].
+    /// This is not recursive.
+    ///
+    /// </div>
     pub fn sort_values(&mut self) {
         // Assuming standard tables have their doc_position set and this won't negatively impact them
         self.items.sort_keys();
@@ -120,10 +127,19 @@ impl Table {
         }
     }
 
-    /// Sort Key/Value Pairs of the table using the using the comparison function `compare`.
+    /// Sort [Key]/[Value]-pairs of the table using the using the comparison function `compare`
     ///
     /// The comparison function receives two key and value pairs to compare (you can sort by keys or
     /// values or their combination as needed).
+    ///
+    /// <div class="warning">
+    ///
+    /// This sorts the syntactic table (everything under the `[header]`) and not the logical map of
+    /// key-value pairs.
+    /// This does not affect the order of [sub-tables][Table] or [sub-arrays][crate::ArrayOfTables].
+    /// This is not recursive.
+    ///
+    /// </div>
     pub fn sort_values_by<F>(&mut self, mut compare: F)
     where
         F: FnMut(&Key, &Item, &Key, &Item) -> std::cmp::Ordering,
@@ -574,9 +590,16 @@ pub trait TableLike: crate::private::Sealed {
 
     /// Auto formats the table.
     fn fmt(&mut self);
-    /// Sorts Key/Value Pairs of the table.
+    /// Sorts [Key]/[Value]-pairs of the table
     ///
-    /// Doesn't affect subtables or subarrays.
+    /// <div class="warning">
+    ///
+    /// This sorts the syntactic table (everything under the `[header]`) and not the logical map of
+    /// key-value pairs.
+    /// This does not affect the order of [sub-tables][Table] or [sub-arrays][crate::ArrayOfTables].
+    /// This is not recursive.
+    ///
+    /// </div>
     fn sort_values(&mut self);
     /// Change this table's dotted status
     fn set_dotted(&mut self, yes: bool);
