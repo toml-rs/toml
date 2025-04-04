@@ -56,6 +56,8 @@ pub enum TokenKind {
 
     /// Anything else
     Atom,
+
+    Eof,
 }
 
 impl TokenKind {
@@ -76,6 +78,7 @@ impl TokenKind {
             TokenKind::MlLiteralString => "multi-line literal string",
             TokenKind::MlBasicString => "multi-line basic string",
             TokenKind::Atom => "token",
+            TokenKind::Eof => "end-of-input",
         }
     }
 }

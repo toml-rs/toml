@@ -17,12 +17,14 @@ pub use token::TokenKind;
 
 pub struct Lexer<'i> {
     stream: Stream<'i>,
+    eof: bool,
 }
 
 impl<'i> Lexer<'i> {
     pub(crate) fn new(input: &'i str) -> Self {
         Lexer {
             stream: Stream::new(input),
+            eof: false,
         }
     }
 }
@@ -31,7 +33,16 @@ impl Iterator for Lexer<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let token = self.stream.as_bstr().first()?;
+        let Some(token) = self.stream.as_bstr().first() else {
+            if self.eof {
+                return None;
+            } else {
+                self.eof = true;
+                let start = self.stream.current_token_start();
+                let span = Span::new_unchecked(start, start);
+                return Some(Token::new(TokenKind::Eof, span));
+            }
+        };
         let token = match token {
             b'.' => lex_ascii_char(&mut self.stream, TokenKind::Dot),
             b'=' => lex_ascii_char(&mut self.stream, TokenKind::Equals),

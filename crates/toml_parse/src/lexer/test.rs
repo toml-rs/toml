@@ -650,6 +650,10 @@ fn literal_strings() {
         kind: LiteralString,
         span: 0..2,
     },
+    Token {
+        kind: Eof,
+        span: 2..2,
+    },
 ]
 
 "#]]
@@ -662,6 +666,10 @@ fn literal_strings() {
     Token {
         kind: MlLiteralString,
         span: 0..6,
+    },
+    Token {
+        kind: Eof,
+        span: 6..6,
     },
 ]
 
@@ -676,6 +684,10 @@ fn literal_strings() {
         kind: MlLiteralString,
         span: 0..7,
     },
+    Token {
+        kind: Eof,
+        span: 7..7,
+    },
 ]
 
 "#]]
@@ -688,6 +700,10 @@ fn literal_strings() {
     Token {
         kind: LiteralString,
         span: 0..3,
+    },
+    Token {
+        kind: Eof,
+        span: 3..3,
     },
 ]
 
@@ -702,6 +718,10 @@ fn literal_strings() {
         kind: LiteralString,
         span: 0..4,
     },
+    Token {
+        kind: Eof,
+        span: 4..4,
+    },
 ]
 
 "#]]
@@ -714,6 +734,10 @@ fn literal_strings() {
     Token {
         kind: MlLiteralString,
         span: 0..8,
+    },
+    Token {
+        kind: Eof,
+        span: 8..8,
     },
 ]
 
@@ -728,6 +752,10 @@ fn literal_strings() {
         kind: MlLiteralString,
         span: 0..10,
     },
+    Token {
+        kind: Eof,
+        span: 10..10,
+    },
 ]
 
 "#]]
@@ -740,6 +768,10 @@ fn literal_strings() {
     Token {
         kind: MlLiteralString,
         span: 0..12,
+    },
+    Token {
+        kind: Eof,
+        span: 12..12,
     },
 ]
 
@@ -758,6 +790,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..2,
     },
+    Token {
+        kind: Eof,
+        span: 2..2,
+    },
 ]
 
 "#]]
@@ -770,6 +806,10 @@ fn basic_strings() {
     Token {
         kind: MlBasicString,
         span: 0..6,
+    },
+    Token {
+        kind: Eof,
+        span: 6..6,
     },
 ]
 
@@ -784,6 +824,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..3,
     },
+    Token {
+        kind: Eof,
+        span: 3..3,
+    },
 ]
 
 "#]]
@@ -796,6 +840,10 @@ fn basic_strings() {
     Token {
         kind: MlBasicString,
         span: 0..7,
+    },
+    Token {
+        kind: Eof,
+        span: 7..7,
     },
 ]
 
@@ -810,6 +858,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..4,
     },
+    Token {
+        kind: Eof,
+        span: 4..4,
+    },
 ]
 
 "#]]
@@ -822,6 +874,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..8,
+    },
+    Token {
+        kind: Eof,
+        span: 8..8,
     },
 ]
 
@@ -836,6 +892,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..12,
     },
+    Token {
+        kind: Eof,
+        span: 12..12,
+    },
 ]
 
 "#]]
@@ -848,6 +908,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..12,
+    },
+    Token {
+        kind: Eof,
+        span: 12..12,
     },
 ]
 
@@ -862,6 +926,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..5,
     },
+    Token {
+        kind: Eof,
+        span: 5..5,
+    },
 ]
 
 "#]]
@@ -874,6 +942,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..3,
+    },
+    Token {
+        kind: Eof,
+        span: 3..3,
     },
 ]
 
@@ -888,6 +960,10 @@ fn basic_strings() {
         kind: MlBasicString,
         span: 0..8,
     },
+    Token {
+        kind: Eof,
+        span: 8..8,
+    },
 ]
 
 "#]]
@@ -900,6 +976,10 @@ fn basic_strings() {
     Token {
         kind: MlBasicString,
         span: 0..8,
+    },
+    Token {
+        kind: Eof,
+        span: 8..8,
     },
 ]
 
@@ -914,6 +994,10 @@ fn basic_strings() {
         kind: MlBasicString,
         span: 0..34,
     },
+    Token {
+        kind: Eof,
+        span: 34..34,
+    },
 ]
 
 "#]]
@@ -926,6 +1010,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..4,
+    },
+    Token {
+        kind: Eof,
+        span: 4..4,
     },
 ]
 
@@ -940,6 +1028,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..4,
     },
+    Token {
+        kind: Eof,
+        span: 4..4,
+    },
 ]
 
 "#]]
@@ -952,6 +1044,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..4,
+    },
+    Token {
+        kind: Eof,
+        span: 4..4,
     },
 ]
 
@@ -966,6 +1062,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..6,
     },
+    Token {
+        kind: Eof,
+        span: 6..6,
+    },
 ]
 
 "#]]
@@ -978,6 +1078,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..5,
+    },
+    Token {
+        kind: Eof,
+        span: 5..5,
     },
 ]
 
@@ -992,6 +1096,10 @@ fn basic_strings() {
         kind: MlBasicString,
         span: 0..8,
     },
+    Token {
+        kind: Eof,
+        span: 8..8,
+    },
 ]
 
 "#]]
@@ -1004,6 +1112,10 @@ fn basic_strings() {
     Token {
         kind: MlBasicString,
         span: 0..7,
+    },
+    Token {
+        kind: Eof,
+        span: 7..7,
     },
 ]
 
@@ -1018,6 +1130,10 @@ fn basic_strings() {
         kind: MlBasicString,
         span: 0..12,
     },
+    Token {
+        kind: Eof,
+        span: 12..12,
+    },
 ]
 
 "#]]
@@ -1030,6 +1146,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..3,
+    },
+    Token {
+        kind: Eof,
+        span: 3..3,
     },
 ]
 
@@ -1048,6 +1168,10 @@ fn basic_strings() {
         kind: Newline,
         span: 2..3,
     },
+    Token {
+        kind: Eof,
+        span: 3..3,
+    },
 ]
 
 "#]]
@@ -1065,6 +1189,10 @@ fn basic_strings() {
         kind: Newline,
         span: 3..4,
     },
+    Token {
+        kind: Eof,
+        span: 4..4,
+    },
 ]
 
 "#]]
@@ -1077,6 +1205,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..2,
+    },
+    Token {
+        kind: Eof,
+        span: 2..2,
     },
 ]
 
@@ -1091,6 +1223,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..2,
     },
+    Token {
+        kind: Eof,
+        span: 2..2,
+    },
 ]
 
 "#]]
@@ -1103,6 +1239,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..6,
+    },
+    Token {
+        kind: Eof,
+        span: 6..6,
     },
 ]
 
@@ -1117,6 +1257,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..5,
     },
+    Token {
+        kind: Eof,
+        span: 5..5,
+    },
 ]
 
 "#]]
@@ -1130,6 +1274,10 @@ fn basic_strings() {
         kind: BasicString,
         span: 0..7,
     },
+    Token {
+        kind: Eof,
+        span: 7..7,
+    },
 ]
 
 "#]]
@@ -1142,6 +1290,10 @@ fn basic_strings() {
     Token {
         kind: BasicString,
         span: 0..11,
+    },
+    Token {
+        kind: Eof,
+        span: 11..11,
     },
 ]
 
@@ -1160,6 +1312,10 @@ fn keylike() {
         kind: Atom,
         span: 0..3,
     },
+    Token {
+        kind: Eof,
+        span: 3..3,
+    },
 ]
 
 "#]]
@@ -1172,6 +1328,10 @@ fn keylike() {
     Token {
         kind: Atom,
         span: 0..4,
+    },
+    Token {
+        kind: Eof,
+        span: 4..4,
     },
 ]
 
@@ -1186,6 +1346,10 @@ fn keylike() {
         kind: Atom,
         span: 0..4,
     },
+    Token {
+        kind: Eof,
+        span: 4..4,
+    },
 ]
 
 "#]]
@@ -1198,6 +1362,10 @@ fn keylike() {
     Token {
         kind: Atom,
         span: 0..4,
+    },
+    Token {
+        kind: Eof,
+        span: 4..4,
     },
 ]
 
@@ -1212,6 +1380,10 @@ fn keylike() {
         kind: Atom,
         span: 0..3,
     },
+    Token {
+        kind: Eof,
+        span: 3..3,
+    },
 ]
 
 "#]]
@@ -1224,6 +1396,10 @@ fn keylike() {
     Token {
         kind: Atom,
         span: 0..3,
+    },
+    Token {
+        kind: Eof,
+        span: 3..3,
     },
 ]
 
@@ -1238,6 +1414,10 @@ fn keylike() {
         kind: Atom,
         span: 0..3,
     },
+    Token {
+        kind: Eof,
+        span: 3..3,
+    },
 ]
 
 "#]]
@@ -1250,6 +1430,10 @@ fn keylike() {
     Token {
         kind: Atom,
         span: 0..3,
+    },
+    Token {
+        kind: Eof,
+        span: 3..3,
     },
 ]
 
@@ -1275,6 +1459,10 @@ fn all() {
     Token {
         kind: Whitespace,
         span: 2..3,
+    },
+    Token {
+        kind: Eof,
+        span: 3..3,
     },
 ]
 
@@ -1386,6 +1574,10 @@ fn all() {
         kind: Whitespace,
         span: 37..38,
     },
+    Token {
+        kind: Eof,
+        span: 38..38,
+    },
 ]
 
 "#]]
@@ -1402,6 +1594,10 @@ fn bare_cr_bad() {
     Token {
         kind: Newline,
         span: 0..1,
+    },
+    Token {
+        kind: Eof,
+        span: 1..1,
     },
 ]
 
@@ -1420,6 +1616,10 @@ fn bare_cr_bad() {
         kind: Newline,
         span: 1..2,
     },
+    Token {
+        kind: Eof,
+        span: 2..2,
+    },
 ]
 
 "#]]
@@ -1432,6 +1632,10 @@ fn bare_cr_bad() {
     Token {
         kind: LiteralString,
         span: 0..2,
+    },
+    Token {
+        kind: Eof,
+        span: 2..2,
     },
 ]
 
@@ -1446,6 +1650,10 @@ fn bare_cr_bad() {
         kind: LiteralString,
         span: 0..1,
     },
+    Token {
+        kind: Eof,
+        span: 1..1,
+    },
 ]
 
 "#]]
@@ -1458,6 +1666,10 @@ fn bare_cr_bad() {
     Token {
         kind: Atom,
         span: 0..1,
+    },
+    Token {
+        kind: Eof,
+        span: 1..1,
     },
 ]
 
@@ -1475,6 +1687,10 @@ fn bad_comment() {
     Token {
         kind: Comment,
         span: 0..2,
+    },
+    Token {
+        kind: Eof,
+        span: 2..2,
     },
 ]
 
