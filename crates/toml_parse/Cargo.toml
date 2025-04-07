@@ -31,10 +31,15 @@ std = ["alloc"]
 simd = ["winnow/simd"]
 unsafe = []
 
+unstable-debug = ["std", "dep:anstream", "dep:anstyle"]
+
 [dependencies]
+anstream = { version = "0.6.15", optional = true }
+anstyle = { version = "1.0.8", optional = true }
 winnow = { version = "0.7.6", default-features = false }
 
 [dev-dependencies]
+anstream = { version = "0.6.15", features = ["test"] }
 snapbox = "0.6.0"
 
 [lints]

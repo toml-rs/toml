@@ -10,6 +10,10 @@ pub fn parse_document(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
+    #[cfg(feature = "unstable-debug")]
+    let mut receiver = super::DebugEventReceiver::new(receiver);
+    #[cfg(feature = "unstable-debug")]
+    let receiver = &mut receiver;
     document(&mut tokens, receiver, error);
 }
 
@@ -19,6 +23,10 @@ pub fn parse_key(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
+    #[cfg(feature = "unstable-debug")]
+    let mut receiver = super::DebugEventReceiver::new(receiver);
+    #[cfg(feature = "unstable-debug")]
+    let receiver = &mut receiver;
     key(&mut tokens, receiver, error);
 }
 
@@ -28,6 +36,10 @@ pub fn parse_simple_key(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
+    #[cfg(feature = "unstable-debug")]
+    let mut receiver = super::DebugEventReceiver::new(receiver);
+    #[cfg(feature = "unstable-debug")]
+    let receiver = &mut receiver;
     simple_key(&mut tokens, receiver, error);
 }
 
@@ -37,6 +49,10 @@ pub fn parse_value(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
+    #[cfg(feature = "unstable-debug")]
+    let mut receiver = super::DebugEventReceiver::new(receiver);
+    #[cfg(feature = "unstable-debug")]
+    let receiver = &mut receiver;
     value(&mut tokens, receiver, error);
 }
 

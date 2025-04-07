@@ -8,3 +8,6 @@ pub use document::parse_value;
 pub use event::Event;
 pub use event::EventKind;
 pub use event::EventReceiver;
+
+#[cfg(feature = "unstable-debug")]
+pub(crate) use event::DebugEventReceiver;
