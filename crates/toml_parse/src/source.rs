@@ -23,10 +23,49 @@ impl<'i> Source<'i> {
         span.get(self)
     }
 
+    /// Return an unchecked subslice of the input
+    ///
+    /// ## Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    /// - The starting index must not exceed the ending index;
+    /// - Indexes must be within bounds of the original slice;
+    /// - Indexes must lie on UTF-8 sequence boundaries.
+    ///
+    /// Or one of:
+    /// - `span` came from [`Source::lex`]
+    ///
+    /// Failing any of those, the returned string slice may reference invalid memory or violate the invariants communicated by `str` type.
+    #[cfg(feature = "unsafe")]
+    pub unsafe fn get_unchecked(&self, span: impl SourceIndex) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        unsafe { span.get_unchecked(self) }
+    }
+
     /// Return a subslice of the input
     fn get_raw_str(&self, span: Span) -> Option<&'i str> {
         let index = span.start()..span.end();
         self.input.get(index)
+    }
+
+    /// Return an unchecked subslice of the input
+    ///
+    /// ## Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    /// - The starting index must not exceed the ending index;
+    /// - Indexes must be within bounds of the original slice;
+    /// - Indexes must lie on UTF-8 sequence boundaries.
+    ///
+    /// Or one of:
+    /// - `span` came from [`Source::lex`]
+    ///
+    /// Failing any of those, the returned string slice may reference invalid memory or violate the invariants communicated by `str` type.
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_raw_str_unchecked(&self, span: Span) -> &'i str {
+        let index = span.start()..span.end();
+        // SAFETY: Same safety guarantees are required
+        unsafe { self.input.get_unchecked(index) }
     }
 }
 
@@ -84,17 +123,46 @@ impl core::fmt::Debug for Span {
 pub trait SourceIndex: sealed::Sealed {
     /// Return a subslice of the input
     fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>>;
+
+    /// Return an unchecked subslice of the input
+    ///
+    /// ## Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    /// - The starting index must not exceed the ending index;
+    /// - Indexes must be within bounds of the original slice;
+    /// - Indexes must lie on UTF-8 sequence boundaries.
+    ///
+    /// Or one of:
+    /// - `span` came from [`Source::lex`]
+    ///
+    /// Failing any of those, the returned string slice may reference invalid memory or violate the invariants communicated by `str` type.
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i>;
 }
 
 impl SourceIndex for Span {
     fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
         (&self).get(source)
     }
+
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        unsafe { (&self).get_unchecked(source) }
+    }
 }
 
 impl SourceIndex for &Span {
     fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
         source.get_raw_str(*self).map(Raw::new_unchecked)
+    }
+
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        let raw = unsafe { source.get_raw_str_unchecked(*self) };
+        Raw::new_unchecked(raw)
     }
 }
 

@@ -2,7 +2,7 @@
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![forbid(unsafe_code)]
+#![cfg_attr(not(feature = "unsafe"), forbid(unsafe_code))]
 #![warn(clippy::std_instead_of_core)]
 #![warn(clippy::std_instead_of_alloc)]
 #![warn(clippy::print_stderr)]

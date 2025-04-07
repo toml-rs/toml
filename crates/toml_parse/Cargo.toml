@@ -29,6 +29,7 @@ default = ["std"]
 alloc = []
 std = ["alloc"]
 simd = ["winnow/simd"]
+unsafe = []
 
 [dependencies]
 winnow = { version = "0.7.6", default-features = false }
