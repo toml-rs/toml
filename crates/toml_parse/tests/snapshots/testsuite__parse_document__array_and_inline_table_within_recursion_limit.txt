@@ -1,0 +1,131 @@
+EventResults {
+    input: "\nkey = [{ a = 1 }]\nafter = [10]\n",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 1..4,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 18..19,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 19..24,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 24..25,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 25..26,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 27..28,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 28..30,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 30..31,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 31..32,
+        },
+    ],
+    errors: [],
+}

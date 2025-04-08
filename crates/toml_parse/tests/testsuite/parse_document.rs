@@ -15,6 +15,19 @@ fn t(input: &str, expected: impl snapbox::data::IntoData) {
     actual.validate(expected);
 }
 
+#[track_caller]
+fn t_recurse(input: &str, max_depth: u32, expected: impl snapbox::data::IntoData) {
+    dbg!(input);
+    let mut actual = crate::EventResults::new(input);
+
+    let doc = Source::new(input);
+    let tokens = doc.lex().into_vec();
+    let mut recursion = RecursionGuard::new(&mut actual.events, max_depth);
+    parse_document(&tokens, &mut recursion, &mut actual.errors);
+
+    actual.validate(expected);
+}
+
 #[test]
 fn document_empty() {
     t("", file![_].raw());
@@ -147,4 +160,76 @@ fn document_invalid_comment() {
 #[test]
 fn document_invalid_cr() {
     t(" hello = 'darkness' # my old friend\r", file![_].raw());
+}
+
+#[test]
+fn inline_table_within_recursion_limit() {
+    t_recurse(
+        "
+key = { a = { b = 1 } }
+after = [10]
+",
+        2,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn inline_table_outside_recursion_limit() {
+    t_recurse(
+        "
+key = { a = { b = { c = { d = 1 } } } }
+after = [10]
+",
+        2,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn array_within_recursion_limit() {
+    t_recurse(
+        "
+key = [[1]]
+after = [10]
+",
+        2,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn array_outside_recursion_limit() {
+    t_recurse(
+        "
+key = [[[[1]]]]
+after = [10]
+",
+        2,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn array_and_inline_table_within_recursion_limit() {
+    t_recurse(
+        "
+key = [{ a = 1 }]
+after = [10]
+",
+        2,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn array_and_inline_table_outside_recursion_limit() {
+    t_recurse(
+        "
+key = [{ a = [{ b = [{ c = 1 }] }] }]
+after = [10]
+",
+        2,
+        file![_].raw(),
+    );
 }

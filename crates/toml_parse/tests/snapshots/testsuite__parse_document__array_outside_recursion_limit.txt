@@ -1,0 +1,128 @@
+EventResults {
+    input: "\nkey = [[[[1]]]]\nafter = [10]\n",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 1..4,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 17..22,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 22..23,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 23..24,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 24..25,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 25..26,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 26..28,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 28..29,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 29..30,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 9..10,
+            description: "array",
+            expected: [],
+            unexpected: 9..10,
+        },
+    ],
+}

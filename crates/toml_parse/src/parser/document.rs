@@ -601,7 +601,7 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
                 unexpected: current_token.span().before(),
             });
 
-            receiver.inline_table_open(current_token.span().before(), error);
+            let _ = receiver.inline_table_open(current_token.span().before(), error);
             receiver.inline_table_close(current_token.span(), error);
         }
         TokenKind::LeftSquareBracket => {
@@ -615,7 +615,7 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
                 unexpected: current_token.span().before(),
             });
 
-            receiver.array_open(current_token.span().before(), error);
+            let _ = receiver.array_open(current_token.span().before(), error);
             receiver.array_close(current_token.span(), error);
         }
         TokenKind::LiteralString
@@ -693,7 +693,10 @@ fn on_array_open(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    receiver.array_open(array_open.span(), error);
+    if !receiver.array_open(array_open.span(), error) {
+        ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error);
+        return;
+    }
 
     enum State {
         NeedsValue,
@@ -779,7 +782,7 @@ fn on_array_open(
                     unexpected: current_token.span().before(),
                 });
 
-                receiver.inline_table_open(current_token.span().before(), error);
+                let _ = receiver.inline_table_open(current_token.span().before(), error);
                 receiver.inline_table_close(current_token.span(), error);
 
                 state = State::NeedsComma;
@@ -861,7 +864,10 @@ fn on_inline_table_open(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    receiver.inline_table_open(inline_table_open.span(), error);
+    if !receiver.inline_table_open(inline_table_open.span(), error) {
+        ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error);
+        return;
+    }
 
     #[allow(clippy::enum_variant_names)]
     enum State {
@@ -995,7 +1001,7 @@ fn on_inline_table_open(
                         unexpected: current_token.span().before(),
                     });
 
-                    receiver.array_open(current_token.span().before(), error);
+                    let _ = receiver.array_open(current_token.span().before(), error);
                     receiver.array_close(current_token.span(), error);
 
                     state = State::NeedsComma;

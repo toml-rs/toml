@@ -1,5 +1,6 @@
 use crate::decode::Encoding;
 use crate::ErrorSink;
+use crate::ParseError;
 use crate::Span;
 
 pub trait EventReceiver {
@@ -7,9 +8,17 @@ pub trait EventReceiver {
     fn std_table_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn array_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn array_table_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
-    fn inline_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
+    /// Returns if entering the inline table is allowed
+    #[must_use]
+    fn inline_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) -> bool {
+        true
+    }
     fn inline_table_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
-    fn array_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
+    /// Returns if entering the array is allowed
+    #[must_use]
+    fn array_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) -> bool {
+        true
+    }
     fn array_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn simple_key(&mut self, _span: Span, _kind: Option<Encoding>, _error: &mut dyn ErrorSink) {}
     fn key_sep(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
@@ -54,12 +63,13 @@ where
             span,
         });
     }
-    fn inline_table_open(&mut self, span: Span, _error: &mut dyn ErrorSink) {
+    fn inline_table_open(&mut self, span: Span, _error: &mut dyn ErrorSink) -> bool {
         (self)(Event {
             kind: EventKind::InlineTableOpen,
             encoding: None,
             span,
         });
+        true
     }
     fn inline_table_close(&mut self, span: Span, _error: &mut dyn ErrorSink) {
         (self)(Event {
@@ -68,12 +78,13 @@ where
             span,
         });
     }
-    fn array_open(&mut self, span: Span, _error: &mut dyn ErrorSink) {
+    fn array_open(&mut self, span: Span, _error: &mut dyn ErrorSink) -> bool {
         (self)(Event {
             kind: EventKind::ArrayOpen,
             encoding: None,
             span,
         });
+        true
     }
     fn array_close(&mut self, span: Span, _error: &mut dyn ErrorSink) {
         (self)(Event {
@@ -177,12 +188,13 @@ impl EventReceiver for Vec<Event> {
             span,
         });
     }
-    fn inline_table_open(&mut self, span: Span, _error: &mut dyn ErrorSink) {
+    fn inline_table_open(&mut self, span: Span, _error: &mut dyn ErrorSink) -> bool {
         self.push(Event {
             kind: EventKind::InlineTableOpen,
             encoding: None,
             span,
         });
+        true
     }
     fn inline_table_close(&mut self, span: Span, _error: &mut dyn ErrorSink) {
         self.push(Event {
@@ -191,12 +203,13 @@ impl EventReceiver for Vec<Event> {
             span,
         });
     }
-    fn array_open(&mut self, span: Span, _error: &mut dyn ErrorSink) {
+    fn array_open(&mut self, span: Span, _error: &mut dyn ErrorSink) -> bool {
         self.push(Event {
             kind: EventKind::ArrayOpen,
             encoding: None,
             span,
         });
+        true
     }
     fn array_close(&mut self, span: Span, _error: &mut dyn ErrorSink) {
         self.push(Event {
@@ -275,9 +288,13 @@ impl EventReceiver for () {
     fn std_table_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn array_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn array_table_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
-    fn inline_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
+    fn inline_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) -> bool {
+        true
+    }
     fn inline_table_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
-    fn array_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
+    fn array_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) -> bool {
+        true
+    }
     fn array_close(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn simple_key(&mut self, _span: Span, _encoding: Option<Encoding>, _error: &mut dyn ErrorSink) {
     }
@@ -289,6 +306,104 @@ impl EventReceiver for () {
     fn comment(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn newline(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
     fn error(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}
+}
+
+pub struct RecursionGuard<'r> {
+    receiver: &'r mut dyn EventReceiver,
+    max_depth: u32,
+    depth: i64,
+}
+
+impl<'r> RecursionGuard<'r> {
+    pub fn new(receiver: &'r mut dyn EventReceiver, max_depth: u32) -> Self {
+        Self {
+            receiver,
+            max_depth,
+            depth: 0,
+        }
+    }
+
+    fn within_depth(&self) -> bool {
+        self.depth <= self.max_depth as i64
+    }
+}
+
+impl EventReceiver for RecursionGuard<'_> {
+    fn std_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.std_table_open(span, error);
+    }
+    fn std_table_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.std_table_close(span, error);
+    }
+    fn array_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.array_table_open(span, error);
+    }
+    fn array_table_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.array_table_close(span, error);
+    }
+    fn inline_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) -> bool {
+        let allowed = self.receiver.inline_table_open(span, error);
+        self.depth += 1;
+        let within_depth = self.within_depth();
+        if allowed && !within_depth {
+            error.report_error(ParseError {
+                context: span,
+                description: "inline table",
+                expected: &[],
+                unexpected: span,
+            });
+        }
+        allowed && within_depth
+    }
+    fn inline_table_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.depth -= 1;
+        self.receiver.inline_table_close(span, error);
+    }
+    fn array_open(&mut self, span: Span, error: &mut dyn ErrorSink) -> bool {
+        let allowed = self.receiver.array_open(span, error);
+        self.depth += 1;
+        let within_depth = self.within_depth();
+        if allowed && !within_depth {
+            error.report_error(ParseError {
+                context: span,
+                description: "array",
+                expected: &[],
+                unexpected: span,
+            });
+        }
+        allowed && within_depth
+    }
+    fn array_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.depth -= 1;
+        self.receiver.array_close(span, error);
+    }
+    fn simple_key(&mut self, span: Span, encoding: Option<Encoding>, error: &mut dyn ErrorSink) {
+        self.receiver.simple_key(span, encoding, error);
+    }
+    fn key_sep(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.key_sep(span, error);
+    }
+    fn key_val_sep(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.key_val_sep(span, error);
+    }
+    fn scalar(&mut self, span: Span, encoding: Option<Encoding>, error: &mut dyn ErrorSink) {
+        self.receiver.scalar(span, encoding, error);
+    }
+    fn value_sep(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.value_sep(span, error);
+    }
+    fn whitespace(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.whitespace(span, error);
+    }
+    fn comment(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.comment(span, error);
+    }
+    fn newline(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.newline(span, error);
+    }
+    fn error(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.receiver.error(span, error);
+    }
 }
 
 #[cfg(feature = "unstable-debug")]
@@ -335,20 +450,22 @@ impl EventReceiver for DebugEventReceiver<'_> {
         self.indent -= 1;
         self.render_event(span, "]]", anstyle::Style::new() | anstyle::Effects::DIMMED);
     }
-    fn inline_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        self.receiver.inline_table_open(span, error);
+    fn inline_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) -> bool {
+        let allowed = self.receiver.inline_table_open(span, error);
         self.render_event(span, "{", anstyle::Style::new() | anstyle::Effects::DIMMED);
         self.indent += 1;
+        allowed
     }
     fn inline_table_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
         self.receiver.inline_table_close(span, error);
         self.indent -= 1;
         self.render_event(span, "}", anstyle::Style::new() | anstyle::Effects::DIMMED);
     }
-    fn array_open(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        self.receiver.array_open(span, error);
+    fn array_open(&mut self, span: Span, error: &mut dyn ErrorSink) -> bool {
+        let allowed = self.receiver.array_open(span, error);
         self.render_event(span, "[", anstyle::Style::new() | anstyle::Effects::DIMMED);
         self.indent += 1;
+        allowed
     }
     fn array_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
         self.receiver.array_close(span, error);
