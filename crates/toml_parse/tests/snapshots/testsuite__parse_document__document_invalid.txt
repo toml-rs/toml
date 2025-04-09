@@ -54,5 +54,25 @@ EventResults {
             span: 36..37,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: 36..37,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 36..36,
+        },
+    ],
 }

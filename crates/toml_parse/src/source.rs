@@ -1,4 +1,7 @@
+use crate::decode::Encoding;
+use crate::decode::StringBuilder;
 use crate::lexer::Lexer;
+use crate::ErrorSink;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Source<'i> {
@@ -72,15 +75,56 @@ impl<'i> Source<'i> {
 #[derive(Copy, Clone, Debug)]
 pub struct Raw<'i> {
     raw: &'i str,
+    encoding: Option<Encoding>,
+    span: Span,
 }
 
 impl<'i> Raw<'i> {
-    pub fn new_unchecked(raw: &'i str) -> Self {
-        Self { raw }
+    pub fn new_unchecked(raw: &'i str, encoding: Option<Encoding>, span: Span) -> Self {
+        Self {
+            raw,
+            encoding,
+            span,
+        }
+    }
+
+    pub fn decode_key(&self, output: &mut dyn StringBuilder<'i>, error: &mut dyn ErrorSink) {
+        let mut error = |mut err: crate::ParseError| {
+            err.context += self.span.start;
+            err.unexpected += self.span.start;
+            error.report_error(err);
+        };
+        match self.encoding {
+            Some(Encoding::LiteralString) => {
+                crate::decode::string::decode_literal_string(*self, output, &mut error);
+            }
+            Some(Encoding::BasicString) => {
+                crate::decode::string::decode_basic_string(*self, output, &mut error);
+            }
+            Some(Encoding::MlLiteralString) => {
+                crate::decode::string::decode_ml_literal_string(*self, output, &mut error);
+            }
+            Some(Encoding::MlBasicString) => {
+                crate::decode::string::decode_ml_basic_string(*self, output, &mut error);
+            }
+            None => crate::decode::string::decode_unquoted_key(*self, output, &mut error),
+        }
     }
 
     pub fn as_str(&self) -> &'i str {
         self.raw
+    }
+
+    pub fn as_bytes(&self) -> &'i [u8] {
+        self.raw.as_bytes()
+    }
+
+    pub fn len(&self) -> usize {
+        self.raw.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.raw.is_empty()
     }
 }
 
@@ -133,6 +177,35 @@ impl core::fmt::Debug for Span {
     }
 }
 
+impl core::ops::Add<usize> for Span {
+    type Output = Self;
+
+    fn add(self, offset: usize) -> Self::Output {
+        Self::Output {
+            start: self.start + offset,
+            end: self.end + offset,
+        }
+    }
+}
+
+impl core::ops::Add<Span> for usize {
+    type Output = Span;
+
+    fn add(self, span: Span) -> Self::Output {
+        Self::Output {
+            start: span.start + self,
+            end: span.end + self,
+        }
+    }
+}
+
+impl core::ops::AddAssign<usize> for Span {
+    fn add_assign(&mut self, rhs: usize) {
+        self.start += rhs;
+        self.end += rhs;
+    }
+}
+
 /// A helper trait used for indexing operations on [`Source`]
 pub trait SourceIndex: sealed::Sealed {
     /// Return a subslice of the input
@@ -169,14 +242,18 @@ impl SourceIndex for Span {
 
 impl SourceIndex for &Span {
     fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
-        source.get_raw_str(*self).map(Raw::new_unchecked)
+        let encoding = None;
+        source
+            .get_raw_str(*self)
+            .map(|s| Raw::new_unchecked(s, encoding, *self))
     }
 
     #[cfg(feature = "unsafe")]
     unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        let encoding = None;
         // SAFETY: Same safety guarantees are required
         let raw = unsafe { source.get_raw_str_unchecked(*self) };
-        Raw::new_unchecked(raw)
+        Raw::new_unchecked(raw, encoding, *self)
     }
 }
 
@@ -194,14 +271,18 @@ impl SourceIndex for crate::lexer::Token {
 
 impl SourceIndex for &crate::lexer::Token {
     fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
-        source.get_raw_str(self.span()).map(Raw::new_unchecked)
+        let encoding = self.kind().encoding();
+        source
+            .get_raw_str(self.span())
+            .map(|s| Raw::new_unchecked(s, encoding, self.span()))
     }
 
     #[cfg(feature = "unsafe")]
     unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        let encoding = self.kind().encoding();
         // SAFETY: Same safety guarantees are required
         let raw = unsafe { source.get_raw_str_unchecked(self.span()) };
-        Raw::new_unchecked(raw)
+        Raw::new_unchecked(raw, encoding, self.span())
     }
 }
 
@@ -219,14 +300,18 @@ impl SourceIndex for crate::parser::Event {
 
 impl SourceIndex for &crate::parser::Event {
     fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
-        source.get_raw_str(self.span()).map(Raw::new_unchecked)
+        let encoding = self.encoding();
+        source
+            .get_raw_str(self.span())
+            .map(|s| Raw::new_unchecked(s, encoding, self.span()))
     }
 
     #[cfg(feature = "unsafe")]
     unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        let encoding = self.encoding();
         // SAFETY: Same safety guarantees are required
         let raw = unsafe { source.get_raw_str_unchecked(self.span()) };
-        Raw::new_unchecked(raw)
+        Raw::new_unchecked(raw, encoding, self.span())
     }
 }
 

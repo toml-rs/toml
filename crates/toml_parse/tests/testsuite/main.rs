@@ -6,6 +6,7 @@ use snapbox::prelude::*;
 
 use toml_parse::parser::*;
 use toml_parse::ParseError;
+use toml_parse::Source;
 
 mod parse_document;
 mod parse_simple_key;
@@ -29,6 +30,14 @@ impl<'i> EventResults<'i> {
 
     #[track_caller]
     pub fn validate(&mut self, expected: impl IntoData) {
+        let doc = Source::new(self.input);
+        for event in &self.events {
+            if event.kind() == EventKind::SimpleKey {
+                let raw = doc.get(event).unwrap();
+                raw.decode_key(&mut (), &mut self.errors);
+            }
+        }
+
         assert_data_eq!(self.to_debug(), expected);
         if !self.events.is_empty() {
             let spans = self.events.iter().map(|t| t.span()).collect::<Vec<_>>();

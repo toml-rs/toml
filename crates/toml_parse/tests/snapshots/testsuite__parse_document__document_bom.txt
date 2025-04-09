@@ -131,5 +131,63 @@ EventResults {
             span: 57..58,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: 0..3,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 0..0,
+        },
+        ParseError {
+            context: 0..3,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 1..1,
+        },
+        ParseError {
+            context: 0..3,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 2..2,
+        },
+    ],
 }
