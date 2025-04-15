@@ -166,9 +166,36 @@ impl SourceIndex for &Span {
     }
 }
 
+impl SourceIndex for crate::lexer::Token {
+    fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
+        (&self).get(source)
+    }
+
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        unsafe { (&self).get_unchecked(source) }
+    }
+}
+
+impl SourceIndex for &crate::lexer::Token {
+    fn get<'i>(self, source: &Source<'i>) -> Option<Raw<'i>> {
+        source.get_raw_str(self.span()).map(Raw::new_unchecked)
+    }
+
+    #[cfg(feature = "unsafe")]
+    unsafe fn get_unchecked<'i>(self, source: &Source<'i>) -> Raw<'i> {
+        // SAFETY: Same safety guarantees are required
+        let raw = unsafe { source.get_raw_str_unchecked(self.span()) };
+        Raw::new_unchecked(raw)
+    }
+}
+
 mod sealed {
     pub trait Sealed {}
 
     impl Sealed for crate::Span {}
     impl Sealed for &crate::Span {}
+    impl Sealed for crate::lexer::Token {}
+    impl Sealed for &crate::lexer::Token {}
 }
