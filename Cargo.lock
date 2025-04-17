@@ -971,6 +971,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml_write"
+version = "0.1.0"
+dependencies = [
+ "snapbox",
+]
+
+[[package]]
 name = "typeid"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
