@@ -9,5 +9,37 @@ EventResults {
             span: 0..9,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: 0..9,
+            description: "basic string",
+            expected: [
+                Literal(
+                    "b",
+                ),
+                Literal(
+                    "f",
+                ),
+                Literal(
+                    "n",
+                ),
+                Literal(
+                    "r",
+                ),
+                Literal(
+                    "\\",
+                ),
+                Literal(
+                    "\"",
+                ),
+                Literal(
+                    "u",
+                ),
+                Literal(
+                    "U",
+                ),
+            ],
+            unexpected: 9..9,
+        },
+    ],
 }

@@ -3,7 +3,10 @@ use alloc::borrow::Cow;
 #[cfg(feature = "alloc")]
 use alloc::string::String;
 
+pub(crate) mod scalar;
 pub(crate) mod string;
+
+pub use scalar::ScalarKind;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 #[repr(u8)]

@@ -67,6 +67,27 @@ mod toml_parse {
                         let mut decoded = std::borrow::Cow::Borrowed("");
                         raw.decode_key(&mut decoded, error);
                     }
+                    fn scalar(
+                        &mut self,
+                        span: ::toml_parse::Span,
+                        encoding: Option<::toml_parse::decode::Encoding>,
+                        error: &mut dyn ::toml_parse::ErrorSink,
+                    ) {
+                        let event = ::toml_parse::parser::Event::new_unchecked(
+                            ::toml_parse::parser::EventKind::SimpleKey,
+                            encoding,
+                            span,
+                        );
+                        #[cfg(feature = "unsafe")]
+                        // SAFETY: `EventReceiver` should always receive valid
+                        // spans
+                        let raw = unsafe { self.source.get_unchecked(event) };
+                        #[cfg(not(feature = "unsafe"))]
+                        let raw = self.source.get(event).unwrap();
+                        let mut decoded = std::borrow::Cow::Borrowed("");
+                        let kind = raw.decode_scalar(&mut decoded, error);
+                        std::hint::black_box(kind);
+                    }
                 }
 
                 let source = ::toml_parse::Source::new(&sample);

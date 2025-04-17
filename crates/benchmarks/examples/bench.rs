@@ -38,6 +38,17 @@ fn main() -> Result<(), lexopt::Error> {
                     let mut decoded = std::borrow::Cow::Borrowed("");
                     raw.decode_key(&mut decoded, &mut _errors);
                     std::hint::black_box(decoded);
+                } else if event.kind() == ::toml_parse::parser::EventKind::Scalar {
+                    #[cfg(feature = "unsafe")]
+                    // SAFETY: `EventReceiver` should always receive valid
+                    // spans
+                    let raw = unsafe { source.get_unchecked(event) };
+                    #[cfg(not(feature = "unsafe"))]
+                    let raw = source.get(event).unwrap();
+                    let mut decoded = std::borrow::Cow::Borrowed("");
+                    let kind = raw.decode_scalar(&mut decoded, &mut _errors);
+                    std::hint::black_box(decoded);
+                    std::hint::black_box(kind);
                 }
             }
 

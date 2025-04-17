@@ -9,5 +9,16 @@ EventResults {
             span: 0..7,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: 0..7,
+            description: "multi-line basic string",
+            expected: [
+                Literal(
+                    "\"",
+                ),
+            ],
+            unexpected: 7..7,
+        },
+    ],
 }

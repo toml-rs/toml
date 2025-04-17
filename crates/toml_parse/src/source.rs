@@ -111,6 +111,38 @@ impl<'i> Raw<'i> {
         }
     }
 
+    #[must_use]
+    pub fn decode_scalar(
+        &self,
+        output: &mut dyn StringBuilder<'i>,
+        error: &mut dyn ErrorSink,
+    ) -> crate::decode::scalar::ScalarKind {
+        let mut error = |mut err: crate::ParseError| {
+            err.context += self.span.start;
+            err.unexpected += self.span.start;
+            error.report_error(err);
+        };
+        match self.encoding {
+            Some(Encoding::LiteralString) => {
+                crate::decode::string::decode_literal_string(*self, output, &mut error);
+                crate::decode::scalar::ScalarKind::String
+            }
+            Some(Encoding::BasicString) => {
+                crate::decode::string::decode_basic_string(*self, output, &mut error);
+                crate::decode::scalar::ScalarKind::String
+            }
+            Some(Encoding::MlLiteralString) => {
+                crate::decode::string::decode_ml_literal_string(*self, output, &mut error);
+                crate::decode::scalar::ScalarKind::String
+            }
+            Some(Encoding::MlBasicString) => {
+                crate::decode::string::decode_ml_basic_string(*self, output, &mut error);
+                crate::decode::scalar::ScalarKind::String
+            }
+            None => crate::decode::scalar::decode_unquoted_scalar(*self, output, &mut error),
+        }
+    }
+
     pub fn as_str(&self) -> &'i str {
         self.raw
     }
