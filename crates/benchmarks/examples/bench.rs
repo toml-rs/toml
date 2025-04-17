@@ -8,19 +8,22 @@ fn main() -> Result<(), lexopt::Error> {
                 .content()
                 .parse::<toml_edit::DocumentMut>()
                 .unwrap();
+            let _doc = std::hint::black_box(_doc);
             #[cfg(debug_assertions)] // Don't interfere with profiling
-            drop(_doc);
+            println!("{_doc:?}");
         }
         Parser::De => {
             let _doc =
                 toml::from_str::<toml_benchmarks::manifest::Manifest>(args.data.content()).unwrap();
+            let _doc = std::hint::black_box(_doc);
             #[cfg(debug_assertions)] // Don't interfere with profiling
-            drop(_doc);
+            println!("{_doc:?}");
         }
         Parser::Table => {
             let _doc = args.data.content().parse::<toml::Table>().unwrap();
+            let _doc = std::hint::black_box(_doc);
             #[cfg(debug_assertions)] // Don't interfere with profiling
-            drop(_doc);
+            println!("{_doc:?}");
         }
     }
     Ok(())
