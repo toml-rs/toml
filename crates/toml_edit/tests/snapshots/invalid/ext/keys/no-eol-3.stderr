@@ -2,4 +2,4 @@ TOML parse error at line 2, column 6
   |
 2 | 0="0"[[0000l0]]
   |      ^
-expected newline, `#`
+unexpected key or value, expected newline, `#`

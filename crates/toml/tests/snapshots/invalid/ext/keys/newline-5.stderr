@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 6
+TOML parse error at line 2, column 2
   |
-1 | key =
-  |      ^
-invalid string
-expected `"`, `'`
+2 | 3
+  |  ^
+key with no value, expected `=`

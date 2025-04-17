@@ -1,6 +1,5 @@
-TOML parse error at line 2, column 46
+TOML parse error at line 3, column 3
   |
-2 |   "Is there life after an array separator?", No
-  |                                              ^
-invalid array
-expected `]`
+3 |   "Entry"
+  |   ^
+missing comma between array elements, expected `,`

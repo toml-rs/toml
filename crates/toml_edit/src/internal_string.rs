@@ -87,6 +87,16 @@ impl From<&InternalString> for InternalString {
     }
 }
 
+impl From<std::borrow::Cow<'_, str>> for InternalString {
+    #[inline]
+    fn from(s: std::borrow::Cow<'_, str>) -> Self {
+        match s {
+            std::borrow::Cow::Borrowed(s) => s.into(),
+            std::borrow::Cow::Owned(s) => s.into(),
+        }
+    }
+}
+
 impl From<Box<str>> for InternalString {
     #[inline]
     fn from(s: Box<str>) -> Self {

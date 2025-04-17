@@ -1,6 +1,5 @@
 TOML parse error at line 1, column 16
   |
 1 | name = { key = value }
-  |                ^
-invalid string
-expected `"`, `'`
+  |                ^^^^^
+string values must be quoted, expected literal string

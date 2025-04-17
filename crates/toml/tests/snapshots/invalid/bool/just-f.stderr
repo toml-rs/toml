@@ -2,5 +2,4 @@ TOML parse error at line 1, column 27
   |
 1 | just-f                  = f
   |                           ^
-invalid string
-expected `"`, `'`
+invalid boolean, expected `false`

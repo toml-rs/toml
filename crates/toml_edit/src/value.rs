@@ -241,11 +241,17 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut value = crate::parser::parse_value(s)?;
-        // Only take the repr and not decor, as its probably not intended
-        value.decor_mut().clear();
-        value.despan(s);
-        Ok(value)
+        let source = toml_parse::Source::new(s);
+        let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
+        let mut value = crate::parser::parse_value(source, &mut sink);
+        if let Some(err) = sink.into_inner() {
+            Err(err)
+        } else {
+            // Only take the repr and not decor, as its probably not intended
+            value.decor_mut().clear();
+            value.despan(s);
+            Ok(value)
+        }
     }
 }
 

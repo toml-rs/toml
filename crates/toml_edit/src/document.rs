@@ -23,7 +23,18 @@ impl ImDocument<&'static str> {
 impl<S: AsRef<str>> ImDocument<S> {
     /// Parse a TOML document
     pub fn parse(raw: S) -> Result<Self, crate::TomlError> {
-        crate::parser::parse_document(raw)
+        let source = toml_parse::Source::new(raw.as_ref());
+        let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
+        let doc = crate::parser::parse_document(source, &mut sink);
+        if let Some(err) = sink.into_inner() {
+            Err(err)
+        } else {
+            Ok(ImDocument {
+                root: doc.root,
+                trailing: doc.trailing,
+                raw,
+            })
+        }
     }
 }
 

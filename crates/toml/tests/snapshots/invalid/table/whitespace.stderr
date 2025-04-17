@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 10
+TOML parse error at line 1, column 9
   |
 1 | [invalid key]
-  |          ^
-invalid table header
-expected `.`, `]`
+  |         ^
+unclosed table, expected `]`

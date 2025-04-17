@@ -1,5 +1,5 @@
-TOML parse error at line 3, column 1
+TOML parse error at line 3, column 5
   |
 3 | arr.val1=1
-  | ^
-duplicate key `val1`
+  |     ^^^^
+duplicate key

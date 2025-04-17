@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 18
+TOML parse error at line 1, column 16
   |
 1 | negative-hex = -0xff
-  |                  ^
-expected newline, `#`
+  |                ^
+integers with a radix cannot be signed, expected nothing

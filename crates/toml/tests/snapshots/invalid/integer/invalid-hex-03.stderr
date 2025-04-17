@@ -2,4 +2,4 @@ TOML parse error at line 1, column 7
   |
 1 | a = 0x-1
   |       ^
-invalid hexadecimal integer
+unexpected sign, expected nothing

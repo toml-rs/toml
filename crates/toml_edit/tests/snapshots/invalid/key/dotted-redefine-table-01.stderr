@@ -2,4 +2,4 @@ TOML parse error at line 2, column 1
   |
 2 | a.b = true
   | ^
-dotted key `a` attempted to extend non-table type (boolean)
+cannot extend value of type boolean with a dotted key

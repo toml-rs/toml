@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 16
+TOML parse error at line 1, column 15
   |
 1 | capital-bin = 0B0
-  |                ^
-expected newline, `#`
+  |               ^^
+radix must be lowercase, expected `0b`

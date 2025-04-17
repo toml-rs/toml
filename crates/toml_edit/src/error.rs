@@ -5,37 +5,47 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,
-    raw: Option<String>,
+    raw: Option<std::sync::Arc<str>>,
     keys: Vec<String>,
     span: Option<std::ops::Range<usize>>,
 }
 
 impl TomlError {
     #[cfg(feature = "parse")]
-    pub(crate) fn new(
-        error: winnow::error::ParseError<
-            crate::parser::prelude::Input<'_>,
-            winnow::error::ContextError,
-        >,
-        mut raw: crate::parser::prelude::Input<'_>,
-    ) -> Self {
-        use winnow::stream::Stream;
+    pub(crate) fn new(raw: std::sync::Arc<str>, error: toml_parse::ParseError) -> Self {
+        let mut message = String::new();
+        message.push_str(error.description());
+        if let Some(expected) = error.expected() {
+            message.push_str(", expected ");
+            if expected.is_empty() {
+                message.push_str("nothing");
+            } else {
+                for (i, expected) in expected.iter().enumerate() {
+                    if i != 0 {
+                        message.push_str(", ");
+                    }
+                    match expected {
+                        toml_parse::Expected::Literal(desc) => {
+                            message.push_str(&render_literal(desc));
+                        }
+                        toml_parse::Expected::Description(desc) => message.push_str(desc),
+                        _ => message.push_str("etc"),
+                    }
+                }
+            }
+        }
 
-        let message = error.inner().to_string();
-        let raw = raw.finish();
-        let raw = String::from_utf8(raw.to_owned()).expect("original document was utf8");
-
-        let span = error.char_span();
+        let span = error.unexpected().map(|span| span.start()..span.end());
 
         Self {
             message,
             raw: Some(raw),
             keys: Vec::new(),
-            span: Some(span),
+            span,
         }
     }
 
-    #[cfg(any(feature = "serde", feature = "parse"))]
+    #[cfg(feature = "serde")]
     pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,
@@ -67,7 +77,18 @@ impl TomlError {
 
     #[cfg(feature = "serde")]
     pub(crate) fn set_raw(&mut self, raw: Option<String>) {
-        self.raw = raw;
+        self.raw = raw.map(|s| s.into());
+    }
+}
+
+fn render_literal(literal: &str) -> String {
+    match literal {
+        "\n" => "newline".to_owned(),
+        "`" => "'`'".to_owned(),
+        s if s.chars().all(|c| c.is_ascii_control()) => {
+            format!("`{}`", s.escape_debug())
+        }
+        s => format!("`{s}`"),
     }
 }
 
@@ -167,6 +188,52 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     let column = column + column_offset;
 
     (line, column)
+}
+
+#[cfg(feature = "parse")]
+pub(crate) struct TomlSink<'i, S> {
+    source: toml_parse::Source<'i>,
+    raw: Option<std::sync::Arc<str>>,
+    sink: S,
+}
+
+#[cfg(feature = "parse")]
+impl<'i, S: Default> TomlSink<'i, S> {
+    pub(crate) fn new(source: toml_parse::Source<'i>) -> Self {
+        Self {
+            source,
+            raw: None,
+            sink: Default::default(),
+        }
+    }
+
+    pub(crate) fn into_inner(self) -> S {
+        self.sink
+    }
+}
+
+#[cfg(feature = "parse")]
+impl<'i> toml_parse::ErrorSink for TomlSink<'i, Option<TomlError>> {
+    fn report_error(&mut self, error: toml_parse::ParseError) {
+        if self.sink.is_none() {
+            let raw = self
+                .raw
+                .get_or_insert_with(|| std::sync::Arc::from(self.source.input()));
+            let error = TomlError::new(raw.clone(), error);
+            self.sink = Some(error);
+        }
+    }
+}
+
+#[cfg(feature = "parse")]
+impl<'i> toml_parse::ErrorSink for TomlSink<'i, Vec<TomlError>> {
+    fn report_error(&mut self, error: toml_parse::ParseError) {
+        let raw = self
+            .raw
+            .get_or_insert_with(|| std::sync::Arc::from(self.source.input()));
+        let error = TomlError::new(raw.clone(), error);
+        self.sink.push(error);
+    }
 }
 
 #[cfg(test)]

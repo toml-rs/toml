@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 10
   |
 1 | t = {a=1,
-  |         ^
-invalid inline table
-expected `}`
+  |          ^
+newlines are unsupported in inline tables, expected nothing

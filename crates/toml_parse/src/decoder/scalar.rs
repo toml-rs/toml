@@ -32,7 +32,7 @@ impl ScalarKind {
         }
     }
 
-    fn invalid_description(&self) -> &'static str {
+    pub fn invalid_description(&self) -> &'static str {
         match self {
             Self::String => "invalid string",
             Self::Boolean(_) => "invalid boolean",
@@ -71,7 +71,7 @@ impl IntegerRadix {
         }
     }
 
-    fn invalid_description(&self) -> &'static str {
+    pub fn invalid_description(&self) -> &'static str {
         match self {
             Self::Dec => "invalid integer number",
             Self::Hex => "invalid hexadecimal number",

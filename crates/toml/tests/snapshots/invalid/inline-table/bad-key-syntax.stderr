@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 14
+TOML parse error at line 1, column 16
   |
 1 | tbl = { a = 1, [b] }
-  |              ^
-invalid inline table
-expected `}`
+  |                ^
+missing key for inline table element, expected key

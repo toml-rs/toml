@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 13
+TOML parse error at line 1, column 7
   |
 1 | foo = 199709-09
-  |             ^
-expected newline, `#`
+  |       ^^^^^^^^^
+invalid date, expected `-` (MM-DD)

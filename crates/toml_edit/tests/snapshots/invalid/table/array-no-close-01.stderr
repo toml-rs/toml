@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 10
   |
 1 | [[albums]
-  |         ^
-invalid table header
-expected `.`, `]]`
+  |          ^
+unclosed array table, expected `]`

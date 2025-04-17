@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 14
+TOML parse error at line 1, column 13
   |
 1 | naughty = "\xAg"
-  |              ^
-invalid escape sequence
-expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+  |             ^
+missing escaped value, expected `b`, `f`, `n`, `r`, `\`, `"`, `u`, `U`

@@ -2,4 +2,4 @@ TOML parse error at line 1, column 4
   |
 1 | [']
   |    ^
-invalid literal string
+unclosed table, expected `]`

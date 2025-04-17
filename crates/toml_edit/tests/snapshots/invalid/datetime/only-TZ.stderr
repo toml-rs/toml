@@ -1,6 +1,5 @@
 TOML parse error at line 1, column 7
   |
 1 | foo = TZ
-  |       ^
-invalid string
-expected `"`, `'`
+  |       ^^
+invalid boolean, expected `true`

@@ -1,6 +1,5 @@
-TOML parse error at line 4, column 1
+TOML parse error at line 4, column 8
   |
 4 | [fruit.type]
-  | ^
-invalid table header
-duplicate key `type` in table `fruit`
+  |        ^^^^
+duplicate key
