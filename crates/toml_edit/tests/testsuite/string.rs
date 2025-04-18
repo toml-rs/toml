@@ -162,7 +162,7 @@ fn mixed_quote_1() {
 StringResults {
     decoded: "\"'",
     key_default: "\"\\\"'\"",
-    string_default: "'''\"''''",
+    string_default: "\"\"\"\\\"'\"\"\"",
 }
 
 "#]],

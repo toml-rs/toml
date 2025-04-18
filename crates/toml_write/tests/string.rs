@@ -372,7 +372,7 @@ StringResults {
     key_literal: None,
     key_basic_pretty: None,
     key_basic: "\"\\\"'\"",
-    string_default: "'''\"''''",
+    string_default: "\"\"\"\\\"'\"\"\"",
     string_literal: None,
     string_ml_literal: Some(
         "'''\"''''",

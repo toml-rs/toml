@@ -13,22 +13,17 @@ impl<'s> TomlStringBuilder<'s> {
     }
 
     pub fn as_default(&self) -> TomlString<'s> {
-        let (style, prefer_literal) = self.metrics.infer_style();
-
-        match (style, prefer_literal) {
-            (StringStyle::NewlineTriple, true) => {
-                self.as_ml_literal().unwrap_or_else(|| self.as_ml_basic())
-            }
-            (StringStyle::NewlineTriple, false) => self.as_ml_basic(),
-            (StringStyle::OnelineTriple, true) => {
-                self.as_ml_literal().unwrap_or_else(|| self.as_ml_basic())
-            }
-            (StringStyle::OnelineTriple, false) => self.as_ml_basic(),
-            (StringStyle::OnelineSingle, true) => {
-                self.as_literal().unwrap_or_else(|| self.as_basic())
-            }
-            (StringStyle::OnelineSingle, false) => self.as_basic(),
-        }
+        self.as_basic_pretty()
+            .or_else(|| self.as_literal())
+            .or_else(|| self.as_ml_basic_pretty())
+            .or_else(|| self.as_ml_literal())
+            .unwrap_or_else(|| {
+                if self.metrics.newline {
+                    self.as_ml_basic()
+                } else {
+                    self.as_basic()
+                }
+            })
     }
 
     pub fn as_literal(&self) -> Option<TomlString<'s>> {
@@ -96,13 +91,6 @@ impl<'s> TomlStringBuilder<'s> {
             newline: self.metrics.newline,
         }
     }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum StringStyle {
-    NewlineTriple,
-    OnelineTriple,
-    OnelineSingle,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -361,48 +349,6 @@ impl ValueMetrics {
         }
 
         metrics
-    }
-
-    fn infer_style(&self) -> (StringStyle, bool) {
-        // We need to determine:
-        // - if we are a "multi-line" pretty (if there are \n)
-        // - if ['''] appears if multi or ['] if single
-        // - if there are any invalid control characters
-        //
-        // Doing it any other way would require multiple passes
-        // to determine if a pretty string works or not.
-        let mut ty = StringStyle::OnelineSingle;
-        let mut can_be_pretty = true;
-        let mut prefer_literal = false;
-
-        if 3 <= self.max_seq_single_quotes {
-            can_be_pretty = false;
-        }
-        if 0 < self.max_seq_double_quotes {
-            prefer_literal = true;
-        }
-        if self.escape {
-            prefer_literal = true;
-        }
-        if self.newline {
-            ty = StringStyle::NewlineTriple;
-        }
-        if self.escape_codes {
-            can_be_pretty = false;
-        }
-
-        if !prefer_literal {
-            can_be_pretty = false;
-        }
-        if !can_be_pretty {
-            debug_assert!(ty != StringStyle::OnelineTriple);
-            return (ty, false);
-        }
-        if ty == StringStyle::OnelineSingle && self.max_seq_single_quotes >= 1 {
-            // no newlines, but must use ''' because it has ' in it
-            ty = StringStyle::OnelineTriple;
-        }
-        (ty, true)
     }
 }
 
