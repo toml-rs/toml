@@ -1715,7 +1715,7 @@ crlf \r
     );
     assert_string_value_roundtrip(
         r#""mixed quoted \"start\" 'end'' mixed quote""#,
-        str![[r#"'''mixed quoted "start" 'end'' mixed quote'''"#]],
+        str![[r#""""mixed quoted "start" 'end'' mixed quote""""#]],
     );
 }
 

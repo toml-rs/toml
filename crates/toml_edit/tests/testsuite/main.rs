@@ -7,3 +7,4 @@ mod float;
 mod invalid;
 mod parse;
 mod stackoverflow;
+mod string;

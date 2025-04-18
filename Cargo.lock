@@ -959,6 +959,7 @@ dependencies = [
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
+ "toml_write",
  "winnow",
 ]
 
@@ -968,6 +969,13 @@ version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",
  "toml_edit",
+]
+
+[[package]]
+name = "toml_write"
+version = "0.1.0"
+dependencies = [
+ "snapbox",
 ]
 
 [[package]]

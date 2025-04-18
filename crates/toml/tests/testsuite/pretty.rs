@@ -69,8 +69,8 @@ this is pretty standard
 """
 text = """
 this is the first line.
-This has a ''' in it and \"\"\" cuz it's tricky yo
-Also ' and \" because why not
+This has a ''' in it and ""\" cuz it's tricky yo
+Also ' and " because why not
 this is the fourth line
 """
 "#;
