@@ -226,11 +226,23 @@ fn write_toml_value<W: crate::TomlWrite + ?Sized>(
         // wschar =/ %x09  ; Horizontal tab
         // escape = %x5C                   ; \
         // ```
+        let max_seq_double_quotes = if is_ml { 2 } else { 0 };
         let mut stream = decoded;
         while !stream.is_empty() {
             let mut unescaped_end = 0;
             let mut escaped = None;
+            let mut seq_double_quotes = 0;
             for (i, b) in stream.as_bytes().iter().enumerate() {
+                if *b == b'"' {
+                    seq_double_quotes += 1;
+                    if max_seq_double_quotes < seq_double_quotes {
+                        escaped = Some(r#"\""#);
+                        break;
+                    }
+                } else {
+                    seq_double_quotes = 0;
+                }
+
                 match *b {
                     0x8 => {
                         escaped = Some(r#"\b"#);
@@ -254,10 +266,7 @@ fn write_toml_value<W: crate::TomlWrite + ?Sized>(
                         escaped = Some(r#"\r"#);
                         break;
                     }
-                    0x22 => {
-                        escaped = Some(r#"\""#);
-                        break;
-                    }
+                    0x22 => {} // double quote handled earlier
                     0x5c => {
                         escaped = Some(r#"\\"#);
                         break;

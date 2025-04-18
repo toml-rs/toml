@@ -286,10 +286,10 @@ StringResults {
     ),
     string_basic_pretty: None,
     string_ml_basic_pretty: Some(
-        "\"\"\"\\\"hello\\\"world\\\"\"\"\"",
+        "\"\"\"\"hello\"world\"\"\"\"",
     ),
     string_basic: "\"\\\"hello\\\"world\\\"\"",
-    string_ml_basic: "\"\"\"\\\"hello\\\"world\\\"\"\"\"",
+    string_ml_basic: "\"\"\"\"hello\"world\"\"\"\"",
 }
 
 "#]],
@@ -319,10 +319,10 @@ StringResults {
     ),
     string_basic_pretty: None,
     string_ml_basic_pretty: Some(
-        "\"\"\"\\\"\\\"hello\\\"\\\"world\\\"\\\"\"\"\"",
+        "\"\"\"\"\"hello\"\"world\"\"\"\"\"",
     ),
     string_basic: "\"\\\"\\\"hello\\\"\\\"world\\\"\\\"\"",
-    string_ml_basic: "\"\"\"\\\"\\\"hello\\\"\\\"world\\\"\\\"\"\"\"",
+    string_ml_basic: "\"\"\"\"\"hello\"\"world\"\"\"\"\"",
 }
 
 "#]],
@@ -353,7 +353,7 @@ StringResults {
     string_basic_pretty: None,
     string_ml_basic_pretty: None,
     string_basic: "\"\\\"\\\"\\\"hello\\\"\\\"\\\"world\\\"\\\"\\\"\"",
-    string_ml_basic: "\"\"\"\\\"\\\"\\\"hello\\\"\\\"\\\"world\\\"\\\"\\\"\"\"\"",
+    string_ml_basic: "\"\"\"\"\"\\\"hello\"\"\\\"world\"\"\\\"\"\"\"",
 }
 
 "#]],
@@ -372,17 +372,17 @@ StringResults {
     key_literal: None,
     key_basic_pretty: None,
     key_basic: "\"\\\"'\"",
-    string_default: "\"\"\"\\\"'\"\"\"",
+    string_default: "\"\"\"\"'\"\"\"",
     string_literal: None,
     string_ml_literal: Some(
         "'''\"''''",
     ),
     string_basic_pretty: None,
     string_ml_basic_pretty: Some(
-        "\"\"\"\\\"'\"\"\"",
+        "\"\"\"\"'\"\"\"",
     ),
     string_basic: "\"\\\"'\"",
-    string_ml_basic: "\"\"\"\\\"'\"\"\"",
+    string_ml_basic: "\"\"\"\"'\"\"\"",
 }
 
 "#]],
@@ -409,7 +409,7 @@ StringResults {
     string_basic_pretty: None,
     string_ml_basic_pretty: None,
     string_basic: "\"mixed quoted \\\\\\\"start\\\\\\\" 'end'' mixed quote\"",
-    string_ml_basic: "\"\"\"mixed quoted \\\\\\\"start\\\\\\\" 'end'' mixed quote\"\"\"",
+    string_ml_basic: "\"\"\"mixed quoted \\\\\"start\\\\\" 'end'' mixed quote\"\"\"",
 }
 
 "#]],
