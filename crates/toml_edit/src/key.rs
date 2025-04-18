@@ -1,6 +1,9 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
+#[cfg(feature = "display")]
+use toml_write::ToTomlKey as _;
+
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
 
@@ -95,7 +98,10 @@ impl Key {
     /// Returns the default raw representation.
     #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
-        to_key_repr(&self.key)
+        let output = toml_write::TomlKeyBuilder::new(&self.key)
+            .as_default()
+            .to_toml_key();
+        Repr::new_unchecked(output)
     }
 
     /// Returns a raw representation.
@@ -274,32 +280,6 @@ impl FromStr for Key {
     /// and then literal quoted key (surrounds with '')
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Key::try_parse_simple(s)
-    }
-}
-
-#[cfg(feature = "display")]
-fn to_key_repr(key: &str) -> Repr {
-    #[cfg(feature = "parse")]
-    {
-        if key
-            .as_bytes()
-            .iter()
-            .copied()
-            .all(crate::parser::key::is_unquoted_char)
-            && !key.is_empty()
-        {
-            Repr::new_unchecked(key)
-        } else {
-            crate::encode::to_string_repr(
-                key,
-                Some(crate::encode::StringStyle::OnelineSingle),
-                None,
-            )
-        }
-    }
-    #[cfg(not(feature = "parse"))]
-    {
-        crate::encode::to_string_repr(key, Some(crate::encode::StringStyle::OnelineSingle), None)
     }
 }
 

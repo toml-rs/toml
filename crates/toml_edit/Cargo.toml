@@ -29,7 +29,7 @@ pre-release-replacements = [
 [features]
 default = ["parse", "display"]
 parse = ["dep:winnow"]
-display = []
+display = ["dep:toml_write"]
 perf = ["dep:kstring"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
@@ -46,6 +46,7 @@ serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.6.8", path = "../toml_datetime" }
 serde_spanned = { version = "0.6.8", path = "../serde_spanned", features = ["serde"], optional = true }
+toml_write = { version = "0.1.0", path = "../toml_write", optional = true }
 
 [dev-dependencies]
 serde_json = "1.0.116"
