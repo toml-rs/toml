@@ -1,6 +1,6 @@
 [files]
 extend-exclude = [
-    "crates/toml_edit/tests/fixtures/**",
+    "crates/toml_edit/tests/snapshots/**",
     "crates/benchmarks/src/Cargo.*.toml",
 ]
 
