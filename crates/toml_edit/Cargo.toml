@@ -50,8 +50,8 @@ toml_write = { version = "0.1.0", path = "../toml_write", optional = true }
 
 [dev-dependencies]
 serde_json = "1.0.116"
-toml-test-harness = "0.4.8"
-toml-test-data = "1.11.0"
+toml-test-harness = "1.0.0"
+toml-test-data = "2.0.0"
 libtest-mimic = "0.7.2"
 snapbox = "0.6.0"
 proptest = "1.5.0"
