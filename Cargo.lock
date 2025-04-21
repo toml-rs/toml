@@ -920,6 +920,7 @@ checksum = "09bfc3e423ee63d96dc78d95894ac4303839aa6c0eece2d9d9e1dd055e092773"
 dependencies = [
  "ignore",
  "libtest-mimic",
+ "snapbox",
  "toml-test",
  "toml-test-data",
 ]
@@ -950,7 +951,6 @@ version = "0.22.24"
 dependencies = [
  "indexmap",
  "kstring",
- "libtest-mimic",
  "proptest",
  "serde",
  "serde_json",
