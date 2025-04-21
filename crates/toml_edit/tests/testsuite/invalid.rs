@@ -2,12 +2,19 @@ use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
 
+#[track_caller]
+fn t(toml: &str, expected: impl IntoData) {
+    dbg!(toml);
+    match toml.parse::<toml_edit::DocumentMut>() {
+        Ok(s) => panic!("parsed to: {s:#?}"),
+        Err(e) => assert_data_eq!(e.to_string(), expected.raw()),
+    }
+}
+
 #[test]
 fn basic_string_escape() {
-    let toml_input = "a = \"\u{7f}\"";
-    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
-    assert_data_eq!(
-        err.to_string(),
+    t(
+        "a = \"\u{7f}\"",
         str![[r#"
 TOML parse error at line 1, column 6
   |
@@ -15,17 +22,14 @@ TOML parse error at line 1, column 6
   |      ^
 invalid basic string
 
-"#]]
-        .raw()
+"#]],
     );
 }
 
 #[test]
 fn literal_escape() {
-    let toml_input = "a = '\u{7f}'";
-    let err = toml_input.parse::<toml_edit::DocumentMut>().unwrap_err();
-    assert_data_eq!(
-        err.to_string(),
+    t(
+        "a = '\u{7f}'",
         str![[r#"
 TOML parse error at line 1, column 6
   |
@@ -33,8 +37,7 @@ TOML parse error at line 1, column 6
   |      ^
 invalid literal string
 
-"#]]
-        .raw()
+"#]],
     );
 }
 
