@@ -4,10 +4,10 @@ fn main() {
     let args = libtest_mimic::Arguments::from_args();
     let tests = toml_test_data::invalid()
         .map(|case| {
-            libtest_mimic::Trial::test(case.name.display().to_string(), || {
+            libtest_mimic::Trial::test(case.name.display().to_string(), move || {
                 let expect_path =
                     std::path::Path::new("tests/fixtures").join(case.name.with_extension("stderr"));
-                let err = match run_case(case.fixture) {
+                let err = match run_case(case.fixture()) {
                     Ok(()) => "".to_owned(),
                     Err(err) => err,
                 };
