@@ -5,5 +5,6 @@ fn main() {
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness.version("1.0.0");
     harness.ignore([]).unwrap();
+    harness.snapshot_root("tests/snapshots");
     harness.test();
 }
