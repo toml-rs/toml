@@ -960,6 +960,7 @@ dependencies = [
  "toml-test-harness",
  "toml_datetime",
  "toml_write",
+ "walkdir",
  "winnow",
 ]
 
