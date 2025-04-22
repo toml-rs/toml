@@ -9,5 +9,4 @@ mod macros;
 mod pretty;
 mod serde;
 mod spanned;
-mod spanned_impls;
 mod tables_last;
