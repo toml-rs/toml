@@ -130,6 +130,26 @@ invalid basic string
 }
 
 #[test]
+fn duplicate_key_with_crlf() {
+    t(
+        "\r\n\
+         [t1]\r\n\
+         [t2]\r\n\
+         a = 1\r\n\
+         a = 2\r\n\
+         ",
+        str![[r#"
+TOML parse error at line 5, column 1
+  |
+5 | a = 2
+  | ^
+duplicate key `a` in table `t2`
+
+"#]],
+    );
+}
+
+#[test]
 fn emoji_error_span() {
     let input = "😀";
     let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
