@@ -61,6 +61,10 @@ name = "testsuite"
 required-features = ["parse", "display"]
 
 [[test]]
+name = "compliance"
+required-features = ["parse", "display"]
+
+[[test]]
 name = "decoder_compliance"
 required-features = ["parse", "display"]
 harness = false

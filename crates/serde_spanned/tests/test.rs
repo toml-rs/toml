@@ -1,29 +1,21 @@
 use std::cmp::{Ord, Ordering, PartialOrd};
 
-use serde::Deserialize;
-use toml::{from_str, Spanned};
+use serde_spanned::Spanned;
 
 #[test]
-fn test_spans_impls() {
-    #[derive(Deserialize)]
+fn operators() {
     struct Foo {
         bar: Spanned<bool>,
         baz: Spanned<String>,
     }
-    let f: Foo = from_str(
-        "
-    bar = true
-    baz = \"yes\"
-    ",
-    )
-    .unwrap();
-    let g: Foo = from_str(
-        "
-    baz = \"yes\"
-    bar = true
-    ",
-    )
-    .unwrap();
+    let f = Foo {
+        bar: Spanned::new(0..4, true),
+        baz: Spanned::new(5..7, "yes".to_owned()),
+    };
+    let g = Foo {
+        bar: Spanned::new(5..7, true),
+        baz: Spanned::new(0..4, "yes".to_owned()),
+    };
     assert!(f.bar.span() != g.bar.span());
     assert!(f.baz.span() != g.baz.span());
 
