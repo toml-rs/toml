@@ -1,6 +1,7 @@
 #![cfg(feature = "alloc")]
 #![allow(clippy::dbg_macro)] // unsure why config isn't working
 
+use proptest::prelude::*;
 use snapbox::prelude::*;
 use snapbox::str;
 
@@ -575,4 +576,29 @@ StringResults {
 
 "#]],
     );
+}
+
+proptest! {
+    /// Verify defaults are compatible with the old TOML parser so new Cargo doesn't cause an MSRV
+    /// bump
+    #[test]
+    fn parseable(decoded in "\\PC*") {
+        let key = TomlKeyBuilder::new(&decoded);
+        let string = TomlStringBuilder::new(&decoded);
+
+        let key_default = key.as_default().to_toml_key();
+        let string_default = string.as_default().to_toml_value();
+
+        let toml = format!("{key_default} = {string_default}");
+        dbg!(&toml);
+        let value = toml.parse::<toml_old::Value>();
+        let value = match value {
+            Ok(value) => value,
+            Err(err) => panic!("could not parse: {err}"),
+        };
+        let table = value.as_table().unwrap();
+        let (key, value) = table.iter().next().unwrap();
+        assert_eq!(*key, decoded);
+        assert_eq!(value.as_str().unwrap(), decoded);
+    }
 }
