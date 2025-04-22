@@ -1,4 +1,32 @@
 //! A low-level interface for writing out TOML
+//!
+//! # Example
+//!
+//! ```rust
+//! use toml_write::TomlWrite as _;
+//!
+//! # fn main() -> std::fmt::Result {
+//! let mut output = String::new();
+//! output.newline()?;
+//! output.open_table_header()?;
+//! output.key("table")?;
+//! output.close_table_header()?;
+//! output.newline()?;
+//!
+//! output.key("key")?;
+//! output.space()?;
+//! output.keyval_sep()?;
+//! output.space()?;
+//! output.value("value")?;
+//! output.newline()?;
+//!
+//! assert_eq!(output, r#"
+//! [table]
+//! key = "value"
+//! "#);
+//! #   Ok(())
+//! # }
+//! ```
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
