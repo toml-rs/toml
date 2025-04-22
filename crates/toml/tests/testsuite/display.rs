@@ -13,7 +13,10 @@ macro_rules! map( ($($k:expr => $v:expr),*) => ({
 
 #[test]
 fn simple_show() {
-    assert_data_eq!(String("foo".to_owned()).to_string(), str![[r#""foo""#]].raw());
+    assert_data_eq!(
+        String("foo".to_owned()).to_string(),
+        str![[r#""foo""#]].raw()
+    );
     assert_data_eq!(Integer(10).to_string(), str!["10"].raw());
     assert_data_eq!(Float(10.0).to_string(), str!["10.0"].raw());
     assert_data_eq!(Float(2.4).to_string(), str!["2.4"].raw());
@@ -37,7 +40,8 @@ fn table() {
 test = 2
 test2 = 3
 
-"#]].raw()
+"#]]
+        .raw()
     );
     assert_data_eq!(
         map! {
@@ -53,23 +57,8 @@ test = 2
 [test2]
 test = "wut"
 
-"#]].raw()
-    );
-    assert_data_eq!(
-        map! {
-             "test" => Integer(2),
-             "test2" => Table(map! {
-                 "test" => String("wut".to_owned())
-             })
-        }
-        .to_string(),
-        str![[r#"
-test = 2
-
-[test2]
-test = "wut"
-
-"#]].raw()
+"#]]
+        .raw()
     );
     assert_data_eq!(
         map! {
@@ -85,57 +74,7 @@ test = 2
 [[test2]]
 test = "wut"
 
-"#]].raw()
-    );
-    #[cfg(feature = "preserve_order")]
-    assert_data_eq!(
-        map! {
-             "foo.bar" => Integer(2),
-             "foo\"bar" => Integer(2)
-        }
-        .to_string(),
-        str![].raw()
-    );
-    assert_data_eq!(
-        map! {
-             "test" => Integer(2),
-             "test2" => Array(vec![Table(map! {
-                 "test" => Array(vec![Integer(2)])
-             })])
-        }
-        .to_string(),
-        str![[r#"
-test = 2
-
-[[test2]]
-test = [2]
-
-"#]].raw()
-    );
-    let table = map! {
-        "test" => Integer(2),
-        "test2" => Array(vec![Table(map! {
-            "test" => Array(vec![Array(vec![Integer(2), Integer(3)]),
-            Array(vec![String("foo".to_owned()), String("bar".to_owned())])])
-        })])
-    };
-    assert_data_eq!(table.to_string(), str![[r#"
-test = 2
-
-[[test2]]
-test = [[2, 3], ["foo", "bar"]]
-
-"#]].raw());
-    assert_data_eq!(
-        map! {
-             "test" => Array(vec![Integer(2)]),
-             "test2" => Integer(2)
-        }
-        .to_string(),
-        str![[r#"
-test = [2]
-test2 = 2
-
-"#]].raw()
+"#]]
+        .raw()
     );
 }

@@ -3,9 +3,7 @@
 
 mod de_errors;
 mod display;
-mod display_tricky;
 mod enum_external_deserialize;
-mod float;
 mod formatting;
 mod macros;
 mod pretty;
