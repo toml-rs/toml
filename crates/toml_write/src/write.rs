@@ -35,11 +35,11 @@ pub trait TomlWrite: core::fmt::Write {
         write!(self, "=")
     }
 
-    fn key(&mut self, value: &impl crate::WriteTomlKey) -> core::fmt::Result {
+    fn key(&mut self, value: &(impl crate::WriteTomlKey + ?Sized)) -> core::fmt::Result {
         value.write_toml_key(self)
     }
 
-    fn value(&mut self, value: &impl crate::WriteTomlValue) -> core::fmt::Result {
+    fn value(&mut self, value: &(impl crate::WriteTomlValue + ?Sized)) -> core::fmt::Result {
         value.write_toml_value(self)
     }
 
