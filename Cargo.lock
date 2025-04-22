@@ -976,7 +976,9 @@ dependencies = [
 name = "toml_write"
 version = "0.1.0"
 dependencies = [
+ "proptest",
  "snapbox",
+ "toml 0.5.11",
 ]
 
 [[package]]
