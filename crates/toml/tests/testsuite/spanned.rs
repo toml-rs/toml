@@ -11,23 +11,6 @@ use snapbox::str;
 use toml::value::Datetime;
 use toml::Spanned;
 
-/// A set of good datetimes.
-pub(crate) fn good_datetimes() -> Vec<&'static str> {
-    vec![
-        "1997-09-09T09:09:09Z",
-        "1997-09-09T09:09:09+09:09",
-        "1997-09-09T09:09:09-09:09",
-        "1997-09-09T09:09:09",
-        "1997-09-09",
-        "09:09:09",
-        "1997-09-09T09:09:09.09Z",
-        "1997-09-09T09:09:09.09+09:09",
-        "1997-09-09T09:09:09.09-09:09",
-        "1997-09-09T09:09:09.09",
-        "09:09:09.09",
-    ]
-}
-
 #[test]
 fn test_spanned_field() {
     #[derive(Deserialize)]
@@ -81,7 +64,20 @@ fn test_spanned_field() {
         None,
     );
 
-    for expected in good_datetimes() {
+    let good_datetimes = [
+        "1997-09-09T09:09:09Z",
+        "1997-09-09T09:09:09+09:09",
+        "1997-09-09T09:09:09-09:09",
+        "1997-09-09T09:09:09",
+        "1997-09-09",
+        "09:09:09",
+        "1997-09-09T09:09:09.09Z",
+        "1997-09-09T09:09:09.09+09:09",
+        "1997-09-09T09:09:09.09-09:09",
+        "1997-09-09T09:09:09.09",
+        "09:09:09.09",
+    ];
+    for expected in good_datetimes {
         let s = format!("foo = {expected}");
         good::<Datetime>(&s, expected, None);
     }
