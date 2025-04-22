@@ -1,0 +1,6 @@
+TOML parse error at line 7, column 1
+  |
+7 | [dependencies]
+  | ^
+invalid table header
+duplicate key `dependencies` in document root

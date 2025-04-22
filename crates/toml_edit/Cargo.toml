@@ -54,6 +54,7 @@ toml-test-harness = { version = "1.1.1", features = ["snapshot"] }
 toml-test-data = "2.1.0"
 snapbox = "0.6.0"
 proptest = "1.5.0"
+walkdir = "2.5.0"
 
 [[test]]
 name = "testsuite"

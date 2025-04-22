@@ -1,0 +1,5 @@
+TOML parse error at line 1, column 6
+  |
+1 | a = {k1 = 1, k1.name = "joe"}
+  |      ^
+dotted key `k1` attempted to extend non-table type (integer)
