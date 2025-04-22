@@ -1109,3 +1109,29 @@ table= [{ string = "value", array = [1, 2, 3], inline = { "1" = 1, "2" = 2 }, ch
 
 "#]].raw());
 }
+
+#[test]
+fn test_key_from_str() {
+    macro_rules! test_key {
+        ($s:expr, $expected:expr) => {{
+            let key = $s.parse::<Key>();
+            match key {
+                Ok(key) => assert_eq!($expected, key.get(), ""),
+                Err(err) => panic!("failed with {err}"),
+            }
+        }};
+    }
+
+    test_key!("a", "a");
+    test_key!(r#"'hello key'"#, "hello key");
+    test_key!(
+        r#""Jos\u00E9\U000A0000\n\t\r\f\b\"""#,
+        "Jos\u{00E9}\u{A0000}\n\t\r\u{c}\u{8}\""
+    );
+    test_key!("\"\"", "");
+    test_key!("\"'hello key'bla\"", "'hello key'bla");
+    test_key!(
+        "'C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9'",
+        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9"
+    );
+}
