@@ -31,6 +31,20 @@ fn t(decoded: &str, expected: impl IntoData) {
         string_ml_basic: string.as_ml_basic().to_toml_value(),
     };
     snapbox::assert_data_eq!(results.to_debug(), expected.raw());
+
+    // Verify defaults are compatible with the old TOML parser so new Cargo doesn't cause an MSRV
+    // bump
+    let toml = format!("{} = {}", results.key_default, results.string_default);
+    dbg!(&toml);
+    let value = toml.parse::<toml_old::Value>();
+    let value = match value {
+        Ok(value) => value,
+        Err(err) => panic!("could not parse: {err}"),
+    };
+    let table = value.as_table().unwrap();
+    let (key, value) = table.iter().next().unwrap();
+    assert_eq!(key, decoded);
+    assert_eq!(value.as_str().unwrap(), decoded);
 }
 
 #[derive(Debug)]
