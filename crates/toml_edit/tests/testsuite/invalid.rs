@@ -42,6 +42,94 @@ invalid literal string
 }
 
 #[test]
+fn stray_cr() {
+    t(
+        "\r",
+        str![[r#"
+TOML parse error at line 1, column 1
+  |
+1 | 
+  | ^
+
+
+"#]],
+    );
+    t(
+        "a = [ \r ]",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | a = [ 
+ ]
+  |        ^
+
+
+"#]],
+    );
+    t(
+        "a = \"\"\"\r\"\"\"",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | a = """
+"""
+  |        ^
+invalid multiline basic string
+
+"#]],
+    );
+    t(
+        "a = \"\"\"\\  \r  \"\"\"",
+        str![[r#"
+TOML parse error at line 1, column 10
+  |
+1 | a = """\  
+  """
+  |          ^
+invalid escape sequence
+expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+
+"#]],
+    );
+    t(
+        "a = '''\r'''",
+        str![[r#"
+TOML parse error at line 1, column 8
+  |
+1 | a = '''
+'''
+  |        ^
+invalid multiline literal string
+
+"#]],
+    );
+    t(
+        "a = '\r'",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = '
+'
+  |      ^
+invalid literal string
+
+"#]],
+    );
+    t(
+        "a = \"\r\"",
+        str![[r#"
+TOML parse error at line 1, column 6
+  |
+1 | a = "
+"
+  |      ^
+invalid basic string
+
+"#]],
+    );
+}
+
+#[test]
 fn emoji_error_span() {
     let input = "😀";
     let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
