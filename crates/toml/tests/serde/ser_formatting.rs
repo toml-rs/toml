@@ -76,10 +76,7 @@ this is the first line\\nthis is the second line
 ";
 
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
+    let result = to_string_pretty(&value).unwrap();
     assert_data_eq!(
         &result,
         str![[r#"
@@ -129,10 +126,7 @@ this is the fourth line
 "#;
 
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
+    let result = to_string_pretty(&value).unwrap();
     assert_data_eq!(
         &result,
         str![[r#"
@@ -183,10 +177,7 @@ single = "this is a single line string"
 "#;
 
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
+    let result = to_string_pretty(&value).unwrap();
     assert_data_eq!(
         &result,
         str![[r#"
@@ -212,10 +203,7 @@ fn empty_table() {
 "#;
 
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
+    let result = to_string_pretty(&value).unwrap();
     assert_data_eq!(
         &result,
         str![[r#"
