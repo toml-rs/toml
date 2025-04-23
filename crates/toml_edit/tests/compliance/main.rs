@@ -3,4 +3,3 @@
 
 mod invalid;
 mod parse;
-mod string;
