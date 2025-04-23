@@ -530,17 +530,9 @@ fn string_repr_roundtrip() {
 
 #[track_caller]
 fn assert_string_repr_roundtrip(input: &str, expected: impl IntoData) {
-    let value: Value = input.parse().unwrap();
+    let value = parse_value!(input);
     let actual = value.to_string();
-    let _: Value = actual.parse().unwrap_or_else(|_err| {
-        panic!(
-            "invalid `Value`:
-```
-{actual}
-```
-"
-        )
-    });
+    let _ = parse_value!(&actual);
     assert_data_eq!(actual, expected.raw());
 }
 
@@ -602,18 +594,10 @@ crlf \r
 
 #[track_caller]
 fn assert_string_value_roundtrip(input: &str, expected: impl IntoData) {
-    let value: Value = input.parse().unwrap();
+    let value = parse_value!(input);
     let value = Value::from(value.as_str().unwrap()); // Remove repr
     let actual = value.to_string();
-    let _: Value = actual.parse().unwrap_or_else(|_err| {
-        panic!(
-            "invalid `Value`:
-```
-{actual}
-```
-"
-        )
-    });
+    let _ = parse_value!(&actual);
     assert_data_eq!(actual, expected.raw());
 }
 
