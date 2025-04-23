@@ -211,9 +211,17 @@ metadata.msrv = "1.65.0"
 
 [package.metadata.release.pre-release-replacements]
 "#;
+    let expected = str![[r#"
+
+[package]
+metadata.msrv = "1.65.0"
+
+[package.metadata.release.pre-release-replacements]
+
+"#]];
     let document = input.parse::<DocumentMut>().unwrap();
     let actual = document.to_string();
-    assert_data_eq!(actual, input.raw());
+    assert_data_eq!(actual, expected.raw());
 }
 
 #[test]
@@ -427,9 +435,15 @@ fn dont_use_dotted_key_prefix_on_table_fuzz_57049() {
 p.a=4
 [p.o]
 "#;
+    let expected = str![[r#"
+
+p.a=4
+[p.o]
+
+"#]];
     let document = input.parse::<DocumentMut>().unwrap();
     let actual = document.to_string();
-    assert_data_eq!(actual, input.raw());
+    assert_data_eq!(actual, expected.raw());
 }
 
 #[test]
@@ -444,7 +458,18 @@ clippy.cast_lossless = "warn"
 clippy.doc_markdown = "warn"
 clippy.exhaustive_enums = "warn"
 "###;
-    let expected = input;
+    let expected = str![[r#"
+
+rust.unsafe_op_in_unsafe_fn = "deny"
+
+rust.explicit_outlives_requirements = "warn"
+# rust.unused_crate_dependencies = "warn"
+
+clippy.cast_lossless = "warn"
+clippy.doc_markdown = "warn"
+clippy.exhaustive_enums = "warn"
+
+"#]];
 
     let manifest: DocumentMut = input.parse().unwrap();
     let actual = manifest.to_string();
