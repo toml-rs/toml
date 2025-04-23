@@ -5,6 +5,13 @@ use snapbox::prelude::*;
 use snapbox::str;
 use toml::to_string;
 
+#[track_caller]
+fn t(toml: &str, data: impl IntoData) {
+    let value: toml::Value = toml::from_str(toml).unwrap();
+    let result = to_string(&value).unwrap();
+    assert_data_eq!(result, data.raw());
+}
+
 #[test]
 fn no_unnecessary_newlines_array() {
     #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
@@ -64,7 +71,8 @@ fn no_unnecessary_newlines_table() {
 
 #[test]
 fn basic() {
-    let toml = "\
+    t(
+        "\
 [example]
 array = [\"item 1\", \"item 2\"]
 empty = []
@@ -73,12 +81,7 @@ text = '''
 
 this is the first line\\nthis is the second line
 '''
-";
-
-    let value: toml::Value = toml::from_str(toml).unwrap();
-    let result = to_string(&value).unwrap();
-    assert_data_eq!(
-        &result,
+",
         str![[r#"
 [example]
 array = ["item 1", "item 2"]
@@ -86,16 +89,17 @@ empty = []
 oneline = "this has no newlines."
 text = '''
 
-this is the first line/nthis is the second line
+this is the first line\nthis is the second line
 '''
 
-"#]]
+"#]],
     );
 }
 
 #[test]
 fn tricky() {
-    let toml = r#"[example]
+    t(
+        r#"[example]
 f = "\f"
 glass = """
 Nothing too unusual, except that I can eat glass in:
@@ -120,15 +124,10 @@ This has a ''' in it and ""\" cuz it's tricky yo
 Also ' and " because why not
 this is the fourth line
 """
-"#;
-
-    let value: toml::Value = toml::from_str(toml).unwrap();
-    let result = to_string(&value).unwrap();
-    assert_data_eq!(
-        &result,
+"#,
         str![[r#"
 [example]
-f = "/f"
+f = "\f"
 glass = """
 Nothing too unusual, except that I can eat glass in:
 - Greek: Μπορώ να φάω σπασμένα γυαλιά χωρίς να πάθω τίποτα. 
@@ -136,30 +135,31 @@ Nothing too unusual, except that I can eat glass in:
 - Hindi: मैं काँच खा सकता हूँ, मुझे उस से कोई पीडा नहीं होती. 
 - Japanese: 私はガラスを食べられます。それは私を傷つけません。 
 """
-r = "/r"
+r = "\r"
 r_newline = """
-/r
+\r
 """
 single = "this is a single line but has '' cuz it's tricky"
 single_tricky = "single line with ''' in it"
 tabs = """
 this is pretty standard
-/texcept for some   /ttabs right here
+\texcept for some   \ttabs right here
 """
 text = """
 this is the first line.
-This has a ''' in it and ""/" cuz it's tricky yo
+This has a ''' in it and ""\" cuz it's tricky yo
 Also ' and " because why not
 this is the fourth line
 """
 
-"#]]
+"#]],
     );
 }
 
 #[test]
 fn table_array() {
-    let toml = r#"
+    t(
+        r#"
 [abc]
 doc = "this is a table"
 
@@ -171,12 +171,7 @@ key = "bar"
 
 [example]
 single = "this is a single line string"
-"#;
-
-    let value: toml::Value = toml::from_str(toml).unwrap();
-    let result = to_string(&value).unwrap();
-    assert_data_eq!(
-        &result,
+"#,
         str![[r#"
 [abc]
 doc = "this is a table"
@@ -190,62 +185,41 @@ key = "bar"
 [example]
 single = "this is a single line string"
 
-"#]]
+"#]],
     );
 }
 
 #[test]
 fn empty_table() {
-    let toml = r#"[example]
-"#;
-
-    let value: toml::Value = toml::from_str(toml).unwrap();
-    let result = to_string(&value).unwrap();
-    assert_data_eq!(
-        &result,
+    t(
+        r#"[example]
+"#,
         str![[r#"
 [example]
 
-"#]]
+"#]],
     );
 }
 
 #[test]
 fn implicit_tables() {
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Package {
-        name: String,
-        version: String,
-        authors: Vec<String>,
-        profile: Profile,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Profile {
-        dev: Dev,
-    }
-
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Dev {
-        debug: U32OrBool,
-    }
-
-    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
-    #[serde(untagged, expecting = "expected a boolean or an integer")]
-    pub(crate) enum U32OrBool {
-        U32(u32),
-        Bool(bool),
-    }
-
-    let raw = r#"name = "foo"
-version = "0.0.0"
+    t(
+        r#"
 authors = []
+name = "foo"
+version = "0.0.0"
 
 [profile.dev]
 debug = true
-"#;
+"#,
+        str![[r#"
+authors = []
+name = "foo"
+version = "0.0.0"
 
-    let pkg: Package = toml::from_str(raw).unwrap();
-    let pretty = to_string(&pkg).unwrap();
-    assert_data_eq!(pretty, raw.raw());
+[profile.dev]
+debug = true
+
+"#]],
+    );
 }
