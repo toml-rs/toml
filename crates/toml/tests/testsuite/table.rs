@@ -55,3 +55,11 @@ test = "wut"
         .raw()
     );
 }
+
+#[test]
+fn datetime_offset_issue_496() {
+    let original = "value = 1911-01-01T10:11:12-00:36\n";
+    let toml = original.parse::<toml::Table>().unwrap();
+    let output = toml.to_string();
+    assert_data_eq!(output, original.raw());
+}
