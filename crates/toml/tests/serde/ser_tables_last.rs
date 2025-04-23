@@ -3,31 +3,36 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use serde::Serialize;
 
+fn t<D: Serialize + serde::de::DeserializeOwned>(val: &D) {
+    let s = toml::to_string_pretty(&val).unwrap();
+    let _roundtrip: D = toml::from_str(&s).unwrap();
+}
+
 #[test]
 fn always_works() {
     // Ensure this works without the removed "toml::ser::tables_last"
-    #[derive(Serialize)]
+    #[derive(Deserialize, Serialize)]
     struct A {
-        vals: HashMap<&'static str, Value>,
+        vals: HashMap<String, Value>,
     }
 
-    #[derive(Serialize)]
+    #[derive(Deserialize, Serialize)]
     #[serde(untagged)]
     enum Value {
-        Map(HashMap<&'static str, &'static str>),
+        Map(HashMap<String, String>),
         Int(i32),
     }
 
     let mut a = A {
         vals: HashMap::new(),
     };
-    a.vals.insert("foo", Value::Int(0));
+    a.vals.insert("foo".to_owned(), Value::Int(0));
 
     let mut sub = HashMap::new();
-    sub.insert("foo", "bar");
-    a.vals.insert("bar", Value::Map(sub));
+    sub.insert("foo".to_owned(), "bar".to_owned());
+    a.vals.insert("bar".to_owned(), Value::Map(sub));
 
-    toml::to_string(&a).unwrap();
+    t(&a);
 }
 
 #[test]
@@ -104,8 +109,7 @@ fn vec_of_vec_issue_387() {
         contours,
     };
 
-    let s = toml::to_string_pretty(&g1).unwrap();
-    let _g2: Glyph = toml::from_str(&s).unwrap();
+    t(&g1);
 }
 
 #[test]
@@ -147,7 +151,7 @@ fn values_before_tables_issue_403() {
         b: Vec<String>,
         c: Vec<B>,
     }
-    toml::to_string(&C {
+    let c = C {
         a: A {
             a: "aa".to_owned(),
             b: "ab".to_owned(),
@@ -157,6 +161,6 @@ fn values_before_tables_issue_403() {
             a: "cba".to_owned(),
             b: vec!["cbb".to_owned()],
         }],
-    })
-    .unwrap();
+    };
+    t(&c);
 }

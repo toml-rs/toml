@@ -72,13 +72,11 @@ impl<'de> Deserialize<'de> for CasedString {
 
 #[test]
 fn custom_errors() {
-    toml::from_str::<Parent<CasedString>>(
-        "
+    let input = "
             p_a = 'a'
             p_b = [{c_a = 'a', c_b = 'c'}]
-        ",
-    )
-    .unwrap();
+        ";
+    toml::from_str::<Parent<CasedString>>(input).unwrap();
 
     // Custom error at p_b value.
     bad!(
