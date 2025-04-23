@@ -6,7 +6,16 @@ use toml_edit::{DocumentMut, Value};
 macro_rules! parse {
     ($s:expr, $ty:ty) => {{
         let v = $s.parse::<$ty>();
-        assert!(v.is_ok(), "Failed with {}", v.unwrap_err());
+        assert!(
+            v.is_ok(),
+            "Failed with `{}` when parsing:
+```
+{}
+```
+",
+            v.unwrap_err(),
+            $s
+        );
         v.unwrap()
     }};
 }
