@@ -1,10 +1,69 @@
-use serde::ser::Serialize;
+use serde::Deserialize;
+use serde::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
+use toml::to_string;
 
 #[test]
-fn no_pretty() {
+fn no_unnecessary_newlines_array() {
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct Users {
+        pub(crate) user: Vec<User>,
+    }
+
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct User {
+        pub(crate) name: String,
+        pub(crate) surname: String,
+    }
+
+    assert!(!to_string(&Users {
+        user: vec![
+            User {
+                name: "John".to_owned(),
+                surname: "Doe".to_owned(),
+            },
+            User {
+                name: "Jane".to_owned(),
+                surname: "Dough".to_owned(),
+            },
+        ],
+    })
+    .unwrap()
+    .starts_with('\n'));
+}
+
+#[test]
+fn no_unnecessary_newlines_table() {
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct TwoUsers {
+        pub(crate) user0: User,
+        pub(crate) user1: User,
+    }
+
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct User {
+        pub(crate) name: String,
+        pub(crate) surname: String,
+    }
+
+    assert!(!to_string(&TwoUsers {
+        user0: User {
+            name: "John".to_owned(),
+            surname: "Doe".to_owned(),
+        },
+        user1: User {
+            name: "Jane".to_owned(),
+            surname: "Dough".to_owned(),
+        },
+    })
+    .unwrap()
+    .starts_with('\n'));
+}
+
+#[test]
+fn basic() {
     let toml = "\
 [example]
 array = [\"item 1\", \"item 2\"]
@@ -36,49 +95,7 @@ this is the first line/nthis is the second line
 }
 
 #[test]
-fn pretty_std() {
-    let toml = "\
-[example]
-array = [
-    \"item 1\",
-    \"item 2\",
-]
-empty = []
-one = [\"one\"]
-oneline = \"this has no newlines.\"
-text = \"\"\"
-this is the first line
-this is the second line
-\"\"\"
-";
-
-    let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
-    assert_data_eq!(
-        &result,
-        str![[r#"
-[example]
-array = [
-    "item 1",
-    "item 2",
-]
-empty = []
-one = ["one"]
-oneline = "this has no newlines."
-text = """
-this is the first line
-this is the second line
-"""
-
-"#]]
-    );
-}
-
-#[test]
-fn pretty_tricky() {
+fn tricky() {
     let toml = r#"[example]
 f = "\f"
 glass = """
@@ -108,9 +125,7 @@ this is the fourth line
 
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
+    value.serialize(toml::Serializer::new(&mut result)).unwrap();
     assert_data_eq!(
         &result,
         str![[r#"
@@ -145,47 +160,9 @@ this is the fourth line
 }
 
 #[test]
-fn pretty_table_array() {
-    let toml = r#"[abc]
-doc = "this is a table"
-
-[[array]]
-key = "foo"
-
-[[array]]
-key = "bar"
-
-[example]
-single = "this is a single line string"
-"#;
-
-    let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::new();
-    value
-        .serialize(toml::Serializer::pretty(&mut result))
-        .unwrap();
-    assert_data_eq!(
-        &result,
-        str![[r#"
+fn table_array() {
+    let toml = r#"
 [abc]
-doc = "this is a table"
-
-[[array]]
-key = "foo"
-
-[[array]]
-key = "bar"
-
-[example]
-single = "this is a single line string"
-
-"#]]
-    );
-}
-
-#[test]
-fn no_pretty_table_array() {
-    let toml = r#"[abc]
 doc = "this is a table"
 
 [[array]]
@@ -221,7 +198,7 @@ single = "this is a single line string"
 }
 
 #[test]
-fn no_pretty_empty_table() {
+fn empty_table() {
     let toml = r#"[example]
 "#;
 
@@ -238,8 +215,8 @@ fn no_pretty_empty_table() {
 }
 
 #[test]
-fn pretty_implicit_tables() {
-    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+fn implicit_tables() {
+    #[derive(Debug, Serialize, Deserialize)]
     struct Package {
         name: String,
         version: String,
@@ -247,17 +224,17 @@ fn pretty_implicit_tables() {
         profile: Profile,
     }
 
-    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    #[derive(Debug, Serialize, Deserialize)]
     struct Profile {
         dev: Dev,
     }
 
-    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    #[derive(Debug, Serialize, Deserialize)]
     struct Dev {
         debug: U32OrBool,
     }
 
-    #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, Eq, PartialEq)]
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
     #[serde(untagged, expecting = "expected a boolean or an integer")]
     pub(crate) enum U32OrBool {
         U32(u32),
@@ -273,6 +250,6 @@ debug = true
 "#;
 
     let pkg: Package = toml::from_str(raw).unwrap();
-    let pretty = toml::to_string_pretty(&pkg).unwrap();
+    let pretty = to_string(&pkg).unwrap();
     assert_data_eq!(pretty, raw.raw());
 }

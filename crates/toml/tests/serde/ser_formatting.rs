@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use serde::Serialize;
-use toml::to_string;
+use snapbox::assert_data_eq;
+use snapbox::prelude::*;
+use snapbox::str;
+use toml::to_string_pretty;
 
 #[test]
 fn no_unnecessary_newlines_array() {
@@ -15,7 +18,7 @@ fn no_unnecessary_newlines_array() {
         pub(crate) surname: String,
     }
 
-    assert!(!to_string(&Users {
+    assert!(!to_string_pretty(&Users {
         user: vec![
             User {
                 name: "John".to_owned(),
@@ -45,7 +48,7 @@ fn no_unnecessary_newlines_table() {
         pub(crate) surname: String,
     }
 
-    assert!(!to_string(&TwoUsers {
+    assert!(!to_string_pretty(&TwoUsers {
         user0: User {
             name: "John".to_owned(),
             surname: "Doe".to_owned(),
@@ -57,4 +60,207 @@ fn no_unnecessary_newlines_table() {
     })
     .unwrap()
     .starts_with('\n'));
+}
+
+#[test]
+fn basic() {
+    let toml = "\
+[example]
+array = [\"item 1\", \"item 2\"]
+empty = []
+oneline = \"this has no newlines.\"
+text = '''
+
+this is the first line\\nthis is the second line
+'''
+";
+
+    let value: toml::Value = toml::from_str(toml).unwrap();
+    let mut result = String::new();
+    value
+        .serialize(toml::Serializer::pretty(&mut result))
+        .unwrap();
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+array = [
+    "item 1",
+    "item 2",
+]
+empty = []
+oneline = "this has no newlines."
+text = '''
+
+this is the first line/nthis is the second line
+'''
+
+"#]]
+    );
+}
+
+#[test]
+fn tricky() {
+    let toml = r#"[example]
+f = "\f"
+glass = """
+Nothing too unusual, except that I can eat glass in:
+- Greek: Μπορώ να φάω σπασμένα γυαλιά χωρίς να πάθω τίποτα. 
+- Polish: Mogę jeść szkło, i mi nie szkodzi. 
+- Hindi: मैं काँच खा सकता हूँ, मुझे उस से कोई पीडा नहीं होती. 
+- Japanese: 私はガラスを食べられます。それは私を傷つけません。 
+"""
+r = "\r"
+r_newline = """
+\r
+"""
+single = "this is a single line but has '' cuz it's tricky"
+single_tricky = "single line with ''' in it"
+tabs = """
+this is pretty standard
+\texcept for some   \ttabs right here
+"""
+text = """
+this is the first line.
+This has a ''' in it and ""\" cuz it's tricky yo
+Also ' and " because why not
+this is the fourth line
+"""
+"#;
+
+    let value: toml::Value = toml::from_str(toml).unwrap();
+    let mut result = String::new();
+    value
+        .serialize(toml::Serializer::pretty(&mut result))
+        .unwrap();
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+f = "/f"
+glass = """
+Nothing too unusual, except that I can eat glass in:
+- Greek: Μπορώ να φάω σπασμένα γυαλιά χωρίς να πάθω τίποτα. 
+- Polish: Mogę jeść szkło, i mi nie szkodzi. 
+- Hindi: मैं काँच खा सकता हूँ, मुझे उस से कोई पीडा नहीं होती. 
+- Japanese: 私はガラスを食べられます。それは私を傷つけません。 
+"""
+r = "/r"
+r_newline = """
+/r
+"""
+single = "this is a single line but has '' cuz it's tricky"
+single_tricky = "single line with ''' in it"
+tabs = """
+this is pretty standard
+/texcept for some   /ttabs right here
+"""
+text = """
+this is the first line.
+This has a ''' in it and ""/" cuz it's tricky yo
+Also ' and " because why not
+this is the fourth line
+"""
+
+"#]]
+    );
+}
+
+#[test]
+fn table_array() {
+    let toml = r#"
+[abc]
+doc = "this is a table"
+
+[[array]]
+key = "foo"
+
+[[array]]
+key = "bar"
+
+[example]
+single = "this is a single line string"
+"#;
+
+    let value: toml::Value = toml::from_str(toml).unwrap();
+    let mut result = String::new();
+    value
+        .serialize(toml::Serializer::pretty(&mut result))
+        .unwrap();
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[abc]
+doc = "this is a table"
+
+[[array]]
+key = "foo"
+
+[[array]]
+key = "bar"
+
+[example]
+single = "this is a single line string"
+
+"#]]
+    );
+}
+
+#[test]
+fn empty_table() {
+    let toml = r#"[example]
+"#;
+
+    let value: toml::Value = toml::from_str(toml).unwrap();
+    let mut result = String::new();
+    value
+        .serialize(toml::Serializer::pretty(&mut result))
+        .unwrap();
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+
+"#]]
+    );
+}
+
+#[test]
+fn implicit_tables() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Package {
+        name: String,
+        version: String,
+        authors: Vec<String>,
+        profile: Profile,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Profile {
+        dev: Dev,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Dev {
+        debug: U32OrBool,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+    #[serde(untagged, expecting = "expected a boolean or an integer")]
+    pub(crate) enum U32OrBool {
+        U32(u32),
+        Bool(bool),
+    }
+
+    let raw = r#"name = "foo"
+version = "0.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+"#;
+
+    let pkg: Package = toml::from_str(raw).unwrap();
+    let pretty = to_string_pretty(&pkg).unwrap();
+    assert_data_eq!(pretty, raw.raw());
 }

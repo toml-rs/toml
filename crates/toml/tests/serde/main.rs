@@ -4,7 +4,7 @@
 mod de_enum;
 mod de_errors;
 mod general;
-mod pretty;
 mod ser_formatting;
+mod ser_formatting_raw;
 mod ser_tables_last;
 mod spanned;
