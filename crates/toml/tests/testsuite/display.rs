@@ -12,7 +12,7 @@ macro_rules! map( ($($k:expr => $v:expr),*) => ({
 }) );
 
 #[test]
-fn simple_show() {
+fn value() {
     assert_data_eq!(
         String("foo".to_owned()).to_string(),
         str![[r#""foo""#]].raw()
