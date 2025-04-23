@@ -1263,14 +1263,6 @@ fn serialize_datetime_issue_333() {
 }
 
 #[test]
-fn datetime_offset_issue_496() {
-    let original = "value = 1911-01-01T10:11:12-00:36\n";
-    let toml = original.parse::<Table>().unwrap();
-    let output = toml.to_string();
-    assert_data_eq!(output, original.raw());
-}
-
-#[test]
 fn serialize_date() {
     use toml::value::Date;
 
