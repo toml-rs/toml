@@ -1,10 +1,11 @@
 use serde::ser::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
+use snapbox::str;
 
 #[test]
 fn no_pretty() {
-    const NO_PRETTY: &str = "\
+    let toml = "\
 [example]
 array = [\"item 1\", \"item 2\"]
 empty = []
@@ -15,16 +16,28 @@ this is the first line\\nthis is the second line
 '''
 ";
 
-    let toml = NO_PRETTY;
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::with_capacity(128);
+    let mut result = String::new();
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
-    assert_data_eq!(&result, toml.raw());
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+array = ["item 1", "item 2"]
+empty = []
+oneline = "this has no newlines."
+text = '''
+
+this is the first line/nthis is the second line
+'''
+
+"#]]
+    );
 }
 
 #[test]
 fn pretty_std() {
-    const PRETTY_STD: &str = "\
+    let toml = "\
 [example]
 array = [
     \"item 1\",
@@ -39,18 +52,34 @@ this is the second line
 \"\"\"
 ";
 
-    let toml = PRETTY_STD;
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::with_capacity(128);
+    let mut result = String::new();
     value
         .serialize(toml::Serializer::pretty(&mut result))
         .unwrap();
-    assert_data_eq!(&result, toml.raw());
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+array = [
+    "item 1",
+    "item 2",
+]
+empty = []
+one = ["one"]
+oneline = "this has no newlines."
+text = """
+this is the first line
+this is the second line
+"""
+
+"#]]
+    );
 }
 
 #[test]
 fn pretty_tricky() {
-    const PRETTY_TRICKY: &str = r#"[example]
+    let toml = r#"[example]
 f = "\f"
 glass = """
 Nothing too unusual, except that I can eat glass in:
@@ -77,18 +106,47 @@ this is the fourth line
 """
 "#;
 
-    let toml = PRETTY_TRICKY;
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::with_capacity(128);
+    let mut result = String::new();
     value
         .serialize(toml::Serializer::pretty(&mut result))
         .unwrap();
-    assert_data_eq!(&result, toml.raw());
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+f = "/f"
+glass = """
+Nothing too unusual, except that I can eat glass in:
+- Greek: Μπορώ να φάω σπασμένα γυαλιά χωρίς να πάθω τίποτα. 
+- Polish: Mogę jeść szkło, i mi nie szkodzi. 
+- Hindi: मैं काँच खा सकता हूँ, मुझे उस से कोई पीडा नहीं होती. 
+- Japanese: 私はガラスを食べられます。それは私を傷つけません。 
+"""
+r = "/r"
+r_newline = """
+/r
+"""
+single = "this is a single line but has '' cuz it's tricky"
+single_tricky = "single line with ''' in it"
+tabs = """
+this is pretty standard
+/texcept for some   /ttabs right here
+"""
+text = """
+this is the first line.
+This has a ''' in it and ""/" cuz it's tricky yo
+Also ' and " because why not
+this is the fourth line
+"""
+
+"#]]
+    );
 }
 
 #[test]
 fn pretty_table_array() {
-    const PRETTY_TABLE_ARRAY: &str = r#"[[array]]
+    let toml = r#"[[array]]
 key = "foo"
 
 [[array]]
@@ -101,18 +159,33 @@ doc = "this is a table"
 single = "this is a single line string"
 "#;
 
-    let toml = PRETTY_TABLE_ARRAY;
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::with_capacity(128);
+    let mut result = String::new();
     value
         .serialize(toml::Serializer::pretty(&mut result))
         .unwrap();
-    assert_data_eq!(&result, toml.raw());
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[[array]]
+key = "foo"
+
+[[array]]
+key = "bar"
+
+[abc]
+doc = "this is a table"
+
+[example]
+single = "this is a single line string"
+
+"#]]
+    );
 }
 
 #[test]
-fn table_array() {
-    const TABLE_ARRAY: &str = r#"[[array]]
+fn no_pretty_table_array() {
+    let toml = r#"[[array]]
 key = "foo"
 
 [[array]]
@@ -125,27 +198,47 @@ doc = "this is a table"
 single = "this is a single line string"
 "#;
 
-    let toml = TABLE_ARRAY;
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::with_capacity(128);
+    let mut result = String::new();
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
-    assert_data_eq!(&result, toml.raw());
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[[array]]
+key = "foo"
+
+[[array]]
+key = "bar"
+
+[abc]
+doc = "this is a table"
+
+[example]
+single = "this is a single line string"
+
+"#]]
+    );
 }
 
 #[test]
-fn pretty_empty_table() {
-    const PRETTY_EMPTY_TABLE: &str = r#"[example]
+fn no_pretty_empty_table() {
+    let toml = r#"[example]
 "#;
 
-    let toml = PRETTY_EMPTY_TABLE;
     let value: toml::Value = toml::from_str(toml).unwrap();
-    let mut result = String::with_capacity(128);
+    let mut result = String::new();
     value.serialize(toml::Serializer::new(&mut result)).unwrap();
-    assert_data_eq!(&result, toml.raw());
+    assert_data_eq!(
+        &result,
+        str![[r#"
+[example]
+
+"#]]
+    );
 }
 
 #[test]
-fn error_includes_key() {
+fn pretty_implicit_tables() {
     #[derive(Debug, serde::Serialize, serde::Deserialize)]
     struct Package {
         name: String,
