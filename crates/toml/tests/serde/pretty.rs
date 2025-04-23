@@ -146,14 +146,14 @@ this is the fourth line
 
 #[test]
 fn pretty_table_array() {
-    let toml = r#"[[array]]
+    let toml = r#"[abc]
+doc = "this is a table"
+
+[[array]]
 key = "foo"
 
 [[array]]
 key = "bar"
-
-[abc]
-doc = "this is a table"
 
 [example]
 single = "this is a single line string"
@@ -167,14 +167,14 @@ single = "this is a single line string"
     assert_data_eq!(
         &result,
         str![[r#"
+[abc]
+doc = "this is a table"
+
 [[array]]
 key = "foo"
 
 [[array]]
 key = "bar"
-
-[abc]
-doc = "this is a table"
 
 [example]
 single = "this is a single line string"
@@ -185,14 +185,14 @@ single = "this is a single line string"
 
 #[test]
 fn no_pretty_table_array() {
-    let toml = r#"[[array]]
+    let toml = r#"[abc]
+doc = "this is a table"
+
+[[array]]
 key = "foo"
 
 [[array]]
 key = "bar"
-
-[abc]
-doc = "this is a table"
 
 [example]
 single = "this is a single line string"
@@ -204,14 +204,14 @@ single = "this is a single line string"
     assert_data_eq!(
         &result,
         str![[r#"
+[abc]
+doc = "this is a table"
+
 [[array]]
 key = "foo"
 
 [[array]]
 key = "bar"
-
-[abc]
-doc = "this is a table"
 
 [example]
 single = "this is a single line string"
