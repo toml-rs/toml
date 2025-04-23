@@ -3,12 +3,12 @@ use serde::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml::to_string_pretty;
+use toml::to_string;
 
 #[track_caller]
 fn t(toml: &str, data: impl IntoData) {
     let value: toml::Table = toml::from_str(toml).unwrap();
-    let result = to_string_pretty(&value).unwrap();
+    let result = to_string(&value).unwrap();
     assert_data_eq!(result, data.raw());
 }
 
@@ -25,7 +25,7 @@ fn no_unnecessary_newlines_array() {
         pub(crate) surname: String,
     }
 
-    assert!(!to_string_pretty(&Users {
+    assert!(!to_string(&Users {
         user: vec![
             User {
                 name: "John".to_owned(),
@@ -55,7 +55,7 @@ fn no_unnecessary_newlines_table() {
         pub(crate) surname: String,
     }
 
-    assert!(!to_string_pretty(&TwoUsers {
+    assert!(!to_string(&TwoUsers {
         user0: User {
             name: "John".to_owned(),
             surname: "Doe".to_owned(),
@@ -84,10 +84,7 @@ this is the first line\\nthis is the second line
 ",
         str![[r#"
 [example]
-array = [
-    "item 1",
-    "item 2",
-]
+array = ["item 1", "item 2"]
 empty = []
 oneline = "this has no newlines."
 text = '''
