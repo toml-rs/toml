@@ -26,6 +26,10 @@ fn value() {
         Array(vec![Integer(1), Integer(2)]).to_string(),
         str!["[1, 2]"].raw()
     );
+    assert_data_eq!(
+        Table(map! {"test" => Integer (2), "test2" => Integer(3)}).to_string(),
+        str!["{ test = 2, test2 = 3 }"].raw()
+    );
 }
 
 #[test]
