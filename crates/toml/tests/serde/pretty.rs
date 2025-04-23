@@ -2,7 +2,9 @@ use serde::ser::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 
-const NO_PRETTY: &str = "\
+#[test]
+fn no_pretty() {
+    const NO_PRETTY: &str = "\
 [example]
 array = [\"item 1\", \"item 2\"]
 empty = []
@@ -13,8 +15,6 @@ this is the first line\\nthis is the second line
 '''
 ";
 
-#[test]
-fn no_pretty() {
     let toml = NO_PRETTY;
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
@@ -22,7 +22,9 @@ fn no_pretty() {
     assert_data_eq!(&result, toml.raw());
 }
 
-const PRETTY_STD: &str = "\
+#[test]
+fn pretty_std() {
+    const PRETTY_STD: &str = "\
 [example]
 array = [
     \"item 1\",
@@ -37,8 +39,6 @@ this is the second line
 \"\"\"
 ";
 
-#[test]
-fn pretty_std() {
     let toml = PRETTY_STD;
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
@@ -48,7 +48,9 @@ fn pretty_std() {
     assert_data_eq!(&result, toml.raw());
 }
 
-const PRETTY_TRICKY: &str = r#"[example]
+#[test]
+fn pretty_tricky() {
+    const PRETTY_TRICKY: &str = r#"[example]
 f = "\f"
 glass = """
 Nothing too unusual, except that I can eat glass in:
@@ -75,8 +77,6 @@ this is the fourth line
 """
 "#;
 
-#[test]
-fn pretty_tricky() {
     let toml = PRETTY_TRICKY;
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
@@ -86,7 +86,9 @@ fn pretty_tricky() {
     assert_data_eq!(&result, toml.raw());
 }
 
-const PRETTY_TABLE_ARRAY: &str = r#"[[array]]
+#[test]
+fn pretty_table_array() {
+    const PRETTY_TABLE_ARRAY: &str = r#"[[array]]
 key = "foo"
 
 [[array]]
@@ -99,8 +101,6 @@ doc = "this is a table"
 single = "this is a single line string"
 "#;
 
-#[test]
-fn pretty_table_array() {
     let toml = PRETTY_TABLE_ARRAY;
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
@@ -110,7 +110,9 @@ fn pretty_table_array() {
     assert_data_eq!(&result, toml.raw());
 }
 
-const TABLE_ARRAY: &str = r#"[[array]]
+#[test]
+fn table_array() {
+    const TABLE_ARRAY: &str = r#"[[array]]
 key = "foo"
 
 [[array]]
@@ -123,8 +125,6 @@ doc = "this is a table"
 single = "this is a single line string"
 "#;
 
-#[test]
-fn table_array() {
     let toml = TABLE_ARRAY;
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);
@@ -132,11 +132,11 @@ fn table_array() {
     assert_data_eq!(&result, toml.raw());
 }
 
-const PRETTY_EMPTY_TABLE: &str = r#"[example]
-"#;
-
 #[test]
 fn pretty_empty_table() {
+    const PRETTY_EMPTY_TABLE: &str = r#"[example]
+"#;
+
     let toml = PRETTY_EMPTY_TABLE;
     let value: toml::Value = toml::from_str(toml).unwrap();
     let mut result = String::with_capacity(128);

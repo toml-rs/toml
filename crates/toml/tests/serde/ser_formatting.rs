@@ -2,25 +2,19 @@ use serde::Deserialize;
 use serde::Serialize;
 use toml::to_string;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
-struct User {
-    pub(crate) name: String,
-    pub(crate) surname: String,
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
-struct Users {
-    pub(crate) user: Vec<User>,
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
-struct TwoUsers {
-    pub(crate) user0: User,
-    pub(crate) user1: User,
-}
-
 #[test]
 fn no_unnecessary_newlines_array() {
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct Users {
+        pub(crate) user: Vec<User>,
+    }
+
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct User {
+        pub(crate) name: String,
+        pub(crate) surname: String,
+    }
+
     assert!(!to_string(&Users {
         user: vec![
             User {
@@ -39,6 +33,18 @@ fn no_unnecessary_newlines_array() {
 
 #[test]
 fn no_unnecessary_newlines_table() {
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct TwoUsers {
+        pub(crate) user0: User,
+        pub(crate) user1: User,
+    }
+
+    #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+    struct User {
+        pub(crate) name: String,
+        pub(crate) surname: String,
+    }
+
     assert!(!to_string(&TwoUsers {
         user0: User {
             name: "John".to_owned(),
