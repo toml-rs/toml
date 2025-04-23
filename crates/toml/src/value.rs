@@ -400,8 +400,6 @@ impl ser::Serialize for Value {
     where
         S: ser::Serializer,
     {
-        use serde::ser::SerializeMap;
-
         match *self {
             Value::String(ref s) => serializer.serialize_str(s),
             Value::Integer(i) => serializer.serialize_i64(i),
@@ -409,35 +407,7 @@ impl ser::Serialize for Value {
             Value::Boolean(b) => serializer.serialize_bool(b),
             Value::Datetime(ref s) => s.serialize(serializer),
             Value::Array(ref a) => a.serialize(serializer),
-            Value::Table(ref t) => {
-                let mut map = serializer.serialize_map(Some(t.len()))?;
-                // Be sure to visit non-tables first (and also non
-                // array-of-tables) as all keys must be emitted first.
-                for (k, v) in t {
-                    if !v.is_table() && !v.is_array()
-                        || (v
-                            .as_array()
-                            .map(|a| !a.iter().any(|v| v.is_table()))
-                            .unwrap_or(false))
-                    {
-                        map.serialize_entry(k, v)?;
-                    }
-                }
-                for (k, v) in t {
-                    if v.as_array()
-                        .map(|a| a.iter().any(|v| v.is_table()))
-                        .unwrap_or(false)
-                    {
-                        map.serialize_entry(k, v)?;
-                    }
-                }
-                for (k, v) in t {
-                    if v.is_table() {
-                        map.serialize_entry(k, v)?;
-                    }
-                }
-                map.end()
-            }
+            Value::Table(ref t) => t.serialize(serializer),
         }
     }
 }
