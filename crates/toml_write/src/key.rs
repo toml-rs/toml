@@ -13,7 +13,7 @@ pub trait ToTomlKey {
 #[cfg(feature = "alloc")]
 impl<T> ToTomlKey for T
 where
-    T: WriteTomlKey,
+    T: WriteTomlKey + ?Sized,
 {
     fn to_toml_key(&self) -> String {
         let mut result = String::new();
@@ -48,7 +48,7 @@ impl WriteTomlKey for Cow<'_, str> {
     }
 }
 
-impl<V: WriteTomlKey> WriteTomlKey for &V {
+impl<V: WriteTomlKey + ?Sized> WriteTomlKey for &V {
     fn write_toml_key<W: TomlWrite + ?Sized>(&self, writer: &mut W) -> core::fmt::Result {
         (*self).write_toml_key(writer)
     }
