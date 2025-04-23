@@ -7,7 +7,7 @@ use toml::to_string_pretty;
 
 #[track_caller]
 fn t(toml: &str, data: impl IntoData) {
-    let value: toml::Value = toml::from_str(toml).unwrap();
+    let value: toml::Table = toml::from_str(toml).unwrap();
     let result = to_string_pretty(&value).unwrap();
     assert_data_eq!(result, data.raw());
 }
