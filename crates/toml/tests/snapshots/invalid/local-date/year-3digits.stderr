@@ -1,0 +1,5 @@
+TOML parse error at line 1, column 10
+  |
+1 | foo = 199-09-09
+  |          ^
+expected newline, `#`
