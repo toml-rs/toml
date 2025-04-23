@@ -16,7 +16,7 @@ pub trait ToTomlValue {
 #[cfg(feature = "alloc")]
 impl<T> ToTomlValue for T
 where
-    T: WriteTomlValue,
+    T: WriteTomlValue + ?Sized,
 {
     fn to_toml_value(&self) -> String {
         let mut result = String::new();
@@ -222,7 +222,7 @@ fn write_toml_inline_table<
     Ok(())
 }
 
-impl<V: WriteTomlValue> WriteTomlValue for &V {
+impl<V: WriteTomlValue + ?Sized> WriteTomlValue for &V {
     fn write_toml_value<W: TomlWrite + ?Sized>(&self, writer: &mut W) -> core::fmt::Result {
         (*self).write_toml_value(writer)
     }
