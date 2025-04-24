@@ -799,8 +799,8 @@ struct CanBeEmpty {
 
 #[test]
 fn table_structs_empty() {
-    let text = "[bar]\n\n[baz]\n\n[bazv]\na = \"foo\"\n\n[foo]\n";
-    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(text).unwrap();
+    let input = "[bar]\n\n[baz]\n\n[bazv]\na = \"foo\"\n\n[foo]\n";
+    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
     let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
     expected.insert("bar".to_owned(), CanBeEmpty::default());
     expected.insert("baz".to_owned(), CanBeEmpty::default());
@@ -813,7 +813,20 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_owned(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    assert_data_eq!(crate::to_string(&value).unwrap(), text.raw());
+    assert_data_eq!(
+        crate::to_string(&value).unwrap(),
+        str![[r#"
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
+
+"#]]
+    );
 }
 
 #[test]
