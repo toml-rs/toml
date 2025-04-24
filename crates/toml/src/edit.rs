@@ -7,16 +7,16 @@ pub(crate) mod de {
 pub(crate) mod de {
     /// Errors that can occur when deserializing a type.
     #[derive(Debug, Clone, PartialEq, Eq)]
-    pub struct Error {
+    pub(crate) struct Error {
         inner: String,
     }
 
     impl Error {
         /// Add key while unwinding
-        pub fn add_key(&mut self, _key: String) {}
+        pub(crate) fn add_key(&mut self, _key: String) {}
 
         /// What went wrong
-        pub fn message(&self) -> &str {
+        pub(crate) fn message(&self) -> &str {
             self.inner.as_str()
         }
     }
