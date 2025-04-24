@@ -1,21 +1,6 @@
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml_edit::{DocumentMut, Key, Value};
-
-macro_rules! parse {
-    ($s:expr, $ty:ty) => {{
-        let v = $s.parse::<$ty>();
-        assert!(v.is_ok(), "Failed with {}", v.unwrap_err());
-        v.unwrap()
-    }};
-}
-
-macro_rules! parse_value {
-    ($s:expr) => {
-        parse!($s, Value)
-    };
-}
 
 #[test]
 fn test_value_from_str() {
@@ -48,7 +33,10 @@ string'''"
     );
     let wp = "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9";
     let lwp = "'C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\cargo-edit-test.YizxPxxElXn9'";
-    assert_eq!(Value::from(wp).as_str(), parse_value!(lwp).as_str());
+    assert_eq!(
+        crate::RustValue::from(wp).as_str(),
+        parse_value!(lwp).as_str()
+    );
     assert!(parse_value!(r#""\\\"\b\f\n\r\t\u00E9\U000A0000""#).is_str());
 }
 
@@ -68,7 +56,7 @@ fn test_key_unification() {
 [a.'b'.c.d]
 
 "#]];
-    let doc = toml.parse::<DocumentMut>();
+    let doc = toml.parse::<crate::RustDocument>();
     assert!(doc.is_ok());
     let doc = doc.unwrap();
 
@@ -95,7 +83,7 @@ fn crlf() {
      contents are never required to be entirely resident in memory all at once.\r\n\
      \"\"\"\
      "
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
 }
 
@@ -135,7 +123,7 @@ All other whitespace
 is preserved.
 '''
 "#
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
     assert_eq!(table["bar"].as_str(), Some("\0"));
     assert_eq!(table["key1"].as_str(), Some("One\nTwo"));
@@ -188,7 +176,7 @@ fn tables_in_arrays() {
 [foo.bar]
 #...
 "#
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
     table["foo"][0]["bar"].as_table().unwrap();
     table["foo"][1]["bar"].as_table().unwrap();
@@ -198,7 +186,7 @@ fn tables_in_arrays() {
 fn empty_table() {
     let table = r#"
 [foo]"#
-        .parse::<DocumentMut>()
+        .parse::<crate::RustDocument>()
         .unwrap();
     table["foo"].as_table().unwrap();
 }
@@ -211,9 +199,17 @@ metadata.msrv = "1.65.0"
 
 [package.metadata.release.pre-release-replacements]
 "#;
-    let document = input.parse::<DocumentMut>().unwrap();
+    let expected = str![[r#"
+
+[package]
+metadata.msrv = "1.65.0"
+
+[package.metadata.release.pre-release-replacements]
+
+"#]];
+    let document = input.parse::<crate::RustDocument>().unwrap();
     let actual = document.to_string();
-    assert_data_eq!(actual, input.raw());
+    assert_data_eq!(actual, expected.raw());
 }
 
 #[test]
@@ -238,7 +234,7 @@ name = "banana"
 [[fruit.variety]]
 name = "plantain"
 "#
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
     assert_eq!(table["fruit"][0]["name"].as_str(), Some("apple"));
     assert_eq!(table["fruit"][0]["physical"]["color"].as_str(), Some("red"));
@@ -263,13 +259,15 @@ name = "plantain"
 
 #[test]
 fn blank_literal_string() {
-    let table = "foo = ''".parse::<DocumentMut>().unwrap();
+    let table = "foo = ''".parse::<crate::RustDocument>().unwrap();
     assert_eq!(table["foo"].as_str(), Some(""));
 }
 
 #[test]
 fn many_blank() {
-    let table = "foo = \"\"\"\n\n\n\"\"\"".parse::<DocumentMut>().unwrap();
+    let table = "foo = \"\"\"\n\n\n\"\"\""
+        .parse::<crate::RustDocument>()
+        .unwrap();
     assert_eq!(table["foo"].as_str(), Some("\n\n"));
 }
 
@@ -279,7 +277,7 @@ fn literal_eats_crlf() {
         foo = \"\"\"\\\r\n\"\"\"
         bar = \"\"\"\\\r\n   \r\n   \r\n   a\"\"\"
     "
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
     assert_eq!(table["foo"].as_str(), Some(""));
     assert_eq!(table["bar"].as_str(), Some("a"));
@@ -291,7 +289,7 @@ fn floats() {
         ($actual:expr, $expected:expr) => {{
             let f = format!("foo = {}", $actual);
             println!("{}", f);
-            let a = f.parse::<DocumentMut>().unwrap();
+            let a = f.parse::<crate::RustDocument>().unwrap();
             assert_eq!(a["foo"].as_float().unwrap(), $expected);
         }};
     }
@@ -326,7 +324,7 @@ fn bare_key_names() {
         \"character encoding\" = \"value\"
         'ʎǝʞ' = \"value\"
     "
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
     let _ = &a["foo"];
     let _ = &a["-"];
@@ -351,7 +349,7 @@ fn table_names() {
         ['a.a']
         ['\"\"']
     "
-    .parse::<DocumentMut>()
+    .parse::<crate::RustDocument>()
     .unwrap();
     println!("{a:?}");
     let _ = &a["a"]["b"];
@@ -363,14 +361,16 @@ fn table_names() {
 
 #[test]
 fn inline_tables() {
-    "a = {}".parse::<DocumentMut>().unwrap();
-    "a = {b=1}".parse::<DocumentMut>().unwrap();
-    "a = {   b   =   1    }".parse::<DocumentMut>().unwrap();
-    "a = {a=1,b=2}".parse::<DocumentMut>().unwrap();
-    "a = {a=1,b=2,c={}}".parse::<DocumentMut>().unwrap();
-    "a = {a=[\n]}".parse::<DocumentMut>().unwrap();
-    "a = {\"a\"=[\n]}".parse::<DocumentMut>().unwrap();
-    "a = [\n{},\n{},\n]".parse::<DocumentMut>().unwrap();
+    "a = {}".parse::<crate::RustDocument>().unwrap();
+    "a = {b=1}".parse::<crate::RustDocument>().unwrap();
+    "a = {   b   =   1    }"
+        .parse::<crate::RustDocument>()
+        .unwrap();
+    "a = {a=1,b=2}".parse::<crate::RustDocument>().unwrap();
+    "a = {a=1,b=2,c={}}".parse::<crate::RustDocument>().unwrap();
+    "a = {a=[\n]}".parse::<crate::RustDocument>().unwrap();
+    "a = {\"a\"=[\n]}".parse::<crate::RustDocument>().unwrap();
+    "a = [\n{},\n{},\n]".parse::<crate::RustDocument>().unwrap();
 }
 
 #[test]
@@ -378,7 +378,7 @@ fn number_underscores() {
     macro_rules! t {
         ($actual:expr, $expected:expr) => {{
             let f = format!("foo = {}", $actual);
-            let table = f.parse::<DocumentMut>().unwrap();
+            let table = f.parse::<crate::RustDocument>().unwrap();
             assert_eq!(table["foo"].as_integer().unwrap(), $expected);
         }};
     }
@@ -393,7 +393,7 @@ fn number_underscores() {
 #[test]
 fn empty_string() {
     assert_eq!(
-        "foo = \"\"".parse::<DocumentMut>().unwrap()["foo"]
+        "foo = \"\"".parse::<crate::RustDocument>().unwrap()["foo"]
             .as_str()
             .unwrap(),
         ""
@@ -405,7 +405,9 @@ fn datetimes() {
     macro_rules! t {
         ($actual:expr) => {{
             let f = format!("foo = {}", $actual);
-            let toml = f.parse::<DocumentMut>().expect(&format!("failed: {}", f));
+            let toml = f
+                .parse::<crate::RustDocument>()
+                .expect(&format!("failed: {}", f));
             assert_eq!(toml["foo"].as_datetime().unwrap().to_string(), $actual);
         }};
     }
@@ -427,22 +429,15 @@ fn dont_use_dotted_key_prefix_on_table_fuzz_57049() {
 p.a=4
 [p.o]
 "#;
-    let document = input.parse::<DocumentMut>().unwrap();
+    let expected = str![[r#"
+
+p.a=4
+[p.o]
+
+"#]];
+    let document = input.parse::<crate::RustDocument>().unwrap();
     let actual = document.to_string();
-    assert_data_eq!(actual, input.raw());
-}
-
-#[test]
-fn despan_keys() {
-    let mut doc = r#"aaaaaa = 1"#.parse::<DocumentMut>().unwrap();
-    let key = "bbb".parse::<Key>().unwrap();
-    let table = doc.as_table_mut();
-    table.insert_formatted(
-        &key,
-        toml_edit::Item::Value(Value::Integer(toml_edit::Formatted::new(2))),
-    );
-
-    assert_eq!(doc.to_string(), "aaaaaa = 1\nbbb = 2\n");
+    assert_data_eq!(actual, expected.raw());
 }
 
 #[test]
@@ -457,9 +452,20 @@ clippy.cast_lossless = "warn"
 clippy.doc_markdown = "warn"
 clippy.exhaustive_enums = "warn"
 "###;
-    let expected = input;
+    let expected = str![[r#"
 
-    let manifest: DocumentMut = input.parse().unwrap();
+rust.unsafe_op_in_unsafe_fn = "deny"
+
+rust.explicit_outlives_requirements = "warn"
+# rust.unused_crate_dependencies = "warn"
+
+clippy.cast_lossless = "warn"
+clippy.doc_markdown = "warn"
+clippy.exhaustive_enums = "warn"
+
+"#]];
+
+    let manifest: crate::RustDocument = input.parse().unwrap();
     let actual = manifest.to_string();
 
     assert_data_eq!(actual, expected.raw());
@@ -509,17 +515,9 @@ fn string_repr_roundtrip() {
 
 #[track_caller]
 fn assert_string_repr_roundtrip(input: &str, expected: impl IntoData) {
-    let value: Value = input.parse().unwrap();
+    let value = parse_value!(input);
     let actual = value.to_string();
-    let _: Value = actual.parse().unwrap_or_else(|_err| {
-        panic!(
-            "invalid `Value`:
-```
-{actual}
-```
-"
-        )
-    });
+    let _ = parse_value!(&actual);
     assert_data_eq!(actual, expected.raw());
 }
 
@@ -581,135 +579,10 @@ crlf \r
 
 #[track_caller]
 fn assert_string_value_roundtrip(input: &str, expected: impl IntoData) {
-    let value: Value = input.parse().unwrap();
-    let value = Value::from(value.as_str().unwrap()); // Remove repr
+    let value = parse_value!(input);
+    let value = crate::RustValue::from(value.as_str().unwrap()); // Remove repr
     let actual = value.to_string();
-    let _: Value = actual.parse().unwrap_or_else(|_err| {
-        panic!(
-            "invalid `Value`:
-```
-{actual}
-```
-"
-        )
-    });
-    assert_data_eq!(actual, expected.raw());
-}
-
-#[test]
-fn key_repr_roundtrip() {
-    assert_key_repr_roundtrip(r#""""#, str![[r#""""#]]);
-    assert_key_repr_roundtrip(r#""a""#, str![[r#""a""#]]);
-
-    assert_key_repr_roundtrip(r#""tab \t tab""#, str![[r#""tab \t tab""#]]);
-    assert_key_repr_roundtrip(r#""lf \n lf""#, str![[r#""lf \n lf""#]]);
-    assert_key_repr_roundtrip(r#""crlf \r\n crlf""#, str![[r#""crlf \r\n crlf""#]]);
-    assert_key_repr_roundtrip(r#""bell \b bell""#, str![[r#""bell \b bell""#]]);
-    assert_key_repr_roundtrip(r#""feed \f feed""#, str![[r#""feed \f feed""#]]);
-    assert_key_repr_roundtrip(
-        r#""backslash \\ backslash""#,
-        str![[r#""backslash \\ backslash""#]],
-    );
-
-    assert_key_repr_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
-    assert_key_repr_roundtrip(
-        r#""triple squote ''' triple squote""#,
-        str![[r#""triple squote ''' triple squote""#]],
-    );
-    assert_key_repr_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
-
-    assert_key_repr_roundtrip(r#""quote \" quote""#, str![[r#""quote \" quote""#]]);
-    assert_key_repr_roundtrip(
-        r#""triple quote \"\"\" triple quote""#,
-        str![[r#""triple quote \"\"\" triple quote""#]],
-    );
-    assert_key_repr_roundtrip(r#""end quote \"""#, str![[r#""end quote \"""#]]);
-    assert_key_repr_roundtrip(
-        r#""quoted \"content\" quoted""#,
-        str![[r#""quoted \"content\" quoted""#]],
-    );
-    assert_key_repr_roundtrip(
-        r#""squoted 'content' squoted""#,
-        str![[r#""squoted 'content' squoted""#]],
-    );
-    assert_key_repr_roundtrip(
-        r#""mixed quoted \"start\" 'end'' mixed quote""#,
-        str![[r#""mixed quoted \"start\" 'end'' mixed quote""#]],
-    );
-}
-
-#[track_caller]
-fn assert_key_repr_roundtrip(input: &str, expected: impl IntoData) {
-    let value: Key = input.parse().unwrap();
-    let actual = value.to_string();
-    let _: Key = actual.parse().unwrap_or_else(|_err| {
-        panic!(
-            "invalid `Key`:
-```
-{actual}
-```
-"
-        )
-    });
-    assert_data_eq!(actual, expected.raw());
-}
-
-#[test]
-fn key_value_roundtrip() {
-    assert_key_value_roundtrip(r#""""#, str![[r#""""#]]);
-    assert_key_value_roundtrip(r#""a""#, str!["a"]);
-
-    assert_key_value_roundtrip(r#""tab \t tab""#, str![[r#""tab \t tab""#]]);
-    assert_key_value_roundtrip(r#""lf \n lf""#, str![[r#""lf \n lf""#]]);
-    assert_key_value_roundtrip(r#""crlf \r\n crlf""#, str![[r#""crlf \r\n crlf""#]]);
-    assert_key_value_roundtrip(r#""bell \b bell""#, str![[r#""bell \b bell""#]]);
-    assert_key_value_roundtrip(r#""feed \f feed""#, str![[r#""feed \f feed""#]]);
-    assert_key_value_roundtrip(
-        r#""backslash \\ backslash""#,
-        str![[r#"'backslash \ backslash'"#]],
-    );
-
-    assert_key_value_roundtrip(r#""squote ' squote""#, str![[r#""squote ' squote""#]]);
-    assert_key_value_roundtrip(
-        r#""triple squote ''' triple squote""#,
-        str![[r#""triple squote ''' triple squote""#]],
-    );
-    assert_key_value_roundtrip(r#""end squote '""#, str![[r#""end squote '""#]]);
-
-    assert_key_value_roundtrip(r#""quote \" quote""#, str![[r#"'quote " quote'"#]]);
-    assert_key_value_roundtrip(
-        r#""triple quote \"\"\" triple quote""#,
-        str![[r#"'triple quote """ triple quote'"#]],
-    );
-    assert_key_value_roundtrip(r#""end quote \"""#, str![[r#"'end quote "'"#]]);
-    assert_key_value_roundtrip(
-        r#""quoted \"content\" quoted""#,
-        str![[r#"'quoted "content" quoted'"#]],
-    );
-    assert_key_value_roundtrip(
-        r#""squoted 'content' squoted""#,
-        str![[r#""squoted 'content' squoted""#]],
-    );
-    assert_key_value_roundtrip(
-        r#""mixed quoted \"start\" 'end'' mixed quote""#,
-        str![[r#""mixed quoted \"start\" 'end'' mixed quote""#]],
-    );
-}
-
-#[track_caller]
-fn assert_key_value_roundtrip(input: &str, expected: impl IntoData) {
-    let value: Key = input.parse().unwrap();
-    let value = Key::new(value.get()); // Remove repr
-    let actual = value.to_string();
-    let _: Key = actual.parse().unwrap_or_else(|_err| {
-        panic!(
-            "invalid `Key`:
-```
-{actual}
-```
-"
-        )
-    });
+    let _ = parse_value!(&actual);
     assert_data_eq!(actual, expected.raw());
 }
 
@@ -719,7 +592,7 @@ fn array_recursion_limit() {
     let depths = [(1, true), (20, true), (300, false)];
     for (depth, is_ok) in depths {
         let input = format!("x={}{}", &"[".repeat(depth), &"]".repeat(depth));
-        let document = input.parse::<DocumentMut>();
+        let document = input.parse::<crate::RustDocument>();
         assert_eq!(document.is_ok(), is_ok, "depth: {depth}");
     }
 }
@@ -730,7 +603,7 @@ fn inline_table_recursion_limit() {
     let depths = [(1, true), (20, true), (300, false)];
     for (depth, is_ok) in depths {
         let input = format!("x={}true{}", &"{ x = ".repeat(depth), &"}".repeat(depth));
-        let document = input.parse::<DocumentMut>();
+        let document = input.parse::<crate::RustDocument>();
         assert_eq!(document.is_ok(), is_ok, "depth: {depth}");
     }
 }
@@ -741,7 +614,7 @@ fn table_key_recursion_limit() {
     let depths = [(1, true), (20, true), (300, false)];
     for (depth, is_ok) in depths {
         let input = format!("[x{}]", &".x".repeat(depth));
-        let document = input.parse::<DocumentMut>();
+        let document = input.parse::<crate::RustDocument>();
         assert_eq!(document.is_ok(), is_ok, "depth: {depth}");
     }
 }
@@ -752,7 +625,7 @@ fn dotted_key_recursion_limit() {
     let depths = [(1, true), (20, true), (300, false)];
     for (depth, is_ok) in depths {
         let input = format!("x{} = true", &".x".repeat(depth));
-        let document = input.parse::<DocumentMut>();
+        let document = input.parse::<crate::RustDocument>();
         assert_eq!(document.is_ok(), is_ok, "depth: {depth}");
     }
 }
@@ -763,7 +636,7 @@ fn inline_dotted_key_recursion_limit() {
     let depths = [(1, true), (20, true), (300, false)];
     for (depth, is_ok) in depths {
         let input = format!("x = {{ x{} = true }}", &".x".repeat(depth));
-        let document = input.parse::<DocumentMut>();
+        let document = input.parse::<crate::RustDocument>();
         assert_eq!(document.is_ok(), is_ok, "depth: {depth}");
     }
 }

@@ -1,0 +1,6 @@
+TOML parse error at line 1, column 12
+  |
+1 | foo = 1997-00-09T09:09:09.09Z
+  |            ^
+invalid date-time
+value is out of range

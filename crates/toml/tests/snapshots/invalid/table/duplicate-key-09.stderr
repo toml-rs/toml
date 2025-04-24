@@ -1,0 +1,6 @@
+TOML parse error at line 5, column 1
+  |
+5 | [a]
+  | ^
+invalid table header
+duplicate key `a` in document root

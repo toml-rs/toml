@@ -889,6 +889,7 @@ dependencies = [
  "toml-test-harness",
  "toml_datetime",
  "toml_edit",
+ "walkdir",
 ]
 
 [[package]]
@@ -956,6 +957,7 @@ dependencies = [
  "serde_json",
  "serde_spanned",
  "snapbox",
+ "toml 0.8.20",
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
