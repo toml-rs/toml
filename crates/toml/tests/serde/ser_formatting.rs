@@ -3,12 +3,11 @@ use serde::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml::to_string_pretty;
 
 #[track_caller]
 fn t(toml: &str, data: impl IntoData) {
-    let value: toml::Table = toml::from_str(toml).unwrap();
-    let result = to_string_pretty(&value).unwrap();
+    let value: crate::SerdeDocument = crate::from_str(toml).unwrap();
+    let result = crate::to_string_pretty(&value).unwrap();
     assert_data_eq!(result, data.raw());
 }
 
@@ -25,7 +24,7 @@ fn no_unnecessary_newlines_array() {
         pub(crate) surname: String,
     }
 
-    assert!(!to_string_pretty(&Users {
+    assert!(!crate::to_string_pretty(&Users {
         user: vec![
             User {
                 name: "John".to_owned(),
@@ -55,7 +54,7 @@ fn no_unnecessary_newlines_table() {
         pub(crate) surname: String,
     }
 
-    assert!(!to_string_pretty(&TwoUsers {
+    assert!(!crate::to_string_pretty(&TwoUsers {
         user0: User {
             name: "John".to_owned(),
             surname: "Doe".to_owned(),

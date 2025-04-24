@@ -7,7 +7,7 @@ use snapbox::str;
 
 #[track_caller]
 fn bad<T: de::DeserializeOwned + fmt::Debug>(toml: &str, msg: impl IntoData) {
-    match toml::from_str::<T>(toml) {
+    match crate::from_str::<T>(toml) {
         Ok(s) => panic!("parsed to: {s:#?}"),
         Err(e) => assert_data_eq!(e.to_string(), msg.raw()),
     }
@@ -75,7 +75,7 @@ fn custom_errors() {
             p_a = 'a'
             p_b = [{c_a = 'a', c_b = 'c'}]
         ";
-    toml::from_str::<Parent<CasedString>>(input).unwrap();
+    crate::from_str::<Parent<CasedString>>(input).unwrap();
 
     // Custom error at p_b value.
     bad::<Parent<CasedString>>(

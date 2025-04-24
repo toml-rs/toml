@@ -26,13 +26,6 @@ struct Multi {
     enums: Vec<TheEnum>,
 }
 
-fn value_from_str<T>(s: &'_ str) -> Result<T, toml::de::Error>
-where
-    T: serde::de::DeserializeOwned,
-{
-    T::deserialize(toml::de::ValueDeserializer::new(s))
-}
-
 #[test]
 fn invalid_variant_returns_error_with_good_message_string() {
     let input = "\"NonExistent\"";
@@ -41,7 +34,7 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
 
 "#]]
     .raw();
-    let result = value_from_str::<TheEnum>(input);
+    let result = crate::value_from_str::<TheEnum>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 
     let input = "val = \"NonExistent\"";
@@ -54,7 +47,7 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
 
 "#]]
     .raw();
-    let result = toml::from_str::<Val>(input);
+    let result = crate::from_str::<Val>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 }
 
@@ -66,7 +59,7 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
 
 "#]]
     .raw();
-    let result = value_from_str::<TheEnum>(input);
+    let result = crate::value_from_str::<TheEnum>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 
     let input = "val = { NonExistent = {} }";
@@ -79,7 +72,7 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
 
 "#]]
     .raw();
-    let result = toml::from_str::<Val>(input);
+    let result = crate::from_str::<Val>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 }
 
@@ -91,7 +84,7 @@ expected empty table
 
 "#]]
     .raw();
-    let result = value_from_str::<TheEnum>(input);
+    let result = crate::value_from_str::<TheEnum>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 
     let input = "val = { Plain = { extra_field = 404 } }";
@@ -104,7 +97,7 @@ expected empty table
 
 "#]]
     .raw();
-    let result = toml::from_str::<Val>(input);
+    let result = crate::from_str::<Val>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 }
 
@@ -116,7 +109,7 @@ unexpected keys in table: extra_0, extra_1, available keys: value
 
 "#]]
     .raw();
-    let result = value_from_str::<TheEnum>(input);
+    let result = crate::value_from_str::<TheEnum>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 
     let input = "val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }";
@@ -129,7 +122,7 @@ unexpected keys in table: extra_0, extra_1, available keys: value
 
 "#]]
     .raw();
-    let result = toml::from_str::<Val>(input);
+    let result = crate::from_str::<Val>(input);
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 }
 
@@ -143,7 +136,7 @@ mod enum_unit {
 Plain
 
 "#]];
-        let result = value_from_str::<TheEnum>(input);
+        let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
 
         let input = "val = \"Plain\"";
@@ -153,7 +146,7 @@ Val {
 }
 
 "#]];
-        let result = toml::from_str::<Val>(input);
+        let result = crate::from_str::<Val>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -164,7 +157,7 @@ Val {
 Plain
 
 "#]];
-        let result = value_from_str::<TheEnum>(input);
+        let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
 
         let input = "val = { Plain = {} }";
@@ -174,7 +167,7 @@ Val {
 }
 
 "#]];
-        let result = toml::from_str::<Val>(input);
+        let result = crate::from_str::<Val>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -185,7 +178,7 @@ Val {
 Plain
 
 "#]];
-        let result = toml::from_str::<TheEnum>(input);
+        let result = crate::from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }
@@ -203,7 +196,7 @@ Tuple(
 )
 
 "#]];
-        let result = value_from_str::<TheEnum>(input);
+        let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
 
         let input = "val = { Tuple = { 0 = -123, 1 = true } }";
@@ -216,7 +209,7 @@ Val {
 }
 
 "#]];
-        let result = toml::from_str::<Val>(input);
+        let result = crate::from_str::<Val>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -233,7 +226,7 @@ Tuple(
 )
 
 "#]];
-        let result = toml::from_str::<TheEnum>(input);
+        let result = crate::from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }
@@ -250,7 +243,7 @@ NewType(
 )
 
 "#]];
-        let result = value_from_str::<TheEnum>(input);
+        let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
 
         let input = r#"val = { NewType = "value" }"#;
@@ -262,7 +255,7 @@ Val {
 }
 
 "#]];
-        let result = toml::from_str::<Val>(input);
+        let result = crate::from_str::<Val>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -270,13 +263,13 @@ Val {
     fn from_std_table() {
         assert_eq!(
             TheEnum::NewType("value".to_owned()),
-            toml::from_str(r#"NewType = "value""#).unwrap()
+            crate::from_str(r#"NewType = "value""#).unwrap()
         );
         assert_eq!(
             Val {
                 val: TheEnum::NewType("value".to_owned()),
             },
-            toml::from_str(
+            crate::from_str(
                 r#"[val]
                 NewType = "value"
                 "#
@@ -298,7 +291,7 @@ Struct {
 }
 
 "#]];
-        let result = value_from_str::<TheEnum>(input);
+        let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
 
         let input = "val = { Struct = { value = -123 } }";
@@ -310,7 +303,7 @@ Val {
 }
 
 "#]];
-        let result = toml::from_str::<Val>(input);
+        let result = crate::from_str::<Val>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -325,7 +318,7 @@ Struct {
 }
 
 "#]];
-        let result = toml::from_str::<TheEnum>(input);
+        let result = crate::from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -342,7 +335,7 @@ OuterStruct {
 }
 
 "#]];
-        let result = toml::from_str::<OuterStruct>(input);
+        let result = crate::from_str::<OuterStruct>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }
@@ -377,7 +370,7 @@ Multi {
 }
 
 "#]];
-        let result = toml::from_str::<Multi>(input);
+        let result = crate::from_str::<Multi>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 
@@ -413,7 +406,7 @@ Multi {
 }
 
 "#]];
-        let result = toml::from_str::<Multi>(input);
+        let result = crate::from_str::<Multi>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }

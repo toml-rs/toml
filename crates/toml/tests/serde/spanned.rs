@@ -8,8 +8,9 @@ use serde::Deserialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml::value::Datetime;
-use toml::Spanned;
+
+use crate::Datetime;
+use crate::Spanned;
 
 #[test]
 fn test_spanned_field() {
@@ -27,7 +28,7 @@ fn test_spanned_field() {
     where
         T: serde::de::DeserializeOwned + Debug + PartialEq,
     {
-        let foo: Foo<T> = toml::from_str(s).unwrap();
+        let foo: Foo<T> = crate::from_str(s).unwrap();
 
         assert_eq!(6, foo.foo.span().start);
         if let Some(end) = end {
@@ -38,7 +39,7 @@ fn test_spanned_field() {
         assert_eq!(expected, &s[foo.foo.span()]);
 
         // Test for Spanned<> at the top level
-        let foo_outer: Spanned<BareFoo<T>> = toml::from_str(s).unwrap();
+        let foo_outer: Spanned<BareFoo<T>> = crate::from_str(s).unwrap();
 
         assert_eq!(0, foo_outer.span().start);
         assert_eq!(s.len(), foo_outer.span().end);
@@ -93,7 +94,7 @@ fn test_inner_spanned_table() {
     }
 
     fn good(s: &str, zero: bool) {
-        let foo: Foo = toml::from_str(s).unwrap();
+        let foo: Foo = crate::from_str(s).unwrap();
 
         if zero {
             assert_eq!(foo.foo.span().start, 0);
@@ -134,7 +135,7 @@ fn test_outer_spanned_table() {
     }
 
     fn good(s: &str) {
-        let foo: Foo = toml::from_str(s).unwrap();
+        let foo: Foo = crate::from_str(s).unwrap();
 
         for (k, v) in foo.foo.iter() {
             assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
@@ -167,7 +168,7 @@ fn test_spanned_nested() {
     }
 
     fn good(s: &str) {
-        let foo: Foo = toml::from_str(s).unwrap();
+        let foo: Foo = crate::from_str(s).unwrap();
 
         for (k, v) in foo.foo.iter() {
             assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
@@ -221,7 +222,7 @@ fn test_spanned_array() {
         c = 'g'
         e = \"h\"
     ";
-    let foo_list: Foo = toml::from_str(toml).unwrap();
+    let foo_list: Foo = crate::from_str(toml).unwrap();
 
     for (foo, expected) in foo_list.foo.iter().zip([0..75, 84..159]) {
         assert_eq!(foo.span(), expected);
@@ -241,7 +242,7 @@ fn deny_unknown_fields() {
         real: u32,
     }
 
-    let error = toml::from_str::<Example>(
+    let error = crate::from_str::<Example>(
         r#"# my comment
 # bla bla bla
 fake = 1"#,

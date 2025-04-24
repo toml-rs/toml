@@ -6,9 +6,6 @@ use serde::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml::map::Map;
-use toml::Table;
-use toml::Value;
 
 macro_rules! t {
     ($e:expr) => {
@@ -27,33 +24,33 @@ macro_rules! equivalent {
         // Through a string equivalent
         println!("to_string");
         assert_data_eq!(
-            t!(toml::to_string(&toml)),
-            t!(toml::to_string(&literal)).raw()
+            t!(crate::to_string(&toml)),
+            t!(crate::to_string(&literal)).raw()
         );
         println!("literal, from_str(toml)");
-        assert_eq!(literal, t!(toml::from_str(&t!(toml::to_string(&toml)))));
+        assert_eq!(literal, t!(crate::from_str(&t!(crate::to_string(&toml)))));
         println!("toml, from_str(literal)");
-        assert_eq!(toml, t!(toml::from_str(&t!(toml::to_string(&literal)))));
+        assert_eq!(toml, t!(crate::from_str(&t!(crate::to_string(&literal)))));
 
         // In/out of Value is equivalent
         println!("Table::try_from(literal)");
-        assert_eq!(toml, t!(Table::try_from(literal.clone())));
+        assert_eq!(toml, t!(toml::Table::try_from(literal.clone())));
         println!("Value::try_from(literal)");
         assert_eq!(
-            Value::Table(toml.clone()),
-            t!(Value::try_from(literal.clone()))
+            toml::Value::Table(toml.clone()),
+            t!(toml::Value::try_from(literal.clone()))
         );
         println!("toml.try_into()");
         assert_eq!(literal, t!(toml.clone().try_into()));
         println!("Value::Table(toml).try_into()");
-        assert_eq!(literal, t!(Value::Table(toml.clone()).try_into()));
+        assert_eq!(literal, t!(toml::Value::Table(toml.clone()).try_into()));
     }};
 }
 
 macro_rules! error {
     ($ty:ty, $toml:expr, $msg_parse:expr, $msg_decode:expr) => {{
         println!("attempting parsing");
-        match toml::from_str::<$ty>(&$toml.to_string()) {
+        match crate::from_str::<$ty>(&crate::to_string(&$toml).unwrap()) {
             Ok(_) => panic!("successful"),
             Err(e) => assert_data_eq!(e.to_string(), $msg_parse.raw()),
         }
@@ -67,8 +64,8 @@ macro_rules! error {
 }
 
 macro_rules! map( ($($k:ident: $v:expr),*) => ({
-    let mut _m = Map::new();
-    $(_m.insert(stringify!($k).to_owned(), t!(Value::try_from($v)));)*
+    let mut _m = crate::SerdeTable::new();
+    $(_m.insert(stringify!($k).to_owned(), t!(crate::SerdeValue::try_from($v)));)*
     _m
 }) );
 
@@ -79,7 +76,7 @@ fn smoke() {
         a: isize,
     }
 
-    equivalent!(Foo { a: 2 }, map! { a: Value::Integer(2) },);
+    equivalent!(Foo { a: 2 }, map! { a: crate::SerdeValue::Integer(2) },);
 }
 
 #[test]
@@ -97,11 +94,11 @@ fn smoke_hyphen() {
 
     equivalent! {
         Foo { a_b: 2 },
-        map! { a_b: Value::Integer(2)},
+        map! { a_b: crate::SerdeValue::Integer(2)},
     }
 
-    let mut m = Map::new();
-    m.insert("a-b".to_owned(), Value::Integer(2));
+    let mut m = crate::SerdeTable::new();
+    m.insert("a-b".to_owned(), crate::SerdeValue::Integer(2));
     equivalent! {
         Foo2 { a_b: 2 },
         m,
@@ -123,9 +120,9 @@ fn nested() {
     equivalent! {
         Foo { a: 2, b: Bar { a: "test".to_owned() } },
         map! {
-            a: Value::Integer(2),
+            a: crate::SerdeValue::Integer(2),
             b: map! {
-                a: Value::String("test".to_owned())
+                a: crate::SerdeValue::String("test".to_owned())
             }
         },
     }
@@ -145,9 +142,9 @@ fn application_decode_error() {
             }
         }
     }
-    let d_good = Value::Integer(5);
-    let d_bad1 = Value::String("not an isize".to_owned());
-    let d_bad2 = Value::Integer(11);
+    let d_good = crate::SerdeValue::Integer(5);
+    let d_bad1 = crate::SerdeValue::String("not an isize".to_owned());
+    let d_bad2 = crate::SerdeValue::Integer(11);
 
     assert_eq!(Range10(5), d_good.try_into().unwrap());
 
@@ -167,11 +164,11 @@ fn array() {
     equivalent! {
         Foo { a: vec![1, 2, 3, 4] },
         map! {
-            a: Value::Array(vec![
-                Value::Integer(1),
-                Value::Integer(2),
-                Value::Integer(3),
-                Value::Integer(4)
+            a: crate::SerdeValue::Array(vec![
+                crate::SerdeValue::Integer(1),
+                crate::SerdeValue::Integer(2),
+                crate::SerdeValue::Integer(3),
+                crate::SerdeValue::Integer(4)
             ])
         },
     };
@@ -201,13 +198,13 @@ fn inner_structs_with_options() {
         map! {
             a: map! {
                 b: map! {
-                    a: Value::String("foo".to_owned()),
-                    b: Value::Float(4.5)
+                    a: crate::SerdeValue::String("foo".to_owned()),
+                    b: crate::SerdeValue::Float(4.5)
                 }
             },
             b: map! {
-                a: Value::String("bar".to_owned()),
-                b: Value::Float(1.0)
+                a: crate::SerdeValue::String("bar".to_owned()),
+                b: crate::SerdeValue::Float(1.0)
             }
         },
     }
@@ -239,10 +236,10 @@ fn hashmap() {
             }
         },
         map! {
-            set: Value::Array(vec![Value::String("a".to_owned())]),
+            set: crate::SerdeValue::Array(vec![crate::SerdeValue::String("a".to_owned())]),
             map: map! {
-                bar: Value::Integer(4),
-                foo: Value::Integer(10)
+                bar: crate::SerdeValue::Integer(4),
+                foo: crate::SerdeValue::Integer(10)
             }
         },
     }
@@ -262,9 +259,9 @@ fn table_array() {
     equivalent! {
         Foo { a: vec![Bar { a: 1 }, Bar { a: 2 }] },
         map! {
-            a: Value::Array(vec![
-                Value::Table(map!{ a: Value::Integer(1) }),
-                Value::Table(map!{ a: Value::Integer(2) }),
+            a: crate::SerdeValue::Array(vec![
+                crate::SerdeValue::Table(map!{ a: crate::SerdeValue::Integer(1) }),
+                crate::SerdeValue::Table(map!{ a: crate::SerdeValue::Integer(2) }),
             ])
         },
     }
@@ -287,7 +284,7 @@ fn type_errors() {
     error! {
         Foo,
         map! {
-            bar: Value::String("a".to_owned())
+            bar: crate::SerdeValue::String("a".to_owned())
         },
         str![[r#"
 TOML parse error at line 1, column 7
@@ -308,7 +305,7 @@ in `bar`
         Bar,
         map! {
             foo: map! {
-                bar: Value::String("a".to_owned())
+                bar: crate::SerdeValue::String("a".to_owned())
             }
         },
         str![[r#"
@@ -372,17 +369,17 @@ fn parse_enum() {
 
     equivalent! {
         Foo { a: E::Bar(10) },
-        map! { a: Value::Integer(10) },
+        map! { a: crate::SerdeValue::Integer(10) },
     }
 
     equivalent! {
         Foo { a: E::Baz("foo".to_owned()) },
-        map! { a: Value::String("foo".to_owned()) },
+        map! { a: crate::SerdeValue::String("foo".to_owned()) },
     }
 
     equivalent! {
         Foo { a: E::Last(Foo2 { test: "test".to_owned() }) },
-        map! { a: map! { test: Value::String("test".to_owned()) } },
+        map! { a: map! { test: crate::SerdeValue::String("test".to_owned()) } },
     }
 }
 
@@ -402,7 +399,7 @@ fn parse_enum_string() {
 
     equivalent! {
         Foo { a: Sort::Desc },
-        map! { a: Value::String("desc".to_owned()) },
+        map! { a: crate::SerdeValue::String("desc".to_owned()) },
     }
 }
 
@@ -425,7 +422,7 @@ fn parse_tuple_variant() {
             Enum::String("2".to_owned(), "2".to_owned()),
         ],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -480,7 +477,7 @@ fn parse_struct_variant() {
             },
         ],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -532,7 +529,7 @@ fn map_key_unit_variants() {
 
     equivalent! {
         map,
-        map! { ascending: Value::Integer(1), Desc: Value::Integer(2) },
+        map! { ascending: crate::SerdeValue::Integer(1), Desc: crate::SerdeValue::Integer(2) },
     }
 }
 
@@ -542,13 +539,13 @@ fn map_key_unit_variants() {
 //     struct Foo { a: isize }
 //
 //     let v = Foo { a: 2 };
-//     let mut d = Decoder::new(Table(map! {
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
 //         a, Integer(2),
 //         b, Integer(5)
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
 //
-//     assert_eq!(d.toml, Some(Table(map! {
+//     assert_eq!(d.toml, Some(crate::SerdeTable(map! {
 //         b, Integer(5)
 //     })));
 // }
@@ -561,16 +558,16 @@ fn map_key_unit_variants() {
 //     struct Bar { a: isize }
 //
 //     let v = Foo { a: Bar { a: 2 } };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Table(map! {
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
+//         a, crate::SerdeTable(map! {
 //             a, Integer(2),
 //             b, Integer(5)
 //         })
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
 //
-//     assert_eq!(d.toml, Some(Table(map! {
-//         a, Table(map! {
+//     assert_eq!(d.toml, Some(crate::SerdeTable(map! {
+//         a, crate::SerdeTable(map! {
 //             b, Integer(5)
 //         })
 //     })));
@@ -584,8 +581,8 @@ fn map_key_unit_variants() {
 //     struct Bar { a: isize }
 //
 //     let v = Foo { a: Bar { a: 2 } };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Table(map! {
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
+//         a, crate::SerdeTable(map! {
 //             a, Integer(2)
 //         })
 //     }));
@@ -600,9 +597,9 @@ fn map_key_unit_variants() {
 //     struct Foo { a: BTreeMap<String, String> }
 //
 //     let v = Foo { a: map! { a, "foo".to_owned() } };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Table(map! {
-//             a, Value::String("foo".to_owned())
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
+//         a, crate::SerdeTable(map! {
+//             a, crate::SerdeValue::String("foo".to_owned())
 //         })
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
@@ -616,8 +613,8 @@ fn map_key_unit_variants() {
 //     struct Foo { a: Vec<String> }
 //
 //     let v = Foo { a: vec!["a".to_owned()] };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Array(vec![Value::String("a".to_owned())])
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
+//         a, Array(vec![crate::SerdeValue::String("a".to_owned())])
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
 //
@@ -630,7 +627,7 @@ fn map_key_unit_variants() {
 //     struct Foo { a: Option<Vec<String>> }
 //
 //     let v = Foo { a: Some(vec![]) };
-//     let mut d = Decoder::new(Table(map! {
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
 //         a, Array(vec![])
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
@@ -646,16 +643,16 @@ fn map_key_unit_variants() {
 //     struct Bar { a: isize }
 //
 //     let v = Foo { a: vec![Bar { a: 1 }] };
-//     let mut d = Decoder::new(Table(map! {
-//         a, Array(vec![Table(map! {
+//     let mut d = Decoder::new(crate::SerdeTable(map! {
+//         a, Array(vec![crate::SerdeTable(map! {
 //             a, Integer(1),
 //             b, Integer(2)
 //         })])
 //     }));
 //     assert_eq!(v, t!(Deserialize::deserialize(&mut d)));
 //
-//     assert_eq!(d.toml, Some(Table(map! {
-//         a, Array(vec![Table(map! {
+//     assert_eq!(d.toml, Some(crate::SerdeTable(map! {
+//         a, Array(vec![crate::SerdeTable(map! {
 //             b, Integer(2)
 //         })])
 //     })));
@@ -672,7 +669,7 @@ fn empty_arrays() {
 
     equivalent! {
         Foo { a: vec![] },
-        map! {a: Value::Array(Vec::new())},
+        map! {a: crate::SerdeValue::Array(Vec::new())},
     }
 }
 
@@ -692,7 +689,7 @@ fn empty_arrays2() {
 
     equivalent! {
         Foo { a: Some(vec![]) },
-        map! { a: Value::Array(vec![]) },
+        map! { a: crate::SerdeValue::Array(vec![]) },
     }
 }
 
@@ -703,9 +700,9 @@ fn extra_keys() {
         a: isize,
     }
 
-    let toml = map! { a: Value::Integer(2), b: Value::Integer(2) };
+    let toml = map! { a: crate::SerdeValue::Integer(2), b: crate::SerdeValue::Integer(2) };
     assert!(toml.clone().try_into::<Foo>().is_ok());
-    assert!(toml::from_str::<Foo>(&toml.to_string()).is_ok());
+    assert!(crate::from_str::<Foo>(&crate::to_string(&toml).unwrap()).is_ok());
 }
 
 #[test]
@@ -720,7 +717,7 @@ fn newtypes() {
 
     equivalent! {
         A { b: B(2) },
-        map! { b: Value::Integer(2) },
+        map! { b: crate::SerdeValue::Integer(2) },
     }
 }
 
@@ -745,9 +742,9 @@ fn newtypes2() {
         A { b: B(Some(C { x: 0, y: 1, z: 2 })) },
         map! {
             b: map! {
-                x: Value::Integer(0),
-                y: Value::Integer(1),
-                z: Value::Integer(2)
+                x: crate::SerdeValue::Integer(0),
+                y: crate::SerdeValue::Integer(1),
+                z: crate::SerdeValue::Integer(2)
             }
         },
     }
@@ -769,7 +766,7 @@ fn newtype_variant() {
         Struct { field: Enum::Variant(21) },
         map! {
             field: map! {
-                Variant: Value::Integer(21)
+                Variant: crate::SerdeValue::Integer(21)
             }
         },
     }
@@ -788,8 +785,8 @@ fn newtype_key() {
             (NewType("y".to_owned()), 2),
         ].into_iter().collect::<CustomKeyMap>(),
         map! {
-            x: Value::Integer(1),
-            y: Value::Integer(2)
+            x: crate::SerdeValue::Integer(1),
+            y: crate::SerdeValue::Integer(2)
         },
     }
 }
@@ -803,7 +800,7 @@ struct CanBeEmpty {
 #[test]
 fn table_structs_empty() {
     let text = "[bar]\n\n[baz]\n\n[bazv]\na = \"foo\"\n\n[foo]\n";
-    let value: BTreeMap<String, CanBeEmpty> = toml::from_str(text).unwrap();
+    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(text).unwrap();
     let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
     expected.insert("bar".to_owned(), CanBeEmpty::default());
     expected.insert("baz".to_owned(), CanBeEmpty::default());
@@ -816,7 +813,7 @@ fn table_structs_empty() {
     );
     expected.insert("foo".to_owned(), CanBeEmpty::default());
     assert_eq!(value, expected);
-    assert_data_eq!(toml::to_string(&value).unwrap(), text.raw());
+    assert_data_eq!(crate::to_string(&value).unwrap(), text.raw());
 }
 
 #[test]
@@ -829,9 +826,9 @@ fn fixed_size_array() {
     equivalent! {
         Entity { pos: [1, 2] },
         map! {
-            pos: Value::Array(vec![
-                Value::Integer(1),
-                Value::Integer(2),
+            pos: crate::SerdeValue::Array(vec![
+                crate::SerdeValue::Integer(1),
+                crate::SerdeValue::Integer(2),
             ])
         },
     }
@@ -847,10 +844,10 @@ fn homogeneous_tuple() {
     equivalent! {
         Collection { elems: (0, 1, 2) },
         map! {
-            elems: Value::Array(vec![
-                Value::Integer(0),
-                Value::Integer(1),
-                Value::Integer(2),
+            elems: crate::SerdeValue::Array(vec![
+                crate::SerdeValue::Integer(0),
+                crate::SerdeValue::Integer(1),
+                crate::SerdeValue::Integer(2),
             ])
         },
     }
@@ -866,14 +863,14 @@ fn homogeneous_tuple_struct() {
             obj: Object(vec!["foo".to_owned()], vec![], vec!["bar".to_owned(), "baz".to_owned()])
         },
         map! {
-            obj: Value::Array(vec![
-                Value::Array(vec![
-                    Value::String("foo".to_owned()),
+            obj: crate::SerdeValue::Array(vec![
+                crate::SerdeValue::Array(vec![
+                    crate::SerdeValue::String("foo".to_owned()),
                 ]),
-                Value::Array(vec![]),
-                Value::Array(vec![
-                    Value::String("bar".to_owned()),
-                    Value::String("baz".to_owned()),
+                crate::SerdeValue::Array(vec![]),
+                crate::SerdeValue::Array(vec![
+                    crate::SerdeValue::String("bar".to_owned()),
+                    crate::SerdeValue::String("baz".to_owned()),
                 ]),
             ])
         },
@@ -884,7 +881,7 @@ fn homogeneous_tuple_struct() {
 fn json_interoperability() {
     #[derive(Serialize, Deserialize)]
     struct Foo {
-        any: Value,
+        any: crate::SerdeValue,
     }
 
     let _foo: Foo = serde_json::from_str(
@@ -922,7 +919,7 @@ fn error_includes_key() {
         Bool(bool),
     }
 
-    let res: Result<Package, _> = toml::from_str(
+    let res: Result<Package, _> = crate::from_str(
         r#"
 [package]
 name = "foo"
@@ -946,7 +943,7 @@ expected a boolean or an integer
 "#]]
     );
 
-    let res: Result<Package, _> = toml::from_str(
+    let res: Result<Package, _> = crate::from_str(
         r#"
 [package]
 name = "foo"
@@ -981,7 +978,7 @@ fn newline_key_value() {
     let package = Package {
         name: "foo".to_owned(),
     };
-    let raw = toml::to_string_pretty(&package).unwrap();
+    let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1008,7 +1005,7 @@ fn newline_table() {
             name: "foo".to_owned(),
         },
     };
-    let raw = toml::to_string_pretty(&package).unwrap();
+    let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1050,7 +1047,7 @@ fn newline_dotted_table() {
             },
         },
     };
-    let raw = toml::to_string_pretty(&package).unwrap();
+    let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1107,7 +1104,7 @@ fn newline_mixed_tables() {
             },
         },
     };
-    let raw = toml::to_string_pretty(&package).unwrap();
+    let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1134,7 +1131,7 @@ fn integer_min() {
 
     equivalent! {
         Foo { a_b: i64::MIN },
-        map! { a_b: Value::Integer(i64::MIN) },
+        map! { a_b: crate::SerdeValue::Integer(i64::MIN) },
     }
 }
 
@@ -1146,9 +1143,9 @@ fn integer_too_big() {
     }
 
     let native = Foo { a_b: u64::MAX };
-    let err = Table::try_from(native.clone()).unwrap_err();
+    let err = crate::SerdeTable::try_from(native.clone()).unwrap_err();
     assert_data_eq!(err.to_string(), str!["u64 value was too large"].raw());
-    let err = toml::to_string(&native).unwrap_err();
+    let err = crate::to_string(&native).unwrap_err();
     assert_data_eq!(
         err.to_string(),
         str!["out-of-range value for u64 type"].raw()
@@ -1164,7 +1161,7 @@ fn integer_max() {
 
     equivalent! {
         Foo { a_b: i64::MAX },
-        map! { a_b: Value::Integer(i64::MAX) },
+        map! { a_b: crate::SerdeValue::Integer(i64::MAX) },
     }
 }
 
@@ -1177,7 +1174,7 @@ fn float_min() {
 
     equivalent! {
         Foo { a_b: f64::MIN },
-        map! { a_b: Value::Float(f64::MIN) },
+        map! { a_b: crate::SerdeValue::Float(f64::MIN) },
     }
 }
 
@@ -1190,14 +1187,14 @@ fn float_max() {
 
     equivalent! {
         Foo { a_b: f64::MAX },
-        map! { a_b: Value::Float(f64::MAX) },
+        map! { a_b: crate::SerdeValue::Float(f64::MAX) },
     }
 }
 
 #[test]
 fn unsupported_root_type() {
     let native = "value";
-    let err = toml::to_string_pretty(&native).unwrap_err();
+    let err = crate::to_string_pretty(&native).unwrap_err();
     assert_data_eq!(err.to_string(), str!["unsupported rust type"].raw());
 }
 
@@ -1209,7 +1206,7 @@ fn unsupported_nested_type() {
     }
 
     let native = Foo { unused: () };
-    let err = toml::to_string_pretty(&native).unwrap_err();
+    let err = crate::to_string_pretty(&native).unwrap_err();
     assert_data_eq!(err.to_string(), str!["unsupported unit type"].raw());
 }
 
@@ -1230,26 +1227,24 @@ fn table_type_enum_regression_issue_388() {
     let dotted_table = r#"
         data.Gt = 5
         "#;
-    assert!(toml::from_str::<DataFile>(dotted_table).is_ok());
+    assert!(crate::from_str::<DataFile>(dotted_table).is_ok());
 
     let inline_table = r#"
         data = { Gt = 5 }
         "#;
-    assert!(toml::from_str::<DataFile>(inline_table).is_ok());
+    assert!(crate::from_str::<DataFile>(inline_table).is_ok());
 }
 
 #[test]
 fn serialize_datetime_issue_333() {
-    use toml::{to_string, value::Date, value::Datetime};
-
     #[derive(Serialize)]
     struct Struct {
-        date: Datetime,
+        date: crate::Datetime,
     }
 
-    let toml = to_string(&Struct {
-        date: Datetime {
-            date: Some(Date {
+    let toml = crate::to_string(&Struct {
+        date: crate::Datetime {
+            date: Some(crate::Date {
                 year: 2022,
                 month: 1,
                 day: 1,
@@ -1264,21 +1259,19 @@ fn serialize_datetime_issue_333() {
 
 #[test]
 fn serialize_date() {
-    use toml::value::Date;
-
     #[derive(Serialize)]
     struct Document {
-        date: Date,
+        date: crate::Date,
     }
 
     let input = Document {
-        date: Date {
+        date: crate::Date {
             year: 2024,
             month: 1,
             day: 1,
         },
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1291,22 +1284,20 @@ date = 2024-01-01
 
 #[test]
 fn serialize_time() {
-    use toml::value::Time;
-
     #[derive(Serialize)]
     struct Document {
-        date: Time,
+        date: crate::Time,
     }
 
     let input = Document {
-        date: Time {
+        date: crate::Time {
             hour: 5,
             minute: 0,
             second: 0,
             nanosecond: 0,
         },
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1319,24 +1310,22 @@ date = 05:00:00
 
 #[test]
 fn deserialize_date() {
-    use toml::value::Date;
-
     #[derive(Debug, Deserialize)]
     struct Document {
-        date: Date,
+        date: crate::Date,
     }
 
-    let document: Document = toml::from_str("date = 2024-01-01").unwrap();
+    let document: Document = crate::from_str("date = 2024-01-01").unwrap();
     assert_eq!(
         document.date,
-        Date {
+        crate::Date {
             year: 2024,
             month: 1,
             day: 1
         }
     );
 
-    let err = toml::from_str::<Document>("date = 2024-01-01T05:00:00").unwrap_err();
+    let err = crate::from_str::<Document>("date = 2024-01-01T05:00:00").unwrap_err();
     assert_data_eq!(
         err.message(),
         str!["invalid type: local datetime, expected local date"]
@@ -1345,17 +1334,15 @@ fn deserialize_date() {
 
 #[test]
 fn deserialize_time() {
-    use toml::value::Time;
-
     #[derive(Debug, Deserialize)]
     struct Document {
-        time: Time,
+        time: crate::Time,
     }
 
-    let document: Document = toml::from_str("time = 05:00:00").unwrap();
+    let document: Document = crate::from_str("time = 05:00:00").unwrap();
     assert_eq!(
         document.time,
-        Time {
+        crate::Time {
             hour: 5,
             minute: 0,
             second: 0,
@@ -1363,7 +1350,7 @@ fn deserialize_time() {
         }
     );
 
-    let err = toml::from_str::<Document>("time = 2024-01-01T05:00:00").unwrap_err();
+    let err = crate::from_str::<Document>("time = 2024-01-01T05:00:00").unwrap_err();
     assert_data_eq!(
         err.message(),
         str!["invalid type: local datetime, expected local time"]
@@ -1380,7 +1367,7 @@ fn serialize_array_with_none_value() {
     let input = Document {
         values: vec![Some(1), Some(2), Some(3)],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1393,7 +1380,7 @@ values = [1, 2, 3]
     let input = Document {
         values: vec![Some(1), None, Some(3)],
     };
-    let err = toml::to_string(&input).unwrap_err();
+    let err = crate::to_string(&input).unwrap_err();
     assert_data_eq!(err.to_string(), str!["unsupported None value"].raw());
 }
 
@@ -1417,7 +1404,7 @@ fn serialize_array_with_optional_struct_field() {
             OptionalField { x: 3, y: Some(7) },
         ],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1444,7 +1431,7 @@ y = 7
             OptionalField { x: 3, y: Some(7) },
         ],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1491,7 +1478,7 @@ fn serialize_array_with_enum_of_optional_struct_field() {
             Choice::Optional(OptionalField { x: 3, y: Some(7) }),
         ],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(raw, str![[r#"
 values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
 
@@ -1505,7 +1492,7 @@ values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 
             Choice::Optional(OptionalField { x: 3, y: Some(7) }),
         ],
     };
-    let raw = toml::to_string(&input).unwrap();
+    let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(raw, str![[r#"
 values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
 
@@ -1534,7 +1521,7 @@ version = "0.1.0"
 edition = "2021"
 [[bench.foo]]
 "#;
-    let err = match toml::from_str::<Manifest>(raw) {
+    let err = match crate::from_str::<Manifest>(raw) {
         Ok(_) => panic!("should fail"),
         Err(err) => err,
     };

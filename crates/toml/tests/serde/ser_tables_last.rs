@@ -4,13 +4,12 @@ use serde::Deserialize;
 use serde::Serialize;
 
 fn t<D: Serialize + serde::de::DeserializeOwned>(val: &D) {
-    let s = toml::to_string_pretty(&val).unwrap();
-    let _roundtrip: D = toml::from_str(&s).unwrap();
+    let s = crate::to_string_pretty(&val).unwrap();
+    let _roundtrip: D = crate::from_str(&s).unwrap();
 }
 
 #[test]
 fn always_works() {
-    // Ensure this works without the removed "toml::ser::tables_last"
     #[derive(Deserialize, Serialize)]
     struct A {
         vals: HashMap<String, Value>,
@@ -127,8 +126,7 @@ fn vec_order_issue_356() {
         v1: vec![Inner {}],
         v2: vec![],
     };
-    let s = toml::to_string_pretty(&outer).unwrap();
-    let _o: Outer = toml::from_str(&s).unwrap();
+    t(&outer);
 }
 
 #[test]
