@@ -5,7 +5,7 @@ use snapbox::str;
 #[track_caller]
 fn t(toml: &str, expected: impl IntoData) {
     dbg!(toml);
-    match toml.parse::<toml_edit::DocumentMut>() {
+    match toml.parse::<crate::RustDocument>() {
         Ok(s) => panic!("parsed to: {s:#?}"),
         Err(e) => assert_data_eq!(e.to_string(), expected.raw()),
     }
@@ -152,7 +152,7 @@ duplicate key `a` in table `t2`
 #[test]
 fn emoji_error_span() {
     let input = "😀";
-    let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
+    let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(err.span());
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, input);
@@ -161,7 +161,7 @@ fn emoji_error_span() {
 #[test]
 fn text_error_span() {
     let input = "asdf";
-    let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
+    let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(err.span());
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, "");
@@ -170,7 +170,7 @@ fn text_error_span() {
 #[test]
 fn fuzzed_68144_error_span() {
     let input = "\"\\ᾂr\"";
-    let err = input.parse::<toml_edit::DocumentMut>().unwrap_err();
+    let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(err.span());
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, "ᾂ");
