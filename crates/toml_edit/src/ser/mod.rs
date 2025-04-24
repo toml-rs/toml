@@ -39,6 +39,26 @@ impl Error {
     {
         Error::Custom(msg.to_string())
     }
+
+    pub(crate) fn unsupported_type(t: Option<&'static str>) -> Self {
+    Error::UnsupportedType(t)
+    }
+
+    fn out_of_range(t: Option<&'static str>) -> Self {
+     Error::OutOfRange(t)
+    }
+
+    pub(crate) fn unsupported_none() -> Self {
+         Error::UnsupportedNone
+    }
+
+    pub(crate) fn key_not_string() -> Self {
+        Error::KeyNotString
+    }
+
+    fn date_invalid() -> Self {
+        Error::DateInvalid
+    }
 }
 
 impl serde::ser::Error for Error {

@@ -16,51 +16,51 @@ impl serde::ser::Serializer for KeySerializer {
     type SerializeStructVariant = serde::ser::Impossible<Key, Error>;
 
     fn serialize_bool(self, _v: bool) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_i8(self, _v: i8) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_i16(self, _v: i16) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_i32(self, _v: i32) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_i64(self, _v: i64) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_u8(self, _v: u8) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_u16(self, _v: u16) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_u32(self, _v: u32) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_u64(self, _v: u64) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_f32(self, _v: f32) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_f64(self, _v: f64) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_char(self, _v: char) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_str(self, value: &str) -> Result<Key, Self::Error> {
@@ -68,26 +68,26 @@ impl serde::ser::Serializer for KeySerializer {
     }
 
     fn serialize_bytes(self, _value: &[u8]) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_none(self) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_some<T>(self, _value: &T) -> Result<Key, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_unit(self) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Key, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_unit_variant(
@@ -116,15 +116,15 @@ impl serde::ser::Serializer for KeySerializer {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_tuple_struct(
@@ -132,7 +132,7 @@ impl serde::ser::Serializer for KeySerializer {
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_tuple_variant(
@@ -142,11 +142,11 @@ impl serde::ser::Serializer for KeySerializer {
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_struct(
@@ -154,7 +154,7 @@ impl serde::ser::Serializer for KeySerializer {
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 
     fn serialize_struct_variant(
@@ -164,6 +164,6 @@ impl serde::ser::Serializer for KeySerializer {
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(Error::KeyNotString)
+        Err(Error::key_not_string())
     }
 }

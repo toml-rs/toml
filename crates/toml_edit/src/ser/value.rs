@@ -104,7 +104,7 @@ impl serde::ser::Serializer for ValueSerializer {
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
         let v: i64 = v
             .try_into()
-            .map_err(|_err| Error::OutOfRange(Some("u64")))?;
+            .map_err(|_err| Error::out_of_range(Some("u64")))?;
         self.serialize_i64(v)
     }
 
@@ -141,7 +141,7 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Err(Error::UnsupportedNone)
+        Err(Error::unsupported_none())
     }
 
     fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
@@ -152,11 +152,11 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        Err(Error::UnsupportedType(Some("unit")))
+        Err(Error::unsupported_type(Some("unit")))
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Err(Error::UnsupportedType(Some(name)))
+        Err(Error::unsupported_type(Some(name)))
     }
 
     fn serialize_unit_variant(
