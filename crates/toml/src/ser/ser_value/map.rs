@@ -1,28 +1,25 @@
-use super::write_document;
-use super::{Error, Serializer};
-use crate::fmt::DocumentFormatter;
+use super::write_value;
+use super::{Error, ValueSerializer};
 
-type InnerSerializeDocumentTable =
+type InnerSerializeValueTable =
     <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
 
 #[doc(hidden)]
-pub struct SerializeDocumentTable<'d> {
-    inner: InnerSerializeDocumentTable,
+pub struct SerializeValueTable<'d> {
+    inner: InnerSerializeValueTable,
     dst: &'d mut String,
-    settings: DocumentFormatter,
 }
 
-impl<'d> SerializeDocumentTable<'d> {
-    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentTable) -> Self {
+impl<'d> SerializeValueTable<'d> {
+    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueTable) -> Self {
         Self {
             inner,
             dst: ser.dst,
-            settings: ser.settings,
         }
     }
 }
 
-impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
+impl serde::ser::SerializeMap for SerializeValueTable<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -41,11 +38,11 @@ impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_value(self.dst, self.inner.end())
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
+impl serde::ser::SerializeStruct for SerializeValueTable<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -57,6 +54,6 @@ impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_value(self.dst, self.inner.end())
     }
 }

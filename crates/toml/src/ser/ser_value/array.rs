@@ -1,28 +1,24 @@
-use super::write_document;
-use super::{Error, Serializer};
-use crate::fmt::DocumentFormatter;
+use super::write_value;
+use super::{Error, ValueSerializer};
 
-type InnerSerializeDocumentSeq =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
+type InnerSerializeValueSeq = <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
 
 #[doc(hidden)]
-pub struct SerializeDocumentArray<'d> {
-    inner: InnerSerializeDocumentSeq,
+pub struct SerializeValueArray<'d> {
+    inner: InnerSerializeValueSeq,
     dst: &'d mut String,
-    settings: DocumentFormatter,
 }
 
-impl<'d> SerializeDocumentArray<'d> {
-    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentSeq) -> Self {
+impl<'d> SerializeValueArray<'d> {
+    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueSeq) -> Self {
         Self {
             inner,
             dst: ser.dst,
-            settings: ser.settings,
         }
     }
 }
 
-impl serde::ser::SerializeSeq for SerializeDocumentArray<'_> {
+impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -34,11 +30,11 @@ impl serde::ser::SerializeSeq for SerializeDocumentArray<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_value(self.dst, self.inner.end())
     }
 }
 
-impl serde::ser::SerializeTuple for SerializeDocumentArray<'_> {
+impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -50,11 +46,11 @@ impl serde::ser::SerializeTuple for SerializeDocumentArray<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_value(self.dst, self.inner.end())
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeDocumentArray<'_> {
+impl serde::ser::SerializeTupleVariant for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -66,11 +62,11 @@ impl serde::ser::SerializeTupleVariant for SerializeDocumentArray<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_value(self.dst, self.inner.end())
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeDocumentArray<'_> {
+impl serde::ser::SerializeTupleStruct for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -82,6 +78,6 @@ impl serde::ser::SerializeTupleStruct for SerializeDocumentArray<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_value(self.dst, self.inner.end())
     }
 }
