@@ -388,7 +388,6 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
     }
 }
 
-#[derive(Default)]
 struct MapValueSerializer {
     is_none: bool,
 }
