@@ -149,7 +149,6 @@ impl std::error::Error for Error {}
 /// which is passed in when creating the serializer itself.
 ///
 /// To serialize TOML values, instead of documents, see [`ValueSerializer`].
-#[non_exhaustive]
 #[cfg(feature = "display")]
 pub struct Serializer<'d> {
     dst: &'d mut String,
@@ -490,7 +489,6 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 /// ).unwrap();
 /// println!("{}", value)
 /// ```
-#[non_exhaustive]
 #[cfg(feature = "display")]
 pub struct ValueSerializer<'d> {
     dst: &'d mut String,
