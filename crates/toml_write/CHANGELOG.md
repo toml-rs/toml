@@ -8,4 +8,4 @@ The format is based on [Keep a Changelog].
 ## [Unreleased] - ReleaseDate
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.20...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/d00d2856...HEAD
