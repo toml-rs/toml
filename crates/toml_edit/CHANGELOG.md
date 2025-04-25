@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.25] - 2025-04-25
+
 ### Fixes
 
 - Reduced escaping in strings without a prior formatting
@@ -782,7 +784,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.24...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.25...HEAD
+[0.22.25]: https://github.com/toml-rs/toml/compare/v0.22.24...v0.22.25
 [0.22.24]: https://github.com/toml-rs/toml/compare/v0.22.23...v0.22.24
 [0.22.23]: https://github.com/toml-rs/toml/compare/v0.22.22...v0.22.23
 [0.22.22]: https://github.com/toml-rs/toml/compare/v0.22.21...v0.22.22
