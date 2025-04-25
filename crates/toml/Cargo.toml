@@ -31,7 +31,7 @@ pre-release-replacements = [
 default = ["std", "parse", "display"]
 std = ["indexmap?/std"]
 parse = ["dep:toml_parse", "dep:winnow"]
-display = ["std", "dep:toml_edit", "toml_edit?/display"]
+display = ["std", "dep:toml_edit", "toml_edit?/display", "dep:toml_write"]
 unsafe = ["toml_parse?/unsafe"]
 fast_hash = ["preserve_order", "dep:foldhash"]
 debug = ["std", "toml_parse?/debug", "dep:anstream", "dep:anstyle"]
@@ -57,6 +57,7 @@ anstream = { version = "0.6.15", optional = true }
 anstyle = { version = "1.0.8", optional = true }
 toml_edit = { version = "0.22.27", path = "../toml_edit", default-features = false, features = ["serde"], optional = true }
 toml_datetime = { version = "0.6.11", path = "../toml_datetime", default-features = false, features = ["serde", "alloc"] }
+toml_write = { version = "0.1.0", path = "../toml_write", optional = true }
 serde_spanned = { version = "0.6.9", path = "../serde_spanned", default-features = false, features = ["serde", "alloc"] }
 foldhash = { version = "0.1.5", default-features = false, optional = true }
 

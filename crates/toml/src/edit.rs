@@ -11,6 +11,7 @@ pub(crate) mod ser {
     #[non_exhaustive]
     pub(crate) enum Error {
         UnsupportedType(Option<&'static str>),
+        OutOfRange(Option<&'static str>),
         UnsupportedNone,
         KeyNotString,
         Custom(String),
@@ -39,6 +40,8 @@ pub(crate) mod ser {
             match self {
                 Self::UnsupportedType(Some(t)) => write!(formatter, "unsupported {t} type"),
                 Self::UnsupportedType(None) => write!(formatter, "unsupported rust type"),
+                Self::OutOfRange(Some(t)) => write!(formatter, "out-of-range value for {t} type"),
+                Self::OutOfRange(None) => write!(formatter, "out-of-range value"),
                 Self::UnsupportedNone => "unsupported None value".fmt(formatter),
                 Self::KeyNotString => "map key was not a string".fmt(formatter),
                 Self::Custom(s) => s.fmt(formatter),

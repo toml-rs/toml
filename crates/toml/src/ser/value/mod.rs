@@ -1,7 +1,14 @@
 mod array;
+mod key;
 mod map;
 
+use toml_write::TomlWrite as _;
+
 use super::Error;
+#[allow(clippy::wildcard_imports)]
+use array::*;
+#[allow(clippy::wildcard_imports)]
+use map::*;
 
 /// Serialization for TOML [values][crate::Value].
 ///
@@ -64,196 +71,169 @@ impl<'d> ValueSerializer<'d> {
 impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
     type Ok = &'d mut String;
     type Error = Error;
-    type SerializeSeq = array::SerializeValueArray<'d>;
-    type SerializeTuple = array::SerializeValueArray<'d>;
-    type SerializeTupleStruct = array::SerializeValueArray<'d>;
-    type SerializeTupleVariant = array::SerializeValueTupleVariant<'d>;
-    type SerializeMap = map::SerializeMap<'d>;
-    type SerializeStruct = map::SerializeMap<'d>;
-    type SerializeStructVariant = map::SerializeValueStructVariant<'d>;
+    type SerializeSeq = SerializeValueArray<'d>;
+    type SerializeTuple = SerializeValueArray<'d>;
+    type SerializeTupleStruct = SerializeValueArray<'d>;
+    type SerializeTupleVariant = SerializeTupleVariant<'d>;
+    type SerializeMap = SerializeMap<'d>;
+    type SerializeStruct = SerializeMap<'d>;
+    type SerializeStructVariant = SerializeStructVariant<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_bool(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_i8(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_i16(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_i32(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_i64(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_u8(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_u16(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_u32(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_u64(v),
-        )
+        let v: i64 = v
+            .try_into()
+            .map_err(|_err| Error::out_of_range(Some("u64")))?;
+        self.serialize_i64(v)
     }
 
-    fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_f32(v),
-        )
+    fn serialize_f32(self, mut v: f32) -> Result<Self::Ok, Self::Error> {
+        // Discard sign of NaN when serialized using Serde.
+        //
+        // In all likelihood the sign of NaNs is not meaningful in the user's
+        // program. Ending up with `-nan` in the TOML document would usually be
+        // surprising and undesirable, when the sign of the NaN was not
+        // intentionally controlled by the caller, or may even be
+        // nondeterministic if it comes from arithmetic operations or a cast.
+        if v.is_nan() {
+            v = v.copysign(1.0);
+        }
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
-    fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_f64(v),
-        )
+    fn serialize_f64(self, mut v: f64) -> Result<Self::Ok, Self::Error> {
+        // Discard sign of NaN when serialized using Serde.
+        //
+        // In all likelihood the sign of NaNs is not meaningful in the user's
+        // program. Ending up with `-nan` in the TOML document would usually be
+        // surprising and undesirable, when the sign of the NaN was not
+        // intentionally controlled by the caller, or may even be
+        // nondeterministic if it comes from arithmetic operations or a cast.
+        if v.is_nan() {
+            v = v.copysign(1.0);
+        }
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_char(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_str(v),
-        )
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
-    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_bytes(v),
-        )
+    fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
+        use serde::ser::Serialize;
+        value.serialize(self)
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_none(),
-        )
+        Err(Error::unsupported_none())
     }
 
-    fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
+    fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_some(v),
-        )
+        value.serialize(self)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_unit(),
-        )
+        Err(Error::unsupported_type(Some("unit")))
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_unit_struct(name),
-        )
+        Err(Error::unsupported_type(Some(name)))
     }
 
     fn serialize_unit_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_unit_variant(
-                name,
-                variant_index,
-                variant,
-            ),
-        )
+        self.serialize_str(variant)
     }
 
-    fn serialize_newtype_struct<T>(self, name: &'static str, v: &T) -> Result<Self::Ok, Self::Error>
+    fn serialize_newtype_struct<T>(
+        self,
+        _name: &'static str,
+        value: &T,
+    ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_newtype_struct(name, v),
-        )
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T>(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        write_value(
-            self.dst,
-            toml_edit::ser::ValueSerializer::new().serialize_newtype_variant(
-                name,
-                variant_index,
-                variant,
-                value,
-            ),
-        )
+        self.dst.open_inline_table()?;
+        self.dst.space()?;
+        self.dst.key(variant)?;
+        self.dst.space()?;
+        self.dst.keyval_sep()?;
+        self.dst.space()?;
+        value.serialize(ValueSerializer::new(self.dst))?;
+        self.dst.space()?;
+        self.dst.close_inline_table()?;
+        Ok(self.dst)
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_seq(len)
-            .map_err(Error::wrap)?;
-        let ser = array::SerializeValueArray::seq(self, ser);
-        Ok(ser)
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        SerializeValueArray::seq(self.dst)
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
@@ -270,62 +250,33 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 
     fn serialize_tuple_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_tuple_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        let ser = array::SerializeValueTupleVariant::tuple(self, ser);
-        Ok(ser)
+        SerializeTupleVariant::tuple(self.dst, variant, len)
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_map(len)
-            .map_err(Error::wrap)?;
-        let ser = map::SerializeMap::map(self, ser);
-        Ok(ser)
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+        SerializeMap::map(self.dst)
     }
 
     fn serialize_struct(
         self,
         name: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_struct(name, len)
-            .map_err(Error::wrap)?;
-        let ser = map::SerializeMap::map(self, ser);
-        Ok(ser)
+        SerializeMap::struct_(name, self.dst)
     }
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_struct_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        let ser = map::SerializeValueStructVariant::struct_(self, ser);
-        Ok(ser)
+        SerializeStructVariant::struct_(self.dst, variant, len)
     }
-}
-
-pub(crate) fn write_value(
-    dst: &mut String,
-    value: Result<toml_edit::Value, crate::edit::ser::Error>,
-) -> Result<&mut String, Error> {
-    use core::fmt::Write;
-
-    let value = value.map_err(Error::wrap)?;
-
-    write!(dst, "{value}").unwrap();
-
-    Ok(dst)
 }

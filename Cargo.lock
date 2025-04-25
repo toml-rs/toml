@@ -943,6 +943,7 @@ dependencies = [
  "toml_datetime",
  "toml_edit",
  "toml_parse",
+ "toml_write",
  "walkdir",
  "winnow",
 ]

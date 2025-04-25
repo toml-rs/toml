@@ -24,6 +24,12 @@ impl Error {
         }
     }
 
+    pub(crate) fn out_of_range(t: Option<&'static str>) -> Self {
+        Self {
+            inner: crate::edit::ser::Error::OutOfRange(t),
+        }
+    }
+
     pub(crate) fn unsupported_none() -> Self {
         Self {
             inner: crate::edit::ser::Error::UnsupportedNone,
@@ -34,6 +40,19 @@ impl Error {
         Self {
             inner: crate::edit::ser::Error::KeyNotString,
         }
+    }
+
+    #[cfg(feature = "display")]
+    pub(crate) fn date_invalid() -> Self {
+        Self {
+            inner: crate::edit::ser::Error::DateInvalid,
+        }
+    }
+}
+
+impl From<core::fmt::Error> for Error {
+    fn from(_: core::fmt::Error) -> Self {
+        Self::new("an error occurred when writing a value")
     }
 }
 
