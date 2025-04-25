@@ -39,6 +39,22 @@ pub trait TomlWrite: core::fmt::Write {
         value.write_toml_key(self)
     }
 
+    /// <div class="warning">
+    ///
+    /// For floats, this preserves the sign bit for [`f32::NAN`] / [`f64::NAN`] for the sake of
+    /// format-preserving editing.
+    /// However, in most cases the sign bit is indeterminate and outputting signed NANs can be a
+    /// cause of non-repeatable behavior.
+    ///
+    /// For general serialization, you should discard the sign bit.  For example:
+    /// ```
+    /// # let mut v = f64::NAN;
+    /// if v.is_nan() {
+    ///     v = v.copysign(1.0);
+    /// }
+    /// ```
+    ///
+    /// </div>
     fn value(&mut self, value: impl crate::WriteTomlValue) -> core::fmt::Result {
         value.write_toml_value(self)
     }
