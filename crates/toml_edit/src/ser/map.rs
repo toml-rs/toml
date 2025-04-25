@@ -578,7 +578,7 @@ pub struct SerializeVariant<T> {
     inner: T,
 }
 
-impl SerializeVariant<SerializeValueArray> {
+impl SerializeTupleVariant {
     pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
         Self {
             variant,
@@ -587,7 +587,7 @@ impl SerializeVariant<SerializeValueArray> {
     }
 }
 
-impl SerializeVariant<SerializeMap> {
+impl SerializeStructVariant {
     pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
         Self {
             variant,
