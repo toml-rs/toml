@@ -32,7 +32,7 @@ pre-release-replacements = [
 [features]
 default = ["parse", "display"]
 parse = ["dep:toml_edit", "toml_edit?/parse"]
-display = ["dep:toml_edit", "toml_edit?/display"]
+display = ["dep:toml_edit", "toml_edit?/display", "dep:toml_write"]
 
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
 # without any consideration for overflowing the stack. Additionally you will
@@ -51,6 +51,7 @@ serde = "1.0.145"
 indexmap = { version = "2.0.0", optional = true }
 toml_edit = { version = "0.22.26", path = "../toml_edit", default-features = false, features = ["serde"], optional = true }
 toml_datetime = { version = "0.6.9", path = "../toml_datetime", features = ["serde"] }
+toml_write = { version = "0.1.0", path = "../toml_write", optional = true }
 serde_spanned = { version = "0.6.8", path = "../serde_spanned", features = ["serde"] }
 
 [dev-dependencies]
