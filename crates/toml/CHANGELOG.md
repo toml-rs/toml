@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `unbounded` feature to bypass recursion depth checks
+
+### Fixes
+
+- Reduced escaping in strings without a prior formatting
+
+### Compatibility
+
+- Serializing a `Table` no longer has a specific sub-table order
+- Strings have changed formats
+  - A trailing single quote no longer prevents "pretty" strings
+  - Double quotes in ml-basic-strings are only escaped if there are 3 or more
+  - Presence of 1-2 double quotes and newlines no longer forces the use of ml-literal instead ml-basic-string
+
 ## [0.8.20] - 2025-02-05
 
 ### Features

@@ -7,5 +7,7 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+Initial release
+
 <!-- next-url -->
 [Unreleased]: https://github.com/toml-rs/toml/compare/d00d2856...HEAD

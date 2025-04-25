@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Reduced escaping in strings without a prior formatting
+
+### Compatibility
+
+- Strings without prior formatting have changed formats
+  - A trailing single quote no longer prevents "pretty" strings
+  - Double quotes in ml-basic-strings are only escaped if there are 3 or more
+  - Presence of 1-2 double quotes and newlines no longer forces the use of ml-literal instead ml-basic-string
+
 ## [0.22.24] - 2025-02-10
 
 ### Features
