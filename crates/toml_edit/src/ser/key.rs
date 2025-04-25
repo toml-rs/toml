@@ -99,7 +99,11 @@ impl serde::ser::Serializer for KeySerializer {
         Ok(variant.into())
     }
 
-    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<Self::Ok, Self::Error>
+    fn serialize_newtype_struct<T>(
+        self,
+        _name: &'static str,
+        value: &T,
+    ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {

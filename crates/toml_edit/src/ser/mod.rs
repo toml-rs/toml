@@ -8,11 +8,7 @@ mod map;
 mod pretty;
 mod value;
 
-pub(crate) use array::*;
-pub(crate) use key::*;
-pub(crate) use map::*;
-
-use crate::visit_mut::VisitMut;
+use crate::visit_mut::VisitMut as _;
 
 pub use value::ValueSerializer;
 
