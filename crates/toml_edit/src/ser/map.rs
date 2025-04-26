@@ -571,12 +571,10 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
     }
 }
 
-pub struct SerializeVariant<T> {
+pub struct SerializeStructVariant {
     variant: &'static str,
-    inner: T,
+    inner: SerializeMap,
 }
-
-pub(crate) type SerializeStructVariant = SerializeVariant<SerializeMap>;
 
 impl SerializeStructVariant {
     pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {

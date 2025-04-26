@@ -83,12 +83,10 @@ impl serde::ser::SerializeTupleStruct for SerializeValueArray {
     }
 }
 
-pub struct SerializeVariant<T> {
+pub struct SerializeTupleVariant {
     variant: &'static str,
-    inner: T,
+    inner: SerializeValueArray,
 }
-
-pub(crate) type SerializeTupleVariant = SerializeVariant<SerializeValueArray>;
 
 impl SerializeTupleVariant {
     pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
