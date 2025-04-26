@@ -596,7 +596,7 @@ impl SerializeStructVariant {
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeVariant<SerializeValueArray> {
+impl serde::ser::SerializeTupleVariant for SerializeTupleVariant {
     type Ok = crate::Value;
     type Error = Error;
 
@@ -618,7 +618,7 @@ impl serde::ser::SerializeTupleVariant for SerializeVariant<SerializeValueArray>
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeVariant<SerializeMap> {
+impl serde::ser::SerializeStructVariant for SerializeStructVariant {
     type Ok = crate::Value;
     type Error = Error;
 
