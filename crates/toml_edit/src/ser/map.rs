@@ -573,14 +573,14 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
 
 pub struct SerializeStructVariant {
     variant: &'static str,
-    inner: SerializeMap,
+    inner: SerializeInlineTable,
 }
 
 impl SerializeStructVariant {
     pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
         Self {
             variant,
-            inner: SerializeMap::table_with_capacity(len),
+            inner: SerializeInlineTable::with_capacity(len),
         }
     }
 }
@@ -599,7 +599,7 @@ impl serde::ser::SerializeStructVariant for SerializeStructVariant {
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let inner = serde::ser::SerializeStruct::end(self.inner)?;
+        let inner = serde::ser::SerializeStruct::end(self.inner)?.into();
         let mut items = crate::table::KeyValuePairs::new();
         let value = crate::Item::Value(inner);
         items.insert(crate::Key::new(self.variant), value);
