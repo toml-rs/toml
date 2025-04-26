@@ -570,28 +570,18 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
     }
 }
 
-pub(crate) type SerializeTupleVariant = SerializeVariant<SerializeValueArray>;
-pub(crate) type SerializeStructVariant = SerializeVariant<SerializeMap>;
-
 pub struct SerializeVariant<T> {
     variant: &'static str,
     inner: T,
 }
+
+pub(crate) type SerializeTupleVariant = SerializeVariant<SerializeValueArray>;
 
 impl SerializeTupleVariant {
     pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
         Self {
             variant,
             inner: SerializeValueArray::with_capacity(len),
-        }
-    }
-}
-
-impl SerializeStructVariant {
-    pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
-        Self {
-            variant,
-            inner: SerializeMap::table_with_capacity(len),
         }
     }
 }
@@ -615,6 +605,17 @@ impl serde::ser::SerializeTupleVariant for SerializeTupleVariant {
         Ok(crate::Value::InlineTable(crate::InlineTable::with_pairs(
             items,
         )))
+    }
+}
+
+pub(crate) type SerializeStructVariant = SerializeVariant<SerializeMap>;
+
+impl SerializeStructVariant {
+    pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
+        Self {
+            variant,
+            inner: SerializeMap::table_with_capacity(len),
+        }
     }
 }
 
