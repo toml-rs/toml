@@ -2,7 +2,7 @@
 //!
 //! This crate allows you to parse and modify toml
 //! documents, while preserving comments, spaces *and
-//! relative order* or items.
+//! relative order* of items.
 //!
 //! If you also need the ease of a more traditional API, see the [`toml`] crate.
 //!
