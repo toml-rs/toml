@@ -156,42 +156,6 @@ fn array() {
 }
 
 #[test]
-fn inner_structs_with_options() {
-    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-    struct Foo {
-        a: Option<Box<Foo>>,
-        b: Bar,
-    }
-    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-    struct Bar {
-        a: String,
-        b: f64,
-    }
-
-    equivalent! {
-        Foo {
-            a: Some(Box::new(Foo {
-                a: None,
-                b: Bar { a: "foo".to_owned(), b: 4.5 },
-            })),
-            b: Bar { a: "bar".to_owned(), b: 1.0 },
-        },
-        map! {
-            a: map! {
-                b: map! {
-                    a: crate::SerdeValue::String("foo".to_owned()),
-                    b: crate::SerdeValue::Float(4.5)
-                }
-            },
-            b: map! {
-                a: crate::SerdeValue::String("bar".to_owned()),
-                b: crate::SerdeValue::Float(1.0)
-            }
-        },
-    }
-}
-
-#[test]
 fn hashmap() {
     use std::collections::HashSet;
 
@@ -639,26 +603,6 @@ fn empty_arrays() {
 }
 
 #[test]
-fn empty_arrays2() {
-    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-    struct Foo {
-        a: Option<Vec<Bar>>,
-    }
-    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-    struct Bar;
-
-    equivalent! {
-        Foo { a: None },
-        map! {},
-    }
-
-    equivalent! {
-        Foo { a: Some(vec![]) },
-        map! { a: crate::SerdeValue::Array(vec![]) },
-    }
-}
-
-#[test]
 fn extra_keys() {
     #[derive(Serialize, Deserialize)]
     struct Foo {
@@ -754,41 +698,6 @@ fn newtype_key() {
             y: crate::SerdeValue::Integer(2)
         },
     }
-}
-
-#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
-struct CanBeEmpty {
-    a: Option<String>,
-    b: Option<String>,
-}
-
-#[test]
-fn table_structs_empty() {
-    let input = "[bar]\n\n[baz]\n\n[bazv]\na = \"foo\"\n\n[foo]\n";
-    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
-    let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
-    expected.insert("bar".to_owned(), CanBeEmpty::default());
-    expected.insert("baz".to_owned(), CanBeEmpty::default());
-    expected.insert(
-        "bazv".to_owned(),
-        CanBeEmpty {
-            a: Some("foo".to_owned()),
-            b: None,
-        },
-    );
-    expected.insert("foo".to_owned(), CanBeEmpty::default());
-    assert_eq!(value, expected);
-    assert_data_eq!(
-        crate::to_string(&value).unwrap(),
-        str![[r#"
-bar = {}
-baz = {}
-bazv = { a = "foo" }
-foo = {}
-
-"#]]
-        .raw()
-    );
 }
 
 #[test]
@@ -1453,6 +1362,155 @@ values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 
 values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
 
 "#]].raw());
+}
+
+#[test]
+fn serialize_struct_with_none_string() {
+    #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+    struct CanBeEmpty {
+        a: Option<String>,
+        b: Option<String>,
+    }
+
+    let input = "[bar]
+
+[baz]
+
+[bazv]
+a = \"foo\"
+
+[foo]";
+    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
+
+    let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
+    expected.insert("bar".to_owned(), CanBeEmpty::default());
+    expected.insert("baz".to_owned(), CanBeEmpty::default());
+    expected.insert(
+        "bazv".to_owned(),
+        CanBeEmpty {
+            a: Some("foo".to_owned()),
+            b: None,
+        },
+    );
+    expected.insert("foo".to_owned(), CanBeEmpty::default());
+
+    assert_eq!(value, expected);
+    assert_data_eq!(
+        crate::to_string(&value).unwrap(),
+        str![[r#"
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn serialize_struct_with_none_vec() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a: Option<Vec<Bar>>,
+    }
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Bar;
+
+    equivalent! {
+        Foo { a: None },
+        map! {},
+    }
+
+    equivalent! {
+        Foo { a: Some(vec![]) },
+        map! { a: crate::SerdeValue::Array(vec![]) },
+    }
+}
+
+#[test]
+fn serialize_struct_with_none_struct() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a: Option<Box<Foo>>,
+        b: Bar,
+    }
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Bar {
+        a: String,
+        b: f64,
+    }
+
+    equivalent! {
+        Foo {
+            a: Some(Box::new(Foo {
+                a: None,
+                b: Bar { a: "foo".to_owned(), b: 4.5 },
+            })),
+            b: Bar { a: "bar".to_owned(), b: 1.0 },
+        },
+        map! {
+            a: map! {
+                b: map! {
+                    a: crate::SerdeValue::String("foo".to_owned()),
+                    b: crate::SerdeValue::Float(4.5)
+                }
+            },
+            b: map! {
+                a: crate::SerdeValue::String("bar".to_owned()),
+                b: crate::SerdeValue::Float(1.0)
+            }
+        },
+    }
+}
+
+#[test]
+fn serialize_struct_with_newtype_with_none() {
+    #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+    struct CanBeEmpty {
+        #[serde(default)]
+        a: NewType,
+        #[serde(default)]
+        b: NewType,
+    }
+
+    #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+    struct NewType(Option<String>);
+
+    let input = "[bar]
+
+[baz]
+
+[bazv]
+a = \"foo\"
+
+[foo]";
+    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
+
+    let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
+    expected.insert("bar".to_owned(), CanBeEmpty::default());
+    expected.insert("baz".to_owned(), CanBeEmpty::default());
+    expected.insert(
+        "bazv".to_owned(),
+        CanBeEmpty {
+            a: NewType(Some("foo".to_owned())),
+            b: NewType(None),
+        },
+    );
+    expected.insert("foo".to_owned(), CanBeEmpty::default());
+
+    assert_eq!(value, expected);
+    assert_data_eq!(
+        crate::to_string(&value).unwrap(),
+        str![[r#"
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
+
+"#]]
+        .raw()
+    );
 }
 
 #[test]

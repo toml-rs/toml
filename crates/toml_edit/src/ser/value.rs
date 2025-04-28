@@ -64,7 +64,7 @@ impl serde::ser::Serializer for ValueSerializer {
     type SerializeSeq = super::array::SerializeValueArray;
     type SerializeTuple = super::array::SerializeValueArray;
     type SerializeTupleStruct = super::array::SerializeValueArray;
-    type SerializeTupleVariant = super::map::SerializeTupleVariant;
+    type SerializeTupleVariant = super::array::SerializeTupleVariant;
     type SerializeMap = super::map::SerializeMap;
     type SerializeStruct = super::map::SerializeMap;
     type SerializeStructVariant = super::map::SerializeStructVariant;
@@ -222,7 +222,7 @@ impl serde::ser::Serializer for ValueSerializer {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        Ok(super::map::SerializeTupleVariant::tuple(variant, len))
+        Ok(super::array::SerializeTupleVariant::tuple(variant, len))
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {

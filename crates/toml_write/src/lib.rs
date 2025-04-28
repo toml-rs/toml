@@ -1,5 +1,25 @@
 //! A low-level interface for writing out TOML
 //!
+//! Considerations when serializing arbitrary data:
+//! - Verify the implementation with [`toml-test-harness`](https://docs.rs/toml-test-harness)
+//! - Be sure to group keys under a table before writing another table
+//! - Watch for extra trailing newlines and leading newlines, both when starting with top-level
+//!   keys or a table
+//! - When serializing an array-of-tables, be sure to verify that all elements of the array
+//!   serialize as tables
+//! - Standard tables and inline tables may need separate implementations of corner cases,
+//!   requiring verifying them both
+//!
+//! When serializing Rust data structures
+//! - `Option`: Skip key-value pairs with a value of `None`, otherwise error when seeing `None`
+//!   - When skipping key-value pairs, be careful that a deeply nested `None` doesn't get skipped
+//! - Scalars and arrays are unsupported as top-level data types
+//! - Tuples and tuple variants seriallize as arrays
+//! - Structs, struct variants, and maps serialize as tables
+//! - Newtype variants serialize as to the inner type
+//! - Unit variants serialize to a string
+//! - Unit and unit structs don't have a clear meaning in TOML
+//!
 //! # Example
 //!
 //! ```rust
