@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(serde)* Skip key-value pairs where the value is a newtype wrapping `None`
+
 ## [0.22.25] - 2025-04-25
 
 ### Fixes
