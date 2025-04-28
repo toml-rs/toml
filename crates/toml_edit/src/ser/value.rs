@@ -234,11 +234,7 @@ impl serde::ser::Serializer for ValueSerializer {
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        if name == toml_datetime::__unstable::NAME {
-            Ok(SerializeMap::datetime())
-        } else {
-            self.serialize_map(Some(len))
-        }
+        Ok(SerializeMap::struct_(name, Some(len)))
     }
 
     fn serialize_struct_variant(

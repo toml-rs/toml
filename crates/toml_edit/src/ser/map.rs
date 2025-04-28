@@ -16,8 +16,12 @@ impl SerializeMap {
         Self::Table(SerializeInlineTable::map(len))
     }
 
-    pub(crate) fn datetime() -> Self {
-        Self::Datetime(SerializeDatetime::new())
+    pub(crate) fn struct_(name: &'static str, len: Option<usize>) -> Self {
+        if name == toml_datetime::__unstable::NAME {
+            Self::Datetime(SerializeDatetime::new())
+        } else {
+            Self::map(len)
+        }
     }
 }
 
