@@ -1465,6 +1465,48 @@ fn serialize_struct_with_none_struct() {
 }
 
 #[test]
+fn serialize_struct_with_newtype_with_none() {
+    #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+    struct CanBeEmpty {
+        #[serde(default)]
+        a: NewType,
+        #[serde(default)]
+        b: NewType,
+    }
+
+    #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+    struct NewType(Option<String>);
+
+    let input = "[bar]
+
+[baz]
+
+[bazv]
+a = \"foo\"
+
+[foo]";
+    let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
+
+    let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
+    expected.insert("bar".to_owned(), CanBeEmpty::default());
+    expected.insert("baz".to_owned(), CanBeEmpty::default());
+    expected.insert(
+        "bazv".to_owned(),
+        CanBeEmpty {
+            a: NewType(Some("foo".to_owned())),
+            b: NewType(None),
+        },
+    );
+    expected.insert("foo".to_owned(), CanBeEmpty::default());
+
+    assert_eq!(value, expected);
+    assert_data_eq!(
+        crate::to_string(&value).unwrap_err().to_string(),
+        str!["unsupported None value"].raw()
+    );
+}
+
+#[test]
 fn span_for_sequence_as_map() {
     #[allow(dead_code)]
     #[derive(Deserialize)]
