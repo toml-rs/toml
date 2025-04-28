@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.22] - 2025-04-28
+
 ### Fixes
 
 - *(serde)* Skip key-value pairs where the value is a newtype wrapping `None`
@@ -311,7 +313,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.21...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.22...HEAD
+[0.8.22]: https://github.com/toml-rs/toml/compare/toml-v0.8.21...toml-v0.8.22
 [0.8.21]: https://github.com/toml-rs/toml/compare/toml-v0.8.20...toml-v0.8.21
 [0.8.20]: https://github.com/toml-rs/toml/compare/toml-v0.8.19...toml-v0.8.20
 [0.8.19]: https://github.com/toml-rs/toml/compare/toml-v0.8.18...toml-v0.8.19

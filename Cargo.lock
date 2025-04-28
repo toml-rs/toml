@@ -759,7 +759,7 @@ dependencies = [
  "serde",
  "serde-untagged",
  "serde_derive",
- "toml 0.8.21",
+ "toml 0.8.22",
 ]
 
 [[package]]
@@ -878,7 +878,7 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.21"
+version = "0.8.22"
 dependencies = [
  "indexmap",
  "serde",
@@ -935,7 +935,7 @@ dependencies = [
  "serde",
  "serde_json",
  "toml 0.5.11",
- "toml 0.8.21",
+ "toml 0.8.22",
  "toml_edit",
 ]
 
@@ -948,7 +948,7 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.22.25"
+version = "0.22.26"
 dependencies = [
  "indexmap",
  "kstring",
@@ -957,7 +957,7 @@ dependencies = [
  "serde_json",
  "serde_spanned",
  "snapbox",
- "toml 0.8.21",
+ "toml 0.8.22",
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
@@ -976,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "toml_write"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proptest",
  "snapbox",

@@ -1,6 +1,6 @@
 [package]
 name = "toml_edit"
-version = "0.22.25"
+version = "0.22.26"
 keywords = ["encoding", "toml"]
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "Yet another format-preserving TOML parser."
@@ -46,7 +46,7 @@ serde = { version = "1.0.145", optional = true }
 kstring = { version = "2.0.0", features = ["max_inline"], optional = true }
 toml_datetime = { version = "0.6.9", path = "../toml_datetime" }
 serde_spanned = { version = "0.6.8", path = "../serde_spanned", features = ["serde"], optional = true }
-toml_write = { version = "0.1.0", path = "../toml_write", optional = true }
+toml_write = { version = "0.1.1", path = "../toml_write", optional = true }
 
 [dev-dependencies]
 serde = { version = "1.0.199", features = ["derive"] }

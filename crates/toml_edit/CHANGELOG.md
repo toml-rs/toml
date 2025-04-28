@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.26] - 2025-04-28
+
 ### Fixes
 
 - *(serde)* Skip key-value pairs where the value is a newtype wrapping `None`
@@ -788,7 +790,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.25...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.26...HEAD
+[0.22.26]: https://github.com/toml-rs/toml/compare/v0.22.25...v0.22.26
 [0.22.25]: https://github.com/toml-rs/toml/compare/v0.22.24...v0.22.25
 [0.22.24]: https://github.com/toml-rs/toml/compare/v0.22.23...v0.22.24
 [0.22.23]: https://github.com/toml-rs/toml/compare/v0.22.22...v0.22.23
