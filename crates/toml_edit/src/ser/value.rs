@@ -200,11 +200,7 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        let serializer = match len {
-            Some(len) => SerializeValueArray::with_capacity(len),
-            None => SerializeValueArray::new(),
-        };
-        Ok(serializer)
+        Ok(SerializeValueArray::seq(len))
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
@@ -230,11 +226,7 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        let serializer = match len {
-            Some(len) => SerializeMap::table_with_capacity(len),
-            None => SerializeMap::table(),
-        };
-        Ok(serializer)
+        Ok(SerializeMap::map(len))
     }
 
     fn serialize_struct(

@@ -12,12 +12,8 @@ pub enum SerializeMap {
 }
 
 impl SerializeMap {
-    pub(crate) fn table() -> Self {
-        Self::Table(SerializeInlineTable::new())
-    }
-
-    pub(crate) fn table_with_capacity(len: usize) -> Self {
-        Self::Table(SerializeInlineTable::with_capacity(len))
+    pub(crate) fn map(len: Option<usize>) -> Self {
+        Self::Table(SerializeInlineTable::map(len))
     }
 
     pub(crate) fn datetime() -> Self {
@@ -140,17 +136,13 @@ pub struct SerializeInlineTable {
 }
 
 impl SerializeInlineTable {
-    pub(crate) fn new() -> Self {
-        Self {
-            items: Default::default(),
-            key: Default::default(),
+    pub(crate) fn map(len: Option<usize>) -> Self {
+        let mut items: crate::table::KeyValuePairs = Default::default();
+        let key = Default::default();
+        if let Some(len) = len {
+            items.reserve(len);
         }
-    }
-
-    pub(crate) fn with_capacity(len: usize) -> Self {
-        let mut s = Self::new();
-        s.items.reserve(len);
-        s
+        Self { items, key }
     }
 }
 
@@ -582,7 +574,7 @@ impl SerializeStructVariant {
     pub(crate) fn struct_(variant: &'static str, len: usize) -> Self {
         Self {
             variant,
-            inner: SerializeInlineTable::with_capacity(len),
+            inner: SerializeInlineTable::map(Some(len)),
         }
     }
 }

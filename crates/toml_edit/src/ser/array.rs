@@ -6,14 +6,12 @@ pub struct SerializeValueArray {
 }
 
 impl SerializeValueArray {
-    pub(crate) fn new() -> Self {
-        Self { values: Vec::new() }
-    }
-
-    pub(crate) fn with_capacity(len: usize) -> Self {
-        Self {
-            values: Vec::with_capacity(len),
+    pub(crate) fn seq(len: Option<usize>) -> Self {
+        let mut values = Vec::new();
+        if let Some(len) = len {
+            values.reserve(len);
         }
+        Self { values }
     }
 }
 
@@ -92,7 +90,7 @@ impl SerializeTupleVariant {
     pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
         Self {
             variant,
-            inner: SerializeValueArray::with_capacity(len),
+            inner: SerializeValueArray::seq(Some(len)),
         }
     }
 }
