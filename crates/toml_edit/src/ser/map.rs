@@ -502,13 +502,13 @@ impl serde::ser::Serializer for MapValueSerializer<'_> {
 
     fn serialize_newtype_struct<T>(
         self,
-        name: &'static str,
+        _name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        ValueSerializer::new().serialize_newtype_struct(name, value)
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T>(

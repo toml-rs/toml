@@ -1501,8 +1501,15 @@ a = \"foo\"
 
     assert_eq!(value, expected);
     assert_data_eq!(
-        crate::to_string(&value).unwrap_err().to_string(),
-        str!["unsupported None value"].raw()
+        crate::to_string(&value).unwrap(),
+        str![[r#"
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
+
+"#]]
+        .raw()
     );
 }
 
