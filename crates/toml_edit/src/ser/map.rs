@@ -170,8 +170,9 @@ impl serde::ser::SerializeMap for SerializeInlineTable {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        let mut value_serializer = MapValueSerializer::new();
-        let res = value.serialize(&mut value_serializer);
+        let mut is_none = false;
+        let value_serializer = MapValueSerializer::new(&mut is_none);
+        let res = value.serialize(value_serializer);
         match res {
             Ok(item) => {
                 let key = self.key.take().unwrap();
@@ -179,7 +180,7 @@ impl serde::ser::SerializeMap for SerializeInlineTable {
                 self.items.insert(key, item);
             }
             Err(e) => {
-                if !(e == Error::unsupported_none() && value_serializer.is_none) {
+                if !(e == Error::unsupported_none() && is_none) {
                     return Err(e);
                 }
             }
@@ -200,15 +201,16 @@ impl serde::ser::SerializeStruct for SerializeInlineTable {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        let mut value_serializer = MapValueSerializer::new();
-        let res = value.serialize(&mut value_serializer);
+        let mut is_none = false;
+        let value_serializer = MapValueSerializer::new(&mut is_none);
+        let res = value.serialize(value_serializer);
         match res {
             Ok(item) => {
                 let item = crate::Item::Value(item);
                 self.items.insert(crate::Key::new(key), item);
             }
             Err(e) => {
-                if !(e == Error::unsupported_none() && value_serializer.is_none) {
+                if !(e == Error::unsupported_none() && is_none) {
                     return Err(e);
                 }
             }
@@ -392,17 +394,17 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
     }
 }
 
-struct MapValueSerializer {
-    is_none: bool,
+struct MapValueSerializer<'d> {
+    is_none: &'d mut bool,
 }
 
-impl MapValueSerializer {
-    fn new() -> Self {
-        Self { is_none: false }
+impl<'d> MapValueSerializer<'d> {
+    fn new(is_none: &'d mut bool) -> Self {
+        Self { is_none }
     }
 }
 
-impl serde::ser::Serializer for &mut MapValueSerializer {
+impl serde::ser::Serializer for MapValueSerializer<'_> {
     type Ok = crate::Value;
     type Error = Error;
     type SerializeSeq = SerializeValueArray;
@@ -470,7 +472,7 @@ impl serde::ser::Serializer for &mut MapValueSerializer {
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        self.is_none = true;
+        *self.is_none = true;
         Err(Error::unsupported_none())
     }
 
