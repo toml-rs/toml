@@ -340,7 +340,7 @@ OuterStruct {
     }
 }
 
-mod enum_array {
+mod array_enum {
     use super::*;
 
     #[test]
