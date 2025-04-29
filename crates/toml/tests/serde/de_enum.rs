@@ -236,21 +236,29 @@ Val {
 
     #[test]
     fn from_std_table() {
-        assert_eq!(
-            TheEnum::NewType("value".to_owned()),
-            crate::from_str(r#"NewType = "value""#).unwrap()
-        );
-        assert_eq!(
-            Val {
-                val: TheEnum::NewType("value".to_owned()),
-            },
-            crate::from_str(
-                r#"[val]
+        let result = crate::from_str::<TheEnum>(r#"NewType = "value""#);
+        let expected = str![[r#"
+NewType(
+    "value",
+)
+
+"#]];
+        assert_data_eq!(result.unwrap().to_debug(), expected);
+
+        let result = crate::from_str::<Val>(
+            r#"[val]
                 NewType = "value"
-                "#
-            )
-            .unwrap()
+                "#,
         );
+        let expected = str![[r#"
+Val {
+    val: NewType(
+        "value",
+    ),
+}
+
+"#]];
+        assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }
 
