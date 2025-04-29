@@ -80,7 +80,7 @@ mod enum_unit {
     use super::*;
 
     #[test]
-    fn from_str() {
+    fn value_from_str() {
         let input = "\"Plain\"";
         let expected = str![[r#"
 Plain
@@ -88,7 +88,10 @@ Plain
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_str() {
         let input = "val = \"Plain\"";
         let expected = str![[r#"
 Val {
@@ -101,7 +104,7 @@ Val {
     }
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = "{ Plain = {} }";
         let expected = str![[r#"
 Plain
@@ -109,7 +112,10 @@ Plain
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = "val = { Plain = {} }";
         let expected = str![[r#"
 Val {
@@ -162,7 +168,7 @@ mod enum_tuple {
     use super::*;
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = "{ Tuple = { 0 = -123, 1 = true } }";
         let expected = str![[r#"
 Tuple(
@@ -173,7 +179,10 @@ Tuple(
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = "val = { Tuple = { 0 = -123, 1 = true } }";
         let expected = str![[r#"
 Val {
@@ -210,7 +219,7 @@ mod enum_newtype {
     use super::*;
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = r#"{ NewType = "value" }"#;
         let expected = str![[r#"
 NewType(
@@ -220,7 +229,10 @@ NewType(
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = r#"val = { NewType = "value" }"#;
         let expected = str![[r#"
 Val {
@@ -266,7 +278,7 @@ mod enum_struct {
     use super::*;
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = "{ Struct = { value = -123 } }";
         let expected = str![[r#"
 Struct {
@@ -276,7 +288,10 @@ Struct {
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = "val = { Struct = { value = -123 } }";
         let expected = str![[r#"
 Val {
