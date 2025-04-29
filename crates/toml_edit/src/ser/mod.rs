@@ -9,6 +9,10 @@ mod pretty;
 mod value;
 
 use crate::visit_mut::VisitMut as _;
+#[allow(clippy::wildcard_imports)]
+use array::*;
+#[allow(clippy::wildcard_imports)]
+use map::*;
 
 pub use value::ValueSerializer;
 
