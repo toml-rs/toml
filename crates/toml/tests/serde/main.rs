@@ -4,6 +4,7 @@
 mod de_enum;
 mod de_errors;
 mod general;
+mod ser_enum;
 mod ser_formatting;
 mod ser_formatting_raw;
 mod ser_tables_last;
@@ -26,4 +27,14 @@ where
     T: serde::de::DeserializeOwned,
 {
     T::deserialize(toml::de::ValueDeserializer::new(s))
+}
+
+fn to_string_value<T>(value: &T) -> Result<String, toml::ser::Error>
+where
+    T: serde::ser::Serialize + ?Sized,
+{
+    let mut output = String::new();
+    let serializer = toml::ser::ValueSerializer::new(&mut output);
+    value.serialize(serializer)?;
+    Ok(output)
 }
