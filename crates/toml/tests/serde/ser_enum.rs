@@ -1,8 +1,9 @@
+use serde::Deserialize;
 use serde::Serialize;
 use snapbox::assert_data_eq;
 use snapbox::str;
 
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 enum TheEnum {
     Plain,
     Tuple(i64, bool),
@@ -10,12 +11,12 @@ enum TheEnum {
     Struct { value: i64 },
 }
 
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct Val {
     val: TheEnum,
 }
 
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 struct Multi {
     enums: Vec<TheEnum>,
 }
@@ -28,7 +29,9 @@ mod enum_unit {
         let expected = str![[r#""Plain""#]];
         let input = TheEnum::Plain;
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -38,7 +41,9 @@ mod enum_unit {
             val: TheEnum::Plain,
         };
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -51,7 +56,9 @@ val = "Plain"
             val: TheEnum::Plain,
         };
         let toml = t!(crate::to_string_pretty(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 }
 
@@ -63,7 +70,10 @@ mod enum_tuple {
         let expected = str!["[-123, true]"];
         let input = TheEnum::Tuple(-123, true);
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        // TODO
+        //let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
+        //assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -73,7 +83,9 @@ mod enum_tuple {
             val: TheEnum::Tuple(-123, true),
         };
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -90,7 +102,9 @@ Tuple = [
             val: TheEnum::Tuple(-123, true),
         };
         let toml = t!(crate::to_string_pretty(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 }
 
@@ -102,7 +116,9 @@ mod enum_newtype {
         let expected = str![[r#"{ NewType = "value" }"#]];
         let input = TheEnum::NewType("value".to_owned());
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -112,7 +128,9 @@ mod enum_newtype {
             val: TheEnum::NewType("value".to_owned()),
         };
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -126,7 +144,9 @@ NewType = "value"
             val: TheEnum::NewType("value".to_owned()),
         };
         let toml = t!(crate::to_string_pretty(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 }
 
@@ -139,7 +159,9 @@ mod enum_struct {
         let expected = str!["{ Struct = { value = -123 } }"];
         let input = TheEnum::Struct { value: -123 };
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -149,7 +171,9 @@ mod enum_struct {
             val: TheEnum::Struct { value: -123 },
         };
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -163,7 +187,9 @@ value = -123
             val: TheEnum::Struct { value: -123 },
         };
         let toml = t!(crate::to_string_pretty(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
     }
 }
 
@@ -186,7 +212,9 @@ mod array_enum {
             },
         };
         let toml = t!(crate::to_string_value(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::value_from_str::<Multi>(&toml));
+        assert_eq!(roundtrip, input);
     }
 
     #[test]
@@ -214,6 +242,8 @@ enums = [
             },
         };
         let toml = t!(crate::to_string_pretty(&input));
-        assert_data_eq!(toml, expected);
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Multi>(&toml));
+        assert_eq!(roundtrip, input);
     }
 }
