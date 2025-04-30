@@ -60,3 +60,21 @@ impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
         write_document(self.dst, self.settings, self.inner.end())
     }
 }
+
+impl serde::ser::SerializeStructVariant for SerializeDocumentTable<'_> {
+    type Ok = ();
+    type Error = Error;
+
+    #[inline]
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        serde::ser::SerializeStruct::serialize_field(self, key, value)
+    }
+
+    #[inline]
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        serde::ser::SerializeStruct::end(self)
+    }
+}

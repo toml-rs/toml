@@ -198,7 +198,7 @@ mod enum_struct {
     #[test]
     #[should_panic]
     fn to_string_value() {
-        let expected = str!["{ Struct = { value = -123 } }"];
+        let expected = str!["{ value = -123 }"];
         let input = TheEnum::Struct { value: -123 };
         let toml = t!(crate::to_string_value(&input));
         assert_data_eq!(&toml, expected);
@@ -226,7 +226,6 @@ mod enum_struct {
     #[should_panic]
     fn to_string() {
         let expected = str![[r#"
-[Struct]
 value = -123
 
 "#]];

@@ -194,7 +194,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     type SerializeTupleVariant = array::SerializeDocumentArray<'d>;
     type SerializeMap = map::SerializeDocumentTable<'d>;
     type SerializeStruct = map::SerializeDocumentTable<'d>;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = map::SerializeDocumentTable<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         write_document(
@@ -441,12 +441,12 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
+        _name: &'static str,
         _variant_index: u32,
         _variant: &'static str,
-        _len: usize,
+        len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(Error::unsupported_type(Some(name)))
+        self.serialize_map(Some(len))
     }
 }
 
