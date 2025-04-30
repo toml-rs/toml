@@ -57,3 +57,39 @@ impl serde::ser::SerializeStruct for SerializeValueTable<'_> {
         write_value(self.dst, self.inner.end())
     }
 }
+
+type InnerSerializeValueStructVariant =
+    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeStructVariant;
+
+#[doc(hidden)]
+pub struct SerializeValueStructVariant<'d> {
+    inner: InnerSerializeValueStructVariant,
+    dst: &'d mut String,
+}
+
+impl<'d> SerializeValueStructVariant<'d> {
+    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueStructVariant) -> Self {
+        Self {
+            inner,
+            dst: ser.dst,
+        }
+    }
+}
+
+impl serde::ser::SerializeStructVariant for SerializeValueStructVariant<'_> {
+    type Ok = ();
+    type Error = Error;
+
+    #[inline]
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        self.inner.serialize_field(key, value).map_err(Error::wrap)
+    }
+
+    #[inline]
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        write_value(self.dst, self.inner.end())
+    }
+}

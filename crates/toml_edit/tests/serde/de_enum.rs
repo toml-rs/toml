@@ -76,61 +76,11 @@ unknown variant `NonExistent`, expected one of `Plain`, `Tuple`, `NewType`, `Str
     assert_data_eq!(result.unwrap_err().to_string(), expected);
 }
 
-#[test]
-fn extra_field_returns_expected_empty_table_error() {
-    let input = "{ Plain = { extra_field = 404 } }";
-    let expected = str![[r#"
-expected empty table
-
-"#]]
-    .raw();
-    let result = crate::value_from_str::<TheEnum>(input);
-    assert_data_eq!(result.unwrap_err().to_string(), expected);
-
-    let input = "val = { Plain = { extra_field = 404 } }";
-    let expected = str![[r#"
-TOML parse error at line 1, column 17
-  |
-1 | val = { Plain = { extra_field = 404 } }
-  |                 ^^^^^^^^^^^^^^^^^^^^^
-expected empty table
-
-"#]]
-    .raw();
-    let result = crate::from_str::<Val>(input);
-    assert_data_eq!(result.unwrap_err().to_string(), expected);
-}
-
-#[test]
-fn extra_field_returns_expected_empty_table_error_struct_variant() {
-    let input = "{ Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }";
-    let expected = str![[r#"
-unexpected keys in table: extra_0, extra_1, available keys: value
-
-"#]]
-    .raw();
-    let result = crate::value_from_str::<TheEnum>(input);
-    assert_data_eq!(result.unwrap_err().to_string(), expected);
-
-    let input = "val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }";
-    let expected = str![[r#"
-TOML parse error at line 1, column 33
-  |
-1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
-  |                                 ^^^^^^^
-unexpected keys in table: extra_0, extra_1, available keys: value
-
-"#]]
-    .raw();
-    let result = crate::from_str::<Val>(input);
-    assert_data_eq!(result.unwrap_err().to_string(), expected);
-}
-
 mod enum_unit {
     use super::*;
 
     #[test]
-    fn from_str() {
+    fn value_from_str() {
         let input = "\"Plain\"";
         let expected = str![[r#"
 Plain
@@ -138,7 +88,10 @@ Plain
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_str() {
         let input = "val = \"Plain\"";
         let expected = str![[r#"
 Val {
@@ -151,7 +104,7 @@ Val {
     }
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = "{ Plain = {} }";
         let expected = str![[r#"
 Plain
@@ -159,7 +112,10 @@ Plain
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = "val = { Plain = {} }";
         let expected = str![[r#"
 Val {
@@ -181,13 +137,38 @@ Plain
         let result = crate::from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
+
+    #[test]
+    fn extra_field_returns_expected_empty_table_error() {
+        let input = "{ Plain = { extra_field = 404 } }";
+        let expected = str![[r#"
+expected empty table
+
+"#]]
+        .raw();
+        let result = crate::value_from_str::<TheEnum>(input);
+        assert_data_eq!(result.unwrap_err().to_string(), expected);
+
+        let input = "val = { Plain = { extra_field = 404 } }";
+        let expected = str![[r#"
+TOML parse error at line 1, column 17
+  |
+1 | val = { Plain = { extra_field = 404 } }
+  |                 ^^^^^^^^^^^^^^^^^^^^^
+expected empty table
+
+"#]]
+        .raw();
+        let result = crate::from_str::<Val>(input);
+        assert_data_eq!(result.unwrap_err().to_string(), expected);
+    }
 }
 
 mod enum_tuple {
     use super::*;
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = "{ Tuple = { 0 = -123, 1 = true } }";
         let expected = str![[r#"
 Tuple(
@@ -198,7 +179,10 @@ Tuple(
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = "val = { Tuple = { 0 = -123, 1 = true } }";
         let expected = str![[r#"
 Val {
@@ -235,7 +219,7 @@ mod enum_newtype {
     use super::*;
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = r#"{ NewType = "value" }"#;
         let expected = str![[r#"
 NewType(
@@ -245,7 +229,10 @@ NewType(
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = r#"val = { NewType = "value" }"#;
         let expected = str![[r#"
 Val {
@@ -261,21 +248,29 @@ Val {
 
     #[test]
     fn from_std_table() {
-        assert_eq!(
-            TheEnum::NewType("value".to_owned()),
-            crate::from_str(r#"NewType = "value""#).unwrap()
-        );
-        assert_eq!(
-            Val {
-                val: TheEnum::NewType("value".to_owned()),
-            },
-            crate::from_str(
-                r#"[val]
+        let result = crate::from_str::<TheEnum>(r#"NewType = "value""#);
+        let expected = str![[r#"
+NewType(
+    "value",
+)
+
+"#]];
+        assert_data_eq!(result.unwrap().to_debug(), expected);
+
+        let result = crate::from_str::<Val>(
+            r#"[val]
                 NewType = "value"
-                "#
-            )
-            .unwrap()
+                "#,
         );
+        let expected = str![[r#"
+Val {
+    val: NewType(
+        "value",
+    ),
+}
+
+"#]];
+        assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }
 
@@ -283,7 +278,7 @@ mod enum_struct {
     use super::*;
 
     #[test]
-    fn from_inline_table() {
+    fn value_from_inline_table() {
         let input = "{ Struct = { value = -123 } }";
         let expected = str![[r#"
 Struct {
@@ -293,7 +288,10 @@ Struct {
 "#]];
         let result = crate::value_from_str::<TheEnum>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
 
+    #[test]
+    fn from_inline_table() {
         let input = "val = { Struct = { value = -123 } }";
         let expected = str![[r#"
 Val {
@@ -338,9 +336,34 @@ OuterStruct {
         let result = crate::from_str::<OuterStruct>(input);
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
+
+    #[test]
+    fn extra_field_returns_expected_empty_table_error_struct_variant() {
+        let input = "{ Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }";
+        let expected = str![[r#"
+unexpected keys in table: extra_0, extra_1, available keys: value
+
+"#]]
+        .raw();
+        let result = crate::value_from_str::<TheEnum>(input);
+        assert_data_eq!(result.unwrap_err().to_string(), expected);
+
+        let input = "val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }";
+        let expected = str![[r#"
+TOML parse error at line 1, column 33
+  |
+1 | val = { Struct = { value = 123, extra_0 = 0, extra_1 = 1 } }
+  |                                 ^^^^^^^
+unexpected keys in table: extra_0, extra_1, available keys: value
+
+"#]]
+        .raw();
+        let result = crate::from_str::<Val>(input);
+        assert_data_eq!(result.unwrap_err().to_string(), expected);
+    }
 }
 
-mod enum_array {
+mod array_enum {
     use super::*;
 
     #[test]

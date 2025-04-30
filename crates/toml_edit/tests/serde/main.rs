@@ -1,9 +1,19 @@
 #![recursion_limit = "256"]
 #![cfg(all(feature = "parse", feature = "display"))]
 
+macro_rules! t {
+    ($e:expr) => {
+        match $e {
+            Ok(t) => t,
+            Err(e) => panic!("{} failed with {}", stringify!($e), e),
+        }
+    };
+}
+
 mod de_enum;
 mod de_errors;
 mod general;
+mod ser_enum;
 mod ser_formatting;
 mod ser_formatting_raw;
 mod ser_tables_last;
@@ -26,4 +36,14 @@ where
     T: serde::de::DeserializeOwned,
 {
     T::deserialize(s.parse::<toml_edit::de::ValueDeserializer>().unwrap())
+}
+
+fn to_string_value<T>(value: &T) -> Result<String, toml_edit::ser::Error>
+where
+    T: serde::ser::Serialize + ?Sized,
+{
+    let serializer = toml_edit::ser::ValueSerializer::new();
+    let value = value.serialize(serializer)?;
+    let output = value.to_string();
+    Ok(output)
 }

@@ -68,10 +68,10 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
     type SerializeSeq = array::SerializeValueArray<'d>;
     type SerializeTuple = array::SerializeValueArray<'d>;
     type SerializeTupleStruct = array::SerializeValueArray<'d>;
-    type SerializeTupleVariant = array::SerializeValueArray<'d>;
+    type SerializeTupleVariant = array::SerializeValueTupleVariant<'d>;
     type SerializeMap = map::SerializeValueTable<'d>;
     type SerializeStruct = map::SerializeValueTable<'d>;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = map::SerializeValueStructVariant<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         write_value(
@@ -271,12 +271,16 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 
     fn serialize_tuple_variant(
         self,
-        _name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        self.serialize_seq(Some(len))
+        let ser = toml_edit::ser::ValueSerializer::new()
+            .serialize_tuple_variant(name, variant_index, variant, len)
+            .map_err(Error::wrap)?;
+        let ser = array::SerializeValueTupleVariant::new(self, ser);
+        Ok(ser)
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
@@ -298,11 +302,15 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
     fn serialize_struct_variant(
         self,
         name: &'static str,
-        _variant_index: u32,
-        _variant: &'static str,
-        _len: usize,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        Err(Error::unsupported_type(Some(name)))
+        let ser = toml_edit::ser::ValueSerializer::new()
+            .serialize_struct_variant(name, variant_index, variant, len)
+            .map_err(Error::wrap)?;
+        let ser = map::SerializeValueStructVariant::new(self, ser);
+        Ok(ser)
     }
 }
 
