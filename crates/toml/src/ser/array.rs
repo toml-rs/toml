@@ -54,7 +54,7 @@ impl serde::ser::SerializeTuple for SerializeDocumentArray<'_> {
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeDocumentArray<'_> {
+impl serde::ser::SerializeTupleStruct for SerializeDocumentArray<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -70,7 +70,27 @@ impl serde::ser::SerializeTupleVariant for SerializeDocumentArray<'_> {
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeDocumentArray<'_> {
+type InnerSerializeDocumentTupleVariant =
+    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeTupleVariant;
+
+#[doc(hidden)]
+pub struct SerializeDocumentTupleVariant<'d> {
+    inner: InnerSerializeDocumentTupleVariant,
+    dst: &'d mut String,
+    settings: DocumentFormatter,
+}
+
+impl<'d> SerializeDocumentTupleVariant<'d> {
+    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentTupleVariant) -> Self {
+        Self {
+            inner,
+            dst: ser.dst,
+            settings: ser.settings,
+        }
+    }
+}
+
+impl serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'_> {
     type Ok = ();
     type Error = Error;
 

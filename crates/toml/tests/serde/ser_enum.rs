@@ -97,15 +97,14 @@ mod enum_tuple {
 
     #[test]
     fn to_string_value() {
-        let expected = str!["[-123, true]"];
+        let expected = str!["{ Tuple = [-123, true] }"];
         let input = TheEnum::Tuple(-123, true);
         let toml = t!(crate::to_string_value(&input));
         assert_data_eq!(&toml, expected);
-        // TODO
-        //let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
-        //assert_eq!(roundtrip, input);
-        //let json = json_from_toml_value_str::<TheEnum>(&toml);
-        //assert_eq!(json, input);
+        let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<TheEnum>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -196,9 +195,8 @@ mod enum_struct {
     use super::*;
 
     #[test]
-    #[should_panic]
     fn to_string_value() {
-        let expected = str!["{ value = -123 }"];
+        let expected = str!["{ Struct = { value = -123 } }"];
         let input = TheEnum::Struct { value: -123 };
         let toml = t!(crate::to_string_value(&input));
         assert_data_eq!(&toml, expected);
@@ -223,9 +221,9 @@ mod enum_struct {
     }
 
     #[test]
-    #[should_panic]
     fn to_string() {
         let expected = str![[r#"
+[Struct]
 value = -123
 
 "#]];
