@@ -21,6 +21,30 @@ struct Multi {
     enums: Vec<TheEnum>,
 }
 
+/// Verify that `ser` produces values compatible with `serde_json`
+#[track_caller]
+fn json_from_toml_value_str<T>(s: &'_ str) -> T
+where
+    T: serde::de::DeserializeOwned,
+{
+    let value = t!(crate::value_from_str::<crate::SerdeValue>(s));
+    let value = t!(value.try_into::<serde_json::Value>());
+    let json = t!(serde_json::to_string_pretty(&value));
+    t!(serde_json::from_str::<T>(&json))
+}
+
+/// Verify that `ser` produces documents compatible with `serde_json`
+#[track_caller]
+fn json_from_toml_str<T>(s: &'_ str) -> T
+where
+    T: serde::de::DeserializeOwned,
+{
+    let value = t!(crate::from_str::<crate::SerdeTable>(s));
+    let value = t!(value.try_into::<serde_json::Value>());
+    let json = t!(serde_json::to_string_pretty(&value));
+    t!(serde_json::from_str::<T>(&json))
+}
+
 mod enum_unit {
     use super::*;
 
@@ -32,6 +56,8 @@ mod enum_unit {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<TheEnum>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -44,6 +70,8 @@ mod enum_unit {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -59,6 +87,8 @@ val = "Plain"
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 }
 
@@ -74,6 +104,8 @@ mod enum_tuple {
         // TODO
         //let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
         //assert_eq!(roundtrip, input);
+        //let json = json_from_toml_value_str::<TheEnum>(&toml);
+        //assert_eq!(json, input);
     }
 
     #[test]
@@ -86,6 +118,8 @@ mod enum_tuple {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -105,6 +139,8 @@ Tuple = [
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 }
 
@@ -119,6 +155,8 @@ mod enum_newtype {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<TheEnum>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -131,6 +169,8 @@ mod enum_newtype {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -147,6 +187,8 @@ NewType = "value"
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 }
 
@@ -162,6 +204,8 @@ mod enum_struct {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<TheEnum>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<TheEnum>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -174,6 +218,8 @@ mod enum_struct {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -190,6 +236,8 @@ value = -123
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Val>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
     }
 }
 
@@ -215,6 +263,8 @@ mod array_enum {
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::value_from_str::<Multi>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_value_str::<Multi>(&toml);
+        assert_eq!(json, input);
     }
 
     #[test]
@@ -245,5 +295,7 @@ enums = [
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Multi>(&toml));
         assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Multi>(&toml);
+        assert_eq!(json, input);
     }
 }
