@@ -75,7 +75,7 @@ mod enum_unit {
     }
 
     #[test]
-    fn to_string() {
+    fn nested_to_string() {
         let expected = str![[r#"
 val = "Plain"
 
@@ -123,7 +123,7 @@ mod enum_tuple {
     }
 
     #[test]
-    fn to_string() {
+    fn nested_to_string() {
         let expected = str![[r#"
 [val]
 Tuple = [
@@ -174,7 +174,7 @@ mod enum_newtype {
     }
 
     #[test]
-    fn to_string() {
+    fn nested_to_string() {
         let expected = str![[r#"
 [val]
 NewType = "value"
@@ -223,7 +223,24 @@ mod enum_struct {
     }
 
     #[test]
+    #[should_panic]
     fn to_string() {
+        let expected = str![[r#"
+[Struct]
+value = -123
+
+"#]];
+        let input = TheEnum::Struct { value: -123 };
+        let toml = t!(crate::to_string_pretty(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<TheEnum>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<TheEnum>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn nested_to_string() {
         let expected = str![[r#"
 [val.Struct]
 value = -123
