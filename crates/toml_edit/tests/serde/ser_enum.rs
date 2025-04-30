@@ -275,7 +275,7 @@ enums = [
     true,
 ] },
     { NewType = "value" },
-    {},
+    { Struct = { value = -123 } },
 ]
 
 "#]];
@@ -291,10 +291,9 @@ enums = [
         };
         let toml = t!(crate::to_string_pretty(&input));
         assert_data_eq!(&toml, expected);
-        // TODO
-        //let roundtrip = t!(crate::from_str::<Multi>(&toml));
-        //assert_eq!(roundtrip, input);
-        //let json = json_from_toml_str::<Multi>(&toml);
-        //assert_eq!(json, input);
+        let roundtrip = t!(crate::from_str::<Multi>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Multi>(&toml);
+        assert_eq!(json, input);
     }
 }
