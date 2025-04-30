@@ -1,6 +1,15 @@
 #![recursion_limit = "256"]
 #![cfg(all(feature = "parse", feature = "display"))]
 
+macro_rules! t {
+    ($e:expr) => {
+        match $e {
+            Ok(t) => t,
+            Err(e) => panic!("{} failed with {}", stringify!($e), e),
+        }
+    };
+}
+
 mod de_enum;
 mod de_errors;
 mod general;

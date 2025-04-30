@@ -7,15 +7,6 @@ use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
 
-macro_rules! t {
-    ($e:expr) => {
-        match $e {
-            Ok(t) => t,
-            Err(e) => panic!("{} failed with {}", stringify!($e), e),
-        }
-    };
-}
-
 macro_rules! equivalent {
     ($literal:expr, $toml:expr,) => {{
         let toml = $toml;

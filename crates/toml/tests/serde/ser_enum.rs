@@ -27,8 +27,8 @@ mod enum_unit {
     fn to_string_value() {
         let expected = str![[r#""Plain""#]];
         let input = TheEnum::Plain;
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -37,8 +37,8 @@ mod enum_unit {
         let input = Val {
             val: TheEnum::Plain,
         };
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -50,8 +50,8 @@ val = "Plain"
         let input = Val {
             val: TheEnum::Plain,
         };
-        let result = crate::to_string_pretty(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_pretty(&input));
+        assert_data_eq!(toml, expected);
     }
 }
 
@@ -62,8 +62,8 @@ mod enum_tuple {
     fn to_string_value() {
         let expected = str!["[-123, true]"];
         let input = TheEnum::Tuple(-123, true);
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -72,8 +72,8 @@ mod enum_tuple {
         let input = Val {
             val: TheEnum::Tuple(-123, true),
         };
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -89,8 +89,8 @@ Tuple = [
         let input = Val {
             val: TheEnum::Tuple(-123, true),
         };
-        let result = crate::to_string_pretty(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_pretty(&input));
+        assert_data_eq!(toml, expected);
     }
 }
 
@@ -101,8 +101,8 @@ mod enum_newtype {
     fn to_string_value() {
         let expected = str![[r#"{ NewType = "value" }"#]];
         let input = TheEnum::NewType("value".to_owned());
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -111,8 +111,8 @@ mod enum_newtype {
         let input = Val {
             val: TheEnum::NewType("value".to_owned()),
         };
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -125,8 +125,8 @@ NewType = "value"
         let input = Val {
             val: TheEnum::NewType("value".to_owned()),
         };
-        let result = crate::to_string_pretty(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_pretty(&input));
+        assert_data_eq!(toml, expected);
     }
 }
 
@@ -138,8 +138,8 @@ mod enum_struct {
     fn to_string_value() {
         let expected = str!["{ Struct = { value = -123 } }"];
         let input = TheEnum::Struct { value: -123 };
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -148,8 +148,8 @@ mod enum_struct {
         let input = Val {
             val: TheEnum::Struct { value: -123 },
         };
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -162,8 +162,8 @@ value = -123
         let input = Val {
             val: TheEnum::Struct { value: -123 },
         };
-        let result = crate::to_string_pretty(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_pretty(&input));
+        assert_data_eq!(toml, expected);
     }
 }
 
@@ -185,8 +185,8 @@ mod array_enum {
                 ]
             },
         };
-        let result = crate::to_string_value(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_value(&input));
+        assert_data_eq!(toml, expected);
     }
 
     #[test]
@@ -213,7 +213,7 @@ enums = [
                 ]
             },
         };
-        let result = crate::to_string_pretty(&input);
-        assert_data_eq!(result.unwrap(), expected);
+        let toml = t!(crate::to_string_pretty(&input));
+        assert_data_eq!(toml, expected);
     }
 }
