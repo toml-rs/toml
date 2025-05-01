@@ -13,8 +13,8 @@ rust-version.workspace = true
 include.workspace = true
 
 [package.metadata.docs.rs]
-features = ["serde"]
-rustdoc-args = ["--cfg", "docsrs"]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
 
 [package.metadata.release]
 tag-name = "v{{version}}"

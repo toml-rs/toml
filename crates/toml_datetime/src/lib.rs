@@ -27,3 +27,7 @@ pub mod __unstable {
     pub use crate::datetime::FIELD;
     pub use crate::datetime::NAME;
 }
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;

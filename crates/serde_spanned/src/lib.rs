@@ -27,3 +27,7 @@ pub mod __unstable {
     pub use crate::spanned::START_FIELD;
     pub use crate::spanned::VALUE_FIELD;
 }
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;
