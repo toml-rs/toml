@@ -251,10 +251,7 @@ impl std::str::FromStr for ValueDeserializer {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut value = crate::parser::parse_value(s).map_err(Error::from)?;
-        // Only take the repr and not decor, as its probably not intended
-        value.decor_mut().clear();
-        value.despan(s);
+        let value = s.parse::<crate::Value>().map_err(Error::from)?;
         Ok(value.into_deserializer())
     }
 }
