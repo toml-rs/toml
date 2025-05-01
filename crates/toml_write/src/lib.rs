@@ -75,3 +75,7 @@ pub use string::TomlStringBuilder;
 pub use value::ToTomlValue;
 pub use value::WriteTomlValue;
 pub use write::TomlWrite;
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;

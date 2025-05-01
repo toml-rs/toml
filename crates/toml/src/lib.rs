@@ -179,3 +179,7 @@ pub use table::Table;
 use core::str::FromStr;
 #[allow(unused_imports)]
 use toml_datetime::Datetime;
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;

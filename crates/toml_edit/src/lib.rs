@@ -141,3 +141,9 @@ pub(crate) mod private {
     impl Sealed for crate::Table {}
     impl Sealed for crate::InlineTable {}
 }
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+#[cfg(feature = "display")]
+#[cfg(feature = "parse")]
+pub struct ReadmeDoctests;
