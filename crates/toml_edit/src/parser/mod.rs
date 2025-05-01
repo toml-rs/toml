@@ -51,12 +51,7 @@ pub(crate) fn parse_key_path(raw: &str) -> Result<Vec<crate::Key>, TomlError> {
     let b = new_input(raw);
     let result = key::key.parse(b.clone());
     match result {
-        Ok(mut keys) => {
-            for key in &mut keys {
-                key.despan(raw);
-            }
-            Ok(keys)
-        }
+        Ok(keys) => Ok(keys),
         Err(e) => Err(TomlError::new(e, b)),
     }
 }
