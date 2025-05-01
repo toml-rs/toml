@@ -62,12 +62,7 @@ pub(crate) fn parse_value(raw: &str) -> Result<crate::Value, TomlError> {
     let b = new_input(raw);
     let parsed = value::value.parse(b.clone());
     match parsed {
-        Ok(mut value) => {
-            // Only take the repr and not decor, as its probably not intended
-            value.decor_mut().clear();
-            value.despan(raw);
-            Ok(value)
-        }
+        Ok(value) => Ok(value),
         Err(e) => Err(TomlError::new(e, b)),
     }
 }

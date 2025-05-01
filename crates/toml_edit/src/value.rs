@@ -241,7 +241,11 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        crate::parser::parse_value(s)
+        let mut value = crate::parser::parse_value(s)?;
+        // Only take the repr and not decor, as its probably not intended
+        value.decor_mut().clear();
+        value.despan(s);
+        Ok(value)
     }
 }
 
