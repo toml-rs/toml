@@ -25,7 +25,7 @@ const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 // ;; Standard Table
 
 // std-table = std-table-open key *( table-key-sep key) std-table-close
-pub(crate) fn std_table<'s, 'i>(
+fn std_table<'s, 'i>(
     state: &'s RefCell<ParseState>,
 ) -> impl ModalParser<Input<'i>, (), ContextError> + 's {
     move |i: &mut Input<'i>| {
@@ -50,7 +50,7 @@ pub(crate) fn std_table<'s, 'i>(
 // ;; Array Table
 
 // array-table = array-table-open key *( table-key-sep key) array-table-close
-pub(crate) fn array_table<'s, 'i>(
+fn array_table<'s, 'i>(
     state: &'s RefCell<ParseState>,
 ) -> impl ModalParser<Input<'i>, (), ContextError> + 's {
     move |i: &mut Input<'i>| {
