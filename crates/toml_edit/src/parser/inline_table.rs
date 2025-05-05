@@ -73,30 +73,37 @@ fn descend_path<'a>(
     dotted: bool,
 ) -> Result<&'a mut InlineTable, CustomError> {
     for (i, key) in path.iter().enumerate() {
-        let entry = table.entry_format(key).or_insert_with(|| {
-            let mut new_table = InlineTable::new();
-            new_table.set_implicit(true);
-            new_table.set_dotted(dotted);
+        table = match table.entry_format(key) {
+            crate::InlineEntry::Vacant(entry) => {
+                let mut new_table = InlineTable::new();
+                new_table.set_implicit(true);
+                new_table.set_dotted(dotted);
 
-            Value::InlineTable(new_table)
-        });
-        match *entry {
-            Value::InlineTable(ref mut sweet_child_of_mine) => {
-                // Since tables cannot be defined more than once, redefining such tables using a
-                // [table] header is not allowed. Likewise, using dotted keys to redefine tables
-                // already defined in [table] form is not allowed.
-                if dotted && !sweet_child_of_mine.is_implicit() {
-                    return Err(CustomError::DuplicateKey {
-                        key: key.get().into(),
-                        table: None,
-                    });
+                entry
+                    .insert(Value::InlineTable(new_table))
+                    .as_inline_table_mut()
+                    .unwrap()
+            }
+            crate::InlineEntry::Occupied(entry) => {
+                match entry.into_mut() {
+                    Value::InlineTable(ref mut sweet_child_of_mine) => {
+                        // Since tables cannot be defined more than once, redefining such tables using a
+                        // [table] header is not allowed. Likewise, using dotted keys to redefine tables
+                        // already defined in [table] form is not allowed.
+                        if dotted && !sweet_child_of_mine.is_implicit() {
+                            return Err(CustomError::DuplicateKey {
+                                key: key.get().into(),
+                                table: None,
+                            });
+                        }
+                        sweet_child_of_mine
+                    }
+                    ref v => {
+                        return Err(CustomError::extend_wrong_type(path, i, v.type_name()));
+                    }
                 }
-                table = sweet_child_of_mine;
             }
-            ref v => {
-                return Err(CustomError::extend_wrong_type(path, i, v.type_name()));
-            }
-        }
+        };
     }
     Ok(table)
 }
