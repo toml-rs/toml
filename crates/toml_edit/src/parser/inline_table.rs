@@ -41,7 +41,7 @@ fn table_from_pairs(
     root.items.reserve(v.len());
 
     for (path, (key, value)) in v {
-        let table = descend_path(&mut root, &path)?;
+        let table = descend_path(&mut root, &path, true)?;
 
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
         let mixed_table_types = table.is_dotted() == path.is_empty();
@@ -70,12 +70,12 @@ fn table_from_pairs(
 fn descend_path<'a>(
     mut table: &'a mut InlineTable,
     path: &'a [Key],
+    dotted: bool,
 ) -> Result<&'a mut InlineTable, CustomError> {
-    let dotted = !path.is_empty();
     for (i, key) in path.iter().enumerate() {
         let entry = table.entry_format(key).or_insert_with(|| {
             let mut new_table = InlineTable::new();
-            new_table.set_implicit(dotted);
+            new_table.set_implicit(true);
             new_table.set_dotted(dotted);
 
             Value::InlineTable(new_table)
