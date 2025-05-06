@@ -152,6 +152,15 @@ impl<'i> Raw<'i> {
         crate::decode::ws::decode_comment(*self, &mut error);
     }
 
+    pub fn decode_newline(&self, error: &mut dyn ErrorSink) {
+        let mut error = |mut err: crate::ParseError| {
+            err.context += self.span.start;
+            err.unexpected += self.span.start;
+            error.report_error(err);
+        };
+        crate::decode::ws::decode_newline(*self, &mut error);
+    }
+
     pub fn as_str(&self) -> &'i str {
         self.raw
     }

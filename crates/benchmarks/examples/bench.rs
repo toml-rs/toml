@@ -36,6 +36,14 @@ fn main() -> Result<(), lexopt::Error> {
                     #[cfg(not(feature = "unsafe"))]
                     let raw = source.get(event).unwrap();
                     raw.decode_comment(&mut _errors);
+                } else if event.kind() == ::toml_parse::parser::EventKind::Newline {
+                    #[cfg(feature = "unsafe")]
+                    // SAFETY: `EventReceiver` should always receive valid
+                    // spans
+                    let raw = unsafe { source.get_unchecked(event) };
+                    #[cfg(not(feature = "unsafe"))]
+                    let raw = source.get(event).unwrap();
+                    raw.decode_newline(&mut _errors);
                 } else if event.kind() == ::toml_parse::parser::EventKind::SimpleKey {
                     #[cfg(feature = "unsafe")]
                     // SAFETY: `EventReceiver` should always receive valid

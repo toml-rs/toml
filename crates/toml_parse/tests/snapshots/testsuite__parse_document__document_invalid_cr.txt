@@ -49,5 +49,16 @@ EventResults {
             span: 35..36,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: 35..36,
+            description: "newline",
+            expected: [
+                Literal(
+                    "\n",
+                ),
+            ],
+            unexpected: 36..36,
+        },
+    ],
 }

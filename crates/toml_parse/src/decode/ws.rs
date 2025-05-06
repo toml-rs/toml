@@ -53,3 +53,24 @@ pub(crate) const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 // non-eol = %x09 / %x20-7E / non-ascii
 pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
     (0x09, 0x20..=0x7E, NON_ASCII);
+
+/// Parse newlinw
+///
+/// ```bnf
+///;; Newline
+///
+/// newline =  %x0A     ; LF
+/// newline =/ %x0D.0A  ; CRLF
+/// ```
+pub(crate) fn decode_newline(raw: Raw<'_>, error: &mut dyn ErrorSink) {
+    let s = raw.as_str();
+
+    if s == "\r" {
+        error.report_error(ParseError {
+            context: Span::new_unchecked(0, raw.len()),
+            description: "newline",
+            expected: &[Expected::Literal("\n")],
+            unexpected: Span::new_unchecked(raw.len(), raw.len()),
+        });
+    }
+}
