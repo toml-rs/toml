@@ -36,7 +36,7 @@ unstable-debug = ["std", "dep:anstream", "dep:anstyle"]
 [dependencies]
 anstream = { version = "0.6.15", optional = true }
 anstyle = { version = "1.0.8", optional = true }
-winnow = { version = "0.7.6", default-features = false }
+winnow = { version = "0.7.10", default-features = false }
 
 [dev-dependencies]
 anstream = { version = "0.6.15", features = ["test"] }
