@@ -57,6 +57,15 @@ fn document_key_string_comment() {
 }
 
 #[test]
+fn document_key_ws() {
+    t(
+        r#" hello . darkness . my = 'old friend'
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
 fn document_table() {
     t(
         r#"[parent . child]

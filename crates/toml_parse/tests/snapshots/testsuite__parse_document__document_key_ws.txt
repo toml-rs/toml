@@ -1,0 +1,83 @@
+EventResults {
+    input: " hello . darkness . my = 'old friend'\n",
+    events: [
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 1..6,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 9..17,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 18..19,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 20..22,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 22..23,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 23..24,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 24..25,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                LiteralString,
+            ),
+            span: 25..37,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 37..38,
+        },
+    ],
+    errors: [],
+}

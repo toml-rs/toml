@@ -163,7 +163,7 @@ fn document(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &m
             | TokenKind::LeftCurlyBracket => {
                 on_missing_expression_key(tokens, current_token, receiver, error);
             }
-            TokenKind::Whitespace => receiver.newline(current_token.span(), error),
+            TokenKind::Whitespace => receiver.whitespace(current_token.span(), error),
             TokenKind::Newline => receiver.newline(current_token.span(), error),
             TokenKind::Comment => on_comment(tokens, current_token, receiver, error),
             TokenKind::Eof => {
@@ -528,6 +528,7 @@ fn on_key(
                 TokenKind::Atom => None,
             };
             receiver.simple_key(current_token.span(), kind, error);
+            opt_whitespace(tokens, receiver, error);
         } else {
             error.report_error(ParseError {
                 context,
