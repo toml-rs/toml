@@ -528,6 +528,7 @@ fn on_key(
                 TokenKind::Atom => None,
             };
             receiver.simple_key(current_token.span(), kind, error);
+            opt_whitespace(tokens, receiver, error);
         } else {
             error.report_error(ParseError {
                 context,

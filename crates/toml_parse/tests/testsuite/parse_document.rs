@@ -57,7 +57,6 @@ fn document_key_string_comment() {
 }
 
 #[test]
-#[should_panic]
 fn document_key_ws() {
     t(
         r#" hello . darkness . my = 'old friend'
