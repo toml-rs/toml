@@ -59,7 +59,7 @@ EventResults {
             span: 52..53,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 53..57,
         },
@@ -84,7 +84,7 @@ EventResults {
             span: 64..65,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 65..69,
         },
@@ -121,7 +121,7 @@ EventResults {
             span: 96..97,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 97..101,
         },
@@ -171,7 +171,7 @@ EventResults {
             span: 153..154,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 154..158,
         },
@@ -196,7 +196,7 @@ EventResults {
             span: 168..169,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 169..173,
         },
@@ -233,7 +233,7 @@ EventResults {
             span: 195..196,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 196..200,
         },
@@ -318,7 +318,7 @@ EventResults {
             span: 228..229,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 229..233,
         },
@@ -353,7 +353,7 @@ EventResults {
             span: 254..255,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 255..259,
         },
@@ -393,7 +393,7 @@ EventResults {
             span: 274..275,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 275..279,
         },
@@ -423,7 +423,7 @@ EventResults {
             span: 289..290,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 290..294,
         },
@@ -468,7 +468,7 @@ EventResults {
             span: 372..373,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 373..377,
         },
@@ -505,7 +505,7 @@ EventResults {
             span: 392..393,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 393..397,
         },
@@ -547,7 +547,7 @@ EventResults {
             span: 411..412,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 412..416,
         },
@@ -582,7 +582,7 @@ EventResults {
             span: 430..431,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 431..435,
         },
@@ -619,7 +619,7 @@ EventResults {
             span: 450..451,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 451..455,
         },
@@ -661,7 +661,7 @@ EventResults {
             span: 469..470,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 470..474,
         },
@@ -686,7 +686,7 @@ EventResults {
             span: 483..484,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 484..488,
         },
@@ -815,7 +815,7 @@ EventResults {
             span: 526..527,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 527..531,
         },
@@ -914,7 +914,7 @@ EventResults {
             span: 608..609,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 609..612,
         },
@@ -963,7 +963,7 @@ EventResults {
             span: 766..767,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 767..770,
         },
@@ -1002,7 +1002,7 @@ EventResults {
             span: 799..800,
         },
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 800..803,
         },

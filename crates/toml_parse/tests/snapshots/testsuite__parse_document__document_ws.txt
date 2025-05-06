@@ -2,7 +2,7 @@ EventResults {
     input: "  ",
     events: [
         Event {
-            kind: Newline,
+            kind: Whitespace,
             encoding: None,
             span: 0..2,
         },
