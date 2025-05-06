@@ -28,7 +28,15 @@ fn main() -> Result<(), lexopt::Error> {
             let mut _errors = Vec::with_capacity(tokens.len());
             ::toml_parse::parser::parse_document(&tokens, &mut events, &mut _errors);
             for event in &events {
-                if event.kind() == ::toml_parse::parser::EventKind::SimpleKey {
+                if event.kind() == ::toml_parse::parser::EventKind::Comment {
+                    #[cfg(feature = "unsafe")]
+                    // SAFETY: `EventReceiver` should always receive valid
+                    // spans
+                    let raw = unsafe { source.get_unchecked(event) };
+                    #[cfg(not(feature = "unsafe"))]
+                    let raw = source.get(event).unwrap();
+                    raw.decode_comment(&mut _errors);
+                } else if event.kind() == ::toml_parse::parser::EventKind::SimpleKey {
                     #[cfg(feature = "unsafe")]
                     // SAFETY: `EventReceiver` should always receive valid
                     // spans

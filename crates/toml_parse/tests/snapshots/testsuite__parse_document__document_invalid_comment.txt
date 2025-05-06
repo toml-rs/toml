@@ -49,5 +49,16 @@ EventResults {
             span: 36..37,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: 20..36,
+            description: "comment",
+            expected: [
+                Description(
+                    "printable characters",
+                ),
+            ],
+            unexpected: 28..28,
+        },
+    ],
 }

@@ -5,6 +5,7 @@ use alloc::string::String;
 
 pub(crate) mod scalar;
 pub(crate) mod string;
+pub(crate) mod ws;
 
 pub use scalar::ScalarKind;
 

@@ -38,6 +38,9 @@ impl<'i> EventResults<'i> {
             if event.kind() == EventKind::SimpleKey {
                 let raw = doc.get(event).unwrap();
                 raw.decode_key(&mut (), &mut self.errors);
+            } else if event.kind() == EventKind::Comment {
+                let raw = doc.get(event).unwrap();
+                raw.decode_comment(&mut self.errors);
             } else if event.kind() == EventKind::Scalar {
                 let raw = doc.get(event).unwrap();
                 let mut value = String::new();

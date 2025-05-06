@@ -47,6 +47,24 @@ mod toml_parse {
                 }
 
                 impl ::toml_parse::parser::EventReceiver for Void<'_> {
+                    fn comment(
+                        &mut self,
+                        span: ::toml_parse::Span,
+                        error: &mut dyn ::toml_parse::ErrorSink,
+                    ) {
+                        let event = ::toml_parse::parser::Event::new_unchecked(
+                            ::toml_parse::parser::EventKind::Comment,
+                            None,
+                            span,
+                        );
+                        #[cfg(feature = "unsafe")]
+                        // SAFETY: `EventReceiver` should always receive valid
+                        // spans
+                        let raw = unsafe { self.source.get_unchecked(event) };
+                        #[cfg(not(feature = "unsafe"))]
+                        let raw = self.source.get(event).unwrap();
+                        raw.decode_comment(error);
+                    }
                     fn simple_key(
                         &mut self,
                         span: ::toml_parse::Span,
