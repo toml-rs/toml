@@ -1,0 +1,11 @@
+EventResults {
+    input: "-2E-2",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..5,
+        },
+    ],
+    errors: [],
+}

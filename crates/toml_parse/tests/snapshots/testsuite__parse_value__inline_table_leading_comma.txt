@@ -1,0 +1,74 @@
+EventResults {
+    input: "{ , hello  = \"a\" }",
+    events: [
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 4..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..11,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 13..16,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 17..18,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "inline table",
+            expected: [
+                Description(
+                    "key",
+                ),
+            ],
+            unexpected: 2..2,
+        },
+    ],
+}

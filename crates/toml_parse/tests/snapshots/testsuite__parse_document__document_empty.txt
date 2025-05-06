@@ -1,0 +1,5 @@
+EventResults {
+    input: "",
+    events: [],
+    errors: [],
+}

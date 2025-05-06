@@ -1,0 +1,32 @@
+EventResults {
+    input: "{,}",
+    events: [
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 2..3,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "inline table",
+            expected: [
+                Description(
+                    "key",
+                ),
+            ],
+            unexpected: 1..1,
+        },
+    ],
+}

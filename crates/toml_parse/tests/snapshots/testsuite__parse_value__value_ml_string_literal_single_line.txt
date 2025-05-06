@@ -1,0 +1,13 @@
+EventResults {
+    input: "'''I [dw]on't need \\d{2} apples'''",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlLiteralString,
+            ),
+            span: 0..34,
+        },
+    ],
+    errors: [],
+}

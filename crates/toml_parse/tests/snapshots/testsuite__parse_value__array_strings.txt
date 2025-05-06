@@ -1,0 +1,57 @@
+EventResults {
+    input: "[\"a\", \"b\", \"c\"]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 1..4,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 6..9,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 11..14,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 14..15,
+        },
+    ],
+    errors: [],
+}

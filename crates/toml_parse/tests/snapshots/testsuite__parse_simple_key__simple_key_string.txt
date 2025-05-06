@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"hello\\n \"",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..10,
+        },
+    ],
+    errors: [],
+}

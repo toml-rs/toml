@@ -1,0 +1,42 @@
+EventResults {
+    input: "[1e165,,]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 1..6,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 8..9,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "array",
+            expected: [
+                Description(
+                    "value",
+                ),
+            ],
+            unexpected: 7..8,
+        },
+    ],
+}

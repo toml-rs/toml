@@ -10,12 +10,15 @@ release = false
 
 [features]
 default = []
+simd = ["toml_parse/simd"]
+unsafe = ["toml_parse/unsafe"]
 
 [dependencies]
 serde = { version = "1.0.197", features = ["derive"] }
 
 [dev-dependencies]
 toml = { path = "../toml" }
+toml_parse = { path = "../toml_parse" }
 toml_edit = { path = "../toml_edit" }
 toml_old = { version = "0.5.10", package = "toml" }
 serde_json = "1.0.116"

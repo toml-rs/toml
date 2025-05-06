@@ -1,0 +1,13 @@
+EventResults {
+    input: "'''\nThe first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n'''",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlLiteralString,
+            ),
+            span: 0..93,
+        },
+    ],
+    errors: [],
+}

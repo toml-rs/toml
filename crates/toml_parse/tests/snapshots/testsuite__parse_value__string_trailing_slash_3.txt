@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"\"\"\\\n       The quick brown \\\n       fox jumps over \\\n       the lazy dog.\\\n       \"\"\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
+            span: 0..86,
+        },
+    ],
+    errors: [],
+}

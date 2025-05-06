@@ -1,0 +1,13 @@
+EventResults {
+    input: "''''one_quote''''",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlLiteralString,
+            ),
+            span: 0..17,
+        },
+    ],
+    errors: [],
+}

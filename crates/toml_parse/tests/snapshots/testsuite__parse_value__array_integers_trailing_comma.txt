@@ -1,0 +1,46 @@
+EventResults {
+    input: "[ 100, -2,]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 2..5,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 7..9,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 10..11,
+        },
+    ],
+    errors: [],
+}

@@ -1,0 +1,27 @@
+EventResults {
+    input: "[",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 1..1,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "array",
+            expected: [
+                Literal(
+                    "]",
+                ),
+            ],
+            unexpected: 1..1,
+        },
+    ],
+}

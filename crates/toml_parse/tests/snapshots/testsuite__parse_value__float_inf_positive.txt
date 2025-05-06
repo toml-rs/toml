@@ -1,0 +1,11 @@
+EventResults {
+    input: "+inf",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..4,
+        },
+    ],
+    errors: [],
+}

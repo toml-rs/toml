@@ -1,0 +1,13 @@
+EventResults {
+    input: "'C:\\Users\\nodejs\\templates'",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                LiteralString,
+            ),
+            span: 0..27,
+        },
+    ],
+    errors: [],
+}

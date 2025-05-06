@@ -1,0 +1,11 @@
+EventResults {
+    input: "  ",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..2,
+        },
+    ],
+    errors: [],
+}

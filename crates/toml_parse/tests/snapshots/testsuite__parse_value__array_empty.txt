@@ -1,0 +1,16 @@
+EventResults {
+    input: "[]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 1..2,
+        },
+    ],
+    errors: [],
+}

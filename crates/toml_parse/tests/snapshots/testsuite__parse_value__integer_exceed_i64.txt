@@ -1,0 +1,18 @@
+EventResults {
+    input: "1000000000000000000000000000000000",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..34,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..34,
+            description: "failed to parse i64",
+            expected: [],
+            unexpected: 0..2,
+        },
+    ],
+}

@@ -1,0 +1,48 @@
+EventResults {
+    input: "hello.world = \"a\"\n",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 0..5,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 6..11,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 14..17,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 17..18,
+        },
+    ],
+    errors: [],
+}

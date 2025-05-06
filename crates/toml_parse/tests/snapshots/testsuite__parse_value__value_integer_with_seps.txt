@@ -1,0 +1,11 @@
+EventResults {
+    input: "9_224_617.445_991_228_313",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..25,
+        },
+    ],
+    errors: [],
+}

@@ -1,0 +1,21 @@
+EventResults {
+    input: "{   }",
+    events: [
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..4,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 4..5,
+        },
+    ],
+    errors: [],
+}

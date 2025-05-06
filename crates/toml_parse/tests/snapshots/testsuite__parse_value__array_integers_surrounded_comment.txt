@@ -1,0 +1,91 @@
+EventResults {
+    input: "[# comment\n# comment2\n    1\n\n#sd\n,\n# comment3\n\n]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 1..10,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 11..21,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 22..26,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 27..28,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 28..29,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 29..32,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 32..33,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 33..34,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 34..35,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 35..45,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 45..46,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 46..47,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 47..48,
+        },
+    ],
+    errors: [],
+}

@@ -1,0 +1,13 @@
+EventResults {
+    input: "'Tom \"Dubs\" Preston-Werner'",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                LiteralString,
+            ),
+            span: 0..27,
+        },
+    ],
+    errors: [],
+}

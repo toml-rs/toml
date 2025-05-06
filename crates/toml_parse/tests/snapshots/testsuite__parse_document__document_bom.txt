@@ -1,0 +1,193 @@
+EventResults {
+    input: "\u{feff}\n[package]\nname = \"foo\"\nversion = \"0.0.1\"\nauthors = []\n",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 0..3,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 5..12,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 14..18,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 18..19,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 20..21,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 21..26,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 27..34,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 34..35,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 35..36,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 36..37,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 37..44,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 44..45,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 45..52,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 52..53,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 53..54,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 54..55,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 55..56,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 56..57,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 57..58,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..3,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 0..0,
+        },
+        ParseError {
+            context: 0..3,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 1..1,
+        },
+        ParseError {
+            context: 0..3,
+            description: "unquoted string",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 2..2,
+        },
+    ],
+}

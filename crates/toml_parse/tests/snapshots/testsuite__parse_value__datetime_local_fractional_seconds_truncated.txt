@@ -1,0 +1,11 @@
+EventResults {
+    input: "1987-07-05T17:45:00.123456789012345Z",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..36,
+        },
+    ],
+    errors: [],
+}

@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"\"\"\n\\\n  \\\n\"\"\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
+            span: 0..13,
+        },
+    ],
+    errors: [],
+}

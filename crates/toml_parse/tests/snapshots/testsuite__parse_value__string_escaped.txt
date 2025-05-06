@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"I'm a string. \\\"You can quote me\\\". Name\\tJos\\u00E9\\nLocation\\tSF. \\U0002070E\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..79,
+        },
+    ],
+    errors: [],
+}

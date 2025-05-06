@@ -1,0 +1,11 @@
+EventResults {
+    input: "0o0_755",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..7,
+        },
+    ],
+    errors: [],
+}

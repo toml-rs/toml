@@ -1,0 +1,224 @@
+EventResults {
+    input: "[ { x = 1, a = \"2\" }, {a = \"a\",b = \"b\",     c =    \"c\"} ]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 15..18,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 18..19,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 20..21,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 22..23,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 23..24,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 24..25,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 25..26,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 27..30,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 30..31,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 31..32,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 32..33,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 33..34,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 34..35,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 35..38,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 38..39,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 39..44,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 44..45,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 45..46,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 46..47,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 47..51,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 51..54,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 54..55,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 55..56,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 56..57,
+        },
+    ],
+    errors: [],
+}

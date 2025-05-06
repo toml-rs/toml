@@ -1,0 +1,46 @@
+EventResults {
+    input: "foo = 1979-05-27 # Comment\n",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 0..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 6..16,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 17..26,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 26..27,
+        },
+    ],
+    errors: [],
+}

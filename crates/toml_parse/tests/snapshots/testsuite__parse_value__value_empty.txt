@@ -1,0 +1,16 @@
+EventResults {
+    input: "",
+    events: [],
+    errors: [
+        ParseError {
+            context: 0..0,
+            description: "key-value pair",
+            expected: [
+                Description(
+                    "value",
+                ),
+            ],
+            unexpected: 0..0,
+        },
+    ],
+}

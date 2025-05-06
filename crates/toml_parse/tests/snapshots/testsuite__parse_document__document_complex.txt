@@ -1,0 +1,1056 @@
+EventResults {
+    input: "\n# This is a TOML document.\n\ntitle = \"TOML Example\"\n\n    [owner]\n    name = \"Tom Preston-Werner\"\n    dob = 1979-05-27T07:32:00-08:00 # First class dates\n\n    [database]\n    server = \"192.168.1.1\"\n    ports = [ 8001, 8001, 8002 ]\n    connection_max = 5000\n    enabled = true\n\n    [servers]\n\n    # Indentation (tabs and/or spaces) is allowed but not required\n[servers.alpha]\n    ip = \"10.0.0.1\"\n    dc = \"eqdc10\"\n\n    [servers.beta]\n    ip = \"10.0.0.2\"\n    dc = \"eqdc10\"\n\n    [clients]\n    data = [ [\"gamma\", \"delta\"], [1, 2] ]\n\n    # Line breaks are OK when inside arrays\nhosts = [\n    \"alpha\",\n    \"omega\"\n]\n\n   'some.weird .stuff'   =  \"\"\"\n                         like\n                         that\n                      #   \"\"\" # this broke my syntax highlighting\n   \" also. like \" = '''\nthat\n'''\n   double = 2e39 # this number looks familiar\n# trailing comment",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 1..27,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 27..28,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 28..29,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 29..34,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 34..35,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 35..36,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 36..37,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 37..51,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 51..52,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 52..53,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 53..57,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 57..58,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 58..63,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 63..64,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 64..65,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 65..69,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 69..73,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 73..74,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 74..75,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 75..76,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 76..96,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 96..97,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 97..101,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 101..104,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 104..105,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 105..106,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 106..107,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 107..132,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 132..133,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 133..152,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 152..153,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 153..154,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 154..158,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 158..159,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 159..167,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 167..168,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 168..169,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 169..173,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 173..179,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 179..180,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 180..181,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 181..182,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 182..195,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 195..196,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 196..200,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 200..205,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 205..206,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 206..207,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 207..208,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 208..209,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 209..210,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 210..214,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 214..215,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 215..216,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 216..220,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 220..221,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 221..222,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 222..226,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 226..227,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 227..228,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 228..229,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 229..233,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 233..247,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 247..248,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 248..249,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 249..250,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 250..254,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 254..255,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 255..259,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 259..266,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 266..267,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 267..268,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 268..269,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 269..273,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 273..274,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 274..275,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 275..279,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 279..280,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 280..287,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 287..288,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 288..289,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 289..290,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 290..294,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 294..356,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 356..357,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 357..358,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 358..365,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 365..366,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 366..371,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 371..372,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 372..373,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 373..377,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 377..379,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 379..380,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 380..381,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 381..382,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 382..392,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 392..393,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 393..397,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 397..399,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 399..400,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 400..401,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 401..402,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 402..410,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 410..411,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 411..412,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 412..416,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 416..417,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 417..424,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 424..425,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 425..429,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 429..430,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 430..431,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 431..435,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 435..437,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 437..438,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 438..439,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 439..440,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 440..450,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 450..451,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 451..455,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 455..457,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 457..458,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 458..459,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 459..460,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 460..468,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 468..469,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 469..470,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 470..474,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 474..475,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 475..482,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 482..483,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 483..484,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 484..488,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 488..492,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 492..493,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 493..494,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 494..495,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 495..496,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 496..497,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 497..498,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 498..505,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 505..506,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 506..507,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 507..514,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 514..515,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 515..516,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 516..517,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 517..518,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 518..519,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 519..520,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 520..521,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 521..522,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 522..523,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 523..524,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 524..525,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 525..526,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 526..527,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 527..531,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 531..570,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 570..571,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 571..576,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 576..577,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 577..578,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 578..579,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 579..580,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 580..581,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 581..585,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 585..592,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 592..593,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 593..594,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 594..598,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 598..605,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 605..606,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 606..607,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 607..608,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 608..609,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 609..612,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: Some(
+                LiteralString,
+            ),
+            span: 612..631,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 631..634,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 634..635,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 635..637,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
+            span: 637..730,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 730..731,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 731..766,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 766..767,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 767..770,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 770..784,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 784..785,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 785..786,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 786..787,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlLiteralString,
+            ),
+            span: 787..799,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 799..800,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 800..803,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 803..809,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 809..810,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 810..811,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 811..812,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 812..816,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 816..817,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 817..845,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 845..846,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 846..864,
+        },
+    ],
+    errors: [],
+}

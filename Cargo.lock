@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "anstream"
-version = "0.6.14"
+version = "0.6.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "418c75fa768af9c03be99d17643f93f79bbba589895012a80e3452a19ddda15b"
+checksum = "64e15c1ab1f89faffbf04a634d5e1962e9074f2741eef6d97f3c4e322426d526"
 dependencies = [
  "anstyle",
  "anstyle-parse",
@@ -43,9 +43,9 @@ dependencies = [
 
 [[package]]
 name = "anstyle"
-version = "1.0.7"
+version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "038dfcf04a5feb68e9c60b21c9625a54c2c0616e79b72b0fd87075a056ae1d1b"
+checksum = "1bec1de6f59aedf83baf9ff929c98f2ad654b97c9510f4e70cf6f661d49fd5b1"
 
 [[package]]
 name = "anstyle-parse"
@@ -778,7 +778,7 @@ version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96dcfc4581e3355d70ac2ee14cfdf81dce3d85c85f1ed9e2c1d3013f53b3436b"
 dependencies = [
- "anstream 0.6.14",
+ "anstream 0.6.15",
  "anstyle",
  "normalize-line-endings",
  "similar",
@@ -791,7 +791,7 @@ version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16569f53ca23a41bb6f62e0a5084aa1661f4814a67fa33696a79073e03a664af"
 dependencies = [
- "anstream 0.6.14",
+ "anstream 0.6.15",
 ]
 
 [[package]]
@@ -937,6 +937,7 @@ dependencies = [
  "toml 0.5.11",
  "toml 0.8.22",
  "toml_edit",
+ "toml_parse",
 ]
 
 [[package]]
@@ -972,6 +973,17 @@ version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",
  "toml_edit",
+]
+
+[[package]]
+name = "toml_parse"
+version = "0.1.0"
+dependencies = [
+ "anstream 0.6.15",
+ "anstyle",
+ "snapbox",
+ "toml_datetime",
+ "winnow",
 ]
 
 [[package]]

@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"Jos\\u00E9\\n\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..13,
+        },
+    ],
+    errors: [],
+}

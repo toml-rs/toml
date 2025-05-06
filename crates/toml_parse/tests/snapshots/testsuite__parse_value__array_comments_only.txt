@@ -1,0 +1,46 @@
+EventResults {
+    input: "[# comment\n# comment2\n\n\n]",
+    events: [
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 1..10,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Comment,
+            encoding: None,
+            span: 11..21,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 22..23,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 23..24,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 24..25,
+        },
+    ],
+    errors: [],
+}

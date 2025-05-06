@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"\"\"\nRoses are red\nViolets are blue\"\"\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                MlBasicString,
+            ),
+            span: 0..37,
+        },
+    ],
+    errors: [],
+}

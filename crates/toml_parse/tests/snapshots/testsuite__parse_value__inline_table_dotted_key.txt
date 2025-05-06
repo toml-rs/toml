@@ -1,0 +1,63 @@
+EventResults {
+    input: "{ hello.world = \"a\" }",
+    events: [
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 2..7,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 8..13,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 16..19,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 20..21,
+        },
+    ],
+    errors: [],
+}

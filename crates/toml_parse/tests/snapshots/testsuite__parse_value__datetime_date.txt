@@ -1,0 +1,11 @@
+EventResults {
+    input: "1979-05-27",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..10,
+        },
+    ],
+    errors: [],
+}

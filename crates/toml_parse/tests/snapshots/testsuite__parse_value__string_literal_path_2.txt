@@ -1,0 +1,13 @@
+EventResults {
+    input: "'\\\\ServerX\\admin$\\system32\\'",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                LiteralString,
+            ),
+            span: 0..28,
+        },
+    ],
+    errors: [],
+}

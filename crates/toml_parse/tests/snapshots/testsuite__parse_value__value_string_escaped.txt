@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"\\\\\\\"\\b/\\f\\n\\r\\t\\u00E9\\U000A0000\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..33,
+        },
+    ],
+    errors: [],
+}

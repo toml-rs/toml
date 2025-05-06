@@ -1,0 +1,11 @@
+EventResults {
+    input: "5_349_221",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..9,
+        },
+    ],
+    errors: [],
+}

@@ -1,0 +1,52 @@
+EventResults {
+    input: "{a = 1e165",
+    events: [
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 5..10,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 10..10,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 0..1,
+            description: "inline table",
+            expected: [
+                Literal(
+                    "}",
+                ),
+            ],
+            unexpected: 10..10,
+        },
+    ],
+}

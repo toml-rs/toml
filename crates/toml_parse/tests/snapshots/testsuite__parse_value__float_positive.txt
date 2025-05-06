@@ -1,0 +1,11 @@
+EventResults {
+    input: "+1.0",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..4,
+        },
+    ],
+    errors: [],
+}
