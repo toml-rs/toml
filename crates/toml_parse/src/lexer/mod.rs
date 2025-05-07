@@ -26,10 +26,17 @@ pub struct Lexer<'i> {
 
 impl<'i> Lexer<'i> {
     pub(crate) fn new(input: &'i str) -> Self {
-        Lexer {
-            stream: Stream::new(input),
-            eof: false,
+        let mut stream = Stream::new(input);
+        if input.as_bytes().starts_with(BOM) {
+            let offset = BOM.len();
+            #[cfg(feature = "unsafe")] // SAFETY: only called when next character is ASCII
+            unsafe {
+                stream.next_slice_unchecked(offset)
+            };
+            #[cfg(not(feature = "unsafe"))]
+            stream.next_slice(offset);
         }
+        Lexer { stream, eof: false }
     }
 
     #[cfg(feature = "alloc")]
@@ -91,6 +98,8 @@ impl Iterator for Lexer<'_> {
         Some(token)
     }
 }
+
+const BOM: &[u8] = b"\xEF\xBB\xBF";
 
 pub(crate) type Stream<'i> = winnow::stream::LocatingSlice<&'i str>;
 
