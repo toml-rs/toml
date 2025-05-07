@@ -59,6 +59,206 @@ impl Test {
 }
 
 #[test]
+fn assign_whitespace() {
+    let input = r#"
+ # top comment
+ [ grandparent . parent ]  # table comment
+ # table-value sep comment
+ key . child = 'value' # key comment
+ # table-table sep comment
+ [ another . table ]  # table comment
+ # final comment
+"#;
+    assert_data_eq!(
+        input.parse::<DocumentMut>().unwrap().to_debug(),
+        str![[r#"
+DocumentMut {
+    root: Table(
+        Table {
+            decor: Decor {
+                prefix: "default",
+                suffix: "default",
+            },
+            implicit: false,
+            dotted: false,
+            doc_position: None,
+            span: None,
+            items: {
+                Key {
+                    key: "grandparent",
+                    repr: Some(
+                        "grandparent",
+                    ),
+                    leaf_decor: Decor {
+                        prefix: "default",
+                        suffix: "default",
+                    },
+                    dotted_decor: Decor {
+                        prefix: empty,
+                        suffix: " ",
+                    },
+                }: Table(
+                    Table {
+                        decor: Decor {
+                            prefix: "default",
+                            suffix: "default",
+                        },
+                        implicit: true,
+                        dotted: false,
+                        doc_position: None,
+                        span: None,
+                        items: {
+                            Key {
+                                key: "parent",
+                                repr: Some(
+                                    "parent",
+                                ),
+                                leaf_decor: Decor {
+                                    prefix: " ",
+                                    suffix: " ",
+                                },
+                                dotted_decor: Decor {
+                                    prefix: " ",
+                                    suffix: empty,
+                                },
+                            }: Table(
+                                Table {
+                                    decor: Decor {
+                                        prefix: "\n # top comment\n ",
+                                        suffix: "  # table comment",
+                                    },
+                                    implicit: false,
+                                    dotted: false,
+                                    doc_position: Some(
+                                        1,
+                                    ),
+                                    span: None,
+                                    items: {
+                                        Key {
+                                            key: "key",
+                                            repr: Some(
+                                                "key",
+                                            ),
+                                            leaf_decor: Decor {
+                                                prefix: "default",
+                                                suffix: "default",
+                                            },
+                                            dotted_decor: Decor {
+                                                prefix: empty,
+                                                suffix: " ",
+                                            },
+                                        }: Table(
+                                            Table {
+                                                decor: Decor {
+                                                    prefix: "default",
+                                                    suffix: "default",
+                                                },
+                                                implicit: true,
+                                                dotted: true,
+                                                doc_position: None,
+                                                span: None,
+                                                items: {
+                                                    Key {
+                                                        key: "child",
+                                                        repr: Some(
+                                                            "child",
+                                                        ),
+                                                        leaf_decor: Decor {
+                                                            prefix: " # table-value sep comment\n ",
+                                                            suffix: " ",
+                                                        },
+                                                        dotted_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: empty,
+                                                        },
+                                                    }: Value(
+                                                        String(
+                                                            Formatted {
+                                                                value: "value",
+                                                                repr: "'value'",
+                                                                decor: Decor {
+                                                                    prefix: " ",
+                                                                    suffix: " # key comment",
+                                                                },
+                                                            },
+                                                        ),
+                                                    ),
+                                                },
+                                            },
+                                        ),
+                                    },
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Key {
+                    key: "another",
+                    repr: Some(
+                        "another",
+                    ),
+                    leaf_decor: Decor {
+                        prefix: "default",
+                        suffix: "default",
+                    },
+                    dotted_decor: Decor {
+                        prefix: empty,
+                        suffix: " ",
+                    },
+                }: Table(
+                    Table {
+                        decor: Decor {
+                            prefix: "default",
+                            suffix: "default",
+                        },
+                        implicit: true,
+                        dotted: false,
+                        doc_position: None,
+                        span: None,
+                        items: {
+                            Key {
+                                key: "table",
+                                repr: Some(
+                                    "table",
+                                ),
+                                leaf_decor: Decor {
+                                    prefix: " ",
+                                    suffix: " ",
+                                },
+                                dotted_decor: Decor {
+                                    prefix: " ",
+                                    suffix: empty,
+                                },
+                            }: Table(
+                                Table {
+                                    decor: Decor {
+                                        prefix: " # table-table sep comment\n ",
+                                        suffix: "  # table comment",
+                                    },
+                                    implicit: false,
+                                    dotted: false,
+                                    doc_position: Some(
+                                        2,
+                                    ),
+                                    span: None,
+                                    items: {},
+                                },
+                            ),
+                        },
+                    },
+                ),
+            },
+        },
+    ),
+    trailing: " # final comment\n",
+}
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
 fn test_add_root_decor() {
     given(
         r#"[package]
