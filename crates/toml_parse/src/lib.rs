@@ -14,6 +14,8 @@ extern crate alloc;
 #[macro_use]
 mod macros;
 
+#[cfg(feature = "unstable-debug")]
+pub(crate) mod debug;
 mod error;
 mod source;
 

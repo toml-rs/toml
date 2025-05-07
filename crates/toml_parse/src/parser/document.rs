@@ -2,6 +2,10 @@ use winnow::stream::Stream as _;
 use winnow::stream::TokenSlice;
 
 use super::EventReceiver;
+#[cfg(feature = "unstable-debug")]
+use crate::debug::DebugErrorSink;
+#[cfg(feature = "unstable-debug")]
+use crate::debug::DebugEventReceiver;
 use crate::decode::Encoding;
 use crate::lexer::Token;
 use crate::lexer::TokenKind;
@@ -17,9 +21,13 @@ pub fn parse_document(
 ) {
     let mut tokens = TokenSlice::new(tokens);
     #[cfg(feature = "unstable-debug")]
-    let mut receiver = super::DebugEventReceiver::new(receiver);
+    let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     document(&mut tokens, receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -28,9 +36,13 @@ pub fn parse_document(
 pub fn parse_key(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &mut dyn ErrorSink) {
     let mut tokens = TokenSlice::new(tokens);
     #[cfg(feature = "unstable-debug")]
-    let mut receiver = super::DebugEventReceiver::new(receiver);
+    let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     key(&mut tokens, "key", receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -43,9 +55,13 @@ pub fn parse_simple_key(
 ) {
     let mut tokens = TokenSlice::new(tokens);
     #[cfg(feature = "unstable-debug")]
-    let mut receiver = super::DebugEventReceiver::new(receiver);
+    let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     simple_key(&mut tokens, "key", receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -54,9 +70,13 @@ pub fn parse_simple_key(
 pub fn parse_value(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &mut dyn ErrorSink) {
     let mut tokens = TokenSlice::new(tokens);
     #[cfg(feature = "unstable-debug")]
-    let mut receiver = super::DebugEventReceiver::new(receiver);
+    let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     value(&mut tokens, receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -373,6 +393,15 @@ fn on_expression_key<'i>(
     opt_whitespace(tokens, receiver, error);
 
     let Some(eq_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Equals)) else {
+        if let Some(peek_token) = tokens.first() {
+            let span = peek_token.span().before();
+            error.report_error(ParseError {
+                context: span,
+                description: "expression",
+                expected: &[Expected::Literal("=")],
+                unexpected: span,
+            });
+        }
         ignore_to_newline(tokens, receiver, error);
         return;
     };

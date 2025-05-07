@@ -104,12 +104,26 @@ impl<'i> EventResults<'i> {
         assert_data_eq!(self.to_debug(), expected);
         if !self.events.is_empty() {
             let spans = self.events.iter().map(|t| t.span()).collect::<Vec<_>>();
-            assert_eq!(spans.first().unwrap().start(), 0);
-            assert_eq!(spans.last().unwrap().end(), self.input.len());
+            if !self.input.as_bytes().starts_with(BOM) {
+                assert_eq!(
+                    spans.first().unwrap().start(),
+                    0,
+                    "first span needs to start at 0"
+                );
+            }
+            assert_eq!(
+                spans.last().unwrap().end(),
+                self.input.len(),
+                "last span needs to be at the end"
+            );
             for i in 0..(spans.len() - 1) {
                 let current = &spans[i];
                 let next = &spans[i + 1];
-                assert_eq!(current.end(), next.start());
+                assert_eq!(
+                    current.end(),
+                    next.start(),
+                    "events must not have gaps in spans"
+                );
             }
         }
         if self.events.iter().any(|e| e.kind() == EventKind::Error) {
@@ -117,3 +131,5 @@ impl<'i> EventResults<'i> {
         }
     }
 }
+
+const BOM: &[u8] = b"\xEF\xBB\xBF";

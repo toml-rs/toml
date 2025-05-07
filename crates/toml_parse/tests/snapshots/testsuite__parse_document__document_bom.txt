@@ -2,11 +2,6 @@ EventResults {
     input: "\u{feff}\n[package]\nname = \"foo\"\nversion = \"0.0.1\"\nauthors = []\n",
     events: [
         Event {
-            kind: SimpleKey,
-            encoding: None,
-            span: 0..3,
-        },
-        Event {
             kind: Newline,
             encoding: None,
             span: 3..4,
@@ -131,63 +126,5 @@ EventResults {
             span: 57..58,
         },
     ],
-    errors: [
-        ParseError {
-            context: 0..3,
-            description: "unquoted string",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 0..0,
-        },
-        ParseError {
-            context: 0..3,
-            description: "unquoted string",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 1..1,
-        },
-        ParseError {
-            context: 0..3,
-            description: "unquoted string",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 2..2,
-        },
-    ],
+    errors: [],
 }
