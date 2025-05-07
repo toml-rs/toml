@@ -32,6 +32,7 @@ parse = ["dep:winnow"]
 display = ["dep:toml_write"]
 perf = ["dep:kstring"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
+unstable-debug = ["winnow?/debug"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
 # without any consideration for overflowing the stack. Additionally you will
 # need to be careful around other recursive operations on the parsed result
