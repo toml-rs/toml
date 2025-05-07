@@ -26,6 +26,27 @@ fn render_event(span: Span, text: &str, style: anstyle::Style) {
     anstream::eprintln!("{:depth$}{style}{text}: {span:?}{style:#}", "");
 }
 
+pub(crate) struct DebugErrorSink<'s> {
+    sink: &'s mut dyn ErrorSink,
+}
+
+impl<'s> DebugErrorSink<'s> {
+    pub(crate) fn new(sink: &'s mut dyn ErrorSink) -> Self {
+        Self { sink }
+    }
+}
+
+impl ErrorSink for DebugErrorSink<'_> {
+    fn report_error(&mut self, error: crate::ParseError) {
+        render_event(
+            error.context,
+            &format!("{error:?}"),
+            anstyle::AnsiColor::Red.on_default(),
+        );
+        self.sink.report_error(error);
+    }
+}
+
 pub(crate) struct DebugEventReceiver<'r> {
     receiver: &'r mut dyn crate::parser::EventReceiver,
 }

@@ -3,6 +3,8 @@ use winnow::stream::TokenSlice;
 
 use super::EventReceiver;
 #[cfg(feature = "unstable-debug")]
+use crate::debug::DebugErrorSink;
+#[cfg(feature = "unstable-debug")]
 use crate::debug::DebugEventReceiver;
 use crate::decode::Encoding;
 use crate::lexer::Token;
@@ -22,6 +24,10 @@ pub fn parse_document(
     let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     document(&mut tokens, receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -33,6 +39,10 @@ pub fn parse_key(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &mut
     let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     key(&mut tokens, "key", receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -48,6 +58,10 @@ pub fn parse_simple_key(
     let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     simple_key(&mut tokens, "key", receiver, error);
     eof(&mut tokens, receiver, error);
 }
@@ -59,6 +73,10 @@ pub fn parse_value(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &m
     let mut receiver = DebugEventReceiver::new(receiver);
     #[cfg(feature = "unstable-debug")]
     let receiver = &mut receiver;
+    #[cfg(feature = "unstable-debug")]
+    let mut error = DebugErrorSink::new(error);
+    #[cfg(feature = "unstable-debug")]
+    let error = &mut error;
     value(&mut tokens, receiver, error);
     eof(&mut tokens, receiver, error);
 }
