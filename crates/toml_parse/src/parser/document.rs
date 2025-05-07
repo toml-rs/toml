@@ -393,6 +393,15 @@ fn on_expression_key<'i>(
     opt_whitespace(tokens, receiver, error);
 
     let Some(eq_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Equals)) else {
+        if let Some(peek_token) = tokens.first() {
+            let span = peek_token.span().before();
+            error.report_error(ParseError {
+                context: span,
+                description: "expression",
+                expected: &[Expected::Literal("=")],
+                unexpected: span,
+            });
+        }
         ignore_to_newline(tokens, receiver, error);
         return;
     };

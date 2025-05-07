@@ -56,6 +56,16 @@ EventResults {
     ],
     errors: [
         ParseError {
+            context: 37..37,
+            description: "expression",
+            expected: [
+                Literal(
+                    "=",
+                ),
+            ],
+            unexpected: 37..37,
+        },
+        ParseError {
             context: 36..37,
             description: "unquoted string",
             expected: [
