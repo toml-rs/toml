@@ -2,9 +2,9 @@ use winnow::stream::Stream as _;
 use winnow::stream::TokenSlice;
 
 use super::EventReceiver;
-#[cfg(feature = "unstable-debug")]
+#[cfg(feature = "debug")]
 use crate::debug::DebugErrorSink;
-#[cfg(feature = "unstable-debug")]
+#[cfg(feature = "debug")]
 use crate::debug::DebugEventReceiver;
 use crate::decode::Encoding;
 use crate::lexer::Token;
@@ -20,13 +20,13 @@ pub fn parse_document(
     error: &mut dyn ErrorSink,
 ) {
     let mut tokens = TokenSlice::new(tokens);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut receiver = DebugEventReceiver::new(receiver);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let receiver = &mut receiver;
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut error = DebugErrorSink::new(error);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let error = &mut error;
     document(&mut tokens, receiver, error);
     eof(&mut tokens, receiver, error);
@@ -35,13 +35,13 @@ pub fn parse_document(
 /// Parse lexed tokens into [`Event`][super::Event]s
 pub fn parse_key(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &mut dyn ErrorSink) {
     let mut tokens = TokenSlice::new(tokens);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut receiver = DebugEventReceiver::new(receiver);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let receiver = &mut receiver;
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut error = DebugErrorSink::new(error);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let error = &mut error;
     key(&mut tokens, "key", receiver, error);
     eof(&mut tokens, receiver, error);
@@ -54,13 +54,13 @@ pub fn parse_simple_key(
     error: &mut dyn ErrorSink,
 ) {
     let mut tokens = TokenSlice::new(tokens);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut receiver = DebugEventReceiver::new(receiver);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let receiver = &mut receiver;
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut error = DebugErrorSink::new(error);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let error = &mut error;
     simple_key(&mut tokens, "key", receiver, error);
     eof(&mut tokens, receiver, error);
@@ -69,13 +69,13 @@ pub fn parse_simple_key(
 /// Parse lexed tokens into [`Event`][super::Event]s
 pub fn parse_value(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &mut dyn ErrorSink) {
     let mut tokens = TokenSlice::new(tokens);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut receiver = DebugEventReceiver::new(receiver);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let receiver = &mut receiver;
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let mut error = DebugErrorSink::new(error);
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let error = &mut error;
     value(&mut tokens, receiver, error);
     eof(&mut tokens, receiver, error);

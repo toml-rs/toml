@@ -31,7 +31,7 @@ std = ["alloc"]
 simd = ["winnow/simd"]
 unsafe = []
 
-unstable-debug = ["std", "dep:anstream", "dep:anstyle"]
+debug = ["std", "dep:anstream", "dep:anstyle"]
 
 [dependencies]
 anstream = { version = "0.6.15", optional = true }
