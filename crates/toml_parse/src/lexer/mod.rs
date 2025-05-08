@@ -56,7 +56,7 @@ impl Iterator for Lexer<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Some(token) = self.stream.as_bstr().first() else {
+        let Some(peek_byte) = self.stream.as_bstr().first() else {
             if self.eof {
                 return None;
             } else {
@@ -66,42 +66,46 @@ impl Iterator for Lexer<'_> {
                 return Some(Token::new(TokenKind::Eof, span));
             }
         };
-        let token = match token {
-            b'.' => lex_ascii_char(&mut self.stream, TokenKind::Dot),
-            b'=' => lex_ascii_char(&mut self.stream, TokenKind::Equals),
-            b',' => lex_ascii_char(&mut self.stream, TokenKind::Comma),
-            b'[' => lex_ascii_char(&mut self.stream, TokenKind::LeftSquareBracket),
-            b']' => lex_ascii_char(&mut self.stream, TokenKind::RightSquareBracket),
-            b'{' => lex_ascii_char(&mut self.stream, TokenKind::LeftCurlyBracket),
-            b'}' => lex_ascii_char(&mut self.stream, TokenKind::RightCurlyBracket),
-            b' ' => lex_whitespace(&mut self.stream),
-            b'\t' => lex_whitespace(&mut self.stream),
-            b'#' => lex_comment(&mut self.stream),
-            b'\r' => lex_crlf(&mut self.stream),
-            b'\n' => lex_ascii_char(&mut self.stream, TokenKind::Newline),
-            b'\'' => {
-                if self.stream.starts_with(ML_LITERAL_STRING_DELIM) {
-                    lex_ml_literal_string(&mut self.stream)
-                } else {
-                    lex_literal_string(&mut self.stream)
-                }
-            }
-            b'"' => {
-                if self.stream.starts_with(ML_BASIC_STRING_DELIM) {
-                    lex_ml_basic_string(&mut self.stream)
-                } else {
-                    lex_basic_string(&mut self.stream)
-                }
-            }
-            _ => lex_atom(&mut self.stream),
-        };
-        Some(token)
+        Some(process_token(*peek_byte, &mut self.stream))
     }
 }
 
 const BOM: &[u8] = b"\xEF\xBB\xBF";
 
 pub(crate) type Stream<'i> = winnow::stream::LocatingSlice<&'i str>;
+
+fn process_token(peek_byte: u8, stream: &mut Stream<'_>) -> Token {
+    let token = match peek_byte {
+        b'.' => lex_ascii_char(stream, TokenKind::Dot),
+        b'=' => lex_ascii_char(stream, TokenKind::Equals),
+        b',' => lex_ascii_char(stream, TokenKind::Comma),
+        b'[' => lex_ascii_char(stream, TokenKind::LeftSquareBracket),
+        b']' => lex_ascii_char(stream, TokenKind::RightSquareBracket),
+        b'{' => lex_ascii_char(stream, TokenKind::LeftCurlyBracket),
+        b'}' => lex_ascii_char(stream, TokenKind::RightCurlyBracket),
+        b' ' => lex_whitespace(stream),
+        b'\t' => lex_whitespace(stream),
+        b'#' => lex_comment(stream),
+        b'\r' => lex_crlf(stream),
+        b'\n' => lex_ascii_char(stream, TokenKind::Newline),
+        b'\'' => {
+            if stream.starts_with(ML_LITERAL_STRING_DELIM) {
+                lex_ml_literal_string(stream)
+            } else {
+                lex_literal_string(stream)
+            }
+        }
+        b'"' => {
+            if stream.starts_with(ML_BASIC_STRING_DELIM) {
+                lex_ml_basic_string(stream)
+            } else {
+                lex_basic_string(stream)
+            }
+        }
+        _ => lex_atom(stream),
+    };
+    token
+}
 
 /// Process an ASCII character token
 ///
