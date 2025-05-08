@@ -904,9 +904,9 @@ dependencies = [
 
 [[package]]
 name = "toml-test"
-version = "2.0.1"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a342200769d5323a4c2f3415f74d4489af34e465fc2a77bbafae9784c4f15e56"
+checksum = "53982b927f6461ca125109a60be318c2a3d9d90dcdeb01a0800d6575303749c5"
 dependencies = [
  "chrono",
  "ryu",
@@ -916,18 +916,18 @@ dependencies = [
 
 [[package]]
 name = "toml-test-data"
-version = "2.3.1"
+version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a73cc38bcc02366c009331876cb0857f8941942ef080f0f2c61de0de620c490"
+checksum = "237d73ae5b2aff9ff3049927b6825e69455591db9c59deedce622b0719eb18ba"
 dependencies = [
  "include_dir",
 ]
 
 [[package]]
 name = "toml-test-harness"
-version = "1.3.1"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8dd3d6b7c7e954a1d2084f41dc8a070ef9578af8714645744311d0fd7342b82"
+checksum = "a6603b6d4f82a25179a629f8d9a131aec8cc8829ef7a50cdaadbd6f9cfc5fdf3"
 dependencies = [
  "ignore",
  "libtest-mimic",
