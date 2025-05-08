@@ -56,7 +56,7 @@ impl Iterator for Lexer<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Some(token) = self.stream.as_bstr().first() else {
+        let Some(peek_byte) = self.stream.as_bstr().first() else {
             if self.eof {
                 return None;
             } else {
@@ -66,7 +66,7 @@ impl Iterator for Lexer<'_> {
                 return Some(Token::new(TokenKind::Eof, span));
             }
         };
-        Some(process_token(*token, &mut self.stream))
+        Some(process_token(*peek_byte, &mut self.stream))
     }
 }
 
@@ -74,8 +74,8 @@ const BOM: &[u8] = b"\xEF\xBB\xBF";
 
 pub(crate) type Stream<'i> = winnow::stream::LocatingSlice<&'i str>;
 
-fn process_token(token: u8, stream: &mut Stream<'_>) -> Token {
-    let token = match token {
+fn process_token(peek_byte: u8, stream: &mut Stream<'_>) -> Token {
+    let token = match peek_byte {
         b'.' => lex_ascii_char(stream, TokenKind::Dot),
         b'=' => lex_ascii_char(stream, TokenKind::Equals),
         b',' => lex_ascii_char(stream, TokenKind::Comma),
