@@ -80,7 +80,7 @@ impl TokenKind {
             TokenKind::RightSquareBracket => "`]`",
             TokenKind::LeftCurlyBracket => "`{`",
             TokenKind::RightCurlyBracket => "`}`",
-            TokenKind::Whitespace => "whitedpace",
+            TokenKind::Whitespace => "whitespace",
             TokenKind::Comment => "comment",
             TokenKind::Newline => "newline",
             TokenKind::LiteralString => "literal string",
