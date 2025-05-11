@@ -2,10 +2,11 @@
 //!
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
-use serde::de::DeserializeOwned;
+use serde::de::{DeserializeOwned, IntoDeserializer};
 
 mod array;
 mod datetime;
+mod item;
 mod key;
 mod spanned;
 mod table;
@@ -269,7 +270,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
+impl IntoDeserializer<'_, Error> for Deserializer {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -277,7 +278,7 @@ impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
+impl IntoDeserializer<'_, Error> for crate::DocumentMut {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -285,7 +286,7 @@ impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::ImDocument<String> {
+impl IntoDeserializer<'_, Error> for crate::ImDocument<String> {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
