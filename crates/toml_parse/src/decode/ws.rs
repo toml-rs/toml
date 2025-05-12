@@ -54,7 +54,7 @@ pub(crate) const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
     (0x09, 0x20..=0x7E, NON_ASCII);
 
-/// Parse newlinw
+/// Parse newline
 ///
 /// ```bnf
 ///;; Newline

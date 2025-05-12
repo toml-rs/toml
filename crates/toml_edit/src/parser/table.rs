@@ -19,7 +19,7 @@ pub(crate) const STD_TABLE_OPEN: u8 = b'[';
 const STD_TABLE_CLOSE: u8 = b']';
 // array-table-open  = %x5B.5B ws  ; [[ Double left square bracket
 const ARRAY_TABLE_OPEN: &[u8] = b"[[";
-// array-table-close = ws %x5D.5D  ; ]] Double right quare bracket
+// array-table-close = ws %x5D.5D  ; ]] Double right square bracket
 const ARRAY_TABLE_CLOSE: &[u8] = b"]]";
 
 // ;; Standard Table
