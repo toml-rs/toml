@@ -23,8 +23,13 @@ pre-release-replacements = [
   {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/toml-rs/toml/compare/{{tag_name}}...HEAD", exactly=1},
 ]
 
+[features]
+default = ["std"]
+alloc = []
+std = ["alloc"]
+
 [dependencies]
-serde = { version = "1.0.145", optional = true }
+serde = { version = "1.0.145", optional = true, default-features = false }
 
 [dev-dependencies]
 serde = "1"

@@ -1,5 +1,5 @@
-use std::cmp::Ordering;
-use std::hash::{Hash, Hasher};
+use core::cmp::Ordering;
+use core::hash::{Hash, Hasher};
 
 // Currently serde itself doesn't have a spanned type, so we map our `Spanned`
 // to a special value in the serde data model. Namely one with these special
@@ -29,7 +29,7 @@ pub fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
 #[derive(Clone, Debug)]
 pub struct Spanned<T> {
     /// Byte range
-    span: std::ops::Range<usize>,
+    span: core::ops::Range<usize>,
     /// The spanned value.
     value: T,
 }
@@ -88,12 +88,12 @@ impl<T> Spanned<T> {
     /// #
     /// # type DetailedDependency = std::collections::BTreeMap<String, String>;
     /// ```
-    pub fn new(range: std::ops::Range<usize>, value: T) -> Self {
+    pub fn new(range: core::ops::Range<usize>, value: T) -> Self {
         Spanned { span: range, value }
     }
 
     /// Byte range
-    pub fn span(&self) -> std::ops::Range<usize> {
+    pub fn span(&self) -> core::ops::Range<usize> {
         self.span.clone()
     }
 
@@ -113,19 +113,22 @@ impl<T> Spanned<T> {
     }
 }
 
-impl<T: std::fmt::Display> std::fmt::Display for Spanned<T> {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: core::fmt::Display> core::fmt::Display for Spanned<T> {
+    fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.get_ref().fmt(fmt)
     }
 }
 
-impl std::borrow::Borrow<str> for Spanned<String> {
+#[cfg(feature = "alloc")]
+#[allow(unused_qualifications)]
+impl core::borrow::Borrow<str> for Spanned<alloc::string::String> {
     fn borrow(&self) -> &str {
         self.get_ref()
     }
 }
 
-impl std::borrow::Borrow<str> for Spanned<std::borrow::Cow<'_, str>> {
+#[cfg(feature = "alloc")]
+impl core::borrow::Borrow<str> for Spanned<alloc::borrow::Cow<'_, str>> {
     fn borrow(&self) -> &str {
         self.get_ref()
     }
@@ -178,7 +181,7 @@ where
     where
         D: serde::de::Deserializer<'de>,
     {
-        struct SpannedVisitor<T>(::std::marker::PhantomData<T>);
+        struct SpannedVisitor<T>(::core::marker::PhantomData<T>);
 
         impl<'de, T> serde::de::Visitor<'de> for SpannedVisitor<T>
         where
@@ -186,7 +189,7 @@ where
         {
             type Value = Spanned<T>;
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 formatter.write_str("a spanned value")
             }
 
@@ -239,7 +242,7 @@ where
 
         static FIELDS: [&str; 3] = [START_FIELD, END_FIELD, VALUE_FIELD];
 
-        let visitor = SpannedVisitor(::std::marker::PhantomData);
+        let visitor = SpannedVisitor(::core::marker::PhantomData);
 
         deserializer.deserialize_struct(NAME, &FIELDS, visitor)
     }
