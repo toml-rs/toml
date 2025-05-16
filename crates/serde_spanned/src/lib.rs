@@ -14,6 +14,9 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]
+#![no_std]
+
+extern crate alloc;
 
 mod spanned;
 pub use crate::spanned::Spanned;
