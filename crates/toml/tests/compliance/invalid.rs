@@ -152,8 +152,9 @@ duplicate key `a` in table `t2`
 #[test]
 fn emoji_error_span() {
     let input = "key = 😀";
+    dbg!(input);
     let err = input.parse::<crate::RustDocument>().unwrap_err();
-    dbg!(err.span());
+    dbg!(&err);
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, "😀");
 }
@@ -161,8 +162,9 @@ fn emoji_error_span() {
 #[test]
 fn text_error_span() {
     let input = "key = asdf";
+    dbg!(input);
     let err = input.parse::<crate::RustDocument>().unwrap_err();
-    dbg!(err.span());
+    dbg!(&err);
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, "a");
 }
@@ -170,8 +172,9 @@ fn text_error_span() {
 #[test]
 fn fuzzed_68144_error_span() {
     let input = "key = \"\\ᾂr\"";
+    dbg!(input);
     let err = input.parse::<crate::RustDocument>().unwrap_err();
-    dbg!(err.span());
+    dbg!(&err);
     let actual = &input[err.span().unwrap()];
     assert_eq!(actual, "ᾂ");
 }
