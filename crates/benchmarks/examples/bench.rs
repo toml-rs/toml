@@ -24,27 +24,12 @@ fn main() -> Result<(), lexopt::Error> {
         Parser::Decoded => {
             let source = ::toml_parse::Source::new(args.data.content());
             let tokens = source.lex().into_vec();
-            let mut events = Vec::with_capacity(tokens.len());
+            let mut events = Vec::<toml_parse::parser::Event>::with_capacity(tokens.len());
+            let mut receiver = toml_parse::parser::ValidateWhitespace::new(&mut events, source);
             let mut _errors = Vec::with_capacity(tokens.len());
-            ::toml_parse::parser::parse_document(&tokens, &mut events, &mut _errors);
+            ::toml_parse::parser::parse_document(&tokens, &mut receiver, &mut _errors);
             for event in &events {
-                if event.kind() == ::toml_parse::parser::EventKind::Comment {
-                    #[cfg(feature = "unsafe")]
-                    // SAFETY: `EventReceiver` should always receive valid
-                    // spans
-                    let raw = unsafe { source.get_unchecked(event) };
-                    #[cfg(not(feature = "unsafe"))]
-                    let raw = source.get(event).unwrap();
-                    raw.decode_comment(&mut _errors);
-                } else if event.kind() == ::toml_parse::parser::EventKind::Newline {
-                    #[cfg(feature = "unsafe")]
-                    // SAFETY: `EventReceiver` should always receive valid
-                    // spans
-                    let raw = unsafe { source.get_unchecked(event) };
-                    #[cfg(not(feature = "unsafe"))]
-                    let raw = source.get(event).unwrap();
-                    raw.decode_newline(&mut _errors);
-                } else if event.kind() == ::toml_parse::parser::EventKind::SimpleKey {
+                if event.kind() == ::toml_parse::parser::EventKind::SimpleKey {
                     #[cfg(feature = "unsafe")]
                     // SAFETY: `EventReceiver` should always receive valid
                     // spans
