@@ -67,7 +67,7 @@ EventResults {
         },
         ParseError {
             context: 36..37,
-            description: "unquoted string",
+            description: "invalid unquoted key",
             expected: [
                 Description(
                     "letters",

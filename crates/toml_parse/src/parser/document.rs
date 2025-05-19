@@ -230,7 +230,7 @@ fn on_table(
 
     opt_whitespace(tokens, receiver, error);
 
-    let valid_key = key(tokens, "table", receiver, error);
+    let valid_key = key(tokens, "invalid table", receiver, error);
 
     opt_whitespace(tokens, receiver, error);
 
@@ -266,14 +266,14 @@ fn on_table(
         if is_array_table {
             error.report_error(ParseError {
                 context,
-                description: "array table",
+                description: "unclosed array table",
                 expected: &[Expected::Literal("]]")],
                 unexpected: last_key_token.span().after(),
             });
         } else {
             error.report_error(ParseError {
                 context,
-                description: "table",
+                description: "unclosed table",
                 expected: &[Expected::Literal("]")],
                 unexpected: last_key_token.span().after(),
             });
@@ -1466,7 +1466,7 @@ fn on_missing_std_table(
 ) {
     error.report_error(ParseError {
         context: token.span(),
-        description: "table",
+        description: "missing table open",
         expected: &[Expected::Literal("[")],
         unexpected: token.span().before(),
     });

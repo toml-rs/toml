@@ -359,9 +359,9 @@ pub(crate) fn decode_invalid<'i>(
 ) -> ScalarKind {
     error.report_error(ParseError {
         context: Span::new_unchecked(0, raw.len()),
-        description: UNQUOTED_STRING,
+        description: "unquoted strings cannot be values",
         expected: &[Expected::Description("literal string")],
-        unexpected: Span::new_unchecked(0, 0),
+        unexpected: Span::new_unchecked(0, raw.len()),
     });
 
     output.clear();

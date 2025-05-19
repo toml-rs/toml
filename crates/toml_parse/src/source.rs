@@ -2,6 +2,7 @@ use crate::decode::Encoding;
 use crate::decode::StringBuilder;
 use crate::lexer::Lexer;
 use crate::ErrorSink;
+use crate::Expected;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Source<'i> {
@@ -102,9 +103,27 @@ impl<'i> Raw<'i> {
                 crate::decode::string::decode_basic_string(*self, output, &mut error);
             }
             Some(Encoding::MlLiteralString) => {
+                error.report_error(crate::ParseError {
+                    context: Span::new_unchecked(0, self.len()),
+                    description: "keys cannot be multi-line literal strings",
+                    expected: &[
+                        Expected::Description("basic string"),
+                        Expected::Description("literal string"),
+                    ],
+                    unexpected: Span::new_unchecked(0, self.len()),
+                });
                 crate::decode::string::decode_ml_literal_string(*self, output, &mut error);
             }
             Some(Encoding::MlBasicString) => {
+                error.report_error(crate::ParseError {
+                    context: Span::new_unchecked(0, self.len()),
+                    description: "keys cannot be multi-line basic strings",
+                    expected: &[
+                        Expected::Description("basic string"),
+                        Expected::Description("literal string"),
+                    ],
+                    unexpected: Span::new_unchecked(0, self.len()),
+                });
                 crate::decode::string::decode_ml_basic_string(*self, output, &mut error);
             }
             None => crate::decode::string::decode_unquoted_key(*self, output, &mut error),

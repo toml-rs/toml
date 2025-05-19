@@ -64,8 +64,8 @@ pub(crate) fn decode_literal_string<'i>(
             let offset = (&s.as_bytes()[i..]).offset_from(&raw.as_bytes());
             error.report_error(ParseError {
                 context: Span::new_unchecked(0, raw.len()),
-                description: Encoding::LiteralString.description(),
-                expected: &[Expected::Description("non-single-quote characters")],
+                description: "invalid literal string",
+                expected: &[Expected::Description("non-single-quote visible characters")],
                 unexpected: Span::new_unchecked(offset, offset),
             });
         }
@@ -147,8 +147,8 @@ pub(crate) fn decode_ml_literal_string<'i>(
                 let offset = (&s.as_bytes()[i + 1..]).offset_from(&raw.as_bytes());
                 error.report_error(ParseError {
                     context: Span::new_unchecked(0, raw.len()),
-                    description: Encoding::LiteralString.description(),
-                    expected: &[Expected::Literal("\n")],
+                    description: "carriage return must be followed by newline",
+                    expected: &[],
                     unexpected: Span::new_unchecked(offset, offset),
                 });
             }
@@ -251,10 +251,10 @@ pub(crate) fn decode_basic_string<'i>(
             let end = start + invalid.len();
             error.report_error(ParseError {
                 context: Span::new_unchecked(0, raw.len()),
-                description: Encoding::BasicString.description(),
+                description: "invalid basic string",
                 expected: &[
+                    Expected::Description("non-double-quote visible characters"),
                     Expected::Literal("\\"),
-                    Expected::Description("non-double-quote characters"),
                 ],
                 unexpected: Span::new_unchecked(start, end),
             });
@@ -331,7 +331,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
     let Some(id) = stream.next_token() else {
         error.report_error(ParseError {
             context: Span::new_unchecked(0, raw.len()),
-            description: Encoding::BasicString.description(),
+            description: "missing escaped value",
             expected: &[
                 Expected::Literal("b"),
                 Expected::Literal("f"),
@@ -361,7 +361,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
             let offset = stream.offset_from(&raw.as_str());
             error.report_error(ParseError {
                 context: Span::new_unchecked(0, raw.len()),
-                description: Encoding::BasicString.description(),
+                description: "missing escaped value",
                 expected: &[
                     Expected::Literal("b"),
                     Expected::Literal("f"),
@@ -515,8 +515,8 @@ pub(crate) fn decode_ml_basic_string<'i>(
                 let start = s.offset_from(&raw.as_str()) + 1;
                 error.report_error(ParseError {
                     context: Span::new_unchecked(0, raw.len()),
-                    description: Encoding::MlBasicString.description(),
-                    expected: &[Expected::Literal("\n")],
+                    description: "carriage return must be followed by newline",
+                    expected: &[],
                     unexpected: Span::new_unchecked(start, start),
                 });
                 "\r".len()
@@ -589,8 +589,8 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
                 let end = start;
                 error.report_error(ParseError {
                     context: Span::new_unchecked(0, raw.len()),
-                    description: Encoding::MlBasicString.description(),
-                    expected: &[Expected::Literal("\n")],
+                    description: "carriage return must be followed by newline",
+                    expected: &[],
                     unexpected: Span::new_unchecked(start, end),
                 });
             }
@@ -630,8 +630,8 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
                 let start = stream.offset_from(&raw.as_str()) + 1;
                 error.report_error(ParseError {
                     context: Span::new_unchecked(0, raw.len()),
-                    description: Encoding::MlBasicString.description(),
-                    expected: &[Expected::Literal("\n")],
+                    description: "carriage return must be followed by newline",
+                    expected: &[],
                     unexpected: Span::new_unchecked(start, start),
                 });
                 "\r".len()
@@ -714,7 +714,7 @@ pub(crate) fn decode_unquoted_key<'i>(
         if !UNQUOTED_CHAR.contains_token(b) {
             error.report_error(ParseError {
                 context: Span::new_unchecked(0, s.len()),
-                description: UNQUOTED_STRING,
+                description: "invalid unquoted key",
                 expected: &[
                     Expected::Description("letters"),
                     Expected::Description("numbers"),
@@ -895,7 +895,7 @@ trimmed in raw strings.
 [
     ParseError {
         context: 0..10,
-        description: "basic string",
+        description: "missing escaped value",
         expected: [
             Literal(
                 "b",
@@ -941,13 +941,13 @@ trailing
 [
     ParseError {
         context: 0..18,
-        description: "basic string",
+        description: "invalid basic string",
         expected: [
+            Description(
+                "non-double-quote visible characters",
+            ),
             Literal(
                 "\\",
-            ),
-            Description(
-                "non-double-quote characters",
             ),
         ],
         unexpected: 8..9,
@@ -1096,7 +1096,7 @@ The quick brown \
 [
     ParseError {
         context: 0..9,
-        description: "basic string",
+        description: "missing escaped value",
         expected: [
             Literal(
                 "b",
