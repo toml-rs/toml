@@ -151,25 +151,25 @@ duplicate key `a` in table `t2`
 
 #[test]
 fn emoji_error_span() {
-    let input = "😀";
+    let input = "key = 😀";
     let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(err.span());
     let actual = &input[err.span().unwrap()];
-    assert_eq!(actual, input);
+    assert_eq!(actual, "😀");
 }
 
 #[test]
 fn text_error_span() {
-    let input = "asdf";
+    let input = "key = asdf";
     let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(err.span());
     let actual = &input[err.span().unwrap()];
-    assert_eq!(actual, "");
+    assert_eq!(actual, "a");
 }
 
 #[test]
 fn fuzzed_68144_error_span() {
-    let input = "\"\\ᾂr\"";
+    let input = "key = \"\\ᾂr\"";
     let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(err.span());
     let actual = &input[err.span().unwrap()];
