@@ -183,10 +183,10 @@ fn document(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &m
                 receiver.simple_key(fake_key, encoding, error);
                 on_expression_key_val_sep(tokens, current_token, receiver, error);
             }
-            TokenKind::Dot
-            | TokenKind::Comma
-            | TokenKind::RightCurlyBracket
-            | TokenKind::LeftCurlyBracket => {
+            TokenKind::Dot => {
+                on_expression_dot(tokens, current_token, receiver, error);
+            }
+            TokenKind::Comma | TokenKind::RightCurlyBracket | TokenKind::LeftCurlyBracket => {
                 on_missing_expression_key(tokens, current_token, receiver, error);
             }
             TokenKind::Whitespace => receiver.whitespace(current_token.span(), error),
@@ -388,6 +388,34 @@ fn on_expression_key<'i>(
     error: &mut dyn ErrorSink,
 ) {
     receiver.simple_key(key_token.span(), encoding, error);
+    opt_dot_keys(tokens, receiver, error);
+
+    opt_whitespace(tokens, receiver, error);
+
+    let Some(eq_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Equals)) else {
+        if let Some(peek_token) = tokens.first() {
+            let span = peek_token.span().before();
+            error.report_error(ParseError {
+                context: span,
+                description: "expression",
+                expected: &[Expected::Literal("=")],
+                unexpected: span,
+            });
+        }
+        ignore_to_newline(tokens, receiver, error);
+        return;
+    };
+    on_expression_key_val_sep(tokens, eq_token, receiver, error);
+}
+
+fn on_expression_dot<'i>(
+    tokens: &mut Stream<'i>,
+    dot_token: &'i Token,
+    receiver: &mut dyn EventReceiver,
+    error: &mut dyn ErrorSink,
+) {
+    receiver.simple_key(dot_token.span().before(), None, error);
+    seek(tokens, -1);
     opt_dot_keys(tokens, receiver, error);
 
     opt_whitespace(tokens, receiver, error);
