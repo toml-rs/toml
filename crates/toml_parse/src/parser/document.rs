@@ -936,6 +936,7 @@ fn on_inline_table_open(
     }
 
     #[allow(clippy::enum_variant_names)]
+    #[derive(Debug)]
     enum State {
         NeedsKey,
         NeedsEquals,
@@ -1008,6 +1009,14 @@ fn on_inline_table_open(
             }
             TokenKind::Equals => {
                 if matches!(state, State::NeedsEquals) {
+                    receiver.key_val_sep(current_token.span(), error);
+
+                    state = State::NeedsValue;
+                } else if matches!(state, State::NeedsKey) {
+                    let fake_key = current_token.span().before();
+                    let encoding = None;
+                    receiver.simple_key(fake_key, encoding, error);
+
                     receiver.key_val_sep(current_token.span(), error);
 
                     state = State::NeedsValue;
