@@ -346,14 +346,7 @@ fn key(
             TokenKind::MlBasicString => Some(Encoding::MlBasicString),
             TokenKind::Atom => None,
         };
-        return on_key(
-            tokens,
-            current_token,
-            encoding,
-            description,
-            receiver,
-            error,
-        );
+        return on_key(tokens, current_token, encoding, receiver, error);
     }
 
     let previous_span = tokens
@@ -393,14 +386,7 @@ fn on_expression_key<'i>(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    on_key(
-        tokens,
-        key_token,
-        encoding,
-        "key-value pair",
-        receiver,
-        error,
-    );
+    on_key(tokens, key_token, encoding, receiver, error);
 
     opt_whitespace(tokens, receiver, error);
 
@@ -538,7 +524,6 @@ fn on_key(
     tokens: &mut Stream<'_>,
     key_token: &Token,
     encoding: Option<Encoding>,
-    description: &'static str,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) -> bool {
@@ -547,10 +532,8 @@ fn on_key(
     opt_whitespace(tokens, receiver, error);
 
     let mut success = true;
-    let mut context = key_token.span();
     'dot: while let Some(dot_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Dot)) {
         receiver.key_sep(dot_token.span(), error);
-        context = context.append(dot_token.span());
 
         while let Some(current_token) = tokens.next_token() {
             let kind = match current_token.kind() {
@@ -593,14 +576,9 @@ fn on_key(
             continue 'dot;
         }
 
-        error.report_error(ParseError {
-            context,
-            description,
-            expected: &[Expected::Description("key")],
-            unexpected: dot_token.span().after(),
-        });
-        success = false;
-        break;
+        let fake_key = dot_token.span().after();
+        let encoding = None;
+        receiver.simple_key(fake_key, encoding, error);
     }
 
     success
@@ -1107,7 +1085,6 @@ fn on_inline_table_open(
                             tokens,
                             current_token,
                             current_token.kind().encoding(),
-                            "inline table",
                             receiver,
                             error,
                         );
