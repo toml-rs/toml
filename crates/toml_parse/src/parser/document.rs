@@ -308,8 +308,7 @@ fn key(
 ) -> bool {
     while let Some(current_token) = tokens.next_token() {
         let encoding = match current_token.kind() {
-            TokenKind::Dot
-            | TokenKind::RightSquareBracket
+            TokenKind::RightSquareBracket
             | TokenKind::Comment
             | TokenKind::Equals
             | TokenKind::Comma
@@ -317,10 +316,20 @@ fn key(
             | TokenKind::LeftCurlyBracket
             | TokenKind::RightCurlyBracket
             | TokenKind::Newline
-            | TokenKind::Eof
-            | TokenKind::Whitespace => {
+            | TokenKind::Eof => {
                 on_missing_key(tokens, current_token, description, receiver, error);
                 return false;
+            }
+            TokenKind::Whitespace => {
+                receiver.whitespace(current_token.span(), error);
+                continue;
+            }
+            TokenKind::Dot => {
+                let fake_key = current_token.span().before();
+                let encoding = None;
+                receiver.simple_key(fake_key, encoding, error);
+                receiver.key_sep(current_token.span(), error);
+                continue;
             }
             TokenKind::LiteralString => Some(Encoding::LiteralString),
             TokenKind::BasicString => Some(Encoding::BasicString),
