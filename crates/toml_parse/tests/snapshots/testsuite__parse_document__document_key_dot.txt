@@ -32,7 +32,7 @@ EventResults {
             span: 7..7,
         },
         Event {
-            kind: Error,
+            kind: KeyValSep,
             encoding: None,
             span: 7..8,
         },
@@ -42,8 +42,10 @@ EventResults {
             span: 8..9,
         },
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
             span: 9..16,
         },
         Event {

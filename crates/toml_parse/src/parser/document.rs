@@ -393,17 +393,14 @@ fn on_expression_key<'i>(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    if !on_key(
+    on_key(
         tokens,
         key_token,
         encoding,
         "key-value pair",
         receiver,
         error,
-    ) {
-        ignore_to_newline(tokens, receiver, error);
-        return;
-    }
+    );
 
     opt_whitespace(tokens, receiver, error);
 
