@@ -346,7 +346,8 @@ fn key(
             TokenKind::MlBasicString => Some(Encoding::MlBasicString),
             TokenKind::Atom => None,
         };
-        return on_key(tokens, current_token, encoding, receiver, error);
+        receiver.simple_key(current_token.span(), encoding, error);
+        return opt_dot_keys(tokens, receiver, error);
     }
 
     let previous_span = tokens
@@ -386,7 +387,8 @@ fn on_expression_key<'i>(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    on_key(tokens, key_token, encoding, receiver, error);
+    receiver.simple_key(key_token.span(), encoding, error);
+    opt_dot_keys(tokens, receiver, error);
 
     opt_whitespace(tokens, receiver, error);
 
@@ -520,15 +522,11 @@ fn simple_key(
 ///
 /// dot-sep   = ws %x2E ws  ; . Period
 /// ```
-fn on_key(
+fn opt_dot_keys(
     tokens: &mut Stream<'_>,
-    key_token: &Token,
-    encoding: Option<Encoding>,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) -> bool {
-    receiver.simple_key(key_token.span(), encoding, error);
-
     opt_whitespace(tokens, receiver, error);
 
     let mut success = true;
@@ -1081,13 +1079,12 @@ fn on_inline_table_open(
                         });
                         receiver.error(current_token.span(), error);
                     } else {
-                        on_key(
-                            tokens,
-                            current_token,
+                        receiver.simple_key(
+                            current_token.span(),
                             current_token.kind().encoding(),
-                            receiver,
                             error,
                         );
+                        opt_dot_keys(tokens, receiver, error);
                         state = State::NeedsEquals;
                     }
                 } else if matches!(state, State::NeedsValue) {
