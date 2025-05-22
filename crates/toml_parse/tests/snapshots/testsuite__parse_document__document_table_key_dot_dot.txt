@@ -47,7 +47,12 @@ EventResults {
             span: 11..12,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
+            encoding: None,
+            span: 12..12,
+        },
+        Event {
+            kind: StdTableClose,
             encoding: None,
             span: 12..13,
         },
@@ -91,16 +96,6 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 12..13,
-            description: "invalid table",
-            expected: [
-                Description(
-                    "key",
-                ),
-            ],
-            unexpected: 12..12,
-        },
-        ParseError {
             context: 10..10,
             description: "empty unquoted key",
             expected: [
@@ -118,6 +113,25 @@ EventResults {
                 ),
             ],
             unexpected: 10..10,
+        },
+        ParseError {
+            context: 12..12,
+            description: "empty unquoted key",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 12..12,
         },
     ],
 }

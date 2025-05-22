@@ -561,7 +561,11 @@ fn on_key(
                 | TokenKind::Comment
                 | TokenKind::Newline
                 | TokenKind::Eof => {
-                    on_missing_key(tokens, current_token, description, receiver, error);
+                    let fake_key = current_token.span().before();
+                    let encoding = None;
+                    receiver.simple_key(fake_key, encoding, error);
+                    seek(tokens, -1);
+
                     success = false;
                     break 'dot;
                 }

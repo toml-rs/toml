@@ -42,6 +42,11 @@ EventResults {
             span: 8..9,
         },
         Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 9..9,
+        },
+        Event {
             kind: Error,
             encoding: None,
             span: 9..10,
@@ -64,16 +69,6 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 9..10,
-            description: "key-value pair",
-            expected: [
-                Description(
-                    "key",
-                ),
-            ],
-            unexpected: 9..9,
-        },
-        ParseError {
             context: 7..7,
             description: "empty unquoted key",
             expected: [
@@ -91,6 +86,25 @@ EventResults {
                 ),
             ],
             unexpected: 7..7,
+        },
+        ParseError {
+            context: 9..9,
+            description: "empty unquoted key",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 9..9,
         },
     ],
 }
