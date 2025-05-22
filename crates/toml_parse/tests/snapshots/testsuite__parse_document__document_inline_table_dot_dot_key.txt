@@ -1,0 +1,124 @@
+EventResults {
+    input: "\nparent = { . . key = \"value\" }\n",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 1..7,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 16..19,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 20..21,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 22..29,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 29..30,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 30..31,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 31..32,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 12..13,
+            description: "key",
+            expected: [
+                Description(
+                    "key",
+                ),
+            ],
+            unexpected: 12..12,
+        },
+        ParseError {
+            context: 14..15,
+            description: "key",
+            expected: [
+                Description(
+                    "key",
+                ),
+            ],
+            unexpected: 14..14,
+        },
+    ],
+}

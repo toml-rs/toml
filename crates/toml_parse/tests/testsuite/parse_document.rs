@@ -116,9 +116,39 @@ key = "value"
 }
 
 #[test]
+fn document_table_dot_dot_key() {
+    t(
+        r#"[ . table ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
 fn document_table_key_dot() {
     t(
         r#"[ table . ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table_key_dot_dot() {
+    t(
+        r#"[ table . . ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table_key_dot_dot_key() {
+    t(
+        r#"[ table . . table ]
 key = "value"
 "#,
         file![_].raw(),
@@ -166,10 +196,40 @@ fn document_dot_key() {
 }
 
 #[test]
+fn document_dot_dot_key() {
+    t(
+        r#"
+ . . key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
 fn document_key_dot() {
     t(
         r#"
 key . = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_key_dot_dot() {
+    t(
+        r#"
+key . . = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_key_dot_dot_key() {
+    t(
+        r#"
+key . . key = "value"
 "#,
         file![_].raw(),
     );
@@ -216,10 +276,40 @@ parent = { . key = "value" }
 }
 
 #[test]
+fn document_inline_table_dot_dot_key() {
+    t(
+        r#"
+parent = { . . key = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
 fn document_inline_table_key_dot() {
     t(
         r#"
 parent = { key . = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_key_dot_dot() {
+    t(
+        r#"
+parent = { key . . = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_key_dot_dot_key() {
+    t(
+        r#"
+parent = { key . . key = "value" }
 "#,
         file![_].raw(),
     );

@@ -1,0 +1,89 @@
+EventResults {
+    input: "[ . table ]\nkey = \"value\"\n",
+    events: [
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 4..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 12..15,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 18..25,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 25..26,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 2..3,
+            description: "invalid table",
+            expected: [
+                Description(
+                    "key",
+                ),
+            ],
+            unexpected: 2..2,
+        },
+    ],
+}

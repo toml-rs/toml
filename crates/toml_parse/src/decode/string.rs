@@ -1201,6 +1201,15 @@ The quick brown \
 "#]]
                 .raw(),
             ),
+            (
+                "",
+                str![""].raw(),
+                str![[r#"
+[]
+
+"#]]
+                .raw(),
+            ),
         ];
 
         for (input, expected, expected_error) in cases {
