@@ -710,6 +710,20 @@ pub(crate) fn decode_unquoted_key<'i>(
 ) {
     let s = raw.as_str();
 
+    if s.is_empty() {
+        error.report_error(ParseError {
+            context: Span::new_unchecked(0, s.len()),
+            description: "empty unquoted key",
+            expected: &[
+                Expected::Description("letters"),
+                Expected::Description("numbers"),
+                Expected::Literal("-"),
+                Expected::Literal("_"),
+            ],
+            unexpected: Span::new_unchecked(0, s.len()),
+        });
+    }
+
     for (i, b) in s.as_bytes().iter().enumerate() {
         if !UNQUOTED_CHAR.contains_token(b) {
             error.report_error(ParseError {
@@ -1205,7 +1219,27 @@ The quick brown \
                 "",
                 str![""].raw(),
                 str![[r#"
-[]
+[
+    ParseError {
+        context: 0..0,
+        description: "empty unquoted key",
+        expected: [
+            Description(
+                "letters",
+            ),
+            Description(
+                "numbers",
+            ),
+            Literal(
+                "-",
+            ),
+            Literal(
+                "_",
+            ),
+        ],
+        unexpected: 0..0,
+    },
+]
 
 "#]]
                 .raw(),
