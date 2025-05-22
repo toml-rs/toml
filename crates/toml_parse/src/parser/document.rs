@@ -306,58 +306,55 @@ fn key(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) -> bool {
-    let Some(current_token) = tokens.next_token() else {
-        let previous_span = tokens
-            .previous_tokens()
-            .find(|t| {
-                !matches!(
-                    t.kind(),
-                    TokenKind::Whitespace
-                        | TokenKind::Comment
-                        | TokenKind::Newline
-                        | TokenKind::Eof
-                )
-            })
-            .map(|t| t.span())
-            .unwrap_or_default();
-        error.report_error(ParseError {
-            context: previous_span,
+    while let Some(current_token) = tokens.next_token() {
+        let encoding = match current_token.kind() {
+            TokenKind::Dot
+            | TokenKind::RightSquareBracket
+            | TokenKind::Comment
+            | TokenKind::Equals
+            | TokenKind::Comma
+            | TokenKind::LeftSquareBracket
+            | TokenKind::LeftCurlyBracket
+            | TokenKind::RightCurlyBracket
+            | TokenKind::Newline
+            | TokenKind::Eof
+            | TokenKind::Whitespace => {
+                on_missing_key(tokens, current_token, description, receiver, error);
+                return false;
+            }
+            TokenKind::LiteralString => Some(Encoding::LiteralString),
+            TokenKind::BasicString => Some(Encoding::BasicString),
+            TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
+            TokenKind::MlBasicString => Some(Encoding::MlBasicString),
+            TokenKind::Atom => None,
+        };
+        return on_key(
+            tokens,
+            current_token,
+            encoding,
             description,
-            expected: &[Expected::Description("key")],
-            unexpected: previous_span.after(),
-        });
-        return false;
-    };
+            receiver,
+            error,
+        );
+    }
 
-    let encoding = match current_token.kind() {
-        TokenKind::Dot
-        | TokenKind::RightSquareBracket
-        | TokenKind::Comment
-        | TokenKind::Equals
-        | TokenKind::Comma
-        | TokenKind::LeftSquareBracket
-        | TokenKind::LeftCurlyBracket
-        | TokenKind::RightCurlyBracket
-        | TokenKind::Newline
-        | TokenKind::Eof
-        | TokenKind::Whitespace => {
-            on_missing_key(tokens, current_token, description, receiver, error);
-            return false;
-        }
-        TokenKind::LiteralString => Some(Encoding::LiteralString),
-        TokenKind::BasicString => Some(Encoding::BasicString),
-        TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
-        TokenKind::MlBasicString => Some(Encoding::MlBasicString),
-        TokenKind::Atom => None,
-    };
-    on_key(
-        tokens,
-        current_token,
-        encoding,
+    let previous_span = tokens
+        .previous_tokens()
+        .find(|t| {
+            !matches!(
+                t.kind(),
+                TokenKind::Whitespace | TokenKind::Comment | TokenKind::Newline | TokenKind::Eof
+            )
+        })
+        .map(|t| t.span())
+        .unwrap_or_default();
+    error.report_error(ParseError {
+        context: previous_span,
         description,
-        receiver,
-        error,
-    )
+        expected: &[Expected::Description("key")],
+        unexpected: previous_span.after(),
+    });
+    false
 }
 
 /// Start an expression from a key compatible token  type
