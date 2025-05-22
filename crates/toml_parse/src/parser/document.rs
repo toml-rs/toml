@@ -177,8 +177,13 @@ fn document(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &m
                 error,
             ),
             TokenKind::Atom => on_expression_key(tokens, current_token, None, receiver, error),
+            TokenKind::Equals => {
+                let fake_key = current_token.span().before();
+                let encoding = None;
+                receiver.simple_key(fake_key, encoding, error);
+                on_expression_key_val_sep(tokens, current_token, receiver, error);
+            }
             TokenKind::Dot
-            | TokenKind::Equals
             | TokenKind::Comma
             | TokenKind::RightCurlyBracket
             | TokenKind::LeftCurlyBracket => {
