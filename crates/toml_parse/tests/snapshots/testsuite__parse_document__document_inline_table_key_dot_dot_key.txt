@@ -57,7 +57,12 @@ EventResults {
             span: 17..18,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
+            encoding: None,
+            span: 18..18,
+        },
+        Event {
+            kind: KeySep,
             encoding: None,
             span: 18..19,
         },
@@ -67,7 +72,7 @@ EventResults {
             span: 19..20,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
             encoding: None,
             span: 20..23,
         },
@@ -111,24 +116,23 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 18..19,
-            description: "inline table",
+            context: 18..18,
+            description: "empty unquoted key",
             expected: [
                 Description(
-                    "key",
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
                 ),
             ],
             unexpected: 18..18,
-        },
-        ParseError {
-            context: 10..11,
-            description: "inline table",
-            expected: [
-                Literal(
-                    "=",
-                ),
-            ],
-            unexpected: 20..20,
         },
     ],
 }

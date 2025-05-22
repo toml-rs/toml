@@ -548,8 +548,7 @@ fn on_key(
 
         while let Some(current_token) = tokens.next_token() {
             let kind = match current_token.kind() {
-                TokenKind::Dot
-                | TokenKind::Equals
+                TokenKind::Equals
                 | TokenKind::Comma
                 | TokenKind::LeftSquareBracket
                 | TokenKind::RightSquareBracket
@@ -564,6 +563,13 @@ fn on_key(
                 }
                 TokenKind::Whitespace => {
                     receiver.whitespace(current_token.span(), error);
+                    continue;
+                }
+                TokenKind::Dot => {
+                    let fake_key = current_token.span().before();
+                    let encoding = None;
+                    receiver.simple_key(fake_key, encoding, error);
+                    receiver.key_sep(current_token.span(), error);
                     continue;
                 }
                 TokenKind::LiteralString => Some(Encoding::LiteralString),

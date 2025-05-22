@@ -27,7 +27,12 @@ EventResults {
             span: 6..7,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
+            encoding: None,
+            span: 7..7,
+        },
+        Event {
+            kind: KeySep,
             encoding: None,
             span: 7..8,
         },
@@ -37,7 +42,7 @@ EventResults {
             span: 8..9,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
             encoding: None,
             span: 9..12,
         },
@@ -47,7 +52,7 @@ EventResults {
             span: 12..13,
         },
         Event {
-            kind: Error,
+            kind: KeyValSep,
             encoding: None,
             span: 13..14,
         },
@@ -57,8 +62,10 @@ EventResults {
             span: 14..15,
         },
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
             span: 15..22,
         },
         Event {
@@ -69,11 +76,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 7..8,
-            description: "key-value pair",
+            context: 7..7,
+            description: "empty unquoted key",
             expected: [
                 Description(
-                    "key",
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
                 ),
             ],
             unexpected: 7..7,
