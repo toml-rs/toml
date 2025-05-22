@@ -402,6 +402,15 @@ fn on_expression_key<'i>(
         ignore_to_newline(tokens, receiver, error);
         return;
     };
+    on_expression_key_val_sep(tokens, eq_token, receiver, error);
+}
+
+fn on_expression_key_val_sep<'i>(
+    tokens: &mut Stream<'i>,
+    eq_token: &'i Token,
+    receiver: &mut dyn EventReceiver,
+    error: &mut dyn ErrorSink,
+) {
     receiver.key_val_sep(eq_token.span(), error);
 
     opt_whitespace(tokens, receiver, error);
