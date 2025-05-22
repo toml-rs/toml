@@ -37,7 +37,12 @@ EventResults {
             span: 11..12,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
+            encoding: None,
+            span: 12..12,
+        },
+        Event {
+            kind: KeySep,
             encoding: None,
             span: 12..13,
         },
@@ -91,11 +96,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 12..13,
-            description: "key",
+            context: 12..12,
+            description: "empty unquoted key",
             expected: [
                 Description(
-                    "key",
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
                 ),
             ],
             unexpected: 12..12,

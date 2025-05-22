@@ -1099,13 +1099,14 @@ fn on_inline_table_open(
             | TokenKind::Atom => {
                 if matches!(state, State::NeedsKey) {
                     if current_token.kind() == TokenKind::Dot {
-                        error.report_error(ParseError {
-                            context: current_token.span(),
-                            description: "key",
-                            expected: &[Expected::Description("key")],
-                            unexpected: current_token.span().before(),
-                        });
-                        receiver.error(current_token.span(), error);
+                        receiver.simple_key(
+                            current_token.span().before(),
+                            current_token.kind().encoding(),
+                            error,
+                        );
+                        seek(tokens, -1);
+                        opt_dot_keys(tokens, receiver, error);
+                        state = State::NeedsEquals;
                     } else {
                         receiver.simple_key(
                             current_token.span(),
