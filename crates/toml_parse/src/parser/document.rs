@@ -524,13 +524,13 @@ fn on_key(
 
     let mut success = true;
     let mut context = key_token.span();
-    while let Some(dot_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Dot)) {
+    'dot: while let Some(dot_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Dot)) {
         receiver.key_sep(dot_token.span(), error);
         context = context.append(dot_token.span());
 
         opt_whitespace(tokens, receiver, error);
 
-        if let Some(current_token) = tokens.next_token() {
+        while let Some(current_token) = tokens.next_token() {
             let kind = match current_token.kind() {
                 TokenKind::Dot
                 | TokenKind::Equals
@@ -545,7 +545,7 @@ fn on_key(
                 | TokenKind::Eof => {
                     on_missing_key(tokens, current_token, description, receiver, error);
                     success = false;
-                    break;
+                    break 'dot;
                 }
                 TokenKind::LiteralString => Some(Encoding::LiteralString),
                 TokenKind::BasicString => Some(Encoding::BasicString),
@@ -555,16 +555,17 @@ fn on_key(
             };
             receiver.simple_key(current_token.span(), kind, error);
             opt_whitespace(tokens, receiver, error);
-        } else {
-            error.report_error(ParseError {
-                context,
-                description,
-                expected: &[Expected::Description("key")],
-                unexpected: dot_token.span().after(),
-            });
-            success = false;
-            break;
+            continue 'dot;
         }
+
+        error.report_error(ParseError {
+            context,
+            description,
+            expected: &[Expected::Description("key")],
+            unexpected: dot_token.span().after(),
+        });
+        success = false;
+        break;
     }
 
     success
