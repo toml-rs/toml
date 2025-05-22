@@ -528,8 +528,6 @@ fn on_key(
         receiver.key_sep(dot_token.span(), error);
         context = context.append(dot_token.span());
 
-        opt_whitespace(tokens, receiver, error);
-
         while let Some(current_token) = tokens.next_token() {
             let kind = match current_token.kind() {
                 TokenKind::Dot
@@ -540,12 +538,15 @@ fn on_key(
                 | TokenKind::LeftCurlyBracket
                 | TokenKind::RightCurlyBracket
                 | TokenKind::Comment
-                | TokenKind::Whitespace
                 | TokenKind::Newline
                 | TokenKind::Eof => {
                     on_missing_key(tokens, current_token, description, receiver, error);
                     success = false;
                     break 'dot;
+                }
+                TokenKind::Whitespace => {
+                    receiver.whitespace(current_token.span(), error);
+                    continue;
                 }
                 TokenKind::LiteralString => Some(Encoding::LiteralString),
                 TokenKind::BasicString => Some(Encoding::BasicString),
