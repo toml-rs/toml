@@ -76,6 +76,156 @@ key = "value"
 }
 
 #[test]
+fn document_table_missing_key() {
+    t(
+        r#"[]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table_dot() {
+    t(
+        r#"[ . ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table_dot_dot() {
+    t(
+        r#"[ . . ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table_dot_key() {
+    t(
+        r#"[ . table ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_table_key_dot() {
+    t(
+        r#"[ table . ]
+key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_missing_key() {
+    t(
+        r#"
+ = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_dot() {
+    t(
+        r#"
+ . = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_dot_dot() {
+    t(
+        r#"
+ . . = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_dot_key() {
+    t(
+        r#"
+ . key = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_key_dot() {
+    t(
+        r#"
+key . = "value"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_missing_key() {
+    t(
+        r#"
+parent = { = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_dot() {
+    t(
+        r#"
+parent = { . = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_dot_dot() {
+    t(
+        r#"
+parent = { . . = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_dot_key() {
+    t(
+        r#"
+parent = { . key = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_inline_table_key_dot() {
+    t(
+        r#"
+parent = { key . = "value" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
 fn document_key_datetime() {
     t(
         r#"foo = 1979-05-27 # Comment

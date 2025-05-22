@@ -1,0 +1,67 @@
+EventResults {
+    input: "\n . key = \"value\"\n",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 4..7,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 10..17,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 17..18,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 2..3,
+            description: "key-value pair",
+            expected: [
+                Description(
+                    "key",
+                ),
+            ],
+            unexpected: 2..2,
+        },
+    ],
+}
