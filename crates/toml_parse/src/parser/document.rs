@@ -1215,7 +1215,7 @@ fn ws_comment_newline(
                 let context = first.append(current_token.span());
                 error.report_error(ParseError {
                     context,
-                    description: "line",
+                    description: "unexpected key or value",
                     expected: &[Expected::Literal("\n"), Expected::Literal("#")],
                     unexpected: current_token.span().before(),
                 });
