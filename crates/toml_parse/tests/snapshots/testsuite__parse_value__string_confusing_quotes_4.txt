@@ -39,7 +39,7 @@ EventResults {
                     "U",
                 ),
             ],
-            unexpected: 9..9,
+            unexpected: 6..6,
         },
     ],
 }
