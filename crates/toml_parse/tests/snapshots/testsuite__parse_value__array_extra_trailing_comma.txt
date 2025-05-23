@@ -30,7 +30,7 @@ EventResults {
     errors: [
         ParseError {
             context: 0..1,
-            description: "array",
+            description: "extra comma in array",
             expected: [
                 Description(
                     "value",

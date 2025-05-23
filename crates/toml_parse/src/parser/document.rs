@@ -803,7 +803,7 @@ fn on_array_open(
                 } else {
                     error.report_error(ParseError {
                         context: array_open.span(),
-                        description: "array",
+                        description: "extra comma in array",
                         expected: &[Expected::Description("value")],
                         unexpected: current_token.span(),
                     });
@@ -1004,7 +1004,7 @@ fn on_inline_table_open(
                 } else {
                     error.report_error(ParseError {
                         context: inline_table_open.span(),
-                        description: "inline table",
+                        description: "extra comma in inline table",
                         expected: state.expected(),
                         unexpected: current_token.span().before(),
                     });

@@ -62,7 +62,7 @@ EventResults {
     errors: [
         ParseError {
             context: 0..1,
-            description: "inline table",
+            description: "extra comma in inline table",
             expected: [
                 Description(
                     "key",
