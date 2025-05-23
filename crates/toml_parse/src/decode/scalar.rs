@@ -101,16 +101,19 @@ pub(crate) fn decode_unquoted_scalar<'i>(
                     b'x' | b'X' =>  {
                         let kind = ScalarKind::Integer(IntegerRadix::Hex);
                         let stream = &raw.as_str()[2..];
+                        ensure_no_sign(stream, raw, error);
                         decode_float_or_integer(stream, raw, kind, output, error)
                     },
                     b'o' | b'O' =>  {
                         let kind = ScalarKind::Integer(IntegerRadix::Oct);
                         let stream = &raw.as_str()[2..];
+                        ensure_no_sign(stream, raw, error);
                         decode_float_or_integer(stream, raw, kind, output, error)
                     },
                     b'b' | b'B' =>  {
                         let kind = ScalarKind::Integer(IntegerRadix::Bin);
                         let stream = &raw.as_str()[2..];
+                        ensure_no_sign(stream, raw, error);
                         decode_float_or_integer(stream, raw, kind, output, error)
                     },
                     b'd' | b'D' =>  {
@@ -192,6 +195,19 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
         decode_float_or_integer(stream, raw, kind, output, error)
     } else {
         decode_invalid(raw, output, error)
+    }
+}
+
+pub(crate) fn ensure_no_sign(value: &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
+    let invalid = ['+', '-'];
+    if value.starts_with(invalid) {
+        let pos = raw.as_str().find(invalid).unwrap();
+        error.report_error(ParseError {
+            context: Span::new_unchecked(0, raw.len()),
+            description: "unexpected sign",
+            expected: &[],
+            unexpected: Span::new_unchecked(pos, pos + 1),
+        });
     }
 }
 
