@@ -143,6 +143,10 @@ impl<'i> Raw<'i> {
         }
     }
 
+    pub fn decode_whitespace(&self, _error: &mut dyn ErrorSink) {
+        // whitespace is always valid
+    }
+
     pub fn decode_comment(&self, error: &mut dyn ErrorSink) {
         let mut error = |mut err: crate::ParseError| {
             err.context += self.span.start;

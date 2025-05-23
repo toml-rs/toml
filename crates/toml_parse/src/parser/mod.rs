@@ -9,3 +9,4 @@ pub use event::Event;
 pub use event::EventKind;
 pub use event::EventReceiver;
 pub use event::RecursionGuard;
+pub use event::ValidateWhitespace;
