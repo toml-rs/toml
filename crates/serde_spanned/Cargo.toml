@@ -25,7 +25,8 @@ pre-release-replacements = [
 ]
 
 [dependencies]
-serde = { version = "1.0.145", optional = true }
+serde = { version = "1.0.145", optional = true, default-features = false, features = ["alloc"] }
+
 
 [dev-dependencies]
 serde = "1"
