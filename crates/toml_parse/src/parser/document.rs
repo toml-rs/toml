@@ -645,7 +645,10 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
         | TokenKind::Newline
         | TokenKind::Eof
         | TokenKind::Whitespace => {
-            on_missing_value(tokens, current_token, receiver, error);
+            let fake_key = current_token.span().before();
+            let encoding = None;
+            receiver.scalar(fake_key, encoding, error);
+            seek(tokens, -1);
         }
         TokenKind::Equals => {
             error.report_error(ParseError {
@@ -1447,30 +1450,6 @@ fn on_missing_key(
         context: token.span(),
         description,
         expected: &[Expected::Description("key")],
-        unexpected: token.span().before(),
-    });
-
-    if token.kind() == TokenKind::Eof {
-    } else if token.kind() == TokenKind::Newline {
-        receiver.newline(token.span(), error);
-    } else if token.kind() == TokenKind::Comment {
-        on_comment(tokens, token, receiver, error);
-    } else {
-        receiver.error(token.span(), error);
-    }
-}
-
-#[cold]
-fn on_missing_value(
-    tokens: &mut Stream<'_>,
-    token: &Token,
-    receiver: &mut dyn EventReceiver,
-    error: &mut dyn ErrorSink,
-) {
-    error.report_error(ParseError {
-        context: token.span(),
-        description: "key-value pair",
-        expected: &[Expected::Description("value")],
         unexpected: token.span().before(),
     });
 
