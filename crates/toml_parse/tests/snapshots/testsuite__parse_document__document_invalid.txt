@@ -57,7 +57,7 @@ EventResults {
     errors: [
         ParseError {
             context: 37..37,
-            description: "expression",
+            description: "key with no value",
             expected: [
                 Literal(
                     "=",

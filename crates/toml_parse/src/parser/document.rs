@@ -397,7 +397,7 @@ fn on_expression_key<'i>(
             let span = peek_token.span().before();
             error.report_error(ParseError {
                 context: span,
-                description: "expression",
+                description: "key with no value",
                 expected: &[Expected::Literal("=")],
                 unexpected: span,
             });
