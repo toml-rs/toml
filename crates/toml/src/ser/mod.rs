@@ -118,6 +118,19 @@ impl Error {
             inner: crate::edit::ser::Error::KeyNotString,
         }
     }
+
+    #[cfg(feature = "display")]
+    fn date_invalid() -> Self {
+        Self {
+            inner: crate::edit::ser::Error::DateInvalid,
+        }
+    }
+}
+
+impl From<std::fmt::Error> for Error {
+    fn from(_: std::fmt::Error) -> Self {
+        Self::new("an error occurred when writing a value")
+    }
 }
 
 impl serde::ser::Error for Error {
