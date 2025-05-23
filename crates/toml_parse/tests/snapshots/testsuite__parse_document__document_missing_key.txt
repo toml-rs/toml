@@ -1,8 +1,8 @@
 EventResults {
-    input: "{ , hello  = \"a\" }",
+    input: "\n = \"value\"\n",
     events: [
         Event {
-            kind: InlineTableOpen,
+            kind: Newline,
             encoding: None,
             span: 0..1,
         },
@@ -12,7 +12,12 @@ EventResults {
             span: 1..2,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
+            encoding: None,
+            span: 2..2,
+        },
+        Event {
+            kind: KeyValSep,
             encoding: None,
             span: 2..3,
         },
@@ -22,50 +27,34 @@ EventResults {
             span: 3..4,
         },
         Event {
-            kind: SimpleKey,
-            encoding: None,
-            span: 4..9,
-        },
-        Event {
-            kind: Whitespace,
-            encoding: None,
-            span: 9..11,
-        },
-        Event {
-            kind: KeyValSep,
-            encoding: None,
-            span: 11..12,
-        },
-        Event {
-            kind: Whitespace,
-            encoding: None,
-            span: 12..13,
-        },
-        Event {
             kind: Scalar,
             encoding: Some(
                 BasicString,
             ),
-            span: 13..16,
+            span: 4..11,
         },
         Event {
-            kind: Whitespace,
+            kind: Newline,
             encoding: None,
-            span: 16..17,
-        },
-        Event {
-            kind: InlineTableClose,
-            encoding: None,
-            span: 17..18,
+            span: 11..12,
         },
     ],
     errors: [
         ParseError {
-            context: 0..1,
-            description: "extra comma in inline table",
+            context: 2..2,
+            description: "empty unquoted key",
             expected: [
                 Description(
-                    "key",
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
                 ),
             ],
             unexpected: 2..2,

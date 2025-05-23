@@ -52,12 +52,8 @@ EventResults {
     errors: [
         ParseError {
             context: 35..36,
-            description: "newline",
-            expected: [
-                Literal(
-                    "\n",
-                ),
-            ],
+            description: "carriage return must be followed by newline",
+            expected: [],
             unexpected: 36..36,
         },
     ],

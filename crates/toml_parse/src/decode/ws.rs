@@ -68,8 +68,8 @@ pub(crate) fn decode_newline(raw: Raw<'_>, error: &mut dyn ErrorSink) {
     if s == "\r" {
         error.report_error(ParseError {
             context: Span::new_unchecked(0, raw.len()),
-            description: "newline",
-            expected: &[Expected::Literal("\n")],
+            description: "carriage return must be followed by newline",
+            expected: &[],
             unexpected: Span::new_unchecked(raw.len(), raw.len()),
         });
     }

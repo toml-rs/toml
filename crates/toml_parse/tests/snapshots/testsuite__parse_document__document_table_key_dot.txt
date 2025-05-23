@@ -1,0 +1,103 @@
+EventResults {
+    input: "[ table . ]\nkey = \"value\"\n",
+    events: [
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 2..7,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 8..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 10..10,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 12..15,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 18..25,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 25..26,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: 10..10,
+            description: "empty unquoted key",
+            expected: [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+            unexpected: 10..10,
+        },
+    ],
+}

@@ -1,3 +1,4 @@
+use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 use winnow::stream::TokenSlice;
 
@@ -176,11 +177,16 @@ fn document(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &m
                 error,
             ),
             TokenKind::Atom => on_expression_key(tokens, current_token, None, receiver, error),
-            TokenKind::Dot
-            | TokenKind::Equals
-            | TokenKind::Comma
-            | TokenKind::RightCurlyBracket
-            | TokenKind::LeftCurlyBracket => {
+            TokenKind::Equals => {
+                let fake_key = current_token.span().before();
+                let encoding = None;
+                receiver.simple_key(fake_key, encoding, error);
+                on_expression_key_val_sep(tokens, current_token, receiver, error);
+            }
+            TokenKind::Dot => {
+                on_expression_dot(tokens, current_token, receiver, error);
+            }
+            TokenKind::Comma | TokenKind::RightCurlyBracket | TokenKind::LeftCurlyBracket => {
                 on_missing_expression_key(tokens, current_token, receiver, error);
             }
             TokenKind::Whitespace => receiver.whitespace(current_token.span(), error),
@@ -230,7 +236,7 @@ fn on_table(
 
     opt_whitespace(tokens, receiver, error);
 
-    let valid_key = key(tokens, "table", receiver, error);
+    let valid_key = key(tokens, "invalid table", receiver, error);
 
     opt_whitespace(tokens, receiver, error);
 
@@ -266,14 +272,14 @@ fn on_table(
         if is_array_table {
             error.report_error(ParseError {
                 context,
-                description: "array table",
+                description: "unclosed array table",
                 expected: &[Expected::Literal("]]")],
                 unexpected: last_key_token.span().after(),
             });
         } else {
             error.report_error(ParseError {
                 context,
-                description: "table",
+                description: "unclosed table",
                 expected: &[Expected::Literal("]")],
                 unexpected: last_key_token.span().after(),
             });
@@ -306,58 +312,61 @@ fn key(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) -> bool {
-    let Some(current_token) = tokens.next_token() else {
-        let previous_span = tokens
-            .previous_tokens()
-            .find(|t| {
-                !matches!(
-                    t.kind(),
-                    TokenKind::Whitespace
-                        | TokenKind::Comment
-                        | TokenKind::Newline
-                        | TokenKind::Eof
-                )
-            })
-            .map(|t| t.span())
-            .unwrap_or_default();
-        error.report_error(ParseError {
-            context: previous_span,
-            description,
-            expected: &[Expected::Description("key")],
-            unexpected: previous_span.after(),
-        });
-        return false;
-    };
+    while let Some(current_token) = tokens.next_token() {
+        let encoding = match current_token.kind() {
+            TokenKind::RightSquareBracket
+            | TokenKind::Comment
+            | TokenKind::Equals
+            | TokenKind::Comma
+            | TokenKind::LeftSquareBracket
+            | TokenKind::LeftCurlyBracket
+            | TokenKind::RightCurlyBracket
+            | TokenKind::Newline
+            | TokenKind::Eof => {
+                let fake_key = current_token.span().before();
+                let encoding = None;
+                receiver.simple_key(fake_key, encoding, error);
+                seek(tokens, -1);
+                return false;
+            }
+            TokenKind::Whitespace => {
+                receiver.whitespace(current_token.span(), error);
+                continue;
+            }
+            TokenKind::Dot => {
+                let fake_key = current_token.span().before();
+                let encoding = None;
+                receiver.simple_key(fake_key, encoding, error);
+                receiver.key_sep(current_token.span(), error);
+                continue;
+            }
+            TokenKind::LiteralString => Some(Encoding::LiteralString),
+            TokenKind::BasicString => Some(Encoding::BasicString),
+            TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
+            TokenKind::MlBasicString => Some(Encoding::MlBasicString),
+            TokenKind::Atom => None,
+        };
+        receiver.simple_key(current_token.span(), encoding, error);
+        return opt_dot_keys(tokens, receiver, error);
+    }
 
-    let encoding = match current_token.kind() {
-        TokenKind::Dot
-        | TokenKind::RightSquareBracket
-        | TokenKind::Comment
-        | TokenKind::Equals
-        | TokenKind::Comma
-        | TokenKind::LeftSquareBracket
-        | TokenKind::LeftCurlyBracket
-        | TokenKind::RightCurlyBracket
-        | TokenKind::Newline
-        | TokenKind::Eof
-        | TokenKind::Whitespace => {
-            on_missing_key(tokens, current_token, description, receiver, error);
-            return false;
-        }
-        TokenKind::LiteralString => Some(Encoding::LiteralString),
-        TokenKind::BasicString => Some(Encoding::BasicString),
-        TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
-        TokenKind::MlBasicString => Some(Encoding::MlBasicString),
-        TokenKind::Atom => None,
-    };
-    on_key(
-        tokens,
-        current_token,
-        encoding,
+    let previous_span = tokens
+        .previous_tokens()
+        .find(|t| {
+            !matches!(
+                t.kind(),
+                TokenKind::Whitespace | TokenKind::Comment | TokenKind::Newline | TokenKind::Eof
+            )
+        })
+        .map(|t| t.span())
+        .unwrap_or_default();
+    error.report_error(ParseError {
+        context: previous_span,
         description,
-        receiver,
-        error,
-    )
+        expected: &[Expected::Description("key")],
+        unexpected: previous_span.after(),
+    });
+    false
 }
 
 /// Start an expression from a key compatible token  type
@@ -378,17 +387,36 @@ fn on_expression_key<'i>(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    if !on_key(
-        tokens,
-        key_token,
-        encoding,
-        "key-value pair",
-        receiver,
-        error,
-    ) {
+    receiver.simple_key(key_token.span(), encoding, error);
+    opt_dot_keys(tokens, receiver, error);
+
+    opt_whitespace(tokens, receiver, error);
+
+    let Some(eq_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Equals)) else {
+        if let Some(peek_token) = tokens.first() {
+            let span = peek_token.span().before();
+            error.report_error(ParseError {
+                context: span,
+                description: "key with no value",
+                expected: &[Expected::Literal("=")],
+                unexpected: span,
+            });
+        }
         ignore_to_newline(tokens, receiver, error);
         return;
-    }
+    };
+    on_expression_key_val_sep(tokens, eq_token, receiver, error);
+}
+
+fn on_expression_dot<'i>(
+    tokens: &mut Stream<'i>,
+    dot_token: &'i Token,
+    receiver: &mut dyn EventReceiver,
+    error: &mut dyn ErrorSink,
+) {
+    receiver.simple_key(dot_token.span().before(), None, error);
+    seek(tokens, -1);
+    opt_dot_keys(tokens, receiver, error);
 
     opt_whitespace(tokens, receiver, error);
 
@@ -405,6 +433,15 @@ fn on_expression_key<'i>(
         ignore_to_newline(tokens, receiver, error);
         return;
     };
+    on_expression_key_val_sep(tokens, eq_token, receiver, error);
+}
+
+fn on_expression_key_val_sep<'i>(
+    tokens: &mut Stream<'i>,
+    eq_token: &'i Token,
+    receiver: &mut dyn EventReceiver,
+    error: &mut dyn ErrorSink,
+) {
     receiver.key_val_sep(eq_token.span(), error);
 
     opt_whitespace(tokens, receiver, error);
@@ -513,42 +550,46 @@ fn simple_key(
 ///
 /// dot-sep   = ws %x2E ws  ; . Period
 /// ```
-fn on_key(
+fn opt_dot_keys(
     tokens: &mut Stream<'_>,
-    key_token: &Token,
-    encoding: Option<Encoding>,
-    description: &'static str,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) -> bool {
-    receiver.simple_key(key_token.span(), encoding, error);
-
     opt_whitespace(tokens, receiver, error);
 
     let mut success = true;
-    let mut context = key_token.span();
-    while let Some(dot_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Dot)) {
+    'dot: while let Some(dot_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Dot)) {
         receiver.key_sep(dot_token.span(), error);
-        context = context.append(dot_token.span());
 
-        opt_whitespace(tokens, receiver, error);
-
-        if let Some(current_token) = tokens.next_token() {
+        while let Some(current_token) = tokens.next_token() {
             let kind = match current_token.kind() {
-                TokenKind::Dot
-                | TokenKind::Equals
+                TokenKind::Equals
                 | TokenKind::Comma
                 | TokenKind::LeftSquareBracket
                 | TokenKind::RightSquareBracket
                 | TokenKind::LeftCurlyBracket
                 | TokenKind::RightCurlyBracket
                 | TokenKind::Comment
-                | TokenKind::Whitespace
                 | TokenKind::Newline
                 | TokenKind::Eof => {
-                    on_missing_key(tokens, current_token, description, receiver, error);
+                    let fake_key = current_token.span().before();
+                    let encoding = None;
+                    receiver.simple_key(fake_key, encoding, error);
+                    seek(tokens, -1);
+
                     success = false;
-                    break;
+                    break 'dot;
+                }
+                TokenKind::Whitespace => {
+                    receiver.whitespace(current_token.span(), error);
+                    continue;
+                }
+                TokenKind::Dot => {
+                    let fake_key = current_token.span().before();
+                    let encoding = None;
+                    receiver.simple_key(fake_key, encoding, error);
+                    receiver.key_sep(current_token.span(), error);
+                    continue;
                 }
                 TokenKind::LiteralString => Some(Encoding::LiteralString),
                 TokenKind::BasicString => Some(Encoding::BasicString),
@@ -558,16 +599,12 @@ fn on_key(
             };
             receiver.simple_key(current_token.span(), kind, error);
             opt_whitespace(tokens, receiver, error);
-        } else {
-            error.report_error(ParseError {
-                context,
-                description,
-                expected: &[Expected::Description("key")],
-                unexpected: dot_token.span().after(),
-            });
-            success = false;
-            break;
+            continue 'dot;
         }
+
+        let fake_key = dot_token.span().after();
+        let encoding = None;
+        receiver.simple_key(fake_key, encoding, error);
     }
 
     success
@@ -608,7 +645,10 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
         | TokenKind::Newline
         | TokenKind::Eof
         | TokenKind::Whitespace => {
-            on_missing_value(tokens, current_token, receiver, error);
+            let fake_key = current_token.span().before();
+            let encoding = None;
+            receiver.scalar(fake_key, encoding, error);
+            seek(tokens, -1);
         }
         TokenKind::Equals => {
             error.report_error(ParseError {
@@ -763,7 +803,7 @@ fn on_array_open(
                 } else {
                     error.report_error(ParseError {
                         context: array_open.span(),
-                        description: "array",
+                        description: "extra comma in array",
                         expected: &[Expected::Description("value")],
                         unexpected: current_token.span(),
                     });
@@ -900,6 +940,7 @@ fn on_inline_table_open(
     }
 
     #[allow(clippy::enum_variant_names)]
+    #[derive(Debug)]
     enum State {
         NeedsKey,
         NeedsEquals,
@@ -963,7 +1004,7 @@ fn on_inline_table_open(
                 } else {
                     error.report_error(ParseError {
                         context: inline_table_open.span(),
-                        description: "inline table",
+                        description: "extra comma in inline table",
                         expected: state.expected(),
                         unexpected: current_token.span().before(),
                     });
@@ -972,6 +1013,14 @@ fn on_inline_table_open(
             }
             TokenKind::Equals => {
                 if matches!(state, State::NeedsEquals) {
+                    receiver.key_val_sep(current_token.span(), error);
+
+                    state = State::NeedsValue;
+                } else if matches!(state, State::NeedsKey) {
+                    let fake_key = current_token.span().before();
+                    let encoding = None;
+                    receiver.simple_key(fake_key, encoding, error);
+
                     receiver.key_val_sep(current_token.span(), error);
 
                     state = State::NeedsValue;
@@ -1053,22 +1102,21 @@ fn on_inline_table_open(
             | TokenKind::Atom => {
                 if matches!(state, State::NeedsKey) {
                     if current_token.kind() == TokenKind::Dot {
-                        error.report_error(ParseError {
-                            context: current_token.span(),
-                            description: "key",
-                            expected: &[Expected::Description("key")],
-                            unexpected: current_token.span().before(),
-                        });
-                        receiver.error(current_token.span(), error);
-                    } else {
-                        on_key(
-                            tokens,
-                            current_token,
+                        receiver.simple_key(
+                            current_token.span().before(),
                             current_token.kind().encoding(),
-                            "inline table",
-                            receiver,
                             error,
                         );
+                        seek(tokens, -1);
+                        opt_dot_keys(tokens, receiver, error);
+                        state = State::NeedsEquals;
+                    } else {
+                        receiver.simple_key(
+                            current_token.span(),
+                            current_token.kind().encoding(),
+                            error,
+                        );
+                        opt_dot_keys(tokens, receiver, error);
                         state = State::NeedsEquals;
                     }
                 } else if matches!(state, State::NeedsValue) {
@@ -1170,7 +1218,7 @@ fn ws_comment_newline(
                 let context = first.append(current_token.span());
                 error.report_error(ParseError {
                     context,
-                    description: "line",
+                    description: "unexpected key or value",
                     expected: &[Expected::Literal("\n"), Expected::Literal("#")],
                     unexpected: current_token.span().before(),
                 });
@@ -1416,30 +1464,6 @@ fn on_missing_key(
 }
 
 #[cold]
-fn on_missing_value(
-    tokens: &mut Stream<'_>,
-    token: &Token,
-    receiver: &mut dyn EventReceiver,
-    error: &mut dyn ErrorSink,
-) {
-    error.report_error(ParseError {
-        context: token.span(),
-        description: "key-value pair",
-        expected: &[Expected::Description("value")],
-        unexpected: token.span().before(),
-    });
-
-    if token.kind() == TokenKind::Eof {
-    } else if token.kind() == TokenKind::Newline {
-        receiver.newline(token.span(), error);
-    } else if token.kind() == TokenKind::Comment {
-        on_comment(tokens, token, receiver, error);
-    } else {
-        receiver.error(token.span(), error);
-    }
-}
-
-#[cold]
 fn on_missing_expression_key(
     tokens: &mut Stream<'_>,
     token: &Token,
@@ -1466,7 +1490,7 @@ fn on_missing_std_table(
 ) {
     error.report_error(ParseError {
         context: token.span(),
-        description: "table",
+        description: "missing table open",
         expected: &[Expected::Literal("[")],
         unexpected: token.span().before(),
     });
@@ -1482,6 +1506,24 @@ fn next_token_if<'i, F: Fn(TokenKind) -> bool>(
     match tokens.first() {
         Some(next) if pred(next.kind()) => tokens.next_token(),
         _ => None,
+    }
+}
+
+fn seek(stream: &mut Stream<'_>, offset: isize) {
+    let current = stream.checkpoint();
+    stream.reset_to_start();
+    let start = stream.checkpoint();
+    let old_offset = current.offset_from(&start);
+    let new_offset = (old_offset as isize).saturating_add(offset) as usize;
+    if new_offset < stream.eof_offset() {
+        #[cfg(feature = "unsafe")] // SAFETY: bounds were checked
+        unsafe {
+            stream.next_slice_unchecked(new_offset)
+        };
+        #[cfg(not(feature = "unsafe"))]
+        stream.next_slice(new_offset);
+    } else {
+        stream.finish();
     }
 }
 

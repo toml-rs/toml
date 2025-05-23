@@ -1,15 +1,25 @@
 EventResults {
-    input: " hello = 'darkness' # my old friend\n$",
+    input: "\nkey . . key = \"value\"\n",
     events: [
         Event {
-            kind: Whitespace,
+            kind: Newline,
             encoding: None,
             span: 0..1,
         },
         Event {
             kind: SimpleKey,
             encoding: None,
-            span: 1..6,
+            span: 1..4,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 5..6,
         },
         Event {
             kind: Whitespace,
@@ -17,7 +27,12 @@ EventResults {
             span: 6..7,
         },
         Event {
-            kind: KeyValSep,
+            kind: SimpleKey,
+            encoding: None,
+            span: 7..7,
+        },
+        Event {
+            kind: KeySep,
             encoding: None,
             span: 7..8,
         },
@@ -27,47 +42,42 @@ EventResults {
             span: 8..9,
         },
         Event {
-            kind: Scalar,
-            encoding: Some(
-                LiteralString,
-            ),
-            span: 9..19,
+            kind: SimpleKey,
+            encoding: None,
+            span: 9..12,
         },
         Event {
             kind: Whitespace,
             encoding: None,
-            span: 19..20,
+            span: 12..13,
         },
         Event {
-            kind: Comment,
+            kind: KeyValSep,
             encoding: None,
-            span: 20..35,
+            span: 13..14,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 15..22,
         },
         Event {
             kind: Newline,
             encoding: None,
-            span: 35..36,
-        },
-        Event {
-            kind: SimpleKey,
-            encoding: None,
-            span: 36..37,
+            span: 22..23,
         },
     ],
     errors: [
         ParseError {
-            context: 37..37,
-            description: "key with no value",
-            expected: [
-                Literal(
-                    "=",
-                ),
-            ],
-            unexpected: 37..37,
-        },
-        ParseError {
-            context: 36..37,
-            description: "invalid unquoted key",
+            context: 7..7,
+            description: "empty unquoted key",
             expected: [
                 Description(
                     "letters",
@@ -82,7 +92,7 @@ EventResults {
                     "_",
                 ),
             ],
-            unexpected: 36..36,
+            unexpected: 7..7,
         },
     ],
 }

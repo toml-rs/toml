@@ -1,73 +1,68 @@
 EventResults {
-    input: " hello = 'darkness' # my old friend\n$",
+    input: "\n . key = \"value\"\n",
     events: [
         Event {
-            kind: Whitespace,
+            kind: Newline,
             encoding: None,
             span: 0..1,
         },
         Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
             kind: SimpleKey,
             encoding: None,
-            span: 1..6,
+            span: 2..2,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 2..3,
         },
         Event {
             kind: Whitespace,
             encoding: None,
-            span: 6..7,
+            span: 3..4,
         },
         Event {
-            kind: KeyValSep,
+            kind: SimpleKey,
+            encoding: None,
+            span: 4..7,
+        },
+        Event {
+            kind: Whitespace,
             encoding: None,
             span: 7..8,
         },
         Event {
-            kind: Whitespace,
+            kind: KeyValSep,
             encoding: None,
             span: 8..9,
         },
         Event {
-            kind: Scalar,
-            encoding: Some(
-                LiteralString,
-            ),
-            span: 9..19,
-        },
-        Event {
             kind: Whitespace,
             encoding: None,
-            span: 19..20,
+            span: 9..10,
         },
         Event {
-            kind: Comment,
-            encoding: None,
-            span: 20..35,
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 10..17,
         },
         Event {
             kind: Newline,
             encoding: None,
-            span: 35..36,
-        },
-        Event {
-            kind: SimpleKey,
-            encoding: None,
-            span: 36..37,
+            span: 17..18,
         },
     ],
     errors: [
         ParseError {
-            context: 37..37,
-            description: "key with no value",
-            expected: [
-                Literal(
-                    "=",
-                ),
-            ],
-            unexpected: 37..37,
-        },
-        ParseError {
-            context: 36..37,
-            description: "invalid unquoted key",
+            context: 2..2,
+            description: "empty unquoted key",
             expected: [
                 Description(
                     "letters",
@@ -82,7 +77,7 @@ EventResults {
                     "_",
                 ),
             ],
-            unexpected: 36..36,
+            unexpected: 2..2,
         },
     ],
 }

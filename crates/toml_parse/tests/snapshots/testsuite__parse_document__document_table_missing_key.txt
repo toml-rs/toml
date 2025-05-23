@@ -1,15 +1,30 @@
 EventResults {
-    input: " hello = 'darkness' # my old friend\n$",
+    input: "[]\nkey = \"value\"\n",
     events: [
         Event {
-            kind: Whitespace,
+            kind: StdTableOpen,
             encoding: None,
             span: 0..1,
         },
         Event {
             kind: SimpleKey,
             encoding: None,
-            span: 1..6,
+            span: 1..1,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 3..6,
         },
         Event {
             kind: Whitespace,
@@ -29,45 +44,20 @@ EventResults {
         Event {
             kind: Scalar,
             encoding: Some(
-                LiteralString,
+                BasicString,
             ),
-            span: 9..19,
-        },
-        Event {
-            kind: Whitespace,
-            encoding: None,
-            span: 19..20,
-        },
-        Event {
-            kind: Comment,
-            encoding: None,
-            span: 20..35,
+            span: 9..16,
         },
         Event {
             kind: Newline,
             encoding: None,
-            span: 35..36,
-        },
-        Event {
-            kind: SimpleKey,
-            encoding: None,
-            span: 36..37,
+            span: 16..17,
         },
     ],
     errors: [
         ParseError {
-            context: 37..37,
-            description: "key with no value",
-            expected: [
-                Literal(
-                    "=",
-                ),
-            ],
-            unexpected: 37..37,
-        },
-        ParseError {
-            context: 36..37,
-            description: "invalid unquoted key",
+            context: 1..1,
+            description: "empty unquoted key",
             expected: [
                 Description(
                     "letters",
@@ -82,7 +72,7 @@ EventResults {
                     "_",
                 ),
             ],
-            unexpected: 36..36,
+            unexpected: 1..1,
         },
     ],
 }

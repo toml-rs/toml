@@ -7,6 +7,7 @@ pub(crate) mod scalar;
 pub(crate) mod string;
 pub(crate) mod ws;
 
+pub use scalar::IntegerRadix;
 pub use scalar::ScalarKind;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]

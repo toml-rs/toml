@@ -1,13 +1,19 @@
 EventResults {
     input: "",
-    events: [],
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..0,
+        },
+    ],
     errors: [
         ParseError {
             context: 0..0,
-            description: "key-value pair",
+            description: "string values must be quoted",
             expected: [
                 Description(
-                    "value",
+                    "literal string",
                 ),
             ],
             unexpected: 0..0,
