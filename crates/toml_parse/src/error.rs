@@ -49,17 +49,17 @@ impl ParseError {
         }
     }
 
-    pub fn context(mut self, context: Span) -> Self {
+    pub fn with_context(mut self, context: Span) -> Self {
         self.context = context;
         self
     }
 
-    pub fn expected(mut self, expected: &'static [Expected]) -> Self {
+    pub fn with_expected(mut self, expected: &'static [Expected]) -> Self {
         self.expected = expected;
         self
     }
 
-    pub fn unexpected(mut self, unexpected: Span) -> Self {
+    pub fn with_unexpected(mut self, unexpected: Span) -> Self {
         self.unexpected = unexpected;
         self
     }

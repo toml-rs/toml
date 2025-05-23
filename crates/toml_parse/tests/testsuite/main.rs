@@ -56,14 +56,14 @@ impl<'i> EventResults<'i> {
                         if value.is_err() {
                             self.errors.report_error(
                                 ParseError::new("failed to parse bool")
-                                    .context(Span::new_unchecked(0, raw.len()))
-                                    .unexpected(Span::new_unchecked(0, 2)),
+                                    .with_context(Span::new_unchecked(0, raw.len()))
+                                    .with_unexpected(Span::new_unchecked(0, 2)),
                             );
                         } else if value != Ok(v) {
                             self.errors.report_error(
                                 ParseError::new("mismatched bool value")
-                                    .context(Span::new_unchecked(0, raw.len()))
-                                    .unexpected(Span::new_unchecked(0, 2)),
+                                    .with_context(Span::new_unchecked(0, raw.len()))
+                                    .with_unexpected(Span::new_unchecked(0, 2)),
                             );
                         }
                     }
@@ -72,8 +72,8 @@ impl<'i> EventResults<'i> {
                         if value.is_err() {
                             self.errors.report_error(
                                 ParseError::new("failed to parse datetime")
-                                    .context(Span::new_unchecked(0, raw.len()))
-                                    .unexpected(Span::new_unchecked(0, 2)),
+                                    .with_context(Span::new_unchecked(0, raw.len()))
+                                    .with_unexpected(Span::new_unchecked(0, 2)),
                             );
                         }
                     }
@@ -82,8 +82,8 @@ impl<'i> EventResults<'i> {
                         if value.is_err() {
                             self.errors.report_error(
                                 ParseError::new("failed to parse f64")
-                                    .context(Span::new_unchecked(0, raw.len()))
-                                    .unexpected(Span::new_unchecked(0, 2)),
+                                    .with_context(Span::new_unchecked(0, raw.len()))
+                                    .with_unexpected(Span::new_unchecked(0, 2)),
                             );
                         }
                     }
@@ -92,8 +92,8 @@ impl<'i> EventResults<'i> {
                         if value.is_err() {
                             self.errors.report_error(
                                 ParseError::new("failed to parse i64")
-                                    .context(Span::new_unchecked(0, raw.len()))
-                                    .unexpected(Span::new_unchecked(0, 2)),
+                                    .with_context(Span::new_unchecked(0, raw.len()))
+                                    .with_unexpected(Span::new_unchecked(0, 2)),
                             );
                         }
                     }
