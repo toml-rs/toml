@@ -91,10 +91,7 @@ impl<'i> Raw<'i> {
 
     pub fn decode_key(&self, output: &mut dyn StringBuilder<'i>, error: &mut dyn ErrorSink) {
         let mut error = |err: crate::ParseError| {
-            error.report_error(
-                err.with_context(err.context() + self.span.start)
-                    .with_unexpected(err.unexpected() + self.span.start),
-            );
+            error.report_error(err.rebase_spans(self.span.start));
         };
         match self.encoding {
             Some(Encoding::LiteralString) => {
@@ -138,10 +135,7 @@ impl<'i> Raw<'i> {
         error: &mut dyn ErrorSink,
     ) -> crate::decode::scalar::ScalarKind {
         let mut error = |err: crate::ParseError| {
-            error.report_error(
-                err.with_context(err.context() + self.span.start)
-                    .with_unexpected(err.unexpected() + self.span.start),
-            );
+            error.report_error(err.rebase_spans(self.span.start));
         };
         match self.encoding {
             Some(Encoding::LiteralString) => {
@@ -170,20 +164,14 @@ impl<'i> Raw<'i> {
 
     pub fn decode_comment(&self, error: &mut dyn ErrorSink) {
         let mut error = |err: crate::ParseError| {
-            error.report_error(
-                err.with_context(err.context() + self.span.start)
-                    .with_unexpected(err.unexpected() + self.span.start),
-            );
+            error.report_error(err.rebase_spans(self.span.start));
         };
         crate::decode::ws::decode_comment(*self, &mut error);
     }
 
     pub fn decode_newline(&self, error: &mut dyn ErrorSink) {
         let mut error = |err: crate::ParseError| {
-            error.report_error(
-                err.with_context(err.context() + self.span.start)
-                    .with_unexpected(err.unexpected() + self.span.start),
-            );
+            error.report_error(err.rebase_spans(self.span.start));
         };
         crate::decode::ws::decode_newline(*self, &mut error);
     }

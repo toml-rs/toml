@@ -76,6 +76,12 @@ impl ParseError {
     pub fn unexpected(&self) -> Span {
         self.unexpected
     }
+
+    pub(crate) fn rebase_spans(mut self, offset: usize) -> Self {
+        self.context += offset;
+        self.unexpected += offset;
+        self
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
