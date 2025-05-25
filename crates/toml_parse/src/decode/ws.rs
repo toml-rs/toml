@@ -25,7 +25,7 @@ pub(crate) fn decode_comment(raw: Raw<'_>, error: &mut dyn ErrorSink) {
 
     if s.first() != Some(&COMMENT_START_SYMBOL) {
         error.report_error(
-            ParseError::new("comment")
+            ParseError::new("missing comment start")
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("#")])
                 .with_unexpected(Span::new_unchecked(0, 0)),
@@ -35,7 +35,7 @@ pub(crate) fn decode_comment(raw: Raw<'_>, error: &mut dyn ErrorSink) {
     for (i, b) in s.iter().copied().enumerate() {
         if !NON_EOL.contains_token(b) {
             error.report_error(
-                ParseError::new("comment")
+                ParseError::new("invalid comment character")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[Expected::Description("printable characters")])
                     .with_unexpected(Span::new_unchecked(i, i)),
@@ -69,7 +69,7 @@ pub(crate) fn decode_newline(raw: Raw<'_>, error: &mut dyn ErrorSink) {
         error.report_error(
             ParseError::new("carriage return must be followed by newline")
                 .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
+                .with_expected(&[Expected::Literal("\n")])
                 .with_unexpected(Span::new_unchecked(raw.len(), raw.len())),
         );
     }

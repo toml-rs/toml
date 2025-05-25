@@ -14,7 +14,7 @@ EventResults {
             context: Some(
                 0..7,
             ),
-            description: "multi-line basic string",
+            description: "invalid multi-line basic string",
             expected: Some(
                 [
                     Literal(

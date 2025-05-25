@@ -103,7 +103,6 @@ impl<'i> Raw<'i> {
             Some(Encoding::MlLiteralString) => {
                 error.report_error(
                     crate::ParseError::new("keys cannot be multi-line literal strings")
-                        .with_context(Span::new_unchecked(0, self.len()))
                         .with_expected(&[
                             Expected::Description("basic string"),
                             Expected::Description("literal string"),
@@ -115,7 +114,6 @@ impl<'i> Raw<'i> {
             Some(Encoding::MlBasicString) => {
                 error.report_error(
                     crate::ParseError::new("keys cannot be multi-line basic strings")
-                        .with_context(Span::new_unchecked(0, self.len()))
                         .with_expected(&[
                             Expected::Description("basic string"),
                             Expected::Description("literal string"),

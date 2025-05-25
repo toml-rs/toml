@@ -54,7 +54,7 @@ EventResults {
             context: Some(
                 20..36,
             ),
-            description: "comment",
+            description: "invalid comment character",
             expected: Some(
                 [
                     Description(
