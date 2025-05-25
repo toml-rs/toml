@@ -33,10 +33,10 @@ impl ErrorSink for Vec<ParseError> {
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
 pub struct ParseError {
-    pub(crate) context: Span,
-    pub(crate) description: &'static str,
-    pub(crate) expected: &'static [Expected],
-    pub(crate) unexpected: Span,
+    context: Span,
+    description: &'static str,
+    expected: &'static [Expected],
+    unexpected: Span,
 }
 
 impl ParseError {

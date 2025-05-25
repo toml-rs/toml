@@ -39,7 +39,7 @@ impl<'s> DebugErrorSink<'s> {
 impl ErrorSink for DebugErrorSink<'_> {
     fn report_error(&mut self, error: crate::ParseError) {
         render_event(
-            error.context,
+            error.context(),
             &format!("{error:?}"),
             anstyle::AnsiColor::Red.on_default(),
         );
