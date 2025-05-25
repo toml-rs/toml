@@ -252,12 +252,12 @@ fn on_table(
                 success = true;
             } else {
                 let context = open_token.span().append(close_token.span());
-                error.report_error(ParseError {
-                    context,
-                    description: "array table",
-                    expected: &[Expected::Literal("]")],
-                    unexpected: close_token.span().after(),
-                });
+                error.report_error(
+                    ParseError::new("array table")
+                        .with_context(context)
+                        .with_expected(&[Expected::Literal("]")])
+                        .with_unexpected(close_token.span().after()),
+                );
             }
         } else {
             receiver.std_table_close(close_token.span(), error);
@@ -270,19 +270,19 @@ fn on_table(
             .unwrap_or(open_token);
         let context = open_token.span().append(last_key_token.span());
         if is_array_table {
-            error.report_error(ParseError {
-                context,
-                description: "unclosed array table",
-                expected: &[Expected::Literal("]]")],
-                unexpected: last_key_token.span().after(),
-            });
+            error.report_error(
+                ParseError::new("unclosed array table")
+                    .with_context(context)
+                    .with_expected(&[Expected::Literal("]]")])
+                    .with_unexpected(last_key_token.span().after()),
+            );
         } else {
-            error.report_error(ParseError {
-                context,
-                description: "unclosed table",
-                expected: &[Expected::Literal("]")],
-                unexpected: last_key_token.span().after(),
-            });
+            error.report_error(
+                ParseError::new("unclosed table")
+                    .with_context(context)
+                    .with_expected(&[Expected::Literal("]")])
+                    .with_unexpected(last_key_token.span().after()),
+            );
         }
     }
 
@@ -360,12 +360,12 @@ fn key(
         })
         .map(|t| t.span())
         .unwrap_or_default();
-    error.report_error(ParseError {
-        context: previous_span,
-        description,
-        expected: &[Expected::Description("key")],
-        unexpected: previous_span.after(),
-    });
+    error.report_error(
+        ParseError::new(description)
+            .with_context(previous_span)
+            .with_expected(&[Expected::Description("key")])
+            .with_unexpected(previous_span.after()),
+    );
     false
 }
 
@@ -395,12 +395,12 @@ fn on_expression_key<'i>(
     let Some(eq_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Equals)) else {
         if let Some(peek_token) = tokens.first() {
             let span = peek_token.span().before();
-            error.report_error(ParseError {
-                context: span,
-                description: "key with no value",
-                expected: &[Expected::Literal("=")],
-                unexpected: span,
-            });
+            error.report_error(
+                ParseError::new("key with no value")
+                    .with_context(span)
+                    .with_expected(&[Expected::Literal("=")])
+                    .with_unexpected(span),
+            );
         }
         ignore_to_newline(tokens, receiver, error);
         return;
@@ -423,12 +423,12 @@ fn on_expression_dot<'i>(
     let Some(eq_token) = next_token_if(tokens, |k| matches!(k, TokenKind::Equals)) else {
         if let Some(peek_token) = tokens.first() {
             let span = peek_token.span().before();
-            error.report_error(ParseError {
-                context: span,
-                description: "expression",
-                expected: &[Expected::Literal("=")],
-                unexpected: span,
-            });
+            error.report_error(
+                ParseError::new("expression")
+                    .with_context(span)
+                    .with_expected(&[Expected::Literal("=")])
+                    .with_unexpected(span),
+            );
         }
         ignore_to_newline(tokens, receiver, error);
         return;
@@ -480,12 +480,12 @@ fn simple_key(
             })
             .map(|t| t.span())
             .unwrap_or_default();
-        error.report_error(ParseError {
-            context: previous_span,
-            description,
-            expected: &[Expected::Description("key")],
-            unexpected: previous_span.after(),
-        });
+        error.report_error(
+            ParseError::new(description)
+                .with_context(previous_span)
+                .with_expected(&[Expected::Description("key")])
+                .with_unexpected(previous_span.after()),
+        );
         return;
     };
 
@@ -513,21 +513,21 @@ fn simple_key(
         TokenKind::LiteralString => Some(Encoding::LiteralString),
         TokenKind::BasicString => Some(Encoding::BasicString),
         TokenKind::MlLiteralString => {
-            error.report_error(ParseError {
-                context: current_token.span(),
-                description,
-                expected: &EXPECTED_KEYS,
-                unexpected: current_token.span(),
-            });
+            error.report_error(
+                ParseError::new(description)
+                    .with_context(current_token.span())
+                    .with_expected(&EXPECTED_KEYS)
+                    .with_unexpected(current_token.span()),
+            );
             Some(Encoding::MlLiteralString)
         }
         TokenKind::MlBasicString => {
-            error.report_error(ParseError {
-                context: current_token.span(),
-                description,
-                expected: &EXPECTED_KEYS,
-                unexpected: current_token.span(),
-            });
+            error.report_error(
+                ParseError::new(description)
+                    .with_context(current_token.span())
+                    .with_expected(&EXPECTED_KEYS)
+                    .with_unexpected(current_token.span()),
+            );
             Some(Encoding::MlBasicString)
         }
         TokenKind::Atom => None,
@@ -630,12 +630,12 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
             })
             .map(|t| t.span())
             .unwrap_or_default();
-        error.report_error(ParseError {
-            context: previous_span,
-            description: "key-value pair",
-            expected: &[Expected::Description("value")],
-            unexpected: previous_span.after(),
-        });
+        error.report_error(
+            ParseError::new("key-value pair")
+                .with_context(previous_span)
+                .with_expected(&[Expected::Description("value")])
+                .with_unexpected(previous_span.after()),
+        );
         return;
     };
 
@@ -651,12 +651,12 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
             seek(tokens, -1);
         }
         TokenKind::Equals => {
-            error.report_error(ParseError {
-                context: current_token.span(),
-                description: "key-value pair",
-                expected: &[],
-                unexpected: current_token.span(),
-            });
+            error.report_error(
+                ParseError::new("key-value pair")
+                    .with_context(current_token.span())
+                    .with_expected(&[])
+                    .with_unexpected(current_token.span()),
+            );
             receiver.error(current_token.span(), error);
             value(tokens, receiver, error);
         }
@@ -664,12 +664,12 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
             on_inline_table_open(tokens, current_token, receiver, error);
         }
         TokenKind::RightCurlyBracket => {
-            error.report_error(ParseError {
-                context: current_token.span(),
-                description: "inline table",
-                expected: &[Expected::Literal("{")],
-                unexpected: current_token.span().before(),
-            });
+            error.report_error(
+                ParseError::new("inline table")
+                    .with_context(current_token.span())
+                    .with_expected(&[Expected::Literal("{")])
+                    .with_unexpected(current_token.span().before()),
+            );
 
             let _ = receiver.inline_table_open(current_token.span().before(), error);
             receiver.inline_table_close(current_token.span(), error);
@@ -678,12 +678,12 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
             on_array_open(tokens, current_token, receiver, error);
         }
         TokenKind::RightSquareBracket => {
-            error.report_error(ParseError {
-                context: current_token.span(),
-                description: "array",
-                expected: &[Expected::Literal("[")],
-                unexpected: current_token.span().before(),
-            });
+            error.report_error(
+                ParseError::new("array")
+                    .with_context(current_token.span())
+                    .with_expected(&[Expected::Literal("[")])
+                    .with_unexpected(current_token.span().before()),
+            );
 
             let _ = receiver.array_open(current_token.span().before(), error);
             receiver.array_close(current_token.span(), error);
@@ -786,12 +786,12 @@ fn on_array_open(
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
-                error.report_error(ParseError {
-                    context: array_open.span(),
-                    description: "array",
-                    expected: &[Expected::Literal("]")],
-                    unexpected: current_token.span(),
-                });
+                error.report_error(
+                    ParseError::new("array")
+                        .with_context(array_open.span())
+                        .with_expected(&[Expected::Literal("]")])
+                        .with_unexpected(current_token.span()),
+                );
                 receiver.array_close(current_token.span().before(), error);
                 return;
             }
@@ -801,32 +801,32 @@ fn on_array_open(
 
                     state = State::NeedsValue;
                 } else {
-                    error.report_error(ParseError {
-                        context: array_open.span(),
-                        description: "extra comma in array",
-                        expected: &[Expected::Description("value")],
-                        unexpected: current_token.span(),
-                    });
+                    error.report_error(
+                        ParseError::new("extra comma in array")
+                            .with_context(array_open.span())
+                            .with_expected(&[Expected::Description("value")])
+                            .with_unexpected(current_token.span()),
+                    );
                     receiver.error(current_token.span(), error);
                 }
             }
             TokenKind::Equals => {
-                error.report_error(ParseError {
-                    context: array_open.span(),
-                    description: "array",
-                    expected: &[Expected::Description("value"), Expected::Literal("]")],
-                    unexpected: current_token.span(),
-                });
+                error.report_error(
+                    ParseError::new("array")
+                        .with_context(array_open.span())
+                        .with_expected(&[Expected::Description("value"), Expected::Literal("]")])
+                        .with_unexpected(current_token.span()),
+                );
                 receiver.error(current_token.span(), error);
             }
             TokenKind::LeftCurlyBracket => {
                 if !matches!(state, State::NeedsValue) {
-                    error.report_error(ParseError {
-                        context: array_open.span(),
-                        description: "array",
-                        expected: &[Expected::Literal(",")],
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("array")
+                            .with_context(array_open.span())
+                            .with_expected(&[Expected::Literal(",")])
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.value_sep(current_token.span().before(), error);
                 }
 
@@ -836,21 +836,21 @@ fn on_array_open(
             }
             TokenKind::RightCurlyBracket => {
                 if !matches!(state, State::NeedsValue) {
-                    error.report_error(ParseError {
-                        context: array_open.span(),
-                        description: "array",
-                        expected: &[Expected::Literal(",")],
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("array")
+                            .with_context(array_open.span())
+                            .with_expected(&[Expected::Literal(",")])
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.value_sep(current_token.span().before(), error);
                 }
 
-                error.report_error(ParseError {
-                    context: current_token.span(),
-                    description: "inline table",
-                    expected: &[Expected::Literal("{")],
-                    unexpected: current_token.span().before(),
-                });
+                error.report_error(
+                    ParseError::new("inline table")
+                        .with_context(current_token.span())
+                        .with_expected(&[Expected::Literal("{")])
+                        .with_unexpected(current_token.span().before()),
+                );
 
                 let _ = receiver.inline_table_open(current_token.span().before(), error);
                 receiver.inline_table_close(current_token.span(), error);
@@ -859,12 +859,12 @@ fn on_array_open(
             }
             TokenKind::LeftSquareBracket => {
                 if !matches!(state, State::NeedsValue) {
-                    error.report_error(ParseError {
-                        context: array_open.span(),
-                        description: "array",
-                        expected: &[Expected::Literal(",")],
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("array")
+                            .with_context(array_open.span())
+                            .with_expected(&[Expected::Literal(",")])
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.value_sep(current_token.span().before(), error);
                 }
 
@@ -884,12 +884,12 @@ fn on_array_open(
             | TokenKind::Dot
             | TokenKind::Atom => {
                 if !matches!(state, State::NeedsValue) {
-                    error.report_error(ParseError {
-                        context: array_open.span(),
-                        description: "array",
-                        expected: &[Expected::Literal(",")],
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("array")
+                            .with_context(array_open.span())
+                            .with_expected(&[Expected::Literal(",")])
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.value_sep(current_token.span().before(), error);
                 }
 
@@ -910,12 +910,12 @@ fn on_array_open(
         })
         .map(|t| t.span())
         .unwrap_or_default();
-    error.report_error(ParseError {
-        context: array_open.span(),
-        description: "array",
-        expected: &[Expected::Literal("]")],
-        unexpected: previous_span.after(),
-    });
+    error.report_error(
+        ParseError::new("array")
+            .with_context(array_open.span())
+            .with_expected(&[Expected::Literal("]")])
+            .with_unexpected(previous_span.after()),
+    );
     receiver.array_close(previous_span.after(), error);
 }
 
@@ -963,12 +963,12 @@ fn on_inline_table_open(
     while let Some(current_token) = tokens.next_token() {
         match current_token.kind() {
             TokenKind::Comment => {
-                error.report_error(ParseError {
-                    context: inline_table_open.span(),
-                    description: "inline table",
-                    expected: &[],
-                    unexpected: current_token.span(),
-                });
+                error.report_error(
+                    ParseError::new("inline table")
+                        .with_context(inline_table_open.span())
+                        .with_expected(&[])
+                        .with_unexpected(current_token.span()),
+                );
 
                 on_comment(tokens, current_token, receiver, error);
             }
@@ -976,22 +976,22 @@ fn on_inline_table_open(
                 receiver.whitespace(current_token.span(), error);
             }
             TokenKind::Newline => {
-                error.report_error(ParseError {
-                    context: inline_table_open.span(),
-                    description: "inline table",
-                    expected: &[],
-                    unexpected: current_token.span(),
-                });
+                error.report_error(
+                    ParseError::new("inline table")
+                        .with_context(inline_table_open.span())
+                        .with_expected(&[])
+                        .with_unexpected(current_token.span()),
+                );
 
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
-                error.report_error(ParseError {
-                    context: inline_table_open.span(),
-                    description: "inline table",
-                    expected: &[Expected::Literal("}")],
-                    unexpected: current_token.span(),
-                });
+                error.report_error(
+                    ParseError::new("inline table")
+                        .with_context(inline_table_open.span())
+                        .with_expected(&[Expected::Literal("}")])
+                        .with_unexpected(current_token.span()),
+                );
 
                 receiver.inline_table_close(current_token.span().before(), error);
                 return;
@@ -1002,12 +1002,12 @@ fn on_inline_table_open(
 
                     state = State::NeedsKey;
                 } else {
-                    error.report_error(ParseError {
-                        context: inline_table_open.span(),
-                        description: "extra comma in inline table",
-                        expected: state.expected(),
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("extra comma in inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.error(current_token.span(), error);
                 }
             }
@@ -1025,12 +1025,12 @@ fn on_inline_table_open(
 
                     state = State::NeedsValue;
                 } else {
-                    error.report_error(ParseError {
-                        context: inline_table_open.span(),
-                        description: "inline table",
-                        expected: state.expected(),
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.error(current_token.span(), error);
                 }
             }
@@ -1040,12 +1040,12 @@ fn on_inline_table_open(
 
                     state = State::NeedsComma;
                 } else {
-                    error.report_error(ParseError {
-                        context: inline_table_open.span(),
-                        description: "inline table",
-                        expected: state.expected(),
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.error(current_token.span(), error);
                     ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error);
                 }
@@ -1061,36 +1061,36 @@ fn on_inline_table_open(
 
                     state = State::NeedsComma;
                 } else {
-                    error.report_error(ParseError {
-                        context: inline_table_open.span(),
-                        description: "inline table",
-                        expected: state.expected(),
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.error(current_token.span(), error);
                     ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error);
                 }
             }
             TokenKind::RightSquareBracket => {
                 if matches!(state, State::NeedsValue) {
-                    error.report_error(ParseError {
-                        context: current_token.span(),
-                        description: "array",
-                        expected: &[Expected::Literal("[")],
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("array")
+                            .with_context(current_token.span())
+                            .with_expected(&[Expected::Literal("[")])
+                            .with_unexpected(current_token.span().before()),
+                    );
 
                     let _ = receiver.array_open(current_token.span().before(), error);
                     receiver.array_close(current_token.span(), error);
 
                     state = State::NeedsComma;
                 } else {
-                    error.report_error(ParseError {
-                        context: inline_table_open.span(),
-                        description: "inline table",
-                        expected: state.expected(),
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.error(current_token.span(), error);
                 }
             }
@@ -1124,12 +1124,12 @@ fn on_inline_table_open(
 
                     state = State::NeedsComma;
                 } else {
-                    error.report_error(ParseError {
-                        context: inline_table_open.span(),
-                        description: "inline table",
-                        expected: state.expected(),
-                        unexpected: current_token.span().before(),
-                    });
+                    error.report_error(
+                        ParseError::new("inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
                     receiver.error(current_token.span(), error);
                 }
             }
@@ -1146,12 +1146,12 @@ fn on_inline_table_open(
         })
         .map(|t| t.span())
         .unwrap_or_default();
-    error.report_error(ParseError {
-        context: inline_table_open.span(),
-        description: "inline table",
-        expected: &[Expected::Literal("}")],
-        unexpected: previous_span.after(),
-    });
+    error.report_error(
+        ParseError::new("inline table")
+            .with_context(inline_table_open.span())
+            .with_expected(&[Expected::Literal("}")])
+            .with_unexpected(previous_span.after()),
+    );
     receiver.array_close(previous_span.after(), error);
 }
 
@@ -1216,12 +1216,12 @@ fn ws_comment_newline(
             | TokenKind::MlBasicString
             | TokenKind::Atom => {
                 let context = first.append(current_token.span());
-                error.report_error(ParseError {
-                    context,
-                    description: "unexpected key or value",
-                    expected: &[Expected::Literal("\n"), Expected::Literal("#")],
-                    unexpected: current_token.span().before(),
-                });
+                error.report_error(
+                    ParseError::new("unexpected key or value")
+                        .with_context(context)
+                        .with_expected(&[Expected::Literal("\n"), Expected::Literal("#")])
+                        .with_unexpected(current_token.span().before()),
+                );
 
                 receiver.error(current_token.span(), error);
                 ignore_to_newline(tokens, receiver, error);
@@ -1274,12 +1274,12 @@ fn on_comment(
         | TokenKind::MlBasicString
         | TokenKind::Atom => {
             let context = comment_token.span().append(current_token.span());
-            error.report_error(ParseError {
-                context,
-                description: "line",
-                expected: &[Expected::Literal("\n")],
-                unexpected: current_token.span().before(),
-            });
+            error.report_error(
+                ParseError::new("line")
+                    .with_context(context)
+                    .with_expected(&[Expected::Literal("\n")])
+                    .with_unexpected(current_token.span().before()),
+            );
 
             receiver.error(current_token.span(), error);
             ignore_to_newline(tokens, receiver, error);
@@ -1312,12 +1312,12 @@ fn eof(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut dy
         | TokenKind::Comment
         | TokenKind::Whitespace
         | TokenKind::Newline => {
-            error.report_error(ParseError {
-                context: current_token.span(),
-                description: "end-of-input",
-                expected: &[],
-                unexpected: current_token.span().before(),
-            });
+            error.report_error(
+                ParseError::new("end-of-input")
+                    .with_context(current_token.span())
+                    .with_expected(&[])
+                    .with_unexpected(current_token.span().before()),
+            );
 
             receiver.error(current_token.span(), error);
             while let Some(current_token) = tokens.next_token() {
@@ -1446,12 +1446,12 @@ fn on_missing_key(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    error.report_error(ParseError {
-        context: token.span(),
-        description,
-        expected: &[Expected::Description("key")],
-        unexpected: token.span().before(),
-    });
+    error.report_error(
+        ParseError::new(description)
+            .with_context(token.span())
+            .with_expected(&[Expected::Description("key")])
+            .with_unexpected(token.span().before()),
+    );
 
     if token.kind() == TokenKind::Eof {
     } else if token.kind() == TokenKind::Newline {
@@ -1470,12 +1470,12 @@ fn on_missing_expression_key(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    error.report_error(ParseError {
-        context: token.span(),
-        description: "key-value pair",
-        expected: &[Expected::Description("key")],
-        unexpected: token.span().before(),
-    });
+    error.report_error(
+        ParseError::new("key-value pair")
+            .with_context(token.span())
+            .with_expected(&[Expected::Description("key")])
+            .with_unexpected(token.span().before()),
+    );
 
     receiver.error(token.span(), error);
     ignore_to_newline(tokens, receiver, error);
@@ -1488,12 +1488,12 @@ fn on_missing_std_table(
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
-    error.report_error(ParseError {
-        context: token.span(),
-        description: "missing table open",
-        expected: &[Expected::Literal("[")],
-        unexpected: token.span().before(),
-    });
+    error.report_error(
+        ParseError::new("missing table open")
+            .with_context(token.span())
+            .with_expected(&[Expected::Literal("[")])
+            .with_unexpected(token.span().before()),
+    );
 
     receiver.error(token.span(), error);
     ignore_to_newline(tokens, receiver, error);

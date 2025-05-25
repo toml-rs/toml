@@ -408,12 +408,12 @@ impl EventReceiver for RecursionGuard<'_> {
         self.depth += 1;
         let within_depth = self.within_depth();
         if allowed && !within_depth {
-            error.report_error(ParseError {
-                context: span,
-                description: "inline table",
-                expected: &[],
-                unexpected: span,
-            });
+            error.report_error(
+                ParseError::new("inline table")
+                    .with_context(span)
+                    .with_expected(&[])
+                    .with_unexpected(span),
+            );
         }
         allowed && within_depth
     }
@@ -426,12 +426,12 @@ impl EventReceiver for RecursionGuard<'_> {
         self.depth += 1;
         let within_depth = self.within_depth();
         if allowed && !within_depth {
-            error.report_error(ParseError {
-                context: span,
-                description: "array",
-                expected: &[],
-                unexpected: span,
-            });
+            error.report_error(
+                ParseError::new("array")
+                    .with_context(span)
+                    .with_expected(&[])
+                    .with_unexpected(span),
+            );
         }
         allowed && within_depth
     }

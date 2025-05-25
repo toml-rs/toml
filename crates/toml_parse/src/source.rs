@@ -90,10 +90,11 @@ impl<'i> Raw<'i> {
     }
 
     pub fn decode_key(&self, output: &mut dyn StringBuilder<'i>, error: &mut dyn ErrorSink) {
-        let mut error = |mut err: crate::ParseError| {
-            err.context += self.span.start;
-            err.unexpected += self.span.start;
-            error.report_error(err);
+        let mut error = |err: crate::ParseError| {
+            error.report_error(
+                err.with_context(err.context() + self.span.start)
+                    .with_unexpected(err.unexpected() + self.span.start),
+            );
         };
         match self.encoding {
             Some(Encoding::LiteralString) => {
@@ -103,27 +104,27 @@ impl<'i> Raw<'i> {
                 crate::decode::string::decode_basic_string(*self, output, &mut error);
             }
             Some(Encoding::MlLiteralString) => {
-                error.report_error(crate::ParseError {
-                    context: Span::new_unchecked(0, self.len()),
-                    description: "keys cannot be multi-line literal strings",
-                    expected: &[
-                        Expected::Description("basic string"),
-                        Expected::Description("literal string"),
-                    ],
-                    unexpected: Span::new_unchecked(0, self.len()),
-                });
+                error.report_error(
+                    crate::ParseError::new("keys cannot be multi-line literal strings")
+                        .with_context(Span::new_unchecked(0, self.len()))
+                        .with_expected(&[
+                            Expected::Description("basic string"),
+                            Expected::Description("literal string"),
+                        ])
+                        .with_unexpected(Span::new_unchecked(0, self.len())),
+                );
                 crate::decode::string::decode_ml_literal_string(*self, output, &mut error);
             }
             Some(Encoding::MlBasicString) => {
-                error.report_error(crate::ParseError {
-                    context: Span::new_unchecked(0, self.len()),
-                    description: "keys cannot be multi-line basic strings",
-                    expected: &[
-                        Expected::Description("basic string"),
-                        Expected::Description("literal string"),
-                    ],
-                    unexpected: Span::new_unchecked(0, self.len()),
-                });
+                error.report_error(
+                    crate::ParseError::new("keys cannot be multi-line basic strings")
+                        .with_context(Span::new_unchecked(0, self.len()))
+                        .with_expected(&[
+                            Expected::Description("basic string"),
+                            Expected::Description("literal string"),
+                        ])
+                        .with_unexpected(Span::new_unchecked(0, self.len())),
+                );
                 crate::decode::string::decode_ml_basic_string(*self, output, &mut error);
             }
             None => crate::decode::string::decode_unquoted_key(*self, output, &mut error),
@@ -136,10 +137,11 @@ impl<'i> Raw<'i> {
         output: &mut dyn StringBuilder<'i>,
         error: &mut dyn ErrorSink,
     ) -> crate::decode::scalar::ScalarKind {
-        let mut error = |mut err: crate::ParseError| {
-            err.context += self.span.start;
-            err.unexpected += self.span.start;
-            error.report_error(err);
+        let mut error = |err: crate::ParseError| {
+            error.report_error(
+                err.with_context(err.context() + self.span.start)
+                    .with_unexpected(err.unexpected() + self.span.start),
+            );
         };
         match self.encoding {
             Some(Encoding::LiteralString) => {
@@ -167,19 +169,21 @@ impl<'i> Raw<'i> {
     }
 
     pub fn decode_comment(&self, error: &mut dyn ErrorSink) {
-        let mut error = |mut err: crate::ParseError| {
-            err.context += self.span.start;
-            err.unexpected += self.span.start;
-            error.report_error(err);
+        let mut error = |err: crate::ParseError| {
+            error.report_error(
+                err.with_context(err.context() + self.span.start)
+                    .with_unexpected(err.unexpected() + self.span.start),
+            );
         };
         crate::decode::ws::decode_comment(*self, &mut error);
     }
 
     pub fn decode_newline(&self, error: &mut dyn ErrorSink) {
-        let mut error = |mut err: crate::ParseError| {
-            err.context += self.span.start;
-            err.unexpected += self.span.start;
-            error.report_error(err);
+        let mut error = |err: crate::ParseError| {
+            error.report_error(
+                err.with_context(err.context() + self.span.start)
+                    .with_unexpected(err.unexpected() + self.span.start),
+            );
         };
         crate::decode::ws::decode_newline(*self, &mut error);
     }
