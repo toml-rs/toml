@@ -14,14 +14,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "array",
-            expected: [
-                Literal(
-                    "]",
-                ),
-            ],
-            unexpected: 1..1,
+            expected: Some(
+                [
+                    Literal(
+                        "]",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                1..1,
+            ),
         },
     ],
 }

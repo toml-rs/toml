@@ -24,14 +24,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "extra comma in array",
-            expected: [
-                Description(
-                    "value",
-                ),
-            ],
-            unexpected: 1..2,
+            expected: Some(
+                [
+                    Description(
+                        "value",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                1..2,
+            ),
         },
     ],
 }

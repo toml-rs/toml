@@ -3,14 +3,20 @@ EventResults {
     events: [],
     errors: [
         ParseError {
-            context: 0..0,
+            context: Some(
+                0..0,
+            ),
             description: "key",
-            expected: [
-                Description(
-                    "key",
-                ),
-            ],
-            unexpected: 0..0,
+            expected: Some(
+                [
+                    Description(
+                        "key",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                0..0,
+            ),
         },
     ],
 }

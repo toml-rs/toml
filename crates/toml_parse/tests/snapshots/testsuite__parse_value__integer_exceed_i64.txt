@@ -9,10 +9,14 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..34,
+            context: Some(
+                0..34,
+            ),
             description: "failed to parse i64",
-            expected: [],
-            unexpected: 0..2,
+            expected: None,
+            unexpected: Some(
+                0..2,
+            ),
         },
     ],
 }

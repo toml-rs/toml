@@ -30,12 +30,10 @@ impl Token {
     }
 
     pub fn to_error(self, expected: &'static [crate::Expected]) -> crate::ParseError {
-        crate::ParseError {
-            context: self.span(),
-            description: self.kind().description(),
-            expected,
-            unexpected: self.span(),
-        }
+        crate::ParseError::new(self.kind().description())
+            .with_context(self.span())
+            .with_expected(expected)
+            .with_unexpected(self.span())
     }
 }
 

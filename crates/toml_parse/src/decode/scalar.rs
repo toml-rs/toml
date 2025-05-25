@@ -119,12 +119,7 @@ pub(crate) fn decode_unquoted_scalar<'i>(
                     b'd' | b'D' =>  {
                         let kind = ScalarKind::Integer(IntegerRadix::Dec);
                         let stream = &raw.as_str()[2..];
-                        error.report_error(ParseError {
-                            context: Span::new_unchecked(0, raw.len()),
-                            description: kind.description(),
-                            expected: &[],
-                            unexpected: Span::new_unchecked(0, 2),
-                        });
+                        error.report_error(ParseError::new(kind.description()).with_context(Span::new_unchecked(0, raw.len())).with_expected(&[]).with_unexpected(Span::new_unchecked(0, 2)));
                         decode_float_or_integer(stream, raw, kind, output, error)
                     },
                     _ => {
@@ -202,12 +197,12 @@ pub(crate) fn ensure_no_sign(value: &str, raw: Raw<'_>, error: &mut dyn ErrorSin
     let invalid = ['+', '-'];
     if value.starts_with(invalid) {
         let pos = raw.as_str().find(invalid).unwrap();
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: "unexpected sign",
-            expected: &[],
-            unexpected: Span::new_unchecked(pos, pos + 1),
-        });
+        error.report_error(
+            ParseError::new("unexpected sign")
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(pos, pos + 1)),
+        );
     }
 }
 
@@ -224,22 +219,22 @@ pub(crate) fn decode_float_or_integer<'i>(
 
     if has_underscore(stream) {
         if stream.starts_with(underscore) {
-            error.report_error(ParseError {
-                context: Span::new_unchecked(0, raw.len()),
-                description: kind.description(),
-                expected: &[],
-                unexpected: Span::new_unchecked(0, underscore.len()),
-            });
+            error.report_error(
+                ParseError::new(kind.description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(0, underscore.len())),
+            );
         }
         if 1 < stream.len() && stream.ends_with(underscore) {
             let start = stream.offset_from(&raw.as_str());
             let end = start + stream.len();
-            error.report_error(ParseError {
-                context: Span::new_unchecked(0, raw.len()),
-                description: kind.description(),
-                expected: &[],
-                unexpected: Span::new_unchecked(end - underscore.len(), end),
-            });
+            error.report_error(
+                ParseError::new(kind.description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(end - underscore.len(), end)),
+            );
         }
 
         for part in stream.split(underscore) {
@@ -250,12 +245,12 @@ pub(crate) fn decode_float_or_integer<'i>(
                     let start = part_start - 1;
                     let end = part_start;
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
-                    error.report_error(ParseError {
-                        context: Span::new_unchecked(0, raw.len()),
-                        description: kind.description(),
-                        expected: &[],
-                        unexpected: Span::new_unchecked(start, end),
-                    });
+                    error.report_error(
+                        ParseError::new(kind.description())
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
                 }
             }
             let part_end = part_start + part.len();
@@ -265,32 +260,32 @@ pub(crate) fn decode_float_or_integer<'i>(
                     let start = part_end;
                     let end = start + underscore.len();
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
-                    error.report_error(ParseError {
-                        context: Span::new_unchecked(0, raw.len()),
-                        description: kind.description(),
-                        expected: &[],
-                        unexpected: Span::new_unchecked(start, end),
-                    });
+                    error.report_error(
+                        ParseError::new(kind.description())
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
                 }
             }
 
             if !part.is_empty() && !output.push_str(part) {
-                error.report_error(ParseError {
-                    context: Span::new_unchecked(0, raw.len()),
-                    description: kind.description(),
-                    expected: &[],
-                    unexpected: Span::new_unchecked(part_start, part_end),
-                });
+                error.report_error(
+                    ParseError::new(kind.description())
+                        .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_expected(&[])
+                        .with_unexpected(Span::new_unchecked(part_start, part_end)),
+                );
             }
         }
     } else {
         if !output.push_str(stream) {
-            error.report_error(ParseError {
-                context: Span::new_unchecked(0, raw.len()),
-                description: kind.description(),
-                expected: &[],
-                unexpected: Span::new_unchecked(0, raw.len()),
-            });
+            error.report_error(
+                ParseError::new(kind.description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(0, raw.len())),
+            );
         }
     }
 
@@ -329,12 +324,12 @@ pub(crate) fn decode_as_is<'i>(
 ) -> ScalarKind {
     output.clear();
     if !output.push_str(raw.as_str()) {
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: kind.description(),
-            expected: &[],
-            unexpected: Span::new_unchecked(0, raw.len()),
-        });
+        error.report_error(
+            ParseError::new(kind.description())
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(0, raw.len())),
+        );
     }
     kind
 }
@@ -348,22 +343,22 @@ pub(crate) fn decode_symbol<'i>(
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
     if raw.as_str() != symbol {
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: Encoding::LiteralString.description(),
-            expected,
-            unexpected: Span::new_unchecked(0, raw.len()),
-        });
+        error.report_error(
+            ParseError::new(Encoding::LiteralString.description())
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(expected)
+                .with_unexpected(Span::new_unchecked(0, raw.len())),
+        );
     }
 
     output.clear();
     if !output.push_str(symbol) {
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: kind.description(),
-            expected: &[],
-            unexpected: Span::new_unchecked(0, raw.len()),
-        });
+        error.report_error(
+            ParseError::new(kind.description())
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(0, raw.len())),
+        );
     }
     kind
 }
@@ -373,21 +368,21 @@ pub(crate) fn decode_invalid<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
-    error.report_error(ParseError {
-        context: Span::new_unchecked(0, raw.len()),
-        description: "string values must be quoted",
-        expected: &[Expected::Description("literal string")],
-        unexpected: Span::new_unchecked(0, raw.len()),
-    });
+    error.report_error(
+        ParseError::new("string values must be quoted")
+            .with_context(Span::new_unchecked(0, raw.len()))
+            .with_expected(&[Expected::Description("literal string")])
+            .with_unexpected(Span::new_unchecked(0, raw.len())),
+    );
 
     output.clear();
     if !output.push_str(raw.as_str()) {
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: UNQUOTED_STRING,
-            expected: &[],
-            unexpected: Span::new_unchecked(0, raw.len()),
-        });
+        error.report_error(
+            ParseError::new(UNQUOTED_STRING)
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(0, raw.len())),
+        );
     }
     ScalarKind::String
 }

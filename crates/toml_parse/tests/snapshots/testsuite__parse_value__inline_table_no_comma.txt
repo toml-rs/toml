@@ -81,34 +81,52 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "inline table",
-            expected: [
-                Literal(
-                    ",",
-                ),
-            ],
-            unexpected: 14..14,
+            expected: Some(
+                [
+                    Literal(
+                        ",",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                14..14,
+            ),
         },
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "inline table",
-            expected: [
-                Literal(
-                    ",",
-                ),
-            ],
-            unexpected: 20..20,
+            expected: Some(
+                [
+                    Literal(
+                        ",",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                20..20,
+            ),
         },
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "inline table",
-            expected: [
-                Literal(
-                    ",",
-                ),
-            ],
-            unexpected: 22..22,
+            expected: Some(
+                [
+                    Literal(
+                        ",",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                22..22,
+            ),
         },
     ],
 }

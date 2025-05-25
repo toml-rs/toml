@@ -24,22 +24,22 @@ pub(crate) fn decode_comment(raw: Raw<'_>, error: &mut dyn ErrorSink) {
     let s = raw.as_bytes();
 
     if s.first() != Some(&COMMENT_START_SYMBOL) {
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: "comment",
-            expected: &[Expected::Literal("#")],
-            unexpected: Span::new_unchecked(0, 0),
-        });
+        error.report_error(
+            ParseError::new("comment")
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[Expected::Literal("#")])
+                .with_unexpected(Span::new_unchecked(0, 0)),
+        );
     }
 
     for (i, b) in s.iter().copied().enumerate() {
         if !NON_EOL.contains_token(b) {
-            error.report_error(ParseError {
-                context: Span::new_unchecked(0, raw.len()),
-                description: "comment",
-                expected: &[Expected::Description("printable characters")],
-                unexpected: Span::new_unchecked(i, i),
-            });
+            error.report_error(
+                ParseError::new("comment")
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[Expected::Description("printable characters")])
+                    .with_unexpected(Span::new_unchecked(i, i)),
+            );
         }
     }
 }
@@ -66,11 +66,11 @@ pub(crate) fn decode_newline(raw: Raw<'_>, error: &mut dyn ErrorSink) {
     let s = raw.as_str();
 
     if s == "\r" {
-        error.report_error(ParseError {
-            context: Span::new_unchecked(0, raw.len()),
-            description: "carriage return must be followed by newline",
-            expected: &[],
-            unexpected: Span::new_unchecked(raw.len(), raw.len()),
-        });
+        error.report_error(
+            ParseError::new("carriage return must be followed by newline")
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(raw.len(), raw.len())),
+        );
     }
 }

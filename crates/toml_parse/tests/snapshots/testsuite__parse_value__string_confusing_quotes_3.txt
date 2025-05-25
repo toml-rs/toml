@@ -11,14 +11,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..7,
+            context: Some(
+                0..7,
+            ),
             description: "multi-line basic string",
-            expected: [
-                Literal(
-                    "\"",
-                ),
-            ],
-            unexpected: 7..7,
+            expected: Some(
+                [
+                    Literal(
+                        "\"",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                7..7,
+            ),
         },
     ],
 }

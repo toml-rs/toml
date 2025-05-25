@@ -39,14 +39,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "inline table",
-            expected: [
-                Literal(
-                    "}",
-                ),
-            ],
-            unexpected: 10..10,
+            expected: Some(
+                [
+                    Literal(
+                        "}",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                10..10,
+            ),
         },
     ],
 }
