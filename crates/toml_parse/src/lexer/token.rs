@@ -28,13 +28,6 @@ impl Token {
     pub fn span(&self) -> Span {
         self.span
     }
-
-    pub fn to_error(self, expected: &'static [crate::Expected]) -> crate::ParseError {
-        crate::ParseError::new(self.kind().description())
-            .with_context(self.span())
-            .with_expected(expected)
-            .with_unexpected(self.span())
-    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
