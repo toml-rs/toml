@@ -30,20 +30,20 @@ impl ErrorSink for Vec<ParseError> {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
 pub struct ParseError {
     context: Option<Span>,
-    description: &'static str,
+    description: ErrorStr,
     expected: Option<&'static [Expected]>,
     unexpected: Option<Span>,
 }
 
 impl ParseError {
-    pub fn new(description: &'static str) -> Self {
+    pub fn new(description: impl Into<ErrorStr>) -> Self {
         Self {
             context: None,
-            description,
+            description: description.into(),
             expected: None,
             unexpected: None,
         }
@@ -67,8 +67,8 @@ impl ParseError {
     pub fn context(&self) -> Option<Span> {
         self.context
     }
-    pub fn description(&self) -> &'static str {
-        self.description
+    pub fn description(&self) -> &str {
+        &self.description
     }
     pub fn expected(&self) -> Option<&'static [Expected]> {
         self.expected
@@ -87,6 +87,11 @@ impl ParseError {
         self
     }
 }
+
+#[cfg(feature = "alloc")]
+type ErrorStr = alloc::borrow::Cow<'static, str>;
+#[cfg(not(feature = "alloc"))]
+type ErrorStr = &'static str;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
