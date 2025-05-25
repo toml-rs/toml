@@ -327,22 +327,24 @@ const ESCAPE: u8 = b'\\';
 /// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
 /// ```
 fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -> char {
+    const EXPECTED_ESCAPES: &[Expected] = &[
+        Expected::Literal("b"),
+        Expected::Literal("f"),
+        Expected::Literal("n"),
+        Expected::Literal("r"),
+        Expected::Literal("\\"),
+        Expected::Literal("\""),
+        Expected::Literal("u"),
+        Expected::Literal("U"),
+    ];
+
     let start = stream.checkpoint();
     let Some(id) = stream.next_token() else {
         let offset = stream.offset_from(&raw.as_str());
         error.report_error(
             ParseError::new("missing escaped value")
                 .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[
-                    Expected::Literal("b"),
-                    Expected::Literal("f"),
-                    Expected::Literal("n"),
-                    Expected::Literal("r"),
-                    Expected::Literal("\\"),
-                    Expected::Literal("\""),
-                    Expected::Literal("u"),
-                    Expected::Literal("U"),
-                ])
+                .with_expected(EXPECTED_ESCAPES)
                 .with_unexpected(Span::new_unchecked(offset, offset)),
         );
         return '\\';
@@ -363,16 +365,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
             error.report_error(
                 ParseError::new("missing escaped value")
                     .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[
-                        Expected::Literal("b"),
-                        Expected::Literal("f"),
-                        Expected::Literal("n"),
-                        Expected::Literal("r"),
-                        Expected::Literal("\\"),
-                        Expected::Literal("\""),
-                        Expected::Literal("u"),
-                        Expected::Literal("U"),
-                    ])
+                    .with_expected(EXPECTED_ESCAPES)
                     .with_unexpected(Span::new_unchecked(offset, offset)),
             );
             '\\'
