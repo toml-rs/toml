@@ -20,8 +20,9 @@ impl DebugDepth {
 
 static DEBUG_DEPTH: DebugDepth = DebugDepth(core::sync::atomic::AtomicUsize::new(0));
 
-fn render_event(span: Span, text: &str, style: anstyle::Style) {
+fn render_event(span: impl Into<Option<Span>>, text: &str, style: anstyle::Style) {
     #![allow(unexpected_cfgs)] // HACK: fixed in newer versions
+    let span = span.into();
     let depth = DEBUG_DEPTH.depth();
     anstream::eprintln!("{:depth$}{style}{text}: {span:?}{style:#}", "");
 }
@@ -39,7 +40,7 @@ impl<'s> DebugErrorSink<'s> {
 impl ErrorSink for DebugErrorSink<'_> {
     fn report_error(&mut self, error: crate::ParseError) {
         render_event(
-            error.context(),
+            error.unexpected(),
             &format!("{error:?}"),
             anstyle::AnsiColor::Red.on_default(),
         );

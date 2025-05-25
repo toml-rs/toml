@@ -33,53 +33,57 @@ impl ErrorSink for Vec<ParseError> {
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
 pub struct ParseError {
-    context: Span,
+    context: Option<Span>,
     description: &'static str,
-    expected: &'static [Expected],
-    unexpected: Span,
+    expected: Option<&'static [Expected]>,
+    unexpected: Option<Span>,
 }
 
 impl ParseError {
     pub fn new(description: &'static str) -> Self {
         Self {
-            context: Default::default(),
+            context: None,
             description,
-            expected: &[],
-            unexpected: Default::default(),
+            expected: None,
+            unexpected: None,
         }
     }
 
     pub fn with_context(mut self, context: Span) -> Self {
-        self.context = context;
+        self.context = Some(context);
         self
     }
 
     pub fn with_expected(mut self, expected: &'static [Expected]) -> Self {
-        self.expected = expected;
+        self.expected = Some(expected);
         self
     }
 
     pub fn with_unexpected(mut self, unexpected: Span) -> Self {
-        self.unexpected = unexpected;
+        self.unexpected = Some(unexpected);
         self
     }
 
-    pub fn context(&self) -> Span {
+    pub fn context(&self) -> Option<Span> {
         self.context
     }
     pub fn description(&self) -> &'static str {
         self.description
     }
-    pub fn expected(&self) -> &'static [Expected] {
+    pub fn expected(&self) -> Option<&'static [Expected]> {
         self.expected
     }
-    pub fn unexpected(&self) -> Span {
+    pub fn unexpected(&self) -> Option<Span> {
         self.unexpected
     }
 
     pub(crate) fn rebase_spans(mut self, offset: usize) -> Self {
-        self.context += offset;
-        self.unexpected += offset;
+        if let Some(context) = self.context.as_mut() {
+            *context += offset;
+        }
+        if let Some(unexpected) = self.unexpected.as_mut() {
+            *unexpected += offset;
+        }
         self
     }
 }

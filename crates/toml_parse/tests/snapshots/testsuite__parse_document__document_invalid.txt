@@ -56,33 +56,45 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 37..37,
+            context: Some(
+                37..37,
+            ),
             description: "key with no value",
-            expected: [
-                Literal(
-                    "=",
-                ),
-            ],
-            unexpected: 37..37,
+            expected: Some(
+                [
+                    Literal(
+                        "=",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                37..37,
+            ),
         },
         ParseError {
-            context: 36..37,
+            context: Some(
+                36..37,
+            ),
             description: "invalid unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 36..36,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                36..36,
+            ),
         },
     ],
 }

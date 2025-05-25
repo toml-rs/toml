@@ -229,10 +229,16 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 14..15,
+            context: Some(
+                14..15,
+            ),
             description: "array",
-            expected: [],
-            unexpected: 14..15,
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                14..15,
+            ),
         },
     ],
 }

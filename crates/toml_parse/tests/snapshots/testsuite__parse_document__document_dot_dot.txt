@@ -71,61 +71,79 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 2..2,
+            context: Some(
+                2..2,
+            ),
             description: "empty unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 2..2,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                2..2,
+            ),
         },
         ParseError {
-            context: 4..4,
+            context: Some(
+                4..4,
+            ),
             description: "empty unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 4..4,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                4..4,
+            ),
         },
         ParseError {
-            context: 6..6,
+            context: Some(
+                6..6,
+            ),
             description: "empty unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 6..6,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                6..6,
+            ),
         },
     ],
 }

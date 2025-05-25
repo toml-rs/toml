@@ -19,14 +19,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 0..1,
+            context: Some(
+                0..1,
+            ),
             description: "extra comma in inline table",
-            expected: [
-                Description(
-                    "key",
-                ),
-            ],
-            unexpected: 1..1,
+            expected: Some(
+                [
+                    Description(
+                        "key",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                1..1,
+            ),
         },
     ],
 }

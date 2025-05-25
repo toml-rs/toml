@@ -51,10 +51,16 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 35..36,
+            context: Some(
+                35..36,
+            ),
             description: "carriage return must be followed by newline",
-            expected: [],
-            unexpected: 36..36,
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                36..36,
+            ),
         },
     ],
 }

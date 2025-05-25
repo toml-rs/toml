@@ -909,35 +909,41 @@ trimmed in raw strings.
                 str![[r#"
 [
     ParseError {
-        context: 0..10,
+        context: Some(
+            0..10,
+        ),
         description: "missing escaped value",
-        expected: [
-            Literal(
-                "b",
-            ),
-            Literal(
-                "f",
-            ),
-            Literal(
-                "n",
-            ),
-            Literal(
-                "r",
-            ),
-            Literal(
-                "\\",
-            ),
-            Literal(
-                "\"",
-            ),
-            Literal(
-                "u",
-            ),
-            Literal(
-                "U",
-            ),
-        ],
-        unexpected: 9..9,
+        expected: Some(
+            [
+                Literal(
+                    "b",
+                ),
+                Literal(
+                    "f",
+                ),
+                Literal(
+                    "n",
+                ),
+                Literal(
+                    "r",
+                ),
+                Literal(
+                    "\\",
+                ),
+                Literal(
+                    "\"",
+                ),
+                Literal(
+                    "u",
+                ),
+                Literal(
+                    "U",
+                ),
+            ],
+        ),
+        unexpected: Some(
+            9..9,
+        ),
     },
 ]
 
@@ -955,17 +961,23 @@ trailing
                 str![[r#"
 [
     ParseError {
-        context: 0..18,
+        context: Some(
+            0..18,
+        ),
         description: "invalid basic string",
-        expected: [
-            Description(
-                "non-double-quote visible characters",
-            ),
-            Literal(
-                "\\",
-            ),
-        ],
-        unexpected: 8..9,
+        expected: Some(
+            [
+                Description(
+                    "non-double-quote visible characters",
+                ),
+                Literal(
+                    "\\",
+                ),
+            ],
+        ),
+        unexpected: Some(
+            8..9,
+        ),
     },
 ]
 
@@ -1090,14 +1102,20 @@ The quick brown \
                 str![[r#"
 [
     ParseError {
-        context: 0..7,
+        context: Some(
+            0..7,
+        ),
         description: "multi-line basic string",
-        expected: [
-            Literal(
-                "\"",
-            ),
-        ],
-        unexpected: 7..7,
+        expected: Some(
+            [
+                Literal(
+                    "\"",
+                ),
+            ],
+        ),
+        unexpected: Some(
+            7..7,
+        ),
     },
 ]
 
@@ -1110,35 +1128,41 @@ The quick brown \
                 str![[r#"
 [
     ParseError {
-        context: 0..9,
+        context: Some(
+            0..9,
+        ),
         description: "missing escaped value",
-        expected: [
-            Literal(
-                "b",
-            ),
-            Literal(
-                "f",
-            ),
-            Literal(
-                "n",
-            ),
-            Literal(
-                "r",
-            ),
-            Literal(
-                "\\",
-            ),
-            Literal(
-                "\"",
-            ),
-            Literal(
-                "u",
-            ),
-            Literal(
-                "U",
-            ),
-        ],
-        unexpected: 6..6,
+        expected: Some(
+            [
+                Literal(
+                    "b",
+                ),
+                Literal(
+                    "f",
+                ),
+                Literal(
+                    "n",
+                ),
+                Literal(
+                    "r",
+                ),
+                Literal(
+                    "\\",
+                ),
+                Literal(
+                    "\"",
+                ),
+                Literal(
+                    "u",
+                ),
+                Literal(
+                    "U",
+                ),
+            ],
+        ),
+        unexpected: Some(
+            6..6,
+        ),
     },
 ]
 
@@ -1222,23 +1246,29 @@ The quick brown \
                 str![[r#"
 [
     ParseError {
-        context: 0..0,
+        context: Some(
+            0..0,
+        ),
         description: "empty unquoted key",
-        expected: [
-            Description(
-                "letters",
-            ),
-            Description(
-                "numbers",
-            ),
-            Literal(
-                "-",
-            ),
-            Literal(
-                "_",
-            ),
-        ],
-        unexpected: 0..0,
+        expected: Some(
+            [
+                Description(
+                    "letters",
+                ),
+                Description(
+                    "numbers",
+                ),
+                Literal(
+                    "-",
+                ),
+                Literal(
+                    "_",
+                ),
+            ],
+        ),
+        unexpected: Some(
+            0..0,
+        ),
     },
 ]
 

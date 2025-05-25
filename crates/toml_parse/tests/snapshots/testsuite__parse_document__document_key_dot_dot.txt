@@ -71,42 +71,54 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 7..7,
+            context: Some(
+                7..7,
+            ),
             description: "empty unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 7..7,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                7..7,
+            ),
         },
         ParseError {
-            context: 9..9,
+            context: Some(
+                9..9,
+            ),
             description: "empty unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 9..9,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                9..9,
+            ),
         },
     ],
 }

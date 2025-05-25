@@ -51,14 +51,20 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 20..36,
+            context: Some(
+                20..36,
+            ),
             description: "comment",
-            expected: [
-                Description(
-                    "printable characters",
-                ),
-            ],
-            unexpected: 28..28,
+            expected: Some(
+                [
+                    Description(
+                        "printable characters",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                28..28,
+            ),
         },
     ],
 }

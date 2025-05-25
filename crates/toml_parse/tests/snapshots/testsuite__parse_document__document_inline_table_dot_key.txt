@@ -96,23 +96,29 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: 12..12,
+            context: Some(
+                12..12,
+            ),
             description: "empty unquoted key",
-            expected: [
-                Description(
-                    "letters",
-                ),
-                Description(
-                    "numbers",
-                ),
-                Literal(
-                    "-",
-                ),
-                Literal(
-                    "_",
-                ),
-            ],
-            unexpected: 12..12,
+            expected: Some(
+                [
+                    Description(
+                        "letters",
+                    ),
+                    Description(
+                        "numbers",
+                    ),
+                    Literal(
+                        "-",
+                    ),
+                    Literal(
+                        "_",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                12..12,
+            ),
         },
     ],
 }
