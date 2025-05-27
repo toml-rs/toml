@@ -44,7 +44,7 @@ pub fn parse_key(tokens: &[Token], receiver: &mut dyn EventReceiver, error: &mut
     let mut error = DebugErrorSink::new(error);
     #[cfg(feature = "debug")]
     let error = &mut error;
-    key(&mut tokens, "key", receiver, error);
+    key(&mut tokens, "invalid key", receiver, error);
     eof(&mut tokens, receiver, error);
 }
 
@@ -63,7 +63,7 @@ pub fn parse_simple_key(
     let mut error = DebugErrorSink::new(error);
     #[cfg(feature = "debug")]
     let error = &mut error;
-    simple_key(&mut tokens, "key", receiver, error);
+    simple_key(&mut tokens, "invalid key", receiver, error);
     eof(&mut tokens, receiver, error);
 }
 
@@ -253,7 +253,7 @@ fn on_table(
             } else {
                 let context = open_token.span().append(close_token.span());
                 error.report_error(
-                    ParseError::new("array table")
+                    ParseError::new("unclosed array table")
                         .with_context(context)
                         .with_expected(&[Expected::Literal("]")])
                         .with_unexpected(close_token.span().after()),
@@ -308,7 +308,7 @@ fn on_table(
 /// ```
 fn key(
     tokens: &mut Stream<'_>,
-    description: &'static str,
+    invalid_description: &'static str,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) -> bool {
@@ -361,7 +361,7 @@ fn key(
         .map(|t| t.span())
         .unwrap_or_default();
     error.report_error(
-        ParseError::new(description)
+        ParseError::new(invalid_description)
             .with_context(previous_span)
             .with_expected(&[Expected::Description("key")])
             .with_unexpected(previous_span.after()),
@@ -424,7 +424,7 @@ fn on_expression_dot<'i>(
         if let Some(peek_token) = tokens.first() {
             let span = peek_token.span().before();
             error.report_error(
-                ParseError::new("expression")
+                ParseError::new("missing value for key")
                     .with_context(span)
                     .with_expected(&[Expected::Literal("=")])
                     .with_unexpected(span),
@@ -462,7 +462,7 @@ fn on_expression_key_val_sep<'i>(
 /// ```
 fn simple_key(
     tokens: &mut Stream<'_>,
-    description: &'static str,
+    invalid_description: &'static str,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
@@ -481,7 +481,7 @@ fn simple_key(
             .map(|t| t.span())
             .unwrap_or_default();
         error.report_error(
-            ParseError::new(description)
+            ParseError::new(invalid_description)
                 .with_context(previous_span)
                 .with_expected(&[Expected::Description("key")])
                 .with_unexpected(previous_span.after()),
@@ -507,14 +507,14 @@ fn simple_key(
         | TokenKind::Newline
         | TokenKind::Eof
         | TokenKind::Whitespace => {
-            on_missing_key(tokens, current_token, description, receiver, error);
+            on_missing_key(tokens, current_token, invalid_description, receiver, error);
             return;
         }
         TokenKind::LiteralString => Some(Encoding::LiteralString),
         TokenKind::BasicString => Some(Encoding::BasicString),
         TokenKind::MlLiteralString => {
             error.report_error(
-                ParseError::new(description)
+                ParseError::new(invalid_description)
                     .with_context(current_token.span())
                     .with_expected(&EXPECTED_KEYS)
                     .with_unexpected(current_token.span()),
@@ -523,7 +523,7 @@ fn simple_key(
         }
         TokenKind::MlBasicString => {
             error.report_error(
-                ParseError::new(description)
+                ParseError::new(invalid_description)
                     .with_context(current_token.span())
                     .with_expected(&EXPECTED_KEYS)
                     .with_unexpected(current_token.span()),
@@ -631,7 +631,7 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
             .map(|t| t.span())
             .unwrap_or_default();
         error.report_error(
-            ParseError::new("key-value pair")
+            ParseError::new("missing value")
                 .with_context(previous_span)
                 .with_expected(&[Expected::Description("value")])
                 .with_unexpected(previous_span.after()),
@@ -652,7 +652,7 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
         }
         TokenKind::Equals => {
             error.report_error(
-                ParseError::new("key-value pair")
+                ParseError::new("extra `=`")
                     .with_context(current_token.span())
                     .with_expected(&[])
                     .with_unexpected(current_token.span()),
@@ -665,7 +665,7 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
         }
         TokenKind::RightCurlyBracket => {
             error.report_error(
-                ParseError::new("inline table")
+                ParseError::new("missing inline table opening")
                     .with_context(current_token.span())
                     .with_expected(&[Expected::Literal("{")])
                     .with_unexpected(current_token.span().before()),
@@ -679,7 +679,7 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
         }
         TokenKind::RightSquareBracket => {
             error.report_error(
-                ParseError::new("array")
+                ParseError::new("missing array opening")
                     .with_context(current_token.span())
                     .with_expected(&[Expected::Literal("[")])
                     .with_unexpected(current_token.span().before()),
@@ -787,7 +787,7 @@ fn on_array_open(
             }
             TokenKind::Eof => {
                 error.report_error(
-                    ParseError::new("array")
+                    ParseError::new("unclosed array")
                         .with_context(array_open.span())
                         .with_expected(&[Expected::Literal("]")])
                         .with_unexpected(current_token.span()),
@@ -813,7 +813,7 @@ fn on_array_open(
             },
             TokenKind::Equals => {
                 error.report_error(
-                    ParseError::new("array")
+                    ParseError::new("unexpected `=` in array")
                         .with_context(array_open.span())
                         .with_expected(&[Expected::Description("value"), Expected::Literal("]")])
                         .with_unexpected(current_token.span()),
@@ -823,7 +823,7 @@ fn on_array_open(
             TokenKind::LeftCurlyBracket => {
                 if !matches!(state, State::NeedsValue) {
                     error.report_error(
-                        ParseError::new("array")
+                        ParseError::new("missing comma between array elements")
                             .with_context(array_open.span())
                             .with_expected(&[Expected::Literal(",")])
                             .with_unexpected(current_token.span().before()),
@@ -838,7 +838,7 @@ fn on_array_open(
             TokenKind::RightCurlyBracket => {
                 if !matches!(state, State::NeedsValue) {
                     error.report_error(
-                        ParseError::new("array")
+                        ParseError::new("missing comma between array elements")
                             .with_context(array_open.span())
                             .with_expected(&[Expected::Literal(",")])
                             .with_unexpected(current_token.span().before()),
@@ -847,7 +847,7 @@ fn on_array_open(
                 }
 
                 error.report_error(
-                    ParseError::new("inline table")
+                    ParseError::new("missing inline table opening")
                         .with_context(current_token.span())
                         .with_expected(&[Expected::Literal("{")])
                         .with_unexpected(current_token.span().before()),
@@ -861,7 +861,7 @@ fn on_array_open(
             TokenKind::LeftSquareBracket => {
                 if !matches!(state, State::NeedsValue) {
                     error.report_error(
-                        ParseError::new("array")
+                        ParseError::new("missing comma between array elements")
                             .with_context(array_open.span())
                             .with_expected(&[Expected::Literal(",")])
                             .with_unexpected(current_token.span().before()),
@@ -886,7 +886,7 @@ fn on_array_open(
             | TokenKind::Atom => {
                 if !matches!(state, State::NeedsValue) {
                     error.report_error(
-                        ParseError::new("array")
+                        ParseError::new("missing comma between array elements")
                             .with_context(array_open.span())
                             .with_expected(&[Expected::Literal(",")])
                             .with_unexpected(current_token.span().before()),
@@ -912,7 +912,7 @@ fn on_array_open(
         .map(|t| t.span())
         .unwrap_or_default();
     error.report_error(
-        ParseError::new("array")
+        ParseError::new("unclosed array")
             .with_context(array_open.span())
             .with_expected(&[Expected::Literal("]")])
             .with_unexpected(previous_span.after()),
@@ -965,7 +965,7 @@ fn on_inline_table_open(
         match current_token.kind() {
             TokenKind::Comment => {
                 error.report_error(
-                    ParseError::new("inline table")
+                    ParseError::new("comments are unsupported in inline tables")
                         .with_context(inline_table_open.span())
                         .with_expected(&[])
                         .with_unexpected(current_token.span()),
@@ -978,7 +978,7 @@ fn on_inline_table_open(
             }
             TokenKind::Newline => {
                 error.report_error(
-                    ParseError::new("inline table")
+                    ParseError::new("newlines are unsupported in inline tables")
                         .with_context(inline_table_open.span())
                         .with_expected(&[])
                         .with_unexpected(current_token.span()),
@@ -988,7 +988,7 @@ fn on_inline_table_open(
             }
             TokenKind::Eof => {
                 error.report_error(
-                    ParseError::new("inline table")
+                    ParseError::new("unclosed inline table")
                         .with_context(inline_table_open.span())
                         .with_expected(&[Expected::Literal("}")])
                         .with_unexpected(current_token.span()),
@@ -1030,7 +1030,7 @@ fn on_inline_table_open(
                 }
                 State::NeedsValue | State::NeedsComma => {
                     error.report_error(
-                        ParseError::new("inline table")
+                        ParseError::new("extra assignment between key-value pairs")
                             .with_context(inline_table_open.span())
                             .with_expected(state.expected())
                             .with_unexpected(current_token.span().before()),
@@ -1039,15 +1039,27 @@ fn on_inline_table_open(
                 }
             },
             TokenKind::LeftCurlyBracket => match state {
-                State::NeedsKey | State::NeedsEquals | State::NeedsComma => {
+                State::NeedsKey | State::NeedsComma => {
                     error.report_error(
-                        ParseError::new("inline table")
+                        ParseError::new("missing key for inline table element")
                             .with_context(inline_table_open.span())
                             .with_expected(state.expected())
                             .with_unexpected(current_token.span().before()),
                     );
                     receiver.error(current_token.span(), error);
                     ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error);
+                }
+                State::NeedsEquals => {
+                    error.report_error(
+                        ParseError::new("missing assignment between key-value pairs")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
+
+                    on_inline_table_open(tokens, current_token, receiver, error);
+
+                    state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_inline_table_open(tokens, current_token, receiver, error);
@@ -1061,15 +1073,27 @@ fn on_inline_table_open(
                 return;
             }
             TokenKind::LeftSquareBracket => match state {
-                State::NeedsKey | State::NeedsEquals | State::NeedsComma => {
+                State::NeedsKey | State::NeedsComma => {
                     error.report_error(
-                        ParseError::new("inline table")
+                        ParseError::new("missing key for inline table element")
                             .with_context(inline_table_open.span())
                             .with_expected(state.expected())
                             .with_unexpected(current_token.span().before()),
                     );
                     receiver.error(current_token.span(), error);
                     ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error);
+                }
+                State::NeedsEquals => {
+                    error.report_error(
+                        ParseError::new("missing assignment between key-value pairs")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
+
+                    on_array_open(tokens, current_token, receiver, error);
+
+                    state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_array_open(tokens, current_token, receiver, error);
@@ -1080,7 +1104,7 @@ fn on_inline_table_open(
             TokenKind::RightSquareBracket => match state {
                 State::NeedsKey | State::NeedsEquals | State::NeedsComma => {
                     error.report_error(
-                        ParseError::new("inline table")
+                        ParseError::new("invalid inline table element")
                             .with_context(inline_table_open.span())
                             .with_expected(state.expected())
                             .with_unexpected(current_token.span().before()),
@@ -1089,7 +1113,7 @@ fn on_inline_table_open(
                 }
                 State::NeedsValue => {
                     error.report_error(
-                        ParseError::new("array")
+                        ParseError::new("missing array opening")
                             .with_context(current_token.span())
                             .with_expected(&[Expected::Literal("[")])
                             .with_unexpected(current_token.span().before()),
@@ -1127,19 +1151,49 @@ fn on_inline_table_open(
                         state = State::NeedsEquals;
                     }
                 }
-                State::NeedsEquals | State::NeedsComma => {
+                State::NeedsEquals => {
                     error.report_error(
-                        ParseError::new("inline table")
+                        ParseError::new("missing assignment between key-value pairs")
                             .with_context(inline_table_open.span())
                             .with_expected(state.expected())
                             .with_unexpected(current_token.span().before()),
                     );
-                    receiver.error(current_token.span(), error);
+
+                    on_scalar(tokens, current_token, receiver, error);
+
+                    state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_scalar(tokens, current_token, receiver, error);
 
                     state = State::NeedsComma;
+                }
+                State::NeedsComma => {
+                    error.report_error(
+                        ParseError::new("missing comma between key-value pairs")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
+
+                    if current_token.kind() == TokenKind::Dot {
+                        receiver.simple_key(
+                            current_token.span().before(),
+                            current_token.kind().encoding(),
+                            error,
+                        );
+                        seek(tokens, -1);
+                        opt_dot_keys(tokens, receiver, error);
+                        state = State::NeedsEquals;
+                    } else {
+                        receiver.simple_key(
+                            current_token.span(),
+                            current_token.kind().encoding(),
+                            error,
+                        );
+                        opt_dot_keys(tokens, receiver, error);
+                        state = State::NeedsEquals;
+                    }
                 }
             },
         }
@@ -1156,7 +1210,7 @@ fn on_inline_table_open(
         .map(|t| t.span())
         .unwrap_or_default();
     error.report_error(
-        ParseError::new("inline table")
+        ParseError::new("unclosed inline table")
             .with_context(inline_table_open.span())
             .with_expected(&[Expected::Literal("}")])
             .with_unexpected(previous_span.after()),
@@ -1284,7 +1338,7 @@ fn on_comment(
         | TokenKind::Atom => {
             let context = comment_token.span().append(current_token.span());
             error.report_error(
-                ParseError::new("line")
+                ParseError::new("unexpected content between comment and newline")
                     .with_context(context)
                     .with_expected(&[Expected::Literal("\n")])
                     .with_unexpected(current_token.span().before()),
@@ -1322,7 +1376,7 @@ fn eof(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut dy
         | TokenKind::Whitespace
         | TokenKind::Newline => {
             error.report_error(
-                ParseError::new("end-of-input")
+                ParseError::new("unexpected content")
                     .with_context(current_token.span())
                     .with_expected(&[])
                     .with_unexpected(current_token.span().before()),
@@ -1451,12 +1505,12 @@ fn ignore_to_value_close(
 fn on_missing_key(
     tokens: &mut Stream<'_>,
     token: &Token,
-    description: &'static str,
+    invalid_description: &'static str,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
 ) {
     error.report_error(
-        ParseError::new(description)
+        ParseError::new(invalid_description)
             .with_context(token.span())
             .with_expected(&[Expected::Description("key")])
             .with_unexpected(token.span().before()),
@@ -1480,7 +1534,7 @@ fn on_missing_expression_key(
     error: &mut dyn ErrorSink,
 ) {
     error.report_error(
-        ParseError::new("key-value pair")
+        ParseError::new("invalid key-value pair")
             .with_context(token.span())
             .with_expected(&[Expected::Description("key")])
             .with_unexpected(token.span().before()),

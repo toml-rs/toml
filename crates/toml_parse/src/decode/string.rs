@@ -4,7 +4,6 @@ use winnow::stream::ContainsToken as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decode::Encoding;
 use crate::decode::StringBuilder;
 use crate::lexer::APOSTROPHE;
 use crate::lexer::ML_BASIC_STRING_DELIM;
@@ -384,7 +383,7 @@ fn hexescape(
     if value.len() != num_digits {
         let offset = stream.offset_from(&raw.as_str());
         error.report_error(
-            ParseError::new(Encoding::BasicString.description())
+            ParseError::new("too few unicode value digits")
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Description("unicode hexadecimal value")])
                 .with_unexpected(Span::new_unchecked(offset, offset)),
@@ -395,7 +394,7 @@ fn hexescape(
     let Some(value) = u32::from_str_radix(value, 16).ok().and_then(char::from_u32) else {
         let offset = value.offset_from(&raw.as_str());
         error.report_error(
-            ParseError::new(Encoding::BasicString.description())
+            ParseError::new("invalid value")
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Description("unicode hexadecimal value")])
                 .with_unexpected(Span::new_unchecked(offset, offset)),
@@ -691,7 +690,7 @@ pub(crate) fn decode_unquoted_key<'i>(
 
     if s.is_empty() {
         error.report_error(
-            ParseError::new("empty unquoted key")
+            ParseError::new("unquoted keys cannot be empty")
                 .with_context(Span::new_unchecked(0, s.len()))
                 .with_expected(&[
                     Expected::Description("letters"),
@@ -739,6 +738,7 @@ const UNQUOTED_CHAR: (
 #[cfg(feature = "std")]
 mod test {
     use super::*;
+    use crate::decode::Encoding;
 
     use alloc::borrow::Cow;
 
@@ -1222,7 +1222,7 @@ The quick brown \
         context: Some(
             0..0,
         ),
-        description: "empty unquoted key",
+        description: "unquoted keys cannot be empty",
         expected: Some(
             [
                 Description(

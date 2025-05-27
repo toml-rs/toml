@@ -240,7 +240,7 @@ pub(crate) fn decode_float_or_integer<'i>(
     if has_underscore(stream) {
         if stream.starts_with(underscore) {
             error.report_error(
-                ParseError::new(kind.invalid_description())
+                ParseError::new("`_` may only go between digits")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[])
                     .with_unexpected(Span::new_unchecked(0, underscore.len())),
@@ -250,7 +250,7 @@ pub(crate) fn decode_float_or_integer<'i>(
             let start = stream.offset_from(&raw.as_str());
             let end = start + stream.len();
             error.report_error(
-                ParseError::new(kind.invalid_description())
+                ParseError::new("`_` may only go between digits")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[])
                     .with_unexpected(Span::new_unchecked(end - underscore.len(), end)),
@@ -266,7 +266,7 @@ pub(crate) fn decode_float_or_integer<'i>(
                     let end = part_start;
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
                     error.report_error(
-                        ParseError::new(kind.invalid_description())
+                        ParseError::new("`_` may only go between digits")
                             .with_context(Span::new_unchecked(0, raw.len()))
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
@@ -280,7 +280,7 @@ pub(crate) fn decode_float_or_integer<'i>(
                     let end = start + underscore.len();
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
                     error.report_error(
-                        ParseError::new(kind.invalid_description())
+                        ParseError::new("`_` may only go between digits")
                             .with_context(Span::new_unchecked(0, raw.len()))
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
