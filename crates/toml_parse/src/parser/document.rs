@@ -795,12 +795,8 @@ fn on_array_open(
                 receiver.array_close(current_token.span().before(), error);
                 return;
             }
-            TokenKind::Comma => {
-                if matches!(state, State::NeedsComma) {
-                    receiver.value_sep(current_token.span(), error);
-
-                    state = State::NeedsValue;
-                } else {
+            TokenKind::Comma => match state {
+                State::NeedsValue => {
                     error.report_error(
                         ParseError::new("extra comma in array")
                             .with_context(array_open.span())
@@ -809,7 +805,12 @@ fn on_array_open(
                     );
                     receiver.error(current_token.span(), error);
                 }
-            }
+                State::NeedsComma => {
+                    receiver.value_sep(current_token.span(), error);
+
+                    state = State::NeedsValue;
+                }
+            },
             TokenKind::Equals => {
                 error.report_error(
                     ParseError::new("array")
@@ -996,12 +997,8 @@ fn on_inline_table_open(
                 receiver.inline_table_close(current_token.span().before(), error);
                 return;
             }
-            TokenKind::Comma => {
-                if matches!(state, State::NeedsComma) {
-                    receiver.value_sep(current_token.span(), error);
-
-                    state = State::NeedsKey;
-                } else {
+            TokenKind::Comma => match state {
+                State::NeedsKey | State::NeedsEquals | State::NeedsValue => {
                     error.report_error(
                         ParseError::new("extra comma in inline table")
                             .with_context(inline_table_open.span())
@@ -1010,13 +1007,14 @@ fn on_inline_table_open(
                     );
                     receiver.error(current_token.span(), error);
                 }
-            }
-            TokenKind::Equals => {
-                if matches!(state, State::NeedsEquals) {
-                    receiver.key_val_sep(current_token.span(), error);
+                State::NeedsComma => {
+                    receiver.value_sep(current_token.span(), error);
 
-                    state = State::NeedsValue;
-                } else if matches!(state, State::NeedsKey) {
+                    state = State::NeedsKey;
+                }
+            },
+            TokenKind::Equals => match state {
+                State::NeedsKey => {
                     let fake_key = current_token.span().before();
                     let encoding = None;
                     receiver.simple_key(fake_key, encoding, error);
@@ -1024,7 +1022,13 @@ fn on_inline_table_open(
                     receiver.key_val_sep(current_token.span(), error);
 
                     state = State::NeedsValue;
-                } else {
+                }
+                State::NeedsEquals => {
+                    receiver.key_val_sep(current_token.span(), error);
+
+                    state = State::NeedsValue;
+                }
+                State::NeedsValue | State::NeedsComma => {
                     error.report_error(
                         ParseError::new("inline table")
                             .with_context(inline_table_open.span())
@@ -1033,13 +1037,9 @@ fn on_inline_table_open(
                     );
                     receiver.error(current_token.span(), error);
                 }
-            }
-            TokenKind::LeftCurlyBracket => {
-                if matches!(state, State::NeedsValue) {
-                    on_inline_table_open(tokens, current_token, receiver, error);
-
-                    state = State::NeedsComma;
-                } else {
+            },
+            TokenKind::LeftCurlyBracket => match state {
+                State::NeedsKey | State::NeedsEquals | State::NeedsComma => {
                     error.report_error(
                         ParseError::new("inline table")
                             .with_context(inline_table_open.span())
@@ -1049,18 +1049,19 @@ fn on_inline_table_open(
                     receiver.error(current_token.span(), error);
                     ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error);
                 }
-            }
+                State::NeedsValue => {
+                    on_inline_table_open(tokens, current_token, receiver, error);
+
+                    state = State::NeedsComma;
+                }
+            },
             TokenKind::RightCurlyBracket => {
                 receiver.inline_table_close(current_token.span(), error);
 
                 return;
             }
-            TokenKind::LeftSquareBracket => {
-                if matches!(state, State::NeedsValue) {
-                    on_array_open(tokens, current_token, receiver, error);
-
-                    state = State::NeedsComma;
-                } else {
+            TokenKind::LeftSquareBracket => match state {
+                State::NeedsKey | State::NeedsEquals | State::NeedsComma => {
                     error.report_error(
                         ParseError::new("inline table")
                             .with_context(inline_table_open.span())
@@ -1070,9 +1071,23 @@ fn on_inline_table_open(
                     receiver.error(current_token.span(), error);
                     ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error);
                 }
-            }
-            TokenKind::RightSquareBracket => {
-                if matches!(state, State::NeedsValue) {
+                State::NeedsValue => {
+                    on_array_open(tokens, current_token, receiver, error);
+
+                    state = State::NeedsComma;
+                }
+            },
+            TokenKind::RightSquareBracket => match state {
+                State::NeedsKey | State::NeedsEquals | State::NeedsComma => {
+                    error.report_error(
+                        ParseError::new("inline table")
+                            .with_context(inline_table_open.span())
+                            .with_expected(state.expected())
+                            .with_unexpected(current_token.span().before()),
+                    );
+                    receiver.error(current_token.span(), error);
+                }
+                State::NeedsValue => {
                     error.report_error(
                         ParseError::new("array")
                             .with_context(current_token.span())
@@ -1084,23 +1099,15 @@ fn on_inline_table_open(
                     receiver.array_close(current_token.span(), error);
 
                     state = State::NeedsComma;
-                } else {
-                    error.report_error(
-                        ParseError::new("inline table")
-                            .with_context(inline_table_open.span())
-                            .with_expected(state.expected())
-                            .with_unexpected(current_token.span().before()),
-                    );
-                    receiver.error(current_token.span(), error);
                 }
-            }
+            },
             TokenKind::LiteralString
             | TokenKind::BasicString
             | TokenKind::MlLiteralString
             | TokenKind::MlBasicString
             | TokenKind::Dot
-            | TokenKind::Atom => {
-                if matches!(state, State::NeedsKey) {
+            | TokenKind::Atom => match state {
+                State::NeedsKey => {
                     if current_token.kind() == TokenKind::Dot {
                         receiver.simple_key(
                             current_token.span().before(),
@@ -1119,11 +1126,8 @@ fn on_inline_table_open(
                         opt_dot_keys(tokens, receiver, error);
                         state = State::NeedsEquals;
                     }
-                } else if matches!(state, State::NeedsValue) {
-                    on_scalar(tokens, current_token, receiver, error);
-
-                    state = State::NeedsComma;
-                } else {
+                }
+                State::NeedsEquals | State::NeedsComma => {
                     error.report_error(
                         ParseError::new("inline table")
                             .with_context(inline_table_open.span())
@@ -1132,7 +1136,12 @@ fn on_inline_table_open(
                     );
                     receiver.error(current_token.span(), error);
                 }
-            }
+                State::NeedsValue => {
+                    on_scalar(tokens, current_token, receiver, error);
+
+                    state = State::NeedsComma;
+                }
+            },
         }
     }
 
