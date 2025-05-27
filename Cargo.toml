@@ -15,9 +15,7 @@ include = [
   "Cargo.lock",
   "LICENSE*",
   "README.md",
-  "benches/**/*",
-  "examples/**/*",
-  "tests/**/*"
+  "examples/**/*"
 ]
 
 [workspace.lints.rust]
