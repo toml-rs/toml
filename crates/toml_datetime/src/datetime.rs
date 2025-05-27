@@ -92,11 +92,6 @@ pub struct Datetime {
     pub offset: Option<Offset>,
 }
 
-/// Error returned from parsing a `Datetime` in the `FromStr` implementation.
-#[derive(Debug, Clone)]
-#[non_exhaustive]
-pub struct DatetimeParseError {}
-
 // Currently serde itself doesn't have a datetime type, so we map our `Datetime`
 // to a special value in the serde data model. Namely one with these special
 // fields/struct names.
@@ -497,6 +492,19 @@ fn digit(chars: &mut str::Chars<'_>) -> Result<u8, DatetimeParseError> {
     }
 }
 
+/// Error returned from parsing a `Datetime` in the `FromStr` implementation.
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct DatetimeParseError {}
+
+impl fmt::Display for DatetimeParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        "failed to parse datetime".fmt(f)
+    }
+}
+
+impl error::Error for DatetimeParseError {}
+
 #[cfg(feature = "serde")]
 impl ser::Serialize for Datetime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -674,11 +682,3 @@ impl<'de> de::Deserialize<'de> for DatetimeFromString {
         deserializer.deserialize_str(Visitor)
     }
 }
-
-impl fmt::Display for DatetimeParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        "failed to parse datetime".fmt(f)
-    }
-}
-
-impl error::Error for DatetimeParseError {}
