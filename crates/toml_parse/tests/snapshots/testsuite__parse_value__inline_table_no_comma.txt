@@ -44,7 +44,7 @@ EventResults {
             span: 13..14,
         },
         Event {
-            kind: Error,
+            kind: SimpleKey,
             encoding: None,
             span: 14..19,
         },
@@ -54,7 +54,7 @@ EventResults {
             span: 19..20,
         },
         Event {
-            kind: Error,
+            kind: KeyValSep,
             encoding: None,
             span: 20..21,
         },
@@ -64,8 +64,10 @@ EventResults {
             span: 21..22,
         },
         Event {
-            kind: Error,
-            encoding: None,
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
             span: 22..25,
         },
         Event {
@@ -84,7 +86,7 @@ EventResults {
             context: Some(
                 0..1,
             ),
-            description: "inline table",
+            description: "missing comma between key-value pairs",
             expected: Some(
                 [
                     Literal(
@@ -94,38 +96,6 @@ EventResults {
             ),
             unexpected: Some(
                 14..14,
-            ),
-        },
-        ParseError {
-            context: Some(
-                0..1,
-            ),
-            description: "inline table",
-            expected: Some(
-                [
-                    Literal(
-                        ",",
-                    ),
-                ],
-            ),
-            unexpected: Some(
-                20..20,
-            ),
-        },
-        ParseError {
-            context: Some(
-                0..1,
-            ),
-            description: "inline table",
-            expected: Some(
-                [
-                    Literal(
-                        ",",
-                    ),
-                ],
-            ),
-            unexpected: Some(
-                22..22,
             ),
         },
     ],

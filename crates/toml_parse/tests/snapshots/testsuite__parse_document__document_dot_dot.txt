@@ -74,7 +74,7 @@ EventResults {
             context: Some(
                 2..2,
             ),
-            description: "empty unquoted key",
+            description: "unquoted keys cannot be empty",
             expected: Some(
                 [
                     Description(
@@ -99,7 +99,7 @@ EventResults {
             context: Some(
                 4..4,
             ),
-            description: "empty unquoted key",
+            description: "unquoted keys cannot be empty",
             expected: Some(
                 [
                     Description(
@@ -124,7 +124,7 @@ EventResults {
             context: Some(
                 6..6,
             ),
-            description: "empty unquoted key",
+            description: "unquoted keys cannot be empty",
             expected: Some(
                 [
                     Description(

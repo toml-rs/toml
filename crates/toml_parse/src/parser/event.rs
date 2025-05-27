@@ -409,9 +409,7 @@ impl EventReceiver for RecursionGuard<'_> {
         let within_depth = self.within_depth();
         if allowed && !within_depth {
             error.report_error(
-                ParseError::new("inline table")
-                    .with_context(span)
-                    .with_expected(&[])
+                ParseError::new("cannot recurse further; max recursion depth met")
                     .with_unexpected(span),
             );
         }
@@ -427,9 +425,7 @@ impl EventReceiver for RecursionGuard<'_> {
         let within_depth = self.within_depth();
         if allowed && !within_depth {
             error.report_error(
-                ParseError::new("array")
-                    .with_context(span)
-                    .with_expected(&[])
+                ParseError::new("cannot recurse further; max recursion depth met")
                     .with_unexpected(span),
             );
         }

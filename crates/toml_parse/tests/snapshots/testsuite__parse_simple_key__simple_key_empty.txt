@@ -6,7 +6,7 @@ EventResults {
             context: Some(
                 0..0,
             ),
-            description: "key",
+            description: "invalid key",
             expected: Some(
                 [
                     Description(

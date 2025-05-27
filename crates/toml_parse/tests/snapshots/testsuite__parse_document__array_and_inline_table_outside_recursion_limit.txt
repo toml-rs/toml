@@ -229,13 +229,9 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: Some(
-                14..15,
-            ),
-            description: "array",
-            expected: Some(
-                [],
-            ),
+            context: None,
+            description: "cannot recurse further; max recursion depth met",
+            expected: None,
             unexpected: Some(
                 14..15,
             ),

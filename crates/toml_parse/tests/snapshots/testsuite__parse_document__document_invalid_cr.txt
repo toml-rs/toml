@@ -56,7 +56,11 @@ EventResults {
             ),
             description: "carriage return must be followed by newline",
             expected: Some(
-                [],
+                [
+                    Literal(
+                        "\n",
+                    ),
+                ],
             ),
             unexpected: Some(
                 36..36,

@@ -42,7 +42,7 @@ EventResults {
             context: Some(
                 0..1,
             ),
-            description: "inline table",
+            description: "unclosed inline table",
             expected: Some(
                 [
                     Literal(

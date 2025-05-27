@@ -4,7 +4,6 @@ use winnow::stream::ContainsToken as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decode::Encoding;
 use crate::decode::StringBuilder;
 use crate::lexer::APOSTROPHE;
 use crate::lexer::ML_BASIC_STRING_DELIM;
@@ -16,6 +15,8 @@ use crate::Expected;
 use crate::ParseError;
 use crate::Raw;
 use crate::Span;
+
+const ALLOCATION_ERROR: &str = "could not allocate for string";
 
 /// Parse literal string
 ///
@@ -33,6 +34,8 @@ pub(crate) fn decode_literal_string<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) {
+    const INVALID_STRING: &str = "invalid literal string";
+
     output.clear();
 
     let s = raw.as_str();
@@ -40,7 +43,7 @@ pub(crate) fn decode_literal_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("'")])
                 .with_unexpected(Span::new_unchecked(0, 0)),
@@ -51,7 +54,7 @@ pub(crate) fn decode_literal_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("'")])
                 .with_unexpected(Span::new_unchecked(raw.len(), raw.len())),
@@ -63,7 +66,7 @@ pub(crate) fn decode_literal_string<'i>(
         if !LITERAL_CHAR.contains_token(b) {
             let offset = (&s.as_bytes()[i..]).offset_from(&raw.as_bytes());
             error.report_error(
-                ParseError::new("invalid literal string")
+                ParseError::new(INVALID_STRING)
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[Expected::Description("non-single-quote visible characters")])
                     .with_unexpected(Span::new_unchecked(offset, offset)),
@@ -73,10 +76,7 @@ pub(crate) fn decode_literal_string<'i>(
 
     if !output.push_str(s) {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
 }
@@ -113,6 +113,7 @@ pub(crate) fn decode_ml_literal_string<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) {
+    const INVALID_STRING: &str = "invalid multi-line literal string";
     output.clear();
 
     let s = raw.as_str();
@@ -120,7 +121,7 @@ pub(crate) fn decode_ml_literal_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::MlLiteralString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("'")])
                 .with_unexpected(Span::new_unchecked(0, 0)),
@@ -132,7 +133,7 @@ pub(crate) fn decode_ml_literal_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::MlLiteralString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("'")])
                 .with_unexpected(Span::new_unchecked(raw.len(), raw.len())),
@@ -148,14 +149,14 @@ pub(crate) fn decode_ml_literal_string<'i>(
                 error.report_error(
                     ParseError::new("carriage return must be followed by newline")
                         .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                        .with_expected(&[Expected::Literal("\n")])
                         .with_unexpected(Span::new_unchecked(offset, offset)),
                 );
             }
         } else if !MLL_CHAR.contains_token(b) {
             let offset = (&s.as_bytes()[i..]).offset_from(&raw.as_bytes());
             error.report_error(
-                ParseError::new(Encoding::LiteralString.description())
+                ParseError::new(INVALID_STRING)
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[Expected::Description("non-single-quote characters")])
                     .with_unexpected(Span::new_unchecked(offset, offset)),
@@ -165,10 +166,7 @@ pub(crate) fn decode_ml_literal_string<'i>(
 
     if !output.push_str(s) {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
 }
@@ -197,6 +195,7 @@ pub(crate) fn decode_basic_string<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) {
+    const INVALID_STRING: &str = "invalid basic string";
     output.clear();
 
     let s = raw.as_str();
@@ -204,7 +203,7 @@ pub(crate) fn decode_basic_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::BasicString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("\"")])
                 .with_unexpected(Span::new_unchecked(0, 0)),
@@ -215,7 +214,7 @@ pub(crate) fn decode_basic_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::BasicString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("\"")])
                 .with_unexpected(Span::new_unchecked(raw.len(), raw.len())),
@@ -226,10 +225,7 @@ pub(crate) fn decode_basic_string<'i>(
     let segment = basic_unescaped(&mut s);
     if !output.push_str(segment) {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
     while !s.is_empty() {
@@ -239,9 +235,7 @@ pub(crate) fn decode_basic_string<'i>(
             let c = escape_seq_char(&mut s, raw, error);
             if !output.push_char(c) {
                 error.report_error(
-                    ParseError::new(Encoding::LiteralString.description())
-                        .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                    ParseError::new(ALLOCATION_ERROR)
                         .with_unexpected(Span::new_unchecked(0, raw.len())),
                 );
             }
@@ -250,7 +244,7 @@ pub(crate) fn decode_basic_string<'i>(
             let start = invalid.offset_from(&raw.as_str());
             let end = start + invalid.len();
             error.report_error(
-                ParseError::new("invalid basic string")
+                ParseError::new(INVALID_STRING)
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[
                         Expected::Description("non-double-quote visible characters"),
@@ -266,10 +260,7 @@ pub(crate) fn decode_basic_string<'i>(
             let start = segment.offset_from(&raw.as_str());
             let end = start + segment.len();
             error.report_error(
-                ParseError::new(Encoding::LiteralString.description())
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(start, end)),
+                ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(start, end)),
             );
         }
     }
@@ -327,22 +318,24 @@ const ESCAPE: u8 = b'\\';
 /// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
 /// ```
 fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -> char {
+    const EXPECTED_ESCAPES: &[Expected] = &[
+        Expected::Literal("b"),
+        Expected::Literal("f"),
+        Expected::Literal("n"),
+        Expected::Literal("r"),
+        Expected::Literal("\\"),
+        Expected::Literal("\""),
+        Expected::Literal("u"),
+        Expected::Literal("U"),
+    ];
+
     let start = stream.checkpoint();
     let Some(id) = stream.next_token() else {
         let offset = stream.offset_from(&raw.as_str());
         error.report_error(
             ParseError::new("missing escaped value")
                 .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[
-                    Expected::Literal("b"),
-                    Expected::Literal("f"),
-                    Expected::Literal("n"),
-                    Expected::Literal("r"),
-                    Expected::Literal("\\"),
-                    Expected::Literal("\""),
-                    Expected::Literal("u"),
-                    Expected::Literal("U"),
-                ])
+                .with_expected(EXPECTED_ESCAPES)
                 .with_unexpected(Span::new_unchecked(offset, offset)),
         );
         return '\\';
@@ -363,16 +356,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
             error.report_error(
                 ParseError::new("missing escaped value")
                     .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[
-                        Expected::Literal("b"),
-                        Expected::Literal("f"),
-                        Expected::Literal("n"),
-                        Expected::Literal("r"),
-                        Expected::Literal("\\"),
-                        Expected::Literal("\""),
-                        Expected::Literal("u"),
-                        Expected::Literal("U"),
-                    ])
+                    .with_expected(EXPECTED_ESCAPES)
                     .with_unexpected(Span::new_unchecked(offset, offset)),
             );
             '\\'
@@ -399,7 +383,7 @@ fn hexescape(
     if value.len() != num_digits {
         let offset = stream.offset_from(&raw.as_str());
         error.report_error(
-            ParseError::new(Encoding::BasicString.description())
+            ParseError::new("too few unicode value digits")
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Description("unicode hexadecimal value")])
                 .with_unexpected(Span::new_unchecked(offset, offset)),
@@ -410,7 +394,7 @@ fn hexescape(
     let Some(value) = u32::from_str_radix(value, 16).ok().and_then(char::from_u32) else {
         let offset = value.offset_from(&raw.as_str());
         error.report_error(
-            ParseError::new(Encoding::BasicString.description())
+            ParseError::new("invalid value")
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Description("unicode hexadecimal value")])
                 .with_unexpected(Span::new_unchecked(offset, offset)),
@@ -454,12 +438,14 @@ pub(crate) fn decode_ml_basic_string<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) {
+    const INVALID_STRING: &str = "invalid multi-line basic string";
+
     let s = raw.as_str();
     let s = if let Some(stripped) = s.strip_prefix(ML_BASIC_STRING_DELIM) {
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::MlBasicString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("\"")])
                 .with_unexpected(Span::new_unchecked(0, 0)),
@@ -471,7 +457,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
         stripped
     } else {
         error.report_error(
-            ParseError::new(Encoding::MlBasicString.description())
+            ParseError::new(INVALID_STRING)
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(&[Expected::Literal("\"")])
                 .with_unexpected(Span::new_unchecked(raw.len(), raw.len())),
@@ -482,10 +468,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
     let segment = mlb_unescaped(&mut s);
     if !output.push_str(segment) {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
     while !s.is_empty() {
@@ -502,9 +485,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
                 let c = escape_seq_char(&mut s, raw, error);
                 if !output.push_char(c) {
                     error.report_error(
-                        ParseError::new(Encoding::LiteralString.description())
-                            .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(&[])
+                        ParseError::new(ALLOCATION_ERROR)
                             .with_unexpected(Span::new_unchecked(0, raw.len())),
                     );
                 }
@@ -517,7 +498,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
                 error.report_error(
                     ParseError::new("carriage return must be followed by newline")
                         .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                        .with_expected(&[Expected::Literal("\n")])
                         .with_unexpected(Span::new_unchecked(start, start)),
                 );
                 "\r".len()
@@ -531,9 +512,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
                 let start = newline.offset_from(&raw.as_str());
                 let end = start + newline.len();
                 error.report_error(
-                    ParseError::new(Encoding::LiteralString.description())
-                        .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                    ParseError::new(ALLOCATION_ERROR)
                         .with_unexpected(Span::new_unchecked(start, end)),
                 );
             }
@@ -542,7 +521,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
             let start = invalid.offset_from(&raw.as_str());
             let end = start + invalid.len();
             error.report_error(
-                ParseError::new(Encoding::MlBasicString.description())
+                ParseError::new(INVALID_STRING)
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[Expected::Literal("\\"), Expected::Description("characters")])
                     .with_unexpected(Span::new_unchecked(start, end)),
@@ -555,10 +534,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
             let start = segment.offset_from(&raw.as_str());
             let end = start + segment.len();
             error.report_error(
-                ParseError::new(Encoding::LiteralString.description())
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(start, end)),
+                ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(start, end)),
             );
         }
     }
@@ -568,6 +544,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
 /// mlb-escaped-nl = escape ws newline *( wschar / newline )
 /// ```
 fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
+    const INVALID_STRING: &str = "invalid multi-line basic string";
     let ws_offset = stream
         .as_bytes()
         .offset_for(|b| !WSCHAR.contains_token(b))
@@ -591,7 +568,7 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
                 error.report_error(
                     ParseError::new("carriage return must be followed by newline")
                         .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                        .with_expected(&[Expected::Literal("\n")])
                         .with_unexpected(Span::new_unchecked(start, end)),
                 );
             }
@@ -602,7 +579,7 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
             let start = stream.offset_from(&raw.as_str());
             let end = start;
             error.report_error(
-                ParseError::new(Encoding::MlBasicString.description())
+                ParseError::new(INVALID_STRING)
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[Expected::Literal("\n")])
                     .with_unexpected(Span::new_unchecked(start, end)),
@@ -632,7 +609,7 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
                 error.report_error(
                     ParseError::new("carriage return must be followed by newline")
                         .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                        .with_expected(&[Expected::Literal("\n")])
                         .with_unexpected(Span::new_unchecked(start, start)),
                 );
                 "\r".len()
@@ -713,7 +690,7 @@ pub(crate) fn decode_unquoted_key<'i>(
 
     if s.is_empty() {
         error.report_error(
-            ParseError::new("empty unquoted key")
+            ParseError::new("unquoted keys cannot be empty")
                 .with_context(Span::new_unchecked(0, s.len()))
                 .with_expected(&[
                     Expected::Description("letters"),
@@ -743,10 +720,7 @@ pub(crate) fn decode_unquoted_key<'i>(
 
     if !output.push_str(s) {
         error.report_error(
-            ParseError::new(UNQUOTED_STRING)
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
 }
@@ -760,12 +734,11 @@ const UNQUOTED_CHAR: (
     u8,
 ) = (b'A'..=b'Z', b'a'..=b'z', b'0'..=b'9', b'-', b'_');
 
-const UNQUOTED_STRING: &str = "unquoted string";
-
 #[cfg(test)]
 #[cfg(feature = "std")]
 mod test {
     use super::*;
+    use crate::decode::Encoding;
 
     use alloc::borrow::Cow;
 
@@ -1105,7 +1078,7 @@ The quick brown \
         context: Some(
             0..7,
         ),
-        description: "multi-line basic string",
+        description: "invalid multi-line basic string",
         expected: Some(
             [
                 Literal(
@@ -1249,7 +1222,7 @@ The quick brown \
         context: Some(
             0..0,
         ),
-        description: "empty unquoted key",
+        description: "unquoted keys cannot be empty",
         expected: Some(
             [
                 Description(

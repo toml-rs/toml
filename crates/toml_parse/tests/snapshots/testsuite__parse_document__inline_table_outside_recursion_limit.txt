@@ -239,13 +239,9 @@ EventResults {
     ],
     errors: [
         ParseError {
-            context: Some(
-                19..20,
-            ),
-            description: "inline table",
-            expected: Some(
-                [],
-            ),
+            context: None,
+            description: "cannot recurse further; max recursion depth met",
+            expected: None,
             unexpected: Some(
                 19..20,
             ),

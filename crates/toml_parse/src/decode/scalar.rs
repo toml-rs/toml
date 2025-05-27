@@ -3,13 +3,14 @@ use winnow::stream::FindSlice as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decode::Encoding;
 use crate::decode::StringBuilder;
 use crate::ErrorSink;
 use crate::Expected;
 use crate::ParseError;
 use crate::Raw;
 use crate::Span;
+
+const ALLOCATION_ERROR: &str = "could not allocate for string";
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum ScalarKind {
@@ -28,6 +29,16 @@ impl ScalarKind {
             Self::DateTime => "date-time",
             Self::Float => "float",
             Self::Integer(radix) => radix.description(),
+        }
+    }
+
+    fn invalid_description(&self) -> &'static str {
+        match self {
+            Self::String => "invalid string",
+            Self::Boolean(_) => "invalid boolean",
+            Self::DateTime => "invalid date-time",
+            Self::Float => "invalid float",
+            Self::Integer(radix) => radix.invalid_description(),
         }
     }
 }
@@ -57,6 +68,15 @@ impl IntegerRadix {
             Self::Hex => 16,
             Self::Oct => 8,
             Self::Bin => 2,
+        }
+    }
+
+    fn invalid_description(&self) -> &'static str {
+        match self {
+            Self::Dec => "integer number",
+            Self::Hex => "hexadecimal number",
+            Self::Oct => "octal number",
+            Self::Bin => "binary number",
         }
     }
 }
@@ -119,7 +139,7 @@ pub(crate) fn decode_unquoted_scalar<'i>(
                     b'd' | b'D' =>  {
                         let kind = ScalarKind::Integer(IntegerRadix::Dec);
                         let stream = &raw.as_str()[2..];
-                        error.report_error(ParseError::new(kind.description()).with_context(Span::new_unchecked(0, raw.len())).with_expected(&[]).with_unexpected(Span::new_unchecked(0, 2)));
+                        error.report_error(ParseError::new("redundant integer number prefix").with_context(Span::new_unchecked(0, raw.len())).with_expected(&[]).with_unexpected(Span::new_unchecked(0, 2)));
                         decode_float_or_integer(stream, raw, kind, output, error)
                     },
                     _ => {
@@ -220,7 +240,7 @@ pub(crate) fn decode_float_or_integer<'i>(
     if has_underscore(stream) {
         if stream.starts_with(underscore) {
             error.report_error(
-                ParseError::new(kind.description())
+                ParseError::new("`_` may only go between digits")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[])
                     .with_unexpected(Span::new_unchecked(0, underscore.len())),
@@ -230,7 +250,7 @@ pub(crate) fn decode_float_or_integer<'i>(
             let start = stream.offset_from(&raw.as_str());
             let end = start + stream.len();
             error.report_error(
-                ParseError::new(kind.description())
+                ParseError::new("`_` may only go between digits")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[])
                     .with_unexpected(Span::new_unchecked(end - underscore.len(), end)),
@@ -246,9 +266,8 @@ pub(crate) fn decode_float_or_integer<'i>(
                     let end = part_start;
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
                     error.report_error(
-                        ParseError::new(kind.description())
+                        ParseError::new("`_` may only go between digits")
                             .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(&[])
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
@@ -261,9 +280,8 @@ pub(crate) fn decode_float_or_integer<'i>(
                     let end = start + underscore.len();
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
                     error.report_error(
-                        ParseError::new(kind.description())
+                        ParseError::new("`_` may only go between digits")
                             .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(&[])
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
@@ -271,9 +289,7 @@ pub(crate) fn decode_float_or_integer<'i>(
 
             if !part.is_empty() && !output.push_str(part) {
                 error.report_error(
-                    ParseError::new(kind.description())
-                        .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
+                    ParseError::new(ALLOCATION_ERROR)
                         .with_unexpected(Span::new_unchecked(part_start, part_end)),
                 );
             }
@@ -281,9 +297,7 @@ pub(crate) fn decode_float_or_integer<'i>(
     } else {
         if !output.push_str(stream) {
             error.report_error(
-                ParseError::new(kind.description())
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[])
+                ParseError::new(ALLOCATION_ERROR)
                     .with_unexpected(Span::new_unchecked(0, raw.len())),
             );
         }
@@ -325,10 +339,7 @@ pub(crate) fn decode_as_is<'i>(
     output.clear();
     if !output.push_str(raw.as_str()) {
         error.report_error(
-            ParseError::new(kind.description())
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
     kind
@@ -344,7 +355,7 @@ pub(crate) fn decode_symbol<'i>(
 ) -> ScalarKind {
     if raw.as_str() != symbol {
         error.report_error(
-            ParseError::new(Encoding::LiteralString.description())
+            ParseError::new(kind.invalid_description())
                 .with_context(Span::new_unchecked(0, raw.len()))
                 .with_expected(expected)
                 .with_unexpected(Span::new_unchecked(0, raw.len())),
@@ -354,10 +365,7 @@ pub(crate) fn decode_symbol<'i>(
     output.clear();
     if !output.push_str(symbol) {
         error.report_error(
-            ParseError::new(kind.description())
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
     kind
@@ -378,13 +386,8 @@ pub(crate) fn decode_invalid<'i>(
     output.clear();
     if !output.push_str(raw.as_str()) {
         error.report_error(
-            ParseError::new(UNQUOTED_STRING)
-                .with_context(Span::new_unchecked(0, raw.len()))
-                .with_expected(&[])
-                .with_unexpected(Span::new_unchecked(0, raw.len())),
+            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
     ScalarKind::String
 }
-
-const UNQUOTED_STRING: &str = "unquoted string";
