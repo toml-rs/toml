@@ -339,13 +339,10 @@ impl FromStr for Datetime {
         if date.len() < 3 {
             return Err(DatetimeParseError {});
         }
-        let mut offset_allowed = true;
         let mut chars = date.chars();
 
         // First up, parse the full date if we can
-        if chars.clone().nth(2) == Some(':') {
-            offset_allowed = false;
-        } else {
+        if chars.clone().nth(2) != Some(':') {
             let y1 = u16::from(digit(&mut chars)?);
             let y2 = u16::from(digit(&mut chars)?);
             let y3 = u16::from(digit(&mut chars)?);
@@ -467,12 +464,10 @@ impl FromStr for Datetime {
             }
 
             result.time = Some(time);
-        } else {
-            offset_allowed = false;
         }
 
         // And finally, parse the offset
-        if offset_allowed {
+        if result.date.is_some() && result.time.is_some() {
             let next = chars.clone().next();
             let offset = if next == Some('Z') || next == Some('z') {
                 chars.next();
