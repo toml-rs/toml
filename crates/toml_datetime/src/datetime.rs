@@ -449,7 +449,7 @@ impl FromStr for Datetime {
                 nanosecond,
             };
 
-            if time.hour > 24 {
+            if time.hour > 23 {
                 return Err(DatetimeParseError {});
             }
             if time.minute > 59 {
