@@ -330,6 +330,12 @@ impl FromStr for Datetime {
         //
         // local-time = partial-time
         // ```
+        let mut result = Datetime {
+            date: None,
+            time: None,
+            offset: None,
+        };
+
         if date.len() < 3 {
             return Err(DatetimeParseError {});
         }
@@ -337,9 +343,8 @@ impl FromStr for Datetime {
         let mut chars = date.chars();
 
         // First up, parse the full date if we can
-        let full_date = if chars.clone().nth(2) == Some(':') {
+        if chars.clone().nth(2) == Some(':') {
             offset_allowed = false;
-            None
         } else {
             let y1 = u16::from(digit(&mut chars)?);
             let y2 = u16::from(digit(&mut chars)?);
@@ -383,21 +388,21 @@ impl FromStr for Datetime {
                 return Err(DatetimeParseError {});
             }
 
-            Some(date)
-        };
+            result.date = Some(date);
+        }
 
         // Next parse the "partial-time" if available
         let next = chars.clone().next();
-        let partial_time = if full_date.is_some()
+        let partial_time = if result.date.is_some()
             && (next == Some('T') || next == Some('t') || next == Some(' '))
         {
             chars.next();
             true
         } else {
-            full_date.is_none()
+            result.date.is_none()
         };
 
-        let time = if partial_time {
+        if partial_time {
             let h1 = digit(&mut chars)?;
             let h2 = digit(&mut chars)?;
             match chars.next() {
@@ -461,16 +466,15 @@ impl FromStr for Datetime {
                 return Err(DatetimeParseError {});
             }
 
-            Some(time)
+            result.time = Some(time);
         } else {
             offset_allowed = false;
-            None
-        };
+        }
 
         // And finally, parse the offset
-        let offset = if offset_allowed {
+        if offset_allowed {
             let next = chars.clone().next();
-            if next == Some('Z') || next == Some('z') {
+            let offset = if next == Some('Z') || next == Some('z') {
                 chars.next();
                 Some(Offset::Z)
             } else if next.is_none() {
@@ -503,10 +507,9 @@ impl FromStr for Datetime {
                 Some(Offset::Custom {
                     minutes: total_minutes,
                 })
-            }
-        } else {
-            None
-        };
+            };
+            result.offset = offset;
+        }
 
         // Return an error if we didn't hit eof, otherwise return our parsed
         // date
@@ -514,11 +517,7 @@ impl FromStr for Datetime {
             return Err(DatetimeParseError {});
         }
 
-        Ok(Datetime {
-            date: full_date,
-            time,
-            offset,
-        })
+        Ok(result)
     }
 }
 
