@@ -955,6 +955,7 @@ name = "toml_datetime"
 version = "0.6.9"
 dependencies = [
  "serde",
+ "snapbox",
 ]
 
 [[package]]

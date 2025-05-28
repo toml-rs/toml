@@ -30,3 +30,6 @@ serde = { version = "1.0.145", optional = true }
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+snapbox = "0.6.21"
