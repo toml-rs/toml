@@ -336,117 +336,109 @@ impl FromStr for Datetime {
             offset: None,
         };
 
-        if date.len() < 3 {
-            return Err(DatetimeParseError {});
-        }
-        let mut chars = date.chars();
+        let mut lexer = Lexer::new(date);
 
-        // First up, parse the full date if we can
-        if chars.clone().nth(2) != Some(':') {
-            let y1 = u16::from(digit(&mut chars)?);
-            let y2 = u16::from(digit(&mut chars)?);
-            let y3 = u16::from(digit(&mut chars)?);
-            let y4 = u16::from(digit(&mut chars)?);
+        let digits = lexer.next().ok_or(DatetimeParseError {})?;
+        digits.is(TokenKind::Digits)?;
+        let sep = lexer.next().ok_or(DatetimeParseError {})?;
+        match sep.kind {
+            TokenKind::Dash => {
+                let year = digits;
+                let month = lexer.next().ok_or(DatetimeParseError {})?;
+                month.is(TokenKind::Digits)?;
+                let sep = lexer.next().ok_or(DatetimeParseError {})?;
+                sep.is(TokenKind::Dash)?;
+                let day = lexer.next().ok_or(DatetimeParseError {})?;
+                day.is(TokenKind::Digits)?;
 
-            match chars.next() {
-                Some('-') => {}
-                _ => return Err(DatetimeParseError {}),
+                if year.raw.len() != 4 {
+                    return Err(DatetimeParseError {});
+                }
+                if month.raw.len() != 2 {
+                    return Err(DatetimeParseError {});
+                }
+                if day.raw.len() != 2 {
+                    return Err(DatetimeParseError {});
+                }
+                let date = Date {
+                    year: year.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                    month: month.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                    day: day.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                };
+                if date.month < 1 || date.month > 12 {
+                    return Err(DatetimeParseError {});
+                }
+                let is_leap_year =
+                    (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
+                let max_days_in_month = match date.month {
+                    2 if is_leap_year => 29,
+                    2 => 28,
+                    4 | 6 | 9 | 11 => 30,
+                    _ => 31,
+                };
+                if date.day < 1 || date.day > max_days_in_month {
+                    return Err(DatetimeParseError {});
+                }
+
+                result.date = Some(date);
             }
-
-            let m1 = digit(&mut chars)?;
-            let m2 = digit(&mut chars)?;
-
-            match chars.next() {
-                Some('-') => {}
-                _ => return Err(DatetimeParseError {}),
-            }
-
-            let d1 = digit(&mut chars)?;
-            let d2 = digit(&mut chars)?;
-
-            let date = Date {
-                year: y1 * 1000 + y2 * 100 + y3 * 10 + y4,
-                month: m1 * 10 + m2,
-                day: d1 * 10 + d2,
-            };
-
-            if date.month < 1 || date.month > 12 {
+            TokenKind::Colon => lexer = Lexer::new(date),
+            _ => {
                 return Err(DatetimeParseError {});
             }
-            let is_leap_year =
-                (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
-            let max_days_in_month = match date.month {
-                2 if is_leap_year => 29,
-                2 => 28,
-                4 | 6 | 9 | 11 => 30,
-                _ => 31,
-            };
-            if date.day < 1 || date.day > max_days_in_month {
-                return Err(DatetimeParseError {});
-            }
-
-            result.date = Some(date);
         }
 
         // Next parse the "partial-time" if available
-        let next = chars.clone().next();
-        let partial_time = if result.date.is_some()
-            && (next == Some('T') || next == Some('t') || next == Some(' '))
-        {
-            chars.next();
-            true
+        let partial_time = if result.date.is_some() {
+            let sep = lexer.next();
+            match sep {
+                Some(token) if matches!(token.kind, TokenKind::T | TokenKind::Space) => true,
+                Some(_token) => {
+                    return Err(DatetimeParseError {});
+                }
+                None => false,
+            }
         } else {
             result.date.is_none()
         };
 
         if partial_time {
-            let h1 = digit(&mut chars)?;
-            let h2 = digit(&mut chars)?;
-            match chars.next() {
-                Some(':') => {}
-                _ => return Err(DatetimeParseError {}),
-            }
-            let m1 = digit(&mut chars)?;
-            let m2 = digit(&mut chars)?;
-            match chars.next() {
-                Some(':') => {}
-                _ => return Err(DatetimeParseError {}),
-            }
-            let s1 = digit(&mut chars)?;
-            let s2 = digit(&mut chars)?;
+            let hour = lexer.next().ok_or(DatetimeParseError {})?;
+            hour.is(TokenKind::Digits)?;
+            let sep = lexer.next().ok_or(DatetimeParseError {})?;
+            sep.is(TokenKind::Colon)?;
+            let minute = lexer.next().ok_or(DatetimeParseError {})?;
+            minute.is(TokenKind::Digits)?;
+            let sep = lexer.next().ok_or(DatetimeParseError {})?;
+            sep.is(TokenKind::Colon)?;
+            let second = lexer.next().ok_or(DatetimeParseError {})?;
+            second.is(TokenKind::Digits)?;
 
-            let mut nanosecond = 0;
-            if chars.clone().next() == Some('.') {
-                chars.next();
-                let whole = chars.as_str();
+            let nanosecond = if lexer.clone().next().map(|t| t.kind) == Some(TokenKind::Dot) {
+                let sep = lexer.next().ok_or(DatetimeParseError {})?;
+                sep.is(TokenKind::Dot)?;
+                let nanosecond = lexer.next().ok_or(DatetimeParseError {})?;
+                nanosecond.is(TokenKind::Digits)?;
+                Some(nanosecond)
+            } else {
+                None
+            };
 
-                let mut end = whole.len();
-                for (i, byte) in whole.bytes().enumerate() {
-                    #[allow(clippy::single_match_else)]
-                    match byte {
-                        b'0'..=b'9' => {
-                            if i < 9 {
-                                let p = 10_u32.pow(8 - i as u32);
-                                nanosecond += p * u32::from(byte - b'0');
-                            }
-                        }
-                        _ => {
-                            end = i;
-                            break;
-                        }
-                    }
-                }
-                if end == 0 {
-                    return Err(DatetimeParseError {});
-                }
-                chars = whole[end..].chars();
+            if hour.raw.len() != 2 {
+                return Err(DatetimeParseError {});
+            }
+            if minute.raw.len() != 2 {
+                return Err(DatetimeParseError {});
+            }
+            if second.raw.len() != 2 {
+                return Err(DatetimeParseError {});
             }
 
             let time = Time {
-                hour: h1 * 10 + h2,
-                minute: m1 * 10 + m2,
-                second: s1 * 10 + s2,
-                nanosecond,
+                hour: hour.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                minute: minute.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                second: second.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                nanosecond: nanosecond.map(|t| s_to_nanoseconds(t.raw)).unwrap_or(0),
             };
 
             if time.hour > 23 {
@@ -468,54 +460,62 @@ impl FromStr for Datetime {
 
         // And finally, parse the offset
         if result.date.is_some() && result.time.is_some() {
-            let next = chars.clone().next();
-            let offset = if next == Some('Z') || next == Some('z') {
-                chars.next();
-                Some(Offset::Z)
-            } else if next.is_none() {
-                None
-            } else {
-                let sign = match next {
-                    Some('+') => 1,
-                    Some('-') => -1,
-                    _ => return Err(DatetimeParseError {}),
-                };
-                chars.next();
-                let h1 = digit(&mut chars)? as i16;
-                let h2 = digit(&mut chars)? as i16;
-                match chars.next() {
-                    Some(':') => {}
-                    _ => return Err(DatetimeParseError {}),
+            match lexer.next() {
+                Some(token) if token.kind == TokenKind::Z => {
+                    result.offset = Some(Offset::Z);
                 }
-                let m1 = digit(&mut chars)? as i16;
-                let m2 = digit(&mut chars)? as i16;
+                Some(token) if matches!(token.kind, TokenKind::Plus | TokenKind::Dash) => {
+                    let sign = if token.kind == TokenKind::Plus { 1 } else { -1 };
+                    let hours = lexer.next().ok_or(DatetimeParseError {})?;
+                    hours.is(TokenKind::Digits)?;
+                    let sep = lexer.next().ok_or(DatetimeParseError {})?;
+                    sep.is(TokenKind::Colon)?;
+                    let minutes = lexer.next().ok_or(DatetimeParseError {})?;
+                    minutes.is(TokenKind::Digits)?;
 
-                let hours = h1 * 10 + h2;
-                let minutes = m1 * 10 + m2;
+                    if hours.raw.len() != 2 {
+                        return Err(DatetimeParseError {});
+                    }
+                    if minutes.raw.len() != 2 {
+                        return Err(DatetimeParseError {});
+                    }
 
-                if hours > 23 {
+                    let hours = hours
+                        .raw
+                        .parse::<u8>()
+                        .map_err(|_err| DatetimeParseError {})?;
+                    let minutes = minutes
+                        .raw
+                        .parse::<u8>()
+                        .map_err(|_err| DatetimeParseError {})?;
+
+                    if hours > 23 {
+                        return Err(DatetimeParseError {});
+                    }
+                    if minutes > 59 {
+                        return Err(DatetimeParseError {});
+                    }
+
+                    let total_minutes = sign * (hours as i16 * 60 + minutes as i16);
+
+                    if !((-24 * 60)..=(24 * 60)).contains(&total_minutes) {
+                        return Err(DatetimeParseError {});
+                    }
+
+                    result.offset = Some(Offset::Custom {
+                        minutes: total_minutes,
+                    });
+                }
+                Some(_token) => {
                     return Err(DatetimeParseError {});
                 }
-                if minutes > 59 {
-                    return Err(DatetimeParseError {});
-                }
-
-                let total_minutes = sign * (hours * 60 + minutes);
-
-                if !((-24 * 60)..=(24 * 60)).contains(&total_minutes) {
-                    return Err(DatetimeParseError {});
-                }
-
-                Some(Offset::Custom {
-                    minutes: total_minutes,
-                })
-            };
-            result.offset = offset;
+                None => {}
+            }
         }
 
         // Return an error if we didn't hit eof, otherwise return our parsed
         // date
-        if chars.next().is_some() {
+        if lexer.unknown().is_some() {
             return Err(DatetimeParseError {});
         }
 
@@ -523,10 +523,100 @@ impl FromStr for Datetime {
     }
 }
 
-fn digit(chars: &mut str::Chars<'_>) -> Result<u8, DatetimeParseError> {
-    match chars.next() {
-        Some(c) if c.is_ascii_digit() => Ok(c as u8 - b'0'),
-        _ => Err(DatetimeParseError {}),
+fn s_to_nanoseconds(input: &str) -> u32 {
+    let mut nanosecond = 0;
+    for (i, byte) in input.bytes().enumerate() {
+        if byte.is_ascii_digit() {
+            if i < 9 {
+                let p = 10_u32.pow(8 - i as u32);
+                nanosecond += p * u32::from(byte - b'0');
+            }
+        } else {
+            panic!("invalid nanoseconds {input:?}");
+        }
+    }
+    nanosecond
+}
+
+#[derive(Copy, Clone)]
+struct Token<'s> {
+    kind: TokenKind,
+    raw: &'s str,
+}
+
+impl Token<'_> {
+    fn is(&self, kind: TokenKind) -> Result<(), DatetimeParseError> {
+        if self.kind == kind {
+            Ok(())
+        } else {
+            Err(DatetimeParseError {})
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum TokenKind {
+    Digits,
+    Dash,
+    Colon,
+    Dot,
+    T,
+    Space,
+    Z,
+    Plus,
+    Unknown,
+}
+
+#[derive(Copy, Clone)]
+struct Lexer<'s> {
+    stream: &'s str,
+}
+
+impl<'s> Lexer<'s> {
+    fn new(input: &'s str) -> Self {
+        Self { stream: input }
+    }
+
+    fn unknown(&mut self) -> Option<Token<'s>> {
+        let remaining = self.stream.len();
+        if remaining == 0 {
+            return None;
+        }
+        let raw = self.stream;
+        self.stream = &self.stream[remaining..remaining];
+        Some(Token {
+            kind: TokenKind::Unknown,
+            raw,
+        })
+    }
+}
+
+impl<'s> Iterator for Lexer<'s> {
+    type Item = Token<'s>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (kind, end) = match self.stream.as_bytes().first()? {
+            b'0'..=b'9' => {
+                let end = self
+                    .stream
+                    .as_bytes()
+                    .iter()
+                    .position(|b| !b.is_ascii_digit())
+                    .unwrap_or(self.stream.len());
+                (TokenKind::Digits, end)
+            }
+            b'-' => (TokenKind::Dash, 1),
+            b':' => (TokenKind::Colon, 1),
+            b'T' | b't' => (TokenKind::T, 1),
+            b' ' => (TokenKind::Space, 1),
+            b'Z' | b'z' => (TokenKind::Z, 1),
+            b'+' => (TokenKind::Plus, 1),
+            b'.' => (TokenKind::Dot, 1),
+            _ => (TokenKind::Unknown, self.stream.len()),
+        };
+        let (raw, rest) = self.stream.split_at(end);
+        self.stream = rest;
+        Some(Token { kind, raw })
     }
 }
 
