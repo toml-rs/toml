@@ -338,35 +338,38 @@ impl FromStr for Datetime {
 
         let mut lexer = Lexer::new(date);
 
-        let digits = lexer.next().ok_or(DatetimeParseError {})?;
+        let digits = lexer.next().ok_or(DatetimeParseError::new())?;
         digits.is(TokenKind::Digits)?;
-        let sep = lexer.next().ok_or(DatetimeParseError {})?;
+        let sep = lexer.next().ok_or(DatetimeParseError::new())?;
         match sep.kind {
             TokenKind::Dash => {
                 let year = digits;
-                let month = lexer.next().ok_or(DatetimeParseError {})?;
+                let month = lexer.next().ok_or(DatetimeParseError::new())?;
                 month.is(TokenKind::Digits)?;
-                let sep = lexer.next().ok_or(DatetimeParseError {})?;
+                let sep = lexer.next().ok_or(DatetimeParseError::new())?;
                 sep.is(TokenKind::Dash)?;
-                let day = lexer.next().ok_or(DatetimeParseError {})?;
+                let day = lexer.next().ok_or(DatetimeParseError::new())?;
                 day.is(TokenKind::Digits)?;
 
                 if year.raw.len() != 4 {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
                 if month.raw.len() != 2 {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
                 if day.raw.len() != 2 {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
                 let date = Date {
-                    year: year.raw.parse().map_err(|_err| DatetimeParseError {})?,
-                    month: month.raw.parse().map_err(|_err| DatetimeParseError {})?,
-                    day: day.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                    year: year.raw.parse().map_err(|_err| DatetimeParseError::new())?,
+                    month: month
+                        .raw
+                        .parse()
+                        .map_err(|_err| DatetimeParseError::new())?,
+                    day: day.raw.parse().map_err(|_err| DatetimeParseError::new())?,
                 };
                 if date.month < 1 || date.month > 12 {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
                 let is_leap_year =
                     (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
@@ -377,14 +380,14 @@ impl FromStr for Datetime {
                     _ => 31,
                 };
                 if date.day < 1 || date.day > max_days_in_month {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
 
                 result.date = Some(date);
             }
             TokenKind::Colon => lexer = Lexer::new(date),
             _ => {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
         }
 
@@ -394,7 +397,7 @@ impl FromStr for Datetime {
             match sep {
                 Some(token) if matches!(token.kind, TokenKind::T | TokenKind::Space) => true,
                 Some(_token) => {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
                 None => false,
             }
@@ -403,21 +406,21 @@ impl FromStr for Datetime {
         };
 
         if partial_time {
-            let hour = lexer.next().ok_or(DatetimeParseError {})?;
+            let hour = lexer.next().ok_or(DatetimeParseError::new())?;
             hour.is(TokenKind::Digits)?;
-            let sep = lexer.next().ok_or(DatetimeParseError {})?;
+            let sep = lexer.next().ok_or(DatetimeParseError::new())?;
             sep.is(TokenKind::Colon)?;
-            let minute = lexer.next().ok_or(DatetimeParseError {})?;
+            let minute = lexer.next().ok_or(DatetimeParseError::new())?;
             minute.is(TokenKind::Digits)?;
-            let sep = lexer.next().ok_or(DatetimeParseError {})?;
+            let sep = lexer.next().ok_or(DatetimeParseError::new())?;
             sep.is(TokenKind::Colon)?;
-            let second = lexer.next().ok_or(DatetimeParseError {})?;
+            let second = lexer.next().ok_or(DatetimeParseError::new())?;
             second.is(TokenKind::Digits)?;
 
             let nanosecond = if lexer.clone().next().map(|t| t.kind) == Some(TokenKind::Dot) {
-                let sep = lexer.next().ok_or(DatetimeParseError {})?;
+                let sep = lexer.next().ok_or(DatetimeParseError::new())?;
                 sep.is(TokenKind::Dot)?;
-                let nanosecond = lexer.next().ok_or(DatetimeParseError {})?;
+                let nanosecond = lexer.next().ok_or(DatetimeParseError::new())?;
                 nanosecond.is(TokenKind::Digits)?;
                 Some(nanosecond)
             } else {
@@ -425,34 +428,40 @@ impl FromStr for Datetime {
             };
 
             if hour.raw.len() != 2 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
             if minute.raw.len() != 2 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
             if second.raw.len() != 2 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
 
             let time = Time {
-                hour: hour.raw.parse().map_err(|_err| DatetimeParseError {})?,
-                minute: minute.raw.parse().map_err(|_err| DatetimeParseError {})?,
-                second: second.raw.parse().map_err(|_err| DatetimeParseError {})?,
+                hour: hour.raw.parse().map_err(|_err| DatetimeParseError::new())?,
+                minute: minute
+                    .raw
+                    .parse()
+                    .map_err(|_err| DatetimeParseError::new())?,
+                second: second
+                    .raw
+                    .parse()
+                    .map_err(|_err| DatetimeParseError::new())?,
                 nanosecond: nanosecond.map(|t| s_to_nanoseconds(t.raw)).unwrap_or(0),
             };
 
             if time.hour > 23 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
             if time.minute > 59 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
             // 00-58, 00-59, 00-60 based on leap second rules
             if time.second > 60 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
             if time.nanosecond > 999_999_999 {
-                return Err(DatetimeParseError {});
+                return Err(DatetimeParseError::new());
             }
 
             result.time = Some(time);
@@ -466,40 +475,40 @@ impl FromStr for Datetime {
                 }
                 Some(token) if matches!(token.kind, TokenKind::Plus | TokenKind::Dash) => {
                     let sign = if token.kind == TokenKind::Plus { 1 } else { -1 };
-                    let hours = lexer.next().ok_or(DatetimeParseError {})?;
+                    let hours = lexer.next().ok_or(DatetimeParseError::new())?;
                     hours.is(TokenKind::Digits)?;
-                    let sep = lexer.next().ok_or(DatetimeParseError {})?;
+                    let sep = lexer.next().ok_or(DatetimeParseError::new())?;
                     sep.is(TokenKind::Colon)?;
-                    let minutes = lexer.next().ok_or(DatetimeParseError {})?;
+                    let minutes = lexer.next().ok_or(DatetimeParseError::new())?;
                     minutes.is(TokenKind::Digits)?;
 
                     if hours.raw.len() != 2 {
-                        return Err(DatetimeParseError {});
+                        return Err(DatetimeParseError::new());
                     }
                     if minutes.raw.len() != 2 {
-                        return Err(DatetimeParseError {});
+                        return Err(DatetimeParseError::new());
                     }
 
                     let hours = hours
                         .raw
                         .parse::<u8>()
-                        .map_err(|_err| DatetimeParseError {})?;
+                        .map_err(|_err| DatetimeParseError::new())?;
                     let minutes = minutes
                         .raw
                         .parse::<u8>()
-                        .map_err(|_err| DatetimeParseError {})?;
+                        .map_err(|_err| DatetimeParseError::new())?;
 
                     if hours > 23 {
-                        return Err(DatetimeParseError {});
+                        return Err(DatetimeParseError::new());
                     }
                     if minutes > 59 {
-                        return Err(DatetimeParseError {});
+                        return Err(DatetimeParseError::new());
                     }
 
                     let total_minutes = sign * (hours as i16 * 60 + minutes as i16);
 
                     if !((-24 * 60)..=(24 * 60)).contains(&total_minutes) {
-                        return Err(DatetimeParseError {});
+                        return Err(DatetimeParseError::new());
                     }
 
                     result.offset = Some(Offset::Custom {
@@ -507,7 +516,7 @@ impl FromStr for Datetime {
                     });
                 }
                 Some(_token) => {
-                    return Err(DatetimeParseError {});
+                    return Err(DatetimeParseError::new());
                 }
                 None => {}
             }
@@ -516,7 +525,7 @@ impl FromStr for Datetime {
         // Return an error if we didn't hit eof, otherwise return our parsed
         // date
         if lexer.unknown().is_some() {
-            return Err(DatetimeParseError {});
+            return Err(DatetimeParseError::new());
         }
 
         Ok(result)
@@ -549,7 +558,7 @@ impl Token<'_> {
         if self.kind == kind {
             Ok(())
         } else {
-            Err(DatetimeParseError {})
+            Err(DatetimeParseError::new())
         }
     }
 }
@@ -624,6 +633,12 @@ impl<'s> Iterator for Lexer<'s> {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct DatetimeParseError {}
+
+impl DatetimeParseError {
+    fn new() -> Self {
+        Self {}
+    }
+}
 
 impl fmt::Display for DatetimeParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
