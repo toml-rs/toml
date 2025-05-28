@@ -493,6 +493,13 @@ impl FromStr for Datetime {
                 let hours = h1 * 10 + h2;
                 let minutes = m1 * 10 + m2;
 
+                if hours > 23 {
+                    return Err(DatetimeParseError {});
+                }
+                if minutes > 59 {
+                    return Err(DatetimeParseError {});
+                }
+
                 let total_minutes = sign * (hours * 60 + minutes);
 
                 if !((-24 * 60)..=(24 * 60)).contains(&total_minutes) {
