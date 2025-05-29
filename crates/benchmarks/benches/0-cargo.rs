@@ -33,7 +33,7 @@ mod toml_parse {
             fn simple_key(
                 &mut self,
                 span: ::toml_parse::Span,
-                encoding: Option<::toml_parse::decode::Encoding>,
+                encoding: Option<::toml_parse::decoder::Encoding>,
                 error: &mut dyn ::toml_parse::ErrorSink,
             ) {
                 let event = ::toml_parse::parser::Event::new_unchecked(
@@ -52,7 +52,7 @@ mod toml_parse {
             fn scalar(
                 &mut self,
                 span: ::toml_parse::Span,
-                encoding: Option<::toml_parse::decode::Encoding>,
+                encoding: Option<::toml_parse::decoder::Encoding>,
                 error: &mut dyn ::toml_parse::ErrorSink,
             ) {
                 let event = ::toml_parse::parser::Event::new_unchecked(

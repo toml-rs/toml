@@ -4,7 +4,7 @@ use winnow::stream::ContainsToken as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decode::StringBuilder;
+use crate::decoder::StringBuilder;
 use crate::lexer::APOSTROPHE;
 use crate::lexer::ML_BASIC_STRING_DELIM;
 use crate::lexer::ML_LITERAL_STRING_DELIM;
@@ -738,7 +738,7 @@ const UNQUOTED_CHAR: (
 #[cfg(feature = "std")]
 mod test {
     use super::*;
-    use crate::decode::Encoding;
+    use crate::decoder::Encoding;
 
     use alloc::borrow::Cow;
 

@@ -5,7 +5,7 @@ use super::APOSTROPHE;
 use super::COMMENT_START_SYMBOL;
 use super::QUOTATION_MARK;
 use super::WSCHAR;
-use crate::decode::Encoding;
+use crate::decoder::Encoding;
 
 /// An unvalidated TOML Token
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]

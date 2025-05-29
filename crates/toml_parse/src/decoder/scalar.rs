@@ -3,7 +3,7 @@ use winnow::stream::FindSlice as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decode::StringBuilder;
+use crate::decoder::StringBuilder;
 use crate::ErrorSink;
 use crate::Expected;
 use crate::ParseError;

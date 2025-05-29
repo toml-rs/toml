@@ -7,7 +7,7 @@ use super::EventReceiver;
 use crate::debug::DebugErrorSink;
 #[cfg(feature = "debug")]
 use crate::debug::DebugEventReceiver;
-use crate::decode::Encoding;
+use crate::decoder::Encoding;
 use crate::lexer::Token;
 use crate::lexer::TokenKind;
 use crate::ErrorSink;

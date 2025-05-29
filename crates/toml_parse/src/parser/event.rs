@@ -1,4 +1,4 @@
-use crate::decode::Encoding;
+use crate::decoder::Encoding;
 use crate::ErrorSink;
 use crate::ParseError;
 use crate::Source;

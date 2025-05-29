@@ -1,5 +1,5 @@
-use crate::decode::Encoding;
-use crate::decode::StringBuilder;
+use crate::decoder::Encoding;
+use crate::decoder::StringBuilder;
 use crate::lexer::Lexer;
 use crate::ErrorSink;
 use crate::Expected;
@@ -99,10 +99,10 @@ impl<'i> Raw<'i> {
         };
         match self.encoding {
             Some(Encoding::LiteralString) => {
-                crate::decode::string::decode_literal_string(*self, output, &mut error);
+                crate::decoder::string::decode_literal_string(*self, output, &mut error);
             }
             Some(Encoding::BasicString) => {
-                crate::decode::string::decode_basic_string(*self, output, &mut error);
+                crate::decoder::string::decode_basic_string(*self, output, &mut error);
             }
             Some(Encoding::MlLiteralString) => {
                 error.report_error(
@@ -113,7 +113,7 @@ impl<'i> Raw<'i> {
                         ])
                         .with_unexpected(Span::new_unchecked(0, self.len())),
                 );
-                crate::decode::string::decode_ml_literal_string(*self, output, &mut error);
+                crate::decoder::string::decode_ml_literal_string(*self, output, &mut error);
             }
             Some(Encoding::MlBasicString) => {
                 error.report_error(
@@ -124,9 +124,9 @@ impl<'i> Raw<'i> {
                         ])
                         .with_unexpected(Span::new_unchecked(0, self.len())),
                 );
-                crate::decode::string::decode_ml_basic_string(*self, output, &mut error);
+                crate::decoder::string::decode_ml_basic_string(*self, output, &mut error);
             }
-            None => crate::decode::string::decode_unquoted_key(*self, output, &mut error),
+            None => crate::decoder::string::decode_unquoted_key(*self, output, &mut error),
         }
     }
 
@@ -135,28 +135,28 @@ impl<'i> Raw<'i> {
         &self,
         output: &mut dyn StringBuilder<'i>,
         error: &mut dyn ErrorSink,
-    ) -> crate::decode::scalar::ScalarKind {
+    ) -> crate::decoder::scalar::ScalarKind {
         let mut error = |err: crate::ParseError| {
             error.report_error(err.rebase_spans(self.span.start));
         };
         match self.encoding {
             Some(Encoding::LiteralString) => {
-                crate::decode::string::decode_literal_string(*self, output, &mut error);
-                crate::decode::scalar::ScalarKind::String
+                crate::decoder::string::decode_literal_string(*self, output, &mut error);
+                crate::decoder::scalar::ScalarKind::String
             }
             Some(Encoding::BasicString) => {
-                crate::decode::string::decode_basic_string(*self, output, &mut error);
-                crate::decode::scalar::ScalarKind::String
+                crate::decoder::string::decode_basic_string(*self, output, &mut error);
+                crate::decoder::scalar::ScalarKind::String
             }
             Some(Encoding::MlLiteralString) => {
-                crate::decode::string::decode_ml_literal_string(*self, output, &mut error);
-                crate::decode::scalar::ScalarKind::String
+                crate::decoder::string::decode_ml_literal_string(*self, output, &mut error);
+                crate::decoder::scalar::ScalarKind::String
             }
             Some(Encoding::MlBasicString) => {
-                crate::decode::string::decode_ml_basic_string(*self, output, &mut error);
-                crate::decode::scalar::ScalarKind::String
+                crate::decoder::string::decode_ml_basic_string(*self, output, &mut error);
+                crate::decoder::scalar::ScalarKind::String
             }
-            None => crate::decode::scalar::decode_unquoted_scalar(*self, output, &mut error),
+            None => crate::decoder::scalar::decode_unquoted_scalar(*self, output, &mut error),
         }
     }
 
@@ -168,14 +168,14 @@ impl<'i> Raw<'i> {
         let mut error = |err: crate::ParseError| {
             error.report_error(err.rebase_spans(self.span.start));
         };
-        crate::decode::ws::decode_comment(*self, &mut error);
+        crate::decoder::ws::decode_comment(*self, &mut error);
     }
 
     pub fn decode_newline(&self, error: &mut dyn ErrorSink) {
         let mut error = |err: crate::ParseError| {
             error.report_error(err.rebase_spans(self.span.start));
         };
-        crate::decode::ws::decode_newline(*self, &mut error);
+        crate::decoder::ws::decode_newline(*self, &mut error);
     }
 
     pub fn as_str(&self) -> &'i str {
