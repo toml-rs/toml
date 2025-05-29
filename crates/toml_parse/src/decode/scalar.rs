@@ -73,10 +73,10 @@ impl IntegerRadix {
 
     fn invalid_description(&self) -> &'static str {
         match self {
-            Self::Dec => "integer number",
-            Self::Hex => "hexadecimal number",
-            Self::Oct => "octal number",
-            Self::Bin => "binary number",
+            Self::Dec => "invalid integer number",
+            Self::Hex => "invalid hexadecimal number",
+            Self::Oct => "invalid octal number",
+            Self::Bin => "invalid binary number",
         }
     }
 }
@@ -100,9 +100,40 @@ pub(crate) fn decode_unquoted_scalar<'i>(
             #[cfg(not(feature = "unsafe"))]
             let rest = &raw.as_str()[1..];
 
-            if rest == "nan" || rest == "inf"{
+            if rest.starts_with(['n', 'N']) {
+                const SYMBOL: &str = "nan";
                 let kind = ScalarKind::Float;
-                decode_as_is(raw, kind, output, error)
+                if rest != SYMBOL {
+                    let expected = &[Expected::Literal(SYMBOL)];
+                    let start = rest.offset_from(&raw.as_str());
+                    let end = start + rest.len();
+                    error.report_error(
+                        ParseError::new(kind.invalid_description())
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(expected)
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                    decode_as(raw, SYMBOL, kind, output, error)
+                } else {
+                    decode_as_is(raw, kind, output, error)
+                }
+            } else if rest.starts_with(['i', 'I']) {
+                const SYMBOL: &str = "inf";
+                let kind = ScalarKind::Float;
+                if rest != SYMBOL {
+                    let expected = &[Expected::Literal(SYMBOL)];
+                    let start = rest.offset_from(&raw.as_str());
+                    let end = start + rest.len();
+                    error.report_error(
+                        ParseError::new(kind.invalid_description())
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(expected)
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                    decode_as(raw, SYMBOL, kind, output, error)
+                } else {
+                    decode_as_is(raw, kind, output, error)
+                }
             } else if is_float(raw.as_str()) {
                 let kind = ScalarKind::Float;
                 decode_float_or_integer(raw.as_str(), raw, kind, output, error)
@@ -151,25 +182,25 @@ pub(crate) fn decode_unquoted_scalar<'i>(
         b'1'..=b'9' => decode_datetime_or_float_or_integer(raw, output, error),
         // Report as if they were numbers because its most likely a typo
         b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
-        b't' => {
+        b't' | b'T' => {
             let symbol = "true";
             let expected = &[Expected::Literal("true")];
             let kind = ScalarKind::Boolean(true);
             decode_symbol(raw, symbol, kind, expected, output, error)
         }
-        b'f' => {
+        b'f' | b'F' => {
             let symbol = "false";
             let expected = &[Expected::Literal("false")];
             let kind = ScalarKind::Boolean(false);
             decode_symbol(raw, symbol, kind, expected, output, error)
         }
-        b'i' => {
+        b'i' | b'I' => {
             let symbol = "inf";
             let expected = &[Expected::Literal("inf")];
             let kind = ScalarKind::Float;
             decode_symbol(raw, symbol, kind, expected, output, error)
         }
-        b'n' => {
+        b'n' | b'N' => {
             let symbol = "nan";
             let expected = &[Expected::Literal("nan")];
             let kind = ScalarKind::Float;
@@ -336,8 +367,19 @@ pub(crate) fn decode_as_is<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
+    let kind = decode_as(raw, raw.as_str(), kind, output, error);
+    kind
+}
+
+pub(crate) fn decode_as<'i>(
+    raw: Raw<'i>,
+    symbol: &'i str,
+    kind: ScalarKind,
+    output: &mut dyn StringBuilder<'i>,
+    error: &mut dyn ErrorSink,
+) -> ScalarKind {
     output.clear();
-    if !output.push_str(raw.as_str()) {
+    if !output.push_str(symbol) {
         error.report_error(
             ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
@@ -362,13 +404,7 @@ pub(crate) fn decode_symbol<'i>(
         );
     }
 
-    output.clear();
-    if !output.push_str(symbol) {
-        error.report_error(
-            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
-        );
-    }
-    kind
+    decode_as(raw, symbol, kind, output, error)
 }
 
 pub(crate) fn decode_invalid<'i>(
