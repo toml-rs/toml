@@ -336,8 +336,19 @@ pub(crate) fn decode_as_is<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
+    let kind = decode_as(raw, raw.as_str(), kind, output, error);
+    kind
+}
+
+pub(crate) fn decode_as<'i>(
+    raw: Raw<'i>,
+    symbol: &'i str,
+    kind: ScalarKind,
+    output: &mut dyn StringBuilder<'i>,
+    error: &mut dyn ErrorSink,
+) -> ScalarKind {
     output.clear();
-    if !output.push_str(raw.as_str()) {
+    if !output.push_str(symbol) {
         error.report_error(
             ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
@@ -362,13 +373,7 @@ pub(crate) fn decode_symbol<'i>(
         );
     }
 
-    output.clear();
-    if !output.push_str(symbol) {
-        error.report_error(
-            ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
-        );
-    }
-    kind
+    decode_as(raw, symbol, kind, output, error)
 }
 
 pub(crate) fn decode_invalid<'i>(
