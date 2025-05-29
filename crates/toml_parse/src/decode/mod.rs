@@ -1,3 +1,12 @@
+//! Decode [raw][crate::Raw] TOML values into Rust native types
+//!
+//! See
+//! - [`Raw::decode_key`][crate::Raw::decode_key]
+//! - [`Raw::decode_scalar`][crate::Raw::decode_scalar]
+//! - [`Raw::decode_whitespace`][crate::Raw::decode_whitespace]
+//! - [`Raw::decode_comment`][crate::Raw::decode_comment]
+//! - [`Raw::decode_newline`][crate::Raw::decode_newline]
+
 #[cfg(feature = "alloc")]
 use alloc::borrow::Cow;
 #[cfg(feature = "alloc")]

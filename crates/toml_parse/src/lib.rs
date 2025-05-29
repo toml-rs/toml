@@ -1,4 +1,17 @@
 //! TOML lexer and parser
+//!
+//! Characteristics:
+//! - Error recovery
+//! - Lazy validation
+//! - `forbid(unsafe)` by default, requiring the `unsafe` feature otherwise
+//! - `no_std` support, including putting users in charge of allocation choices (including not
+//!   allocating)
+//!
+//! Full parsing is broken into three phases:
+//! 1. [Lexing tokens][lexer]
+//! 2. [Parsing tokens][parser] (push parser)
+//! 3. Organizing the physical layout into the logical layout,
+//!    including [decoding keys and values][decode]
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]

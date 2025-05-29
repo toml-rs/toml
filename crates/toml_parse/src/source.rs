@@ -4,6 +4,7 @@ use crate::lexer::Lexer;
 use crate::ErrorSink;
 use crate::Expected;
 
+/// Data encoded as TOML
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Source<'i> {
     input: &'i str,
@@ -14,10 +15,12 @@ impl<'i> Source<'i> {
         Self { input }
     }
 
+    /// Start lexing the TOML encoded data
     pub fn lex(&self) -> Lexer<'i> {
         Lexer::new(self.input)
     }
 
+    /// Access the TOML encoded `&str`
     pub fn input(&self) -> &'i str {
         self.input
     }
@@ -73,6 +76,7 @@ impl<'i> Source<'i> {
     }
 }
 
+/// A slice of [`Source`]
 #[derive(Copy, Clone, Debug)]
 pub struct Raw<'i> {
     raw: &'i str,
@@ -191,7 +195,7 @@ impl<'i> Raw<'i> {
     }
 }
 
-/// Location within the original document
+/// Location within the [`Source`]
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
     start: usize,
