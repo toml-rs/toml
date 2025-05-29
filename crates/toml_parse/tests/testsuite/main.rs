@@ -4,7 +4,7 @@
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 
-use toml_parse::decode::ScalarKind;
+use toml_parse::decoder::ScalarKind;
 use toml_parse::parser::*;
 use toml_parse::ErrorSink as _;
 use toml_parse::ParseError;

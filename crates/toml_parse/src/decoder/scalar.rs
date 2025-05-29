@@ -3,7 +3,7 @@ use winnow::stream::FindSlice as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decode::StringBuilder;
+use crate::decoder::StringBuilder;
 use crate::ErrorSink;
 use crate::Expected;
 use crate::ParseError;
@@ -94,119 +94,136 @@ pub(crate) fn decode_unquoted_scalar<'i>(
         // number starts
         b'+' | b'-' |
         // Report as if they were numbers because its most likely a typo
-        b'_' =>  {
-            #[cfg(feature = "unsafe")] // SAFETY: ascii digit ensures UTF-8 boundary
-            let rest = unsafe { raw.as_str().get_unchecked(1..) };
-            #[cfg(not(feature = "unsafe"))]
-            let rest = &raw.as_str()[1..];
-
-            if rest.starts_with(['n', 'N']) {
-                const SYMBOL: &str = "nan";
-                let kind = ScalarKind::Float;
-                if rest != SYMBOL {
-                    let expected = &[Expected::Literal(SYMBOL)];
-                    let start = rest.offset_from(&raw.as_str());
-                    let end = start + rest.len();
-                    error.report_error(
-                        ParseError::new(kind.invalid_description())
-                            .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(expected)
-                            .with_unexpected(Span::new_unchecked(start, end)),
-                    );
-                    decode_as(raw, SYMBOL, kind, output, error)
-                } else {
-                    decode_as_is(raw, kind, output, error)
-                }
-            } else if rest.starts_with(['i', 'I']) {
-                const SYMBOL: &str = "inf";
-                let kind = ScalarKind::Float;
-                if rest != SYMBOL {
-                    let expected = &[Expected::Literal(SYMBOL)];
-                    let start = rest.offset_from(&raw.as_str());
-                    let end = start + rest.len();
-                    error.report_error(
-                        ParseError::new(kind.invalid_description())
-                            .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(expected)
-                            .with_unexpected(Span::new_unchecked(start, end)),
-                    );
-                    decode_as(raw, SYMBOL, kind, output, error)
-                } else {
-                    decode_as_is(raw, kind, output, error)
-                }
-            } else if is_float(raw.as_str()) {
-                let kind = ScalarKind::Float;
-                decode_float_or_integer(raw.as_str(), raw, kind, output, error)
-            } else {
-                let kind = ScalarKind::Integer(IntegerRadix::Dec);
-                decode_float_or_integer(raw.as_str(), raw, kind, output, error)
-            }
-        }
+        b'_' => decode_sign_prefix(raw, output, error),
         // Date/number starts
-        b'0' => {
-            if s.len() == 1 {
-                let kind = ScalarKind::Integer(IntegerRadix::Dec);
-                decode_float_or_integer(raw.as_str(), raw, kind, output, error)
-            } else {
-                match s.as_bytes()[1] {
-                    b'x' | b'X' =>  {
-                        let kind = ScalarKind::Integer(IntegerRadix::Hex);
-                        let stream = &raw.as_str()[2..];
-                        ensure_no_sign(stream, raw, error);
-                        decode_float_or_integer(stream, raw, kind, output, error)
-                    },
-                    b'o' | b'O' =>  {
-                        let kind = ScalarKind::Integer(IntegerRadix::Oct);
-                        let stream = &raw.as_str()[2..];
-                        ensure_no_sign(stream, raw, error);
-                        decode_float_or_integer(stream, raw, kind, output, error)
-                    },
-                    b'b' | b'B' =>  {
-                        let kind = ScalarKind::Integer(IntegerRadix::Bin);
-                        let stream = &raw.as_str()[2..];
-                        ensure_no_sign(stream, raw, error);
-                        decode_float_or_integer(stream, raw, kind, output, error)
-                    },
-                    b'd' | b'D' =>  {
-                        let kind = ScalarKind::Integer(IntegerRadix::Dec);
-                        let stream = &raw.as_str()[2..];
-                        error.report_error(ParseError::new("redundant integer number prefix").with_context(Span::new_unchecked(0, raw.len())).with_expected(&[]).with_unexpected(Span::new_unchecked(0, 2)));
-                        decode_float_or_integer(stream, raw, kind, output, error)
-                    },
-                    _ => {
-                        decode_datetime_or_float_or_integer(raw, output, error)
-                    }
-                }
-            }
-        },
+        b'0' => decode_zero_prefix(raw, output, error),
         b'1'..=b'9' => decode_datetime_or_float_or_integer(raw, output, error),
         // Report as if they were numbers because its most likely a typo
         b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
         b't' | b'T' => {
-            let symbol = "true";
-            let expected = &[Expected::Literal("true")];
+            const SYMBOL: &str = "true";
             let kind = ScalarKind::Boolean(true);
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         b'f' | b'F' => {
-            let symbol = "false";
-            let expected = &[Expected::Literal("false")];
+            const SYMBOL: &str = "false";
             let kind = ScalarKind::Boolean(false);
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         b'i' | b'I' => {
-            let symbol = "inf";
-            let expected = &[Expected::Literal("inf")];
+            const SYMBOL: &str = "inf";
             let kind = ScalarKind::Float;
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         b'n' | b'N' => {
-            let symbol = "nan";
-            let expected = &[Expected::Literal("nan")];
+            const SYMBOL: &str = "nan";
             let kind = ScalarKind::Float;
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         _ => decode_invalid(raw, output, error),
+    }
+}
+
+pub(crate) fn decode_zero_prefix<'i>(
+    raw: Raw<'i>,
+    output: &mut dyn StringBuilder<'i>,
+    error: &mut dyn ErrorSink,
+) -> ScalarKind {
+    let s = raw.as_str();
+    debug_assert_eq!(s.as_bytes()[0], b'0');
+    if s.len() == 1 {
+        let kind = ScalarKind::Integer(IntegerRadix::Dec);
+        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
+    } else {
+        match s.as_bytes()[1] {
+            b'x' | b'X' => {
+                let kind = ScalarKind::Integer(IntegerRadix::Hex);
+                let stream = &raw.as_str()[2..];
+                ensure_no_sign(stream, raw, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            b'o' | b'O' => {
+                let kind = ScalarKind::Integer(IntegerRadix::Oct);
+                let stream = &raw.as_str()[2..];
+                ensure_no_sign(stream, raw, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            b'b' | b'B' => {
+                let kind = ScalarKind::Integer(IntegerRadix::Bin);
+                let stream = &raw.as_str()[2..];
+                ensure_no_sign(stream, raw, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            b'd' | b'D' => {
+                let kind = ScalarKind::Integer(IntegerRadix::Dec);
+                let stream = &raw.as_str()[2..];
+                error.report_error(
+                    ParseError::new("redundant integer number prefix")
+                        .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_expected(&[])
+                        .with_unexpected(Span::new_unchecked(0, 2)),
+                );
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            _ => decode_datetime_or_float_or_integer(raw, output, error),
+        }
+    }
+}
+
+pub(crate) fn decode_sign_prefix<'i>(
+    raw: Raw<'i>,
+    output: &mut dyn StringBuilder<'i>,
+    error: &mut dyn ErrorSink,
+) -> ScalarKind {
+    #[cfg(feature = "unsafe")] // SAFETY: ascii digit ensures UTF-8 boundary
+    let rest = unsafe { raw.as_str().get_unchecked(1..) };
+    #[cfg(not(feature = "unsafe"))]
+    let rest = &raw.as_str()[1..];
+
+    if rest.starts_with(['n', 'N']) {
+        const SYMBOL: &str = "nan";
+        let kind = ScalarKind::Float;
+        if rest != SYMBOL {
+            let expected = &[Expected::Literal(SYMBOL)];
+            let start = rest.offset_from(&raw.as_str());
+            let end = start + rest.len();
+            error.report_error(
+                ParseError::new(kind.invalid_description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(expected)
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+            decode_as(raw, SYMBOL, kind, output, error)
+        } else {
+            decode_as_is(raw, kind, output, error)
+        }
+    } else if rest.starts_with(['i', 'I']) {
+        const SYMBOL: &str = "inf";
+        let kind = ScalarKind::Float;
+        if rest != SYMBOL {
+            let expected = &[Expected::Literal(SYMBOL)];
+            let start = rest.offset_from(&raw.as_str());
+            let end = start + rest.len();
+            error.report_error(
+                ParseError::new(kind.invalid_description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(expected)
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+            decode_as(raw, SYMBOL, kind, output, error)
+        } else {
+            decode_as_is(raw, kind, output, error)
+        }
+    } else if is_float(raw.as_str()) {
+        let kind = ScalarKind::Float;
+        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
+    } else {
+        let kind = ScalarKind::Integer(IntegerRadix::Dec);
+        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
     }
 }
 

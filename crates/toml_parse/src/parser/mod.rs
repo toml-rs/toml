@@ -1,3 +1,7 @@
+//! A TOML push [parser][parse_document]
+//!
+//! This takes TOML [tokens][crate::lexer::Token] and [emits][EventReceiver] [events][Event].
+
 mod document;
 mod event;
 

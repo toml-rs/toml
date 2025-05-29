@@ -1,4 +1,6 @@
 //! Lex TOML tokens
+//!
+//! To get started, see [`Source::lex`][crate::Source::lex]
 
 #[cfg(test)]
 #[cfg(feature = "std")]
@@ -19,6 +21,9 @@ use crate::Span;
 pub use token::Token;
 pub use token::TokenKind;
 
+/// Lex TOML [tokens][Token]
+///
+/// To get started, see [`Source::lex`][crate::Source::lex]
 pub struct Lexer<'i> {
     stream: Stream<'i>,
     eof: bool,

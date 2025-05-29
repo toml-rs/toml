@@ -7,7 +7,7 @@ use super::EventReceiver;
 use crate::debug::DebugErrorSink;
 #[cfg(feature = "debug")]
 use crate::debug::DebugEventReceiver;
-use crate::decode::Encoding;
+use crate::decoder::Encoding;
 use crate::lexer::Token;
 use crate::lexer::TokenKind;
 use crate::ErrorSink;
@@ -960,6 +960,7 @@ fn on_inline_table_open(
         }
     }
 
+    let mut empty = true;
     let mut state = State::NeedsKey;
     while let Some(current_token) = tokens.next_token() {
         match current_token.kind() {
@@ -1021,11 +1022,13 @@ fn on_inline_table_open(
 
                     receiver.key_val_sep(current_token.span(), error);
 
+                    empty = false;
                     state = State::NeedsValue;
                 }
                 State::NeedsEquals => {
                     receiver.key_val_sep(current_token.span(), error);
 
+                    empty = false;
                     state = State::NeedsValue;
                 }
                 State::NeedsValue | State::NeedsComma => {
@@ -1059,15 +1062,30 @@ fn on_inline_table_open(
 
                     on_inline_table_open(tokens, current_token, receiver, error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_inline_table_open(tokens, current_token, receiver, error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
             },
             TokenKind::RightCurlyBracket => {
+                if !empty && !matches!(state, State::NeedsComma) {
+                    let unexpected = tokens
+                        .previous_tokens()
+                        .find(|t| t.kind() == TokenKind::Comma)
+                        .map(|t| t.span())
+                        .unwrap_or_else(|| current_token.span().before());
+                    error.report_error(
+                        ParseError::new("trailing commas are not supported in inline tables")
+                            .with_context(inline_table_open.span())
+                            .with_expected(&[])
+                            .with_unexpected(unexpected),
+                    );
+                }
                 receiver.inline_table_close(current_token.span(), error);
 
                 return;
@@ -1093,11 +1111,13 @@ fn on_inline_table_open(
 
                     on_array_open(tokens, current_token, receiver, error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_array_open(tokens, current_token, receiver, error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
             },
@@ -1122,6 +1142,7 @@ fn on_inline_table_open(
                     let _ = receiver.array_open(current_token.span().before(), error);
                     receiver.array_close(current_token.span(), error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
             },
@@ -1140,6 +1161,7 @@ fn on_inline_table_open(
                         );
                         seek(tokens, -1);
                         opt_dot_keys(tokens, receiver, error);
+                        empty = false;
                         state = State::NeedsEquals;
                     } else {
                         receiver.simple_key(
@@ -1148,6 +1170,7 @@ fn on_inline_table_open(
                             error,
                         );
                         opt_dot_keys(tokens, receiver, error);
+                        empty = false;
                         state = State::NeedsEquals;
                     }
                 }
@@ -1161,11 +1184,13 @@ fn on_inline_table_open(
 
                     on_scalar(tokens, current_token, receiver, error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_scalar(tokens, current_token, receiver, error);
 
+                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsComma => {
@@ -1184,6 +1209,7 @@ fn on_inline_table_open(
                         );
                         seek(tokens, -1);
                         opt_dot_keys(tokens, receiver, error);
+                        empty = false;
                         state = State::NeedsEquals;
                     } else {
                         receiver.simple_key(
@@ -1192,6 +1218,7 @@ fn on_inline_table_open(
                             error,
                         );
                         opt_dot_keys(tokens, receiver, error);
+                        empty = false;
                         state = State::NeedsEquals;
                     }
                 }
