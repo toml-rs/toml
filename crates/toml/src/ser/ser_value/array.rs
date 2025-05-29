@@ -1,101 +1,131 @@
-use super::write_value;
-use super::{Error, ValueSerializer};
+use toml_write::TomlWrite as _;
 
-type InnerSerializeValueSeq = <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
+use super::Error;
 
 #[doc(hidden)]
 pub struct SerializeValueArray<'d> {
-    inner: InnerSerializeValueSeq,
     dst: &'d mut String,
+    seen_value: bool,
 }
 
 impl<'d> SerializeValueArray<'d> {
-    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueSeq) -> Self {
-        Self {
-            inner,
-            dst: ser.dst,
-        }
+    pub(crate) fn seq(dst: &'d mut String) -> Result<Self, Error> {
+        dst.open_array()?;
+        Ok(Self {
+            dst,
+            seen_value: false,
+        })
     }
 }
 
-impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_element(value).map_err(Error::wrap)
+        if self.seen_value {
+            self.dst.val_sep()?;
+            self.dst.space()?;
+        }
+        self.seen_value = true;
+        value.serialize(super::ValueSerializer::new(self.dst))?;
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_value(self.dst, self.inner.end())
+        self.dst.close_array()?;
+        Ok(self.dst)
     }
 }
 
-impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTuple for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_element(value).map_err(Error::wrap)
+        serde::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_value(self.dst, self.inner.end())
+        serde::ser::SerializeSeq::end(self)
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeValueArray<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTupleVariant for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(value).map_err(Error::wrap)
+        serde::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_value(self.dst, self.inner.end())
+        serde::ser::SerializeSeq::end(self)
     }
 }
 
-type InnerSerializeValueTupleVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeTupleVariant;
-
-#[doc(hidden)]
-pub struct SerializeValueTupleVariant<'d> {
-    inner: InnerSerializeValueTupleVariant,
-    dst: &'d mut String,
-}
-
-impl<'d> SerializeValueTupleVariant<'d> {
-    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueTupleVariant) -> Self {
-        Self {
-            inner,
-            dst: ser.dst,
-        }
-    }
-}
-
-impl serde::ser::SerializeTupleVariant for SerializeValueTupleVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTupleStruct for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(value).map_err(Error::wrap)
+        serde::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_value(self.dst, self.inner.end())
+        serde::ser::SerializeSeq::end(self)
+    }
+}
+
+pub struct SerializeTupleVariant<'d> {
+    inner: SerializeValueArray<'d>,
+}
+
+impl<'d> SerializeTupleVariant<'d> {
+    pub(crate) fn tuple(
+        dst: &'d mut String,
+        variant: &'static str,
+        _len: usize,
+    ) -> Result<Self, Error> {
+        dst.open_inline_table()?;
+        dst.space()?;
+        dst.key(variant)?;
+        dst.space()?;
+        dst.keyval_sep()?;
+        dst.space()?;
+        Ok(Self {
+            inner: SerializeValueArray::seq(dst)?,
+        })
+    }
+}
+
+impl<'d> serde::ser::SerializeTupleVariant for SerializeTupleVariant<'d> {
+    type Ok = &'d mut String;
+    type Error = Error;
+
+    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        serde::ser::SerializeSeq::serialize_element(&mut self.inner, value)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        let dst = serde::ser::SerializeSeq::end(self.inner)?;
+        dst.space()?;
+        dst.close_inline_table()?;
+        Ok(dst)
     }
 }
