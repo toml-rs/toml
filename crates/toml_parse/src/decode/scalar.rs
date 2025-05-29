@@ -151,25 +151,25 @@ pub(crate) fn decode_unquoted_scalar<'i>(
         b'1'..=b'9' => decode_datetime_or_float_or_integer(raw, output, error),
         // Report as if they were numbers because its most likely a typo
         b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
-        b't' => {
+        b't' | b'T' => {
             let symbol = "true";
             let expected = &[Expected::Literal("true")];
             let kind = ScalarKind::Boolean(true);
             decode_symbol(raw, symbol, kind, expected, output, error)
         }
-        b'f' => {
+        b'f' | b'F' => {
             let symbol = "false";
             let expected = &[Expected::Literal("false")];
             let kind = ScalarKind::Boolean(false);
             decode_symbol(raw, symbol, kind, expected, output, error)
         }
-        b'i' => {
+        b'i' | b'I' => {
             let symbol = "inf";
             let expected = &[Expected::Literal("inf")];
             let kind = ScalarKind::Float;
             decode_symbol(raw, symbol, kind, expected, output, error)
         }
-        b'n' => {
+        b'n' | b'N' => {
             let symbol = "nan";
             let expected = &[Expected::Literal("nan")];
             let kind = ScalarKind::Float;
