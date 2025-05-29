@@ -73,10 +73,10 @@ impl IntegerRadix {
 
     fn invalid_description(&self) -> &'static str {
         match self {
-            Self::Dec => "integer number",
-            Self::Hex => "hexadecimal number",
-            Self::Oct => "octal number",
-            Self::Bin => "binary number",
+            Self::Dec => "invalid integer number",
+            Self::Hex => "invalid hexadecimal number",
+            Self::Oct => "invalid octal number",
+            Self::Bin => "invalid binary number",
         }
     }
 }
