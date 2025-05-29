@@ -100,9 +100,40 @@ pub(crate) fn decode_unquoted_scalar<'i>(
             #[cfg(not(feature = "unsafe"))]
             let rest = &raw.as_str()[1..];
 
-            if rest == "nan" || rest == "inf"{
+            if rest.starts_with(['n', 'N']) {
+                const SYMBOL: &str = "nan";
                 let kind = ScalarKind::Float;
-                decode_as_is(raw, kind, output, error)
+                if rest != SYMBOL {
+                    let expected = &[Expected::Literal(SYMBOL)];
+                    let start = rest.offset_from(&raw.as_str());
+                    let end = start + rest.len();
+                    error.report_error(
+                        ParseError::new(kind.invalid_description())
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(expected)
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                    decode_as(raw, SYMBOL, kind, output, error)
+                } else {
+                    decode_as_is(raw, kind, output, error)
+                }
+            } else if rest.starts_with(['i', 'I']) {
+                const SYMBOL: &str = "inf";
+                let kind = ScalarKind::Float;
+                if rest != SYMBOL {
+                    let expected = &[Expected::Literal(SYMBOL)];
+                    let start = rest.offset_from(&raw.as_str());
+                    let end = start + rest.len();
+                    error.report_error(
+                        ParseError::new(kind.invalid_description())
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(expected)
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                    decode_as(raw, SYMBOL, kind, output, error)
+                } else {
+                    decode_as_is(raw, kind, output, error)
+                }
             } else if is_float(raw.as_str()) {
                 let kind = ScalarKind::Float;
                 decode_float_or_integer(raw.as_str(), raw, kind, output, error)
