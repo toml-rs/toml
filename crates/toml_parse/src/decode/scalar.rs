@@ -183,28 +183,28 @@ pub(crate) fn decode_unquoted_scalar<'i>(
         // Report as if they were numbers because its most likely a typo
         b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
         b't' | b'T' => {
-            let symbol = "true";
-            let expected = &[Expected::Literal("true")];
+            const SYMBOL: &str = "true";
             let kind = ScalarKind::Boolean(true);
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         b'f' | b'F' => {
-            let symbol = "false";
-            let expected = &[Expected::Literal("false")];
+            const SYMBOL: &str = "false";
             let kind = ScalarKind::Boolean(false);
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         b'i' | b'I' => {
-            let symbol = "inf";
-            let expected = &[Expected::Literal("inf")];
+            const SYMBOL: &str = "inf";
             let kind = ScalarKind::Float;
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         b'n' | b'N' => {
-            let symbol = "nan";
-            let expected = &[Expected::Literal("nan")];
+            const SYMBOL: &str = "nan";
             let kind = ScalarKind::Float;
-            decode_symbol(raw, symbol, kind, expected, output, error)
+            let expected = &[Expected::Literal(SYMBOL)];
+            decode_symbol(raw, SYMBOL, kind, expected, output, error)
         }
         _ => decode_invalid(raw, output, error),
     }
