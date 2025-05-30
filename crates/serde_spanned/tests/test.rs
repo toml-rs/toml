@@ -1,4 +1,4 @@
-use std::cmp::{Ord, Ordering, PartialOrd};
+use core::cmp::{Ord, Ordering, PartialOrd};
 
 use serde_spanned::Spanned;
 
