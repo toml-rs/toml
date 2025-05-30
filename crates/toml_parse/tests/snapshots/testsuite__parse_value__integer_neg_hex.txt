@@ -12,10 +12,12 @@ EventResults {
             context: Some(
                 0..4,
             ),
-            description: "failed to parse i64",
-            expected: None,
+            description: "integers with a radix cannot be signed",
+            expected: Some(
+                [],
+            ),
             unexpected: Some(
-                0..2,
+                0..1,
             ),
         },
     ],
