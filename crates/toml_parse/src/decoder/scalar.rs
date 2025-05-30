@@ -148,8 +148,8 @@ pub(crate) fn decode_sign_prefix<'i>(
 ) -> ScalarKind {
     let rest = value;
 
-    if rest.starts_with(['n', 'N']) {
-        const SYMBOL: &str = "nan";
+    if rest.starts_with(['i', 'I']) {
+        const SYMBOL: &str = "inf";
         let kind = ScalarKind::Float;
         if rest != SYMBOL {
             let expected = &[Expected::Literal(SYMBOL)];
@@ -165,8 +165,8 @@ pub(crate) fn decode_sign_prefix<'i>(
         } else {
             decode_as_is(raw, kind, output, error)
         }
-    } else if rest.starts_with(['i', 'I']) {
-        const SYMBOL: &str = "inf";
+    } else if rest.starts_with(['n', 'N']) {
+        const SYMBOL: &str = "nan";
         let kind = ScalarKind::Float;
         if rest != SYMBOL {
             let expected = &[Expected::Literal(SYMBOL)];
