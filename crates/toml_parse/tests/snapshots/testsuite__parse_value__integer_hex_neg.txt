@@ -1,0 +1,24 @@
+EventResults {
+    input: "0x-F",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..4,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..4,
+            ),
+            description: "unexpected sign",
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                2..3,
+            ),
+        },
+    ],
+}

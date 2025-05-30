@@ -377,6 +377,16 @@ fn integer_hex() {
 }
 
 #[test]
+fn integer_hex_neg() {
+    t("0x-F", file![_].raw());
+}
+
+#[test]
+fn integer_neg_hex() {
+    t("-0xF", file![_].raw());
+}
+
+#[test]
 fn integer_oct_sep() {
     t("0o0_755", file![_].raw());
 }

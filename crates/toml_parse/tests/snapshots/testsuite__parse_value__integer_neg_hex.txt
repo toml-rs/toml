@@ -1,0 +1,22 @@
+EventResults {
+    input: "-0xF",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..4,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..4,
+            ),
+            description: "failed to parse i64",
+            expected: None,
+            unexpected: Some(
+                0..2,
+            ),
+        },
+    ],
+}
