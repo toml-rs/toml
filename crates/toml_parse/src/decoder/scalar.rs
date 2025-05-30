@@ -137,57 +137,6 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     }
 }
 
-pub(crate) fn decode_zero_prefix<'i>(
-    raw: Raw<'i>,
-    output: &mut dyn StringBuilder<'i>,
-    error: &mut dyn ErrorSink,
-) -> ScalarKind {
-    let s = raw.as_str();
-    debug_assert_eq!(s.as_bytes()[0], b'0');
-    if s.len() == 1 {
-        let kind = ScalarKind::Integer(IntegerRadix::Dec);
-        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
-    } else {
-        match s.as_bytes()[1] {
-            b'x' | b'X' => {
-                let radix = IntegerRadix::Hex;
-                let kind = ScalarKind::Integer(radix);
-                let stream = &raw.as_str()[2..];
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
-            }
-            b'o' | b'O' => {
-                let radix = IntegerRadix::Oct;
-                let kind = ScalarKind::Integer(radix);
-                let stream = &raw.as_str()[2..];
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
-            }
-            b'b' | b'B' => {
-                let radix = IntegerRadix::Bin;
-                let kind = ScalarKind::Integer(radix);
-                let stream = &raw.as_str()[2..];
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
-            }
-            b'd' | b'D' => {
-                let radix = IntegerRadix::Dec;
-                let kind = ScalarKind::Integer(radix);
-                let stream = &raw.as_str()[2..];
-                error.report_error(
-                    ParseError::new("redundant integer number prefix")
-                        .with_context(Span::new_unchecked(0, raw.len()))
-                        .with_expected(&[])
-                        .with_unexpected(Span::new_unchecked(0, 2)),
-                );
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
-            }
-            _ => decode_datetime_or_float_or_integer(raw, output, error),
-        }
-    }
-}
-
 pub(crate) fn decode_sign_prefix<'i>(
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
@@ -238,6 +187,57 @@ pub(crate) fn decode_sign_prefix<'i>(
     } else {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         decode_float_or_integer(raw.as_str(), raw, kind, output, error)
+    }
+}
+
+pub(crate) fn decode_zero_prefix<'i>(
+    raw: Raw<'i>,
+    output: &mut dyn StringBuilder<'i>,
+    error: &mut dyn ErrorSink,
+) -> ScalarKind {
+    let s = raw.as_str();
+    debug_assert_eq!(s.as_bytes()[0], b'0');
+    if s.len() == 1 {
+        let kind = ScalarKind::Integer(IntegerRadix::Dec);
+        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
+    } else {
+        match s.as_bytes()[1] {
+            b'x' | b'X' => {
+                let radix = IntegerRadix::Hex;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &raw.as_str()[2..];
+                ensure_radixed_value(stream, raw, radix, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            b'o' | b'O' => {
+                let radix = IntegerRadix::Oct;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &raw.as_str()[2..];
+                ensure_radixed_value(stream, raw, radix, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            b'b' | b'B' => {
+                let radix = IntegerRadix::Bin;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &raw.as_str()[2..];
+                ensure_radixed_value(stream, raw, radix, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            b'd' | b'D' => {
+                let radix = IntegerRadix::Dec;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &raw.as_str()[2..];
+                error.report_error(
+                    ParseError::new("redundant integer number prefix")
+                        .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_expected(&[])
+                        .with_unexpected(Span::new_unchecked(0, 2)),
+                );
+                ensure_radixed_value(stream, raw, radix, error);
+                decode_float_or_integer(stream, raw, kind, output, error)
+            }
+            _ => decode_datetime_or_float_or_integer(raw, output, error),
+        }
     }
 }
 
