@@ -106,10 +106,10 @@ pub(crate) fn decode_unquoted_scalar<'i>(
             decode_sign_prefix(raw, value, output, error)
         }
         // Report as if they were numbers because its most likely a typo
-        b'_' => decode_datetime_or_float_or_integer(raw, output, error),
+        b'_' => decode_datetime_or_float_or_integer(raw.as_str(), raw, output, error),
         // Date/number starts
         b'0' => decode_zero_prefix(raw, output, error),
-        b'1'..=b'9' => decode_datetime_or_float_or_integer(raw, output, error),
+        b'1'..=b'9' => decode_datetime_or_float_or_integer(raw.as_str(), raw, output, error),
         // Report as if they were numbers because its most likely a typo
         b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
         b't' | b'T' => {
@@ -237,17 +237,18 @@ pub(crate) fn decode_zero_prefix<'i>(
                 ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
-            _ => decode_datetime_or_float_or_integer(raw, output, error),
+            _ => decode_datetime_or_float_or_integer(s, raw, output, error),
         }
     }
 }
 
 pub(crate) fn decode_datetime_or_float_or_integer<'i>(
+    value: &'i str,
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
-    let Some(digit_end) = raw
+    let Some(digit_end) = value
         .as_bytes()
         .offset_for(|b| !(b'0'..=b'9').contains_token(b))
     else {
@@ -257,9 +258,9 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
     };
 
     #[cfg(feature = "unsafe")] // SAFETY: ascii digits ensures UTF-8 boundary
-    let rest = unsafe { &raw.as_str().get_unchecked(digit_end..) };
+    let rest = unsafe { &value.get_unchecked(digit_end..) };
     #[cfg(not(feature = "unsafe"))]
-    let rest = &raw.as_str()[digit_end..];
+    let rest = &value[digit_end..];
 
     if rest.starts_with("-") || rest.starts_with(":") {
         decode_as_is(raw, ScalarKind::DateTime, output, error)
