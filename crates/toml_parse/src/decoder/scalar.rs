@@ -223,7 +223,8 @@ pub(crate) fn decode_zero_prefix<'i>(
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         decode_float_or_integer(raw.as_str(), raw, kind, output, error)
     } else {
-        match value.as_bytes()[1] {
+        let radix = value.as_bytes()[1];
+        match radix {
             b'x' | b'X' => {
                 if signed {
                     error.report_error(
@@ -231,6 +232,16 @@ pub(crate) fn decode_zero_prefix<'i>(
                             .with_context(Span::new_unchecked(0, raw.len()))
                             .with_expected(&[])
                             .with_unexpected(Span::new_unchecked(0, 1)),
+                    );
+                }
+                if radix == b'X' {
+                    let start = value.offset_from(&raw.as_str());
+                    let end = start + 2;
+                    error.report_error(
+                        ParseError::new("radix must be lowercase")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[Expected::Literal("0x")])
+                            .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
                 let radix = IntegerRadix::Hex;
@@ -248,6 +259,16 @@ pub(crate) fn decode_zero_prefix<'i>(
                             .with_unexpected(Span::new_unchecked(0, 1)),
                     );
                 }
+                if radix == b'O' {
+                    let start = value.offset_from(&raw.as_str());
+                    let end = start + 2;
+                    error.report_error(
+                        ParseError::new("radix must be lowercase")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[Expected::Literal("0o")])
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                }
                 let radix = IntegerRadix::Oct;
                 let kind = ScalarKind::Integer(radix);
                 let stream = &value[2..];
@@ -261,6 +282,16 @@ pub(crate) fn decode_zero_prefix<'i>(
                             .with_context(Span::new_unchecked(0, raw.len()))
                             .with_expected(&[])
                             .with_unexpected(Span::new_unchecked(0, 1)),
+                    );
+                }
+                if radix == b'B' {
+                    let start = value.offset_from(&raw.as_str());
+                    let end = start + 2;
+                    error.report_error(
+                        ParseError::new("radix must be lowercase")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[Expected::Literal("0b")])
+                            .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
                 let radix = IntegerRadix::Bin;
