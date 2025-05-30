@@ -101,9 +101,9 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     };
     match first {
         // number starts
-        b'+' | b'-' |
+        b'+' | b'-' => decode_sign_prefix(raw, output, error),
         // Report as if they were numbers because its most likely a typo
-        b'_' => decode_sign_prefix(raw, output, error),
+        b'_' => decode_datetime_or_float_or_integer(raw, output, error),
         // Date/number starts
         b'0' => decode_zero_prefix(raw, output, error),
         b'1'..=b'9' => decode_datetime_or_float_or_integer(raw, output, error),
