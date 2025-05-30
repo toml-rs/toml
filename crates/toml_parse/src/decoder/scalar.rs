@@ -101,7 +101,10 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     };
     match first {
         // number starts
-        b'+' | b'-' => decode_sign_prefix(raw, output, error),
+        b'+' | b'-' => {
+            let value = &raw.as_str()[1..];
+            decode_sign_prefix(raw, value, output, error)
+        }
         // Report as if they were numbers because its most likely a typo
         b'_' => decode_datetime_or_float_or_integer(raw, output, error),
         // Date/number starts
@@ -139,13 +142,11 @@ pub(crate) fn decode_unquoted_scalar<'i>(
 
 pub(crate) fn decode_sign_prefix<'i>(
     raw: Raw<'i>,
+    value: &'i str,
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
-    #[cfg(feature = "unsafe")] // SAFETY: ascii digit ensures UTF-8 boundary
-    let rest = unsafe { raw.as_str().get_unchecked(1..) };
-    #[cfg(not(feature = "unsafe"))]
-    let rest = &raw.as_str()[1..];
+    let rest = value;
 
     if rest.starts_with(['n', 'N']) {
         const SYMBOL: &str = "nan";
