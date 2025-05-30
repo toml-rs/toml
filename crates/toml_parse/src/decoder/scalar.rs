@@ -79,6 +79,15 @@ impl IntegerRadix {
             Self::Bin => "invalid binary number",
         }
     }
+
+    fn validator(&self) -> fn(char) -> bool {
+        match self {
+            Self::Dec => |c| c.is_ascii_digit(),
+            Self::Hex => |c| c.is_ascii_hexdigit(),
+            Self::Oct => |c| matches!(c, '0'..='7'),
+            Self::Bin => |c| matches!(c, '0'..='1'),
+        }
+    }
 }
 
 pub(crate) fn decode_unquoted_scalar<'i>(
@@ -141,25 +150,29 @@ pub(crate) fn decode_zero_prefix<'i>(
     } else {
         match s.as_bytes()[1] {
             b'x' | b'X' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Hex);
+                let radix = IntegerRadix::Hex;
+                let kind = ScalarKind::Integer(radix);
                 let stream = &raw.as_str()[2..];
-                ensure_no_sign(stream, raw, error);
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'o' | b'O' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Oct);
+                let radix = IntegerRadix::Oct;
+                let kind = ScalarKind::Integer(radix);
                 let stream = &raw.as_str()[2..];
-                ensure_no_sign(stream, raw, error);
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'b' | b'B' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Bin);
+                let radix = IntegerRadix::Bin;
+                let kind = ScalarKind::Integer(radix);
                 let stream = &raw.as_str()[2..];
-                ensure_no_sign(stream, raw, error);
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'd' | b'D' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Dec);
+                let radix = IntegerRadix::Dec;
+                let kind = ScalarKind::Integer(radix);
                 let stream = &raw.as_str()[2..];
                 error.report_error(
                     ParseError::new("redundant integer number prefix")
@@ -167,6 +180,7 @@ pub(crate) fn decode_zero_prefix<'i>(
                         .with_expected(&[])
                         .with_unexpected(Span::new_unchecked(0, 2)),
                 );
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             _ => decode_datetime_or_float_or_integer(raw, output, error),
@@ -261,9 +275,14 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
     }
 }
 
-pub(crate) fn ensure_no_sign(value: &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
+pub(crate) fn ensure_radixed_value(
+    value: &str,
+    raw: Raw<'_>,
+    radix: IntegerRadix,
+    error: &mut dyn ErrorSink,
+) {
     let invalid = ['+', '-'];
-    if value.starts_with(invalid) {
+    let value = if let Some(value) = value.strip_prefix(invalid) {
         let pos = raw.as_str().find(invalid).unwrap();
         error.report_error(
             ParseError::new("unexpected sign")
@@ -271,6 +290,21 @@ pub(crate) fn ensure_no_sign(value: &str, raw: Raw<'_>, error: &mut dyn ErrorSin
                 .with_expected(&[])
                 .with_unexpected(Span::new_unchecked(pos, pos + 1)),
         );
+        value
+    } else {
+        value
+    };
+
+    let valid = radix.validator();
+    for (index, c) in value.char_indices() {
+        if !valid(c) && c != '_' {
+            let pos = value.offset_from(&raw.as_str()) + index;
+            error.report_error(
+                ParseError::new(radix.invalid_description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_unexpected(Span::new_unchecked(pos, pos)),
+            );
+        }
     }
 }
 
