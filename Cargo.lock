@@ -28,14 +28,14 @@ dependencies = [
 
 [[package]]
 name = "anstream"
-version = "0.6.15"
+version = "0.6.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64e15c1ab1f89faffbf04a634d5e1962e9074f2741eef6d97f3c4e322426d526"
+checksum = "8acc5369981196006228e28809f761875c0327210a891e941f4c683b3a99529b"
 dependencies = [
  "anstyle",
  "anstyle-parse",
  "anstyle-query",
- "anstyle-wincon 3.0.3",
+ "anstyle-wincon 3.0.8",
  "colorchoice",
  "is_terminal_polyfill",
  "utf8parse",
@@ -77,12 +77,13 @@ dependencies = [
 
 [[package]]
 name = "anstyle-wincon"
-version = "3.0.3"
+version = "3.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61a38449feb7068f52bb06c12759005cf459ee52bb4adc1d5a7c4322d716fb19"
+checksum = "6680de5231bd6ee4c6191b8a1325daa282b415391ec9d3a37bd34f2060dc73fa"
 dependencies = [
  "anstyle",
- "windows-sys 0.52.0",
+ "once_cell_polyfill",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -526,6 +527,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
+name = "once_cell_polyfill"
+version = "1.56.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ecf5dec444661aad892044dfcc6ea9b2d1be3db6c78916b91bbf9d903fc3006"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -778,7 +788,7 @@ version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96dcfc4581e3355d70ac2ee14cfdf81dce3d85c85f1ed9e2c1d3013f53b3436b"
 dependencies = [
- "anstream 0.6.15",
+ "anstream 0.6.18",
  "anstyle",
  "normalize-line-endings",
  "similar",
@@ -791,7 +801,7 @@ version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16569f53ca23a41bb6f62e0a5084aa1661f4814a67fa33696a79073e03a664af"
 dependencies = [
- "anstream 0.6.15",
+ "anstream 0.6.18",
 ]
 
 [[package]]
@@ -990,7 +1000,7 @@ dependencies = [
 name = "toml_parse"
 version = "0.1.0"
 dependencies = [
- "anstream 0.6.15",
+ "anstream 0.6.18",
  "anstyle",
  "snapbox",
  "toml_datetime",
