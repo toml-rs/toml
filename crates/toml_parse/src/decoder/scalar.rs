@@ -336,6 +336,16 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
         .as_bytes()
         .offset_for(|b| !(b'0'..=b'9').contains_token(b))
     else {
+        if value.starts_with("0") {
+            let start = value.offset_from(&raw.as_str());
+            let end = start + 1;
+            error.report_error(
+                ParseError::new("unexpected leading zero")
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+        }
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         let stream = raw.as_str();
         return decode_float_or_integer(stream, raw, kind, output, error);
