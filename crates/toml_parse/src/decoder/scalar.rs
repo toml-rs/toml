@@ -221,6 +221,7 @@ pub(crate) fn decode_zero_prefix<'i>(
     debug_assert_eq!(value.as_bytes()[0], b'0');
     if value.len() == 1 {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
+        // No extra validation needed
         decode_float_or_integer(raw.as_str(), raw, kind, output, error)
     } else {
         let radix = value.as_bytes()[1];
