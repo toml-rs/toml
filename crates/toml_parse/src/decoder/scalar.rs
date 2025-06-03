@@ -79,6 +79,15 @@ impl IntegerRadix {
             Self::Bin => "invalid binary number",
         }
     }
+
+    fn validator(&self) -> fn(char) -> bool {
+        match self {
+            Self::Dec => |c| c.is_ascii_digit(),
+            Self::Hex => |c| c.is_ascii_hexdigit(),
+            Self::Oct => |c| matches!(c, '0'..='7'),
+            Self::Bin => |c| matches!(c, '0'..='1'),
+        }
+    }
 }
 
 pub(crate) fn decode_unquoted_scalar<'i>(
@@ -92,14 +101,22 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     };
     match first {
         // number starts
-        b'+' | b'-' |
+        b'+' | b'-' => {
+            let value = &raw.as_str()[1..];
+            decode_sign_prefix(raw, value, output, error)
+        }
         // Report as if they were numbers because its most likely a typo
-        b'_' => decode_sign_prefix(raw, output, error),
+        b'_' => decode_datetime_or_float_or_integer(raw.as_str(), raw, output, error),
         // Date/number starts
-        b'0' => decode_zero_prefix(raw, output, error),
-        b'1'..=b'9' => decode_datetime_or_float_or_integer(raw, output, error),
+        b'0' => decode_zero_prefix(raw.as_str(), false, raw, output, error),
+        b'1'..=b'9' => decode_datetime_or_float_or_integer(raw.as_str(), raw, output, error),
         // Report as if they were numbers because its most likely a typo
-        b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
+        b'.' => {
+            let kind = ScalarKind::Float;
+            let stream = raw.as_str();
+            ensure_float(stream, raw, error);
+            decode_float_or_integer(stream, raw, kind, output, error)
+        }
         b't' | b'T' => {
             const SYMBOL: &str = "true";
             let kind = ScalarKind::Boolean(true);
@@ -128,142 +145,341 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     }
 }
 
+pub(crate) fn decode_sign_prefix<'i>(
+    raw: Raw<'i>,
+    value: &'i str,
+    output: &mut dyn StringBuilder<'i>,
+    error: &mut dyn ErrorSink,
+) -> ScalarKind {
+    let Some(first) = value.as_bytes().first() else {
+        return decode_invalid(raw, output, error);
+    };
+    match first {
+        // number starts
+        b'+' | b'-' => {
+            let start = value.offset_from(&raw.as_str());
+            let end = start + 1;
+            error.report_error(
+                ParseError::new("redundant numeric sign")
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+
+            let value = &value[1..];
+            decode_sign_prefix(raw, value, output, error)
+        }
+        // Report as if they were numbers because its most likely a typo
+        b'_' => decode_datetime_or_float_or_integer(value, raw, output, error),
+        // Date/number starts
+        b'0' => decode_zero_prefix(value, true, raw, output, error),
+        b'1'..=b'9' => decode_datetime_or_float_or_integer(value, raw, output, error),
+        // Report as if they were numbers because its most likely a typo
+        b'.' => {
+            let kind = ScalarKind::Float;
+            let stream = raw.as_str();
+            ensure_float(stream, raw, error);
+            decode_float_or_integer(stream, raw, kind, output, error)
+        }
+        b'i' | b'I' => {
+            const SYMBOL: &str = "inf";
+            let kind = ScalarKind::Float;
+            if value != SYMBOL {
+                let expected = &[Expected::Literal(SYMBOL)];
+                let start = value.offset_from(&raw.as_str());
+                let end = start + value.len();
+                error.report_error(
+                    ParseError::new(kind.invalid_description())
+                        .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_expected(expected)
+                        .with_unexpected(Span::new_unchecked(start, end)),
+                );
+                decode_as(raw, SYMBOL, kind, output, error)
+            } else {
+                decode_as_is(raw, kind, output, error)
+            }
+        }
+        b'n' | b'N' => {
+            const SYMBOL: &str = "nan";
+            let kind = ScalarKind::Float;
+            if value != SYMBOL {
+                let expected = &[Expected::Literal(SYMBOL)];
+                let start = value.offset_from(&raw.as_str());
+                let end = start + value.len();
+                error.report_error(
+                    ParseError::new(kind.invalid_description())
+                        .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_expected(expected)
+                        .with_unexpected(Span::new_unchecked(start, end)),
+                );
+                decode_as(raw, SYMBOL, kind, output, error)
+            } else {
+                decode_as_is(raw, kind, output, error)
+            }
+        }
+        _ => decode_invalid(raw, output, error),
+    }
+}
+
 pub(crate) fn decode_zero_prefix<'i>(
+    value: &'i str,
+    signed: bool,
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
-    let s = raw.as_str();
-    debug_assert_eq!(s.as_bytes()[0], b'0');
-    if s.len() == 1 {
+    debug_assert_eq!(value.as_bytes()[0], b'0');
+    if value.len() == 1 {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
+        // No extra validation needed
         decode_float_or_integer(raw.as_str(), raw, kind, output, error)
     } else {
-        match s.as_bytes()[1] {
+        let radix = value.as_bytes()[1];
+        match radix {
             b'x' | b'X' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Hex);
-                let stream = &raw.as_str()[2..];
-                ensure_no_sign(stream, raw, error);
+                if signed {
+                    error.report_error(
+                        ParseError::new("integers with a radix cannot be signed")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
+                            .with_unexpected(Span::new_unchecked(0, 1)),
+                    );
+                }
+                if radix == b'X' {
+                    let start = value.offset_from(&raw.as_str());
+                    let end = start + 2;
+                    error.report_error(
+                        ParseError::new("radix must be lowercase")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[Expected::Literal("0x")])
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                }
+                let radix = IntegerRadix::Hex;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &value[2..];
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'o' | b'O' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Oct);
-                let stream = &raw.as_str()[2..];
-                ensure_no_sign(stream, raw, error);
+                if signed {
+                    error.report_error(
+                        ParseError::new("integers with a radix cannot be signed")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
+                            .with_unexpected(Span::new_unchecked(0, 1)),
+                    );
+                }
+                if radix == b'O' {
+                    let start = value.offset_from(&raw.as_str());
+                    let end = start + 2;
+                    error.report_error(
+                        ParseError::new("radix must be lowercase")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[Expected::Literal("0o")])
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                }
+                let radix = IntegerRadix::Oct;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &value[2..];
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'b' | b'B' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Bin);
-                let stream = &raw.as_str()[2..];
-                ensure_no_sign(stream, raw, error);
+                if signed {
+                    error.report_error(
+                        ParseError::new("integers with a radix cannot be signed")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
+                            .with_unexpected(Span::new_unchecked(0, 1)),
+                    );
+                }
+                if radix == b'B' {
+                    let start = value.offset_from(&raw.as_str());
+                    let end = start + 2;
+                    error.report_error(
+                        ParseError::new("radix must be lowercase")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[Expected::Literal("0b")])
+                            .with_unexpected(Span::new_unchecked(start, end)),
+                    );
+                }
+                let radix = IntegerRadix::Bin;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &value[2..];
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'd' | b'D' => {
-                let kind = ScalarKind::Integer(IntegerRadix::Dec);
-                let stream = &raw.as_str()[2..];
+                if signed {
+                    error.report_error(
+                        ParseError::new("integers with a radix cannot be signed")
+                            .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
+                            .with_unexpected(Span::new_unchecked(0, 1)),
+                    );
+                }
+                let radix = IntegerRadix::Dec;
+                let kind = ScalarKind::Integer(radix);
+                let stream = &value[2..];
                 error.report_error(
                     ParseError::new("redundant integer number prefix")
                         .with_context(Span::new_unchecked(0, raw.len()))
                         .with_expected(&[])
                         .with_unexpected(Span::new_unchecked(0, 2)),
                 );
+                ensure_radixed_value(stream, raw, radix, error);
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
-            _ => decode_datetime_or_float_or_integer(raw, output, error),
+            _ => decode_datetime_or_float_or_integer(value, raw, output, error),
         }
-    }
-}
-
-pub(crate) fn decode_sign_prefix<'i>(
-    raw: Raw<'i>,
-    output: &mut dyn StringBuilder<'i>,
-    error: &mut dyn ErrorSink,
-) -> ScalarKind {
-    #[cfg(feature = "unsafe")] // SAFETY: ascii digit ensures UTF-8 boundary
-    let rest = unsafe { raw.as_str().get_unchecked(1..) };
-    #[cfg(not(feature = "unsafe"))]
-    let rest = &raw.as_str()[1..];
-
-    if rest.starts_with(['n', 'N']) {
-        const SYMBOL: &str = "nan";
-        let kind = ScalarKind::Float;
-        if rest != SYMBOL {
-            let expected = &[Expected::Literal(SYMBOL)];
-            let start = rest.offset_from(&raw.as_str());
-            let end = start + rest.len();
-            error.report_error(
-                ParseError::new(kind.invalid_description())
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(expected)
-                    .with_unexpected(Span::new_unchecked(start, end)),
-            );
-            decode_as(raw, SYMBOL, kind, output, error)
-        } else {
-            decode_as_is(raw, kind, output, error)
-        }
-    } else if rest.starts_with(['i', 'I']) {
-        const SYMBOL: &str = "inf";
-        let kind = ScalarKind::Float;
-        if rest != SYMBOL {
-            let expected = &[Expected::Literal(SYMBOL)];
-            let start = rest.offset_from(&raw.as_str());
-            let end = start + rest.len();
-            error.report_error(
-                ParseError::new(kind.invalid_description())
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(expected)
-                    .with_unexpected(Span::new_unchecked(start, end)),
-            );
-            decode_as(raw, SYMBOL, kind, output, error)
-        } else {
-            decode_as_is(raw, kind, output, error)
-        }
-    } else if is_float(raw.as_str()) {
-        let kind = ScalarKind::Float;
-        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
-    } else {
-        let kind = ScalarKind::Integer(IntegerRadix::Dec);
-        decode_float_or_integer(raw.as_str(), raw, kind, output, error)
     }
 }
 
 pub(crate) fn decode_datetime_or_float_or_integer<'i>(
+    value: &'i str,
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
-    let Some(digit_end) = raw
+    let Some(digit_end) = value
         .as_bytes()
         .offset_for(|b| !(b'0'..=b'9').contains_token(b))
     else {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         let stream = raw.as_str();
+        ensure_no_leading_zero(value, raw, error);
         return decode_float_or_integer(stream, raw, kind, output, error);
     };
 
     #[cfg(feature = "unsafe")] // SAFETY: ascii digits ensures UTF-8 boundary
-    let rest = unsafe { &raw.as_str().get_unchecked(digit_end..) };
+    let rest = unsafe { &value.get_unchecked(digit_end..) };
     #[cfg(not(feature = "unsafe"))]
-    let rest = &raw.as_str()[digit_end..];
+    let rest = &value[digit_end..];
 
     if rest.starts_with("-") || rest.starts_with(":") {
         decode_as_is(raw, ScalarKind::DateTime, output, error)
     } else if is_float(rest) {
         let kind = ScalarKind::Float;
         let stream = raw.as_str();
+        ensure_float(value, raw, error);
         decode_float_or_integer(stream, raw, kind, output, error)
     } else if rest.starts_with("_") {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         let stream = raw.as_str();
+        ensure_no_leading_zero(value, raw, error);
         decode_float_or_integer(stream, raw, kind, output, error)
     } else {
         decode_invalid(raw, output, error)
     }
 }
 
-pub(crate) fn ensure_no_sign(value: &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
+/// ```abnf
+/// float = float-int-part ( exp / frac [ exp ] )
+///
+/// float-int-part = dec-int
+/// frac = decimal-point zero-prefixable-int
+/// decimal-point = %x2E               ; .
+/// zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
+///
+/// exp = "e" float-exp-part
+/// float-exp-part = [ minus / plus ] zero-prefixable-int
+/// ```
+pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
+    ensure_dec_uint(&mut value, raw, false, "invalid mantissa", error);
+
+    if value.starts_with(".") {
+        let _ = value.next_token();
+        ensure_dec_uint(&mut value, raw, true, "invalid fraction", error);
+    }
+
+    if value.starts_with(['e', 'E']) {
+        let _ = value.next_token();
+        if value.starts_with(['+', '-']) {
+            let _ = value.next_token();
+        }
+        ensure_dec_uint(&mut value, raw, true, "invalid exponent", error);
+    }
+
+    if !value.is_empty() {
+        let start = value.offset_from(&raw.as_str());
+        let end = raw.len();
+        error.report_error(
+            ParseError::new(ScalarKind::Float.invalid_description())
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(start, end)),
+        );
+    }
+}
+
+pub(crate) fn ensure_dec_uint<'i>(
+    value: &mut &'i str,
+    raw: Raw<'i>,
+    zero_prefix: bool,
+    invalid_description: &'static str,
+    error: &mut dyn ErrorSink,
+) {
+    let start = *value;
+    let mut digit_count = 0;
+    while let Some(current) = value.chars().next() {
+        if current.is_ascii_digit() {
+            digit_count += 1;
+        } else if current == '_' {
+        } else {
+            break;
+        }
+        let _ = value.next_token();
+    }
+
+    match digit_count {
+        0 => {
+            let start = start.offset_from(&raw.as_str());
+            let end = start;
+            error.report_error(
+                ParseError::new(invalid_description)
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[Expected::Description("digits")])
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+        }
+        1 => {}
+        _ if start.starts_with("0") && !zero_prefix => {
+            let start = start.offset_from(&raw.as_str());
+            let end = start + 1;
+            error.report_error(
+                ParseError::new("unexpected leading zero")
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+        }
+        _ => {}
+    }
+}
+
+pub(crate) fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
+    if value.starts_with("0") {
+        let start = value.offset_from(&raw.as_str());
+        let end = start + 1;
+        error.report_error(
+            ParseError::new("unexpected leading zero")
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(start, end)),
+        );
+    }
+}
+
+pub(crate) fn ensure_radixed_value(
+    value: &str,
+    raw: Raw<'_>,
+    radix: IntegerRadix,
+    error: &mut dyn ErrorSink,
+) {
     let invalid = ['+', '-'];
-    if value.starts_with(invalid) {
+    let value = if let Some(value) = value.strip_prefix(invalid) {
         let pos = raw.as_str().find(invalid).unwrap();
         error.report_error(
             ParseError::new("unexpected sign")
@@ -271,6 +487,21 @@ pub(crate) fn ensure_no_sign(value: &str, raw: Raw<'_>, error: &mut dyn ErrorSin
                 .with_expected(&[])
                 .with_unexpected(Span::new_unchecked(pos, pos + 1)),
         );
+        value
+    } else {
+        value
+    };
+
+    let valid = radix.validator();
+    for (index, c) in value.char_indices() {
+        if !valid(c) && c != '_' {
+            let pos = value.offset_from(&raw.as_str()) + index;
+            error.report_error(
+                ParseError::new(radix.invalid_description())
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_unexpected(Span::new_unchecked(pos, pos)),
+            );
+        }
     }
 }
 
@@ -307,6 +538,8 @@ pub(crate) fn decode_float_or_integer<'i>(
 
         for part in stream.split(underscore) {
             let part_start = part.offset_from(&raw.as_str());
+            let part_end = part_start + part.len();
+
             if 0 < part_start {
                 let first = part.as_bytes().first().copied().unwrap_or(b'0');
                 if !is_any_digit(first, kind) {
@@ -320,7 +553,6 @@ pub(crate) fn decode_float_or_integer<'i>(
                     );
                 }
             }
-            let part_end = part_start + part.len();
             if 1 < part.len() && part_end < raw.len() {
                 let last = part.as_bytes().last().copied().unwrap_or(b'0');
                 if !is_any_digit(last, kind) {
@@ -333,6 +565,16 @@ pub(crate) fn decode_float_or_integer<'i>(
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
+            }
+
+            if part.is_empty() && part_start != 0 && part_end != raw.len() {
+                let start = part_start;
+                let end = start + 1;
+                error.report_error(
+                    ParseError::new("`_` may only go between digits")
+                        .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_unexpected(Span::new_unchecked(start, end)),
+                );
             }
 
             if !part.is_empty() && !output.push_str(part) {

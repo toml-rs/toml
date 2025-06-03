@@ -1,0 +1,24 @@
+EventResults {
+    input: "-0xF",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..4,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..4,
+            ),
+            description: "integers with a radix cannot be signed",
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                0..1,
+            ),
+        },
+    ],
+}
