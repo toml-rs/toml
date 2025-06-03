@@ -111,7 +111,12 @@ pub(crate) fn decode_unquoted_scalar<'i>(
         b'0' => decode_zero_prefix(raw.as_str(), false, raw, output, error),
         b'1'..=b'9' => decode_datetime_or_float_or_integer(raw.as_str(), raw, output, error),
         // Report as if they were numbers because its most likely a typo
-        b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
+        b'.' => {
+            let kind = ScalarKind::Float;
+            let stream = raw.as_str();
+            ensure_float(stream, raw, error);
+            decode_float_or_integer(stream, raw, kind, output, error)
+        }
         b't' | b'T' => {
             const SYMBOL: &str = "true";
             let kind = ScalarKind::Boolean(true);
@@ -170,7 +175,12 @@ pub(crate) fn decode_sign_prefix<'i>(
         b'0' => decode_zero_prefix(value, true, raw, output, error),
         b'1'..=b'9' => decode_datetime_or_float_or_integer(value, raw, output, error),
         // Report as if they were numbers because its most likely a typo
-        b'.' => decode_as_is(raw, ScalarKind::Float, output, error),
+        b'.' => {
+            let kind = ScalarKind::Float;
+            let stream = raw.as_str();
+            ensure_float(stream, raw, error);
+            decode_float_or_integer(stream, raw, kind, output, error)
+        }
         b'i' | b'I' => {
             const SYMBOL: &str = "inf";
             let kind = ScalarKind::Float;
@@ -353,6 +363,7 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
     } else if is_float(rest) {
         let kind = ScalarKind::Float;
         let stream = raw.as_str();
+        ensure_float(value, raw, error);
         decode_float_or_integer(stream, raw, kind, output, error)
     } else if rest.starts_with("_") {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
@@ -361,6 +372,90 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
         decode_float_or_integer(stream, raw, kind, output, error)
     } else {
         decode_invalid(raw, output, error)
+    }
+}
+
+/// ```abnf
+/// float = float-int-part ( exp / frac [ exp ] )
+///
+/// float-int-part = dec-int
+/// frac = decimal-point zero-prefixable-int
+/// decimal-point = %x2E               ; .
+/// zero-prefixable-int = DIGIT *( DIGIT / underscore DIGIT )
+///
+/// exp = "e" float-exp-part
+/// float-exp-part = [ minus / plus ] zero-prefixable-int
+/// ```
+pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
+    ensure_dec_uint(&mut value, raw, false, "invalid mantissa", error);
+
+    if value.starts_with(".") {
+        let _ = value.next_token();
+        ensure_dec_uint(&mut value, raw, true, "invalid fraction", error);
+    }
+
+    if value.starts_with(['e', 'E']) {
+        let _ = value.next_token();
+        if value.starts_with(['+', '-']) {
+            let _ = value.next_token();
+        }
+        ensure_dec_uint(&mut value, raw, true, "invalid exponent", error);
+    }
+
+    if !value.is_empty() {
+        let start = value.offset_from(&raw.as_str());
+        let end = raw.len();
+        error.report_error(
+            ParseError::new(ScalarKind::Float.invalid_description())
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(start, end)),
+        );
+    }
+}
+
+pub(crate) fn ensure_dec_uint<'i>(
+    value: &mut &'i str,
+    raw: Raw<'i>,
+    zero_prefix: bool,
+    invalid_description: &'static str,
+    error: &mut dyn ErrorSink,
+) {
+    let start = *value;
+    let mut digit_count = 0;
+    while let Some(current) = value.chars().next() {
+        if current.is_ascii_digit() {
+            digit_count += 1;
+        } else if current == '_' {
+        } else {
+            break;
+        }
+        let _ = value.next_token();
+    }
+
+    match digit_count {
+        0 => {
+            let start = start.offset_from(&raw.as_str());
+            let end = start;
+            error.report_error(
+                ParseError::new(invalid_description)
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[Expected::Description("digits")])
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+        }
+        1 => {}
+        _ if start.starts_with("0") && !zero_prefix => {
+            let start = start.offset_from(&raw.as_str());
+            let end = start + 1;
+            error.report_error(
+                ParseError::new("unexpected leading zero")
+                    .with_context(Span::new_unchecked(0, raw.len()))
+                    .with_expected(&[])
+                    .with_unexpected(Span::new_unchecked(start, end)),
+            );
+        }
+        _ => {}
     }
 }
 
