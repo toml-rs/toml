@@ -14,36 +14,60 @@ use crate::Spanned;
 
 #[test]
 fn test_spanned_field() {
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Debug)]
     struct Foo<T> {
         foo: Spanned<T>,
     }
 
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Debug)]
     struct BareFoo<T> {
         foo: T,
     }
 
-    fn good<T>(s: &str, expected: &str, end: Option<usize>)
+    #[track_caller]
+    fn good<T>(input: &str, expected: &str, end: Option<usize>)
     where
         T: serde::de::DeserializeOwned + Debug + PartialEq,
     {
-        let foo: Foo<T> = crate::from_str(s).unwrap();
+        dbg!(input);
+        let foo: Foo<T> = crate::from_str(input).unwrap();
+        dbg!(&foo);
 
-        assert_eq!(6, foo.foo.span().start);
+        assert_eq!(
+            &input[foo.foo.span()],
+            expected,
+            "incorrect `foo.foo.span()`",
+        );
+        assert_eq!(foo.foo.span().start, 6, "incorrect `foo.foo.span().start`");
         if let Some(end) = end {
-            assert_eq!(end, foo.foo.span().end);
+            assert_eq!(foo.foo.span().end, end, "incorrect `foo.foo.span().end`");
         } else {
-            assert_eq!(s.len(), foo.foo.span().end);
+            assert_eq!(
+                foo.foo.span().end,
+                input.len(),
+                "incorrect `foo.foo.span().end`"
+            );
         }
-        assert_eq!(expected, &s[foo.foo.span()]);
 
         // Test for Spanned<> at the top level
-        let foo_outer: Spanned<BareFoo<T>> = crate::from_str(s).unwrap();
+        let foo_outer: Spanned<BareFoo<T>> = crate::from_str(input).unwrap();
+        dbg!(&foo_outer);
 
-        assert_eq!(0, foo_outer.span().start);
-        assert_eq!(s.len(), foo_outer.span().end);
-        assert_eq!(foo.foo.into_inner(), foo_outer.into_inner().foo);
+        assert_eq!(
+            foo_outer.span().start,
+            0,
+            "incorrect `foo_outer.span().start`"
+        );
+        assert_eq!(
+            foo_outer.span().end,
+            input.len(),
+            "incorrect `foo_outer.span().end`"
+        );
+        assert_eq!(
+            foo.foo.into_inner(),
+            foo_outer.into_inner().foo,
+            "deserialized incorrectly"
+        );
     }
 
     good::<String>("foo = \"foo\"", "\"foo\"", None);
@@ -88,24 +112,45 @@ fn test_spanned_field() {
 
 #[test]
 fn test_inner_spanned_table() {
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Debug)]
     struct Foo {
         foo: Spanned<HashMap<Spanned<String>, Spanned<String>>>,
     }
 
-    fn good(s: &str, zero: bool) {
-        let foo: Foo = crate::from_str(s).unwrap();
+    #[track_caller]
+    fn good(input: &str, zero: bool) {
+        dbg!(input);
+        let foo: Foo = crate::from_str(input).unwrap();
+        dbg!(&foo);
 
         if zero {
-            assert_eq!(foo.foo.span().start, 0);
-            assert_eq!(foo.foo.span().end, 73);
+            assert_eq!(foo.foo.span().start, 0, "invalid `foo.foo.span().start`");
+            assert_eq!(foo.foo.span().end, 73, "invalid `foo.foo.span().end`");
         } else {
-            assert_eq!(foo.foo.span().start, s.find('{').unwrap());
-            assert_eq!(foo.foo.span().end, s.find('}').unwrap() + 1);
+            assert_eq!(
+                foo.foo.span().start,
+                input.find('{').unwrap(),
+                "invalid `foo.foo.span().start`"
+            );
+            assert_eq!(
+                foo.foo.span().end,
+                input.find('}').unwrap() + 1,
+                "invalid `foo.foo.span().end`"
+            );
         }
         for (k, v) in foo.foo.as_ref().iter() {
-            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
-            assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
+            dbg!(&k);
+            dbg!(&v);
+            assert_eq!(
+                &input[k.span().start..k.span().end],
+                k.as_ref(),
+                "invalid key"
+            );
+            assert_eq!(
+                &input[(v.span().start + 1)..(v.span().end - 1)],
+                v.as_ref(),
+                "invalid value"
+            );
         }
     }
 
