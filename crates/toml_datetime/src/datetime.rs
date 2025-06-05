@@ -346,7 +346,7 @@ impl FromStr for Datetime {
             .map_err(|err| err.expected("year or hour"))?;
         let sep = lexer
             .next()
-            .ok_or(DatetimeParseError::new().expected("`-` or `:`"))?;
+            .ok_or(DatetimeParseError::new().expected("`-` (YYYY-MM) or `:` (HH:MM)"))?;
         match sep.kind {
             TokenKind::Dash => {
                 let year = digits;
@@ -356,11 +356,13 @@ impl FromStr for Datetime {
                 month
                     .is(TokenKind::Digits)
                     .map_err(|err| err.what("date").expected("month"))?;
-                let sep = lexer
-                    .next()
-                    .ok_or(DatetimeParseError::new().what("date").expected("`-`"))?;
+                let sep = lexer.next().ok_or(
+                    DatetimeParseError::new()
+                        .what("date")
+                        .expected("`-` (MM-DD)"),
+                )?;
                 sep.is(TokenKind::Dash)
-                    .map_err(|err| err.what("date").expected("`-`"))?;
+                    .map_err(|err| err.what("date").expected("`-` (MM-DD)"))?;
                 let day = lexer
                     .next()
                     .ok_or(DatetimeParseError::new().what("date").expected("day"))?;
@@ -413,7 +415,7 @@ impl FromStr for Datetime {
             }
             TokenKind::Colon => lexer = Lexer::new(date),
             _ => {
-                return Err(DatetimeParseError::new().expected("`-` or `:`"));
+                return Err(DatetimeParseError::new().expected("`-` (YYYY-MM) or `:` (HH:MM)"));
             }
         }
 
@@ -439,22 +441,26 @@ impl FromStr for Datetime {
                 .ok_or_else(|| DatetimeParseError::new().what("time").expected("hour"))?;
             hour.is(TokenKind::Digits)
                 .map_err(|err| err.what("time").expected("hour"))?;
-            let sep = lexer
-                .next()
-                .ok_or(DatetimeParseError::new().what("time").expected("`:`"))?;
+            let sep = lexer.next().ok_or(
+                DatetimeParseError::new()
+                    .what("time")
+                    .expected("`:` (HH:MM)"),
+            )?;
             sep.is(TokenKind::Colon)
-                .map_err(|err| err.what("time").expected("`:`"))?;
+                .map_err(|err| err.what("time").expected("`:` (HH:MM)"))?;
             let minute = lexer
                 .next()
                 .ok_or(DatetimeParseError::new().what("time").expected("minute"))?;
             minute
                 .is(TokenKind::Digits)
                 .map_err(|err| err.what("time").expected("minute"))?;
-            let sep = lexer
-                .next()
-                .ok_or(DatetimeParseError::new().what("time").expected("`:`"))?;
+            let sep = lexer.next().ok_or(
+                DatetimeParseError::new()
+                    .what("time")
+                    .expected("`:` (MM:SS)"),
+            )?;
             sep.is(TokenKind::Colon)
-                .map_err(|err| err.what("time").expected("`:`"))?;
+                .map_err(|err| err.what("time").expected("`:` (MM:SS)"))?;
             let second = lexer
                 .next()
                 .ok_or(DatetimeParseError::new().what("time").expected("second"))?;
@@ -546,11 +552,13 @@ impl FromStr for Datetime {
                     hours
                         .is(TokenKind::Digits)
                         .map_err(|err| err.what("offset").expected("hours"))?;
-                    let sep = lexer
-                        .next()
-                        .ok_or(DatetimeParseError::new().what("offset").expected("`:`"))?;
+                    let sep = lexer.next().ok_or(
+                        DatetimeParseError::new()
+                            .what("offset")
+                            .expected("`:` (HH:MM)"),
+                    )?;
                     sep.is(TokenKind::Colon)
-                        .map_err(|err| err.what("offset").expected("`:`"))?;
+                        .map_err(|err| err.what("offset").expected("`:` (HH:MM)"))?;
                     let minutes = lexer
                         .next()
                         .ok_or(DatetimeParseError::new().what("offset").expected("minutes"))?;
