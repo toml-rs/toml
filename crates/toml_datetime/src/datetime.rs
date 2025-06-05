@@ -610,7 +610,7 @@ impl FromStr for Datetime {
                 Some(_token) => {
                     return Err(DatetimeParseError::new()
                         .what("offset")
-                        .expected("`Z`, +offset, -offset"));
+                        .expected("`Z`, +OFFSET, -OFFSET"));
                 }
                 None => {}
             }
