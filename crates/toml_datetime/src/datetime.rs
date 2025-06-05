@@ -478,7 +478,7 @@ impl FromStr for Datetime {
                 )?;
                 nanosecond
                     .is(TokenKind::Digits)
-                    .map_err(|err| err.what("time").expected("nanoseconds"))?;
+                    .map_err(|err| err.what("time").expected("nanosecond"))?;
                 Some(nanosecond)
             } else {
                 None
@@ -548,10 +548,10 @@ impl FromStr for Datetime {
                     let sign = if token.kind == TokenKind::Plus { 1 } else { -1 };
                     let hours = lexer
                         .next()
-                        .ok_or(DatetimeParseError::new().what("offset").expected("hours"))?;
+                        .ok_or(DatetimeParseError::new().what("offset").expected("hour"))?;
                     hours
                         .is(TokenKind::Digits)
-                        .map_err(|err| err.what("offset").expected("hours"))?;
+                        .map_err(|err| err.what("offset").expected("hour"))?;
                     let sep = lexer.next().ok_or(
                         DatetimeParseError::new()
                             .what("offset")
@@ -561,10 +561,10 @@ impl FromStr for Datetime {
                         .map_err(|err| err.what("offset").expected("`:` (HH:MM)"))?;
                     let minutes = lexer
                         .next()
-                        .ok_or(DatetimeParseError::new().what("offset").expected("minutes"))?;
+                        .ok_or(DatetimeParseError::new().what("offset").expected("minute"))?;
                     minutes
                         .is(TokenKind::Digits)
-                        .map_err(|err| err.what("offset").expected("minutes"))?;
+                        .map_err(|err| err.what("offset").expected("minute"))?;
 
                     if hours.raw.len() != 2 {
                         return Err(DatetimeParseError::new()
