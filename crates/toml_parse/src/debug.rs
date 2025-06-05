@@ -23,7 +23,7 @@ static DEBUG_DEPTH: DebugDepth = DebugDepth(core::sync::atomic::AtomicUsize::new
 fn render_event(span: impl Into<Option<Span>>, text: &str, style: anstyle::Style) {
     #![allow(unexpected_cfgs)] // HACK: fixed in newer versions
     let span = span.into();
-    let depth = DEBUG_DEPTH.depth();
+    let depth = DEBUG_DEPTH.depth().min(20);
     anstream::eprintln!("{:depth$}{style}{text}: {span:?}{style:#}", "");
 }
 
