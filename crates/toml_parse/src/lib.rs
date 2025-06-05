@@ -43,3 +43,7 @@ pub use source::Raw;
 pub use source::Source;
 pub use source::SourceIndex;
 pub use source::Span;
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;

@@ -3,7 +3,6 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.package]
-homepage = "https://github.com/toml-rs/toml"
 repository = "https://github.com/toml-rs/toml"
 license = "MIT OR Apache-2.0"
 edition = "2021"
@@ -95,4 +94,4 @@ panic = "abort"
 panic = "abort"
 codegen-units = 1
 lto = true
-
+# debug = "line-tables-only"  # requires Cargo 1.71

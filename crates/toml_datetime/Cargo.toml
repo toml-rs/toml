@@ -1,12 +1,10 @@
 [package]
 name = "toml_datetime"
 version = "0.6.9"
-keywords = ["encoding", "toml"]
-categories = ["encoding", "parser-implementations", "parsing", "config"]
 description = "A TOML-compatible datetime type"
-authors = ["Alex Crichton <alex@alexcrichton.com>"]
+categories = ["encoding", "parser-implementations", "parsing", "config"]
+keywords = ["encoding", "toml"]
 repository.workspace = true
-homepage.workspace = true
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
