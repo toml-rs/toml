@@ -516,18 +516,18 @@ impl FromStr for Datetime {
             if time.hour > 23 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("hour between 1 and 23"));
+                    .expected("hour between 0 and 23"));
             }
             if time.minute > 59 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("minute between 1 and 59"));
+                    .expected("minute between 0 and 59"));
             }
             // 00-58, 00-59, 00-60 based on leap second rules
             if time.second > 60 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("second between 1 and 60"));
+                    .expected("second between 0 and 60"));
             }
             if time.nanosecond > 999_999_999 {
                 return Err(DatetimeParseError::new()
@@ -589,12 +589,12 @@ impl FromStr for Datetime {
                     if hours > 23 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("hours between 1 and 23"));
+                            .expected("hours between 0 and 23"));
                     }
                     if minutes > 59 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("minutes between 1 and 59"));
+                            .expected("minutes between 0 and 59"));
                     }
 
                     let total_minutes = sign * (hours as i16 * 60 + minutes as i16);
