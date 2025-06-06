@@ -4,49 +4,8 @@
 //! into Rust structures. Note that some top-level functions here are also
 //! provided at the top of the crate.
 
-/// Deserializes a string into a type.
-///
-/// This function will attempt to interpret `s` as a TOML document and
-/// deserialize `T` from the document.
-///
-/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
-///
-/// # Examples
-///
-/// ```
-/// use serde::Deserialize;
-///
-/// #[derive(Deserialize)]
-/// struct Config {
-///     title: String,
-///     owner: Owner,
-/// }
-///
-/// #[derive(Deserialize)]
-/// struct Owner {
-///     name: String,
-/// }
-///
-/// let config: Config = toml::from_str(r#"
-///     title = 'TOML Example'
-///
-///     [owner]
-///     name = 'Lisa'
-/// "#).unwrap();
-///
-/// assert_eq!(config.title, "TOML Example");
-/// assert_eq!(config.owner.name, "Lisa");
-/// ```
-#[cfg(feature = "parse")]
-pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
-where
-    T: serde::de::DeserializeOwned,
-{
-    T::deserialize(Deserializer::new(s))
-}
-
 /// Errors that can occur when deserializing a type.
-#[derive(PartialEq, Eq, Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Error {
     inner: crate::edit::de::Error,
 }
@@ -94,6 +53,47 @@ impl std::fmt::Debug for Error {
 }
 
 impl std::error::Error for Error {}
+
+/// Deserializes a string into a type.
+///
+/// This function will attempt to interpret `s` as a TOML document and
+/// deserialize `T` from the document.
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
+///
+/// # Examples
+///
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///     title: String,
+///     owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let config: Config = toml::from_str(r#"
+///     title = 'TOML Example'
+///
+///     [owner]
+///     name = 'Lisa'
+/// "#).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
+#[cfg(feature = "parse")]
+pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
+where
+    T: serde::de::DeserializeOwned,
+{
+    T::deserialize(Deserializer::new(s))
+}
 
 /// Deserialization TOML document
 ///
