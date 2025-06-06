@@ -106,11 +106,11 @@ pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
-/// Deprecated, replaced with [`DocumentMut`]
-#[deprecated(since = "0.22.6", note = "Replaced with `DocumentMut`")]
-pub type Document = DocumentMut;
 pub use crate::document::DocumentMut;
-pub use crate::document::ImDocument;
+/// Type representing a parsed TOML document
+#[deprecated(since = "0.23.0", note = "Replaced with `Document`")]
+pub type ImDocument<S> = Document<S>;
+pub use crate::document::Document;
 pub use crate::error::TomlError;
 pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,

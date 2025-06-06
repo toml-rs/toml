@@ -163,19 +163,11 @@ pub struct Deserializer<S = String> {
     raw: Option<S>,
 }
 
-impl Deserializer {
-    /// Deserialization implementation for TOML.
-    #[deprecated(since = "0.22.6", note = "Replaced with `Deserializer::from`")]
-    pub fn new(input: crate::DocumentMut) -> Self {
-        Self::from(input)
-    }
-}
-
 #[cfg(feature = "parse")]
 impl<S: AsRef<str>> Deserializer<S> {
     /// Parse a TOML document
     pub fn parse(raw: S) -> Result<Self, Error> {
-        crate::ImDocument::parse(raw)
+        crate::Document::parse(raw)
             .map(Self::from)
             .map_err(Into::into)
     }
@@ -188,9 +180,9 @@ impl From<crate::DocumentMut> for Deserializer {
     }
 }
 
-impl<S> From<crate::ImDocument<S>> for Deserializer<S> {
-    fn from(doc: crate::ImDocument<S>) -> Self {
-        let crate::ImDocument { root, raw, .. } = doc;
+impl<S> From<crate::Document<S>> for Deserializer<S> {
+    fn from(doc: crate::Document<S>) -> Self {
+        let crate::Document { root, raw, .. } = doc;
         let raw = Some(raw);
         Self { root, raw }
     }
@@ -202,7 +194,7 @@ impl std::str::FromStr for Deserializer {
 
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let doc: crate::ImDocument<_> = s.parse().map_err(Error::from)?;
+        let doc: crate::Document<_> = s.parse().map_err(Error::from)?;
         Ok(Deserializer::from(doc))
     }
 }
@@ -322,7 +314,7 @@ impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::ImDocument<String> {
+impl serde::de::IntoDeserializer<'_, Error> for crate::Document<String> {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

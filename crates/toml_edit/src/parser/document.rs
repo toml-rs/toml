@@ -6,7 +6,7 @@ use crate::repr::Decor;
 use crate::Item;
 use crate::RawString;
 use crate::Value;
-use crate::{ArrayOfTables, ImDocument, Table};
+use crate::{ArrayOfTables, Document, Table};
 
 /// ```bnf
 /// ;; TOML
@@ -22,7 +22,7 @@ pub(crate) fn document<'s>(
     input: &mut Input<'_>,
     source: toml_parse::Source<'s>,
     errors: &mut dyn ErrorSink,
-) -> ImDocument<&'s str> {
+) -> Document<&'s str> {
     #[cfg(feature = "unstable-debug")]
     let _scope = TraceScope::new("document::document");
     let mut state = State::default();
@@ -119,7 +119,7 @@ pub(crate) fn document<'s>(
     state.finish_table(errors);
 
     let trailing = state.take_trailing();
-    ImDocument {
+    Document {
         root: Item::Table(state.root),
         trailing,
         raw: source.input(),
