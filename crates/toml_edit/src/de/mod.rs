@@ -91,7 +91,39 @@ impl From<Error> for crate::TomlError {
 
 impl std::error::Error for Error {}
 
-/// Convert a TOML [documents][crate::DocumentMut] into `T`.
+/// Deserializes a string into a type.
+///
+/// This function will attempt to interpret `s` as a TOML document and
+/// deserialize `T` from the document.
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
+///
+/// # Examples
+///
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///     title: String,
+///     owner: Owner,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct Owner {
+///     name: String,
+/// }
+///
+/// let config: Config = toml_edit::de::from_str(r#"
+///     title = 'TOML Example'
+///
+///     [owner]
+///     name = 'Lisa'
+/// "#).unwrap();
+///
+/// assert_eq!(config.title, "TOML Example");
+/// assert_eq!(config.owner.name, "Lisa");
+/// ```
 #[cfg(feature = "parse")]
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
@@ -101,7 +133,12 @@ where
     T::deserialize(de)
 }
 
-/// Convert a TOML [documents][crate::DocumentMut] into `T`.
+/// Deserializes bytes into a type.
+///
+/// This function will attempt to interpret `s` as a TOML document and
+/// deserialize `T` from the document.
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 #[cfg(feature = "parse")]
 pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
 where
