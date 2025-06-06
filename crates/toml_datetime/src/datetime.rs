@@ -346,7 +346,7 @@ impl FromStr for Datetime {
             .map_err(|err| err.expected("year or hour"))?;
         let sep = lexer
             .next()
-            .ok_or(DatetimeParseError::new().expected("`-` or `:`"))?;
+            .ok_or(DatetimeParseError::new().expected("`-` (YYYY-MM) or `:` (HH:MM)"))?;
         match sep.kind {
             TokenKind::Dash => {
                 let year = digits;
@@ -356,11 +356,13 @@ impl FromStr for Datetime {
                 month
                     .is(TokenKind::Digits)
                     .map_err(|err| err.what("date").expected("month"))?;
-                let sep = lexer
-                    .next()
-                    .ok_or(DatetimeParseError::new().what("date").expected("`-`"))?;
+                let sep = lexer.next().ok_or(
+                    DatetimeParseError::new()
+                        .what("date")
+                        .expected("`-` (MM-DD)"),
+                )?;
                 sep.is(TokenKind::Dash)
-                    .map_err(|err| err.what("date").expected("`-`"))?;
+                    .map_err(|err| err.what("date").expected("`-` (MM-DD)"))?;
                 let day = lexer
                     .next()
                     .ok_or(DatetimeParseError::new().what("date").expected("day"))?;
@@ -370,17 +372,17 @@ impl FromStr for Datetime {
                 if year.raw.len() != 4 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("4 digit year"));
+                        .expected("a four-digit year (YYYY) "));
                 }
                 if month.raw.len() != 2 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("2 digit month"));
+                        .expected("a two-digit month (MM)"));
                 }
                 if day.raw.len() != 2 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("2 digit day"));
+                        .expected("a two-digit day (DD)"));
                 }
                 let date = Date {
                     year: year.raw.parse().map_err(|_err| DatetimeParseError::new())?,
@@ -397,23 +399,23 @@ impl FromStr for Datetime {
                 }
                 let is_leap_year =
                     (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
-                let max_days_in_month = match date.month {
-                    2 if is_leap_year => 29,
-                    2 => 28,
-                    4 | 6 | 9 | 11 => 30,
-                    _ => 31,
+                let (max_days_in_month, expected_day) = match date.month {
+                    2 if is_leap_year => (29, "day between 1 and 29"),
+                    2 => (28, "day between 1 and 28"),
+                    4 | 6 | 9 | 11 => (30, "day between 1 and 30"),
+                    _ => (31, "day between 1 and 31"),
                 };
                 if date.day < 1 || date.day > max_days_in_month {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("day between 1 and 31"));
+                        .expected(expected_day));
                 }
 
                 result.date = Some(date);
             }
             TokenKind::Colon => lexer = Lexer::new(date),
             _ => {
-                return Err(DatetimeParseError::new().expected("`-` or `:`"));
+                return Err(DatetimeParseError::new().expected("`-` (YYYY-MM) or `:` (HH:MM)"));
             }
         }
 
@@ -439,22 +441,26 @@ impl FromStr for Datetime {
                 .ok_or_else(|| DatetimeParseError::new().what("time").expected("hour"))?;
             hour.is(TokenKind::Digits)
                 .map_err(|err| err.what("time").expected("hour"))?;
-            let sep = lexer
-                .next()
-                .ok_or(DatetimeParseError::new().what("time").expected("`:`"))?;
+            let sep = lexer.next().ok_or(
+                DatetimeParseError::new()
+                    .what("time")
+                    .expected("`:` (HH:MM)"),
+            )?;
             sep.is(TokenKind::Colon)
-                .map_err(|err| err.what("time").expected("`:`"))?;
+                .map_err(|err| err.what("time").expected("`:` (HH:MM)"))?;
             let minute = lexer
                 .next()
                 .ok_or(DatetimeParseError::new().what("time").expected("minute"))?;
             minute
                 .is(TokenKind::Digits)
                 .map_err(|err| err.what("time").expected("minute"))?;
-            let sep = lexer
-                .next()
-                .ok_or(DatetimeParseError::new().what("time").expected("`:`"))?;
+            let sep = lexer.next().ok_or(
+                DatetimeParseError::new()
+                    .what("time")
+                    .expected("`:` (MM:SS)"),
+            )?;
             sep.is(TokenKind::Colon)
-                .map_err(|err| err.what("time").expected("`:`"))?;
+                .map_err(|err| err.what("time").expected("`:` (MM:SS)"))?;
             let second = lexer
                 .next()
                 .ok_or(DatetimeParseError::new().what("time").expected("second"))?;
@@ -472,7 +478,7 @@ impl FromStr for Datetime {
                 )?;
                 nanosecond
                     .is(TokenKind::Digits)
-                    .map_err(|err| err.what("time").expected("nanoseconds"))?;
+                    .map_err(|err| err.what("time").expected("nanosecond"))?;
                 Some(nanosecond)
             } else {
                 None
@@ -481,17 +487,17 @@ impl FromStr for Datetime {
             if hour.raw.len() != 2 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("2 digit hour"));
+                    .expected("a two-digit hour (HH)"));
             }
             if minute.raw.len() != 2 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("2 digit minute"));
+                    .expected("a two-digit minute (MM)"));
             }
             if second.raw.len() != 2 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("2 digit second"));
+                    .expected("a two-digit second (SS)"));
             }
 
             let time = Time {
@@ -510,18 +516,18 @@ impl FromStr for Datetime {
             if time.hour > 23 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("hour between 1 and 23"));
+                    .expected("hour between 0 and 23"));
             }
             if time.minute > 59 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("minute between 1 and 59"));
+                    .expected("minute between 0 and 59"));
             }
             // 00-58, 00-59, 00-60 based on leap second rules
             if time.second > 60 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("second between 1 and 60"));
+                    .expected("second between 0 and 60"));
             }
             if time.nanosecond > 999_999_999 {
                 return Err(DatetimeParseError::new()
@@ -542,31 +548,33 @@ impl FromStr for Datetime {
                     let sign = if token.kind == TokenKind::Plus { 1 } else { -1 };
                     let hours = lexer
                         .next()
-                        .ok_or(DatetimeParseError::new().what("offset").expected("hours"))?;
+                        .ok_or(DatetimeParseError::new().what("offset").expected("hour"))?;
                     hours
                         .is(TokenKind::Digits)
-                        .map_err(|err| err.what("offset").expected("hours"))?;
-                    let sep = lexer
-                        .next()
-                        .ok_or(DatetimeParseError::new().what("offset").expected("`:`"))?;
+                        .map_err(|err| err.what("offset").expected("hour"))?;
+                    let sep = lexer.next().ok_or(
+                        DatetimeParseError::new()
+                            .what("offset")
+                            .expected("`:` (HH:MM)"),
+                    )?;
                     sep.is(TokenKind::Colon)
-                        .map_err(|err| err.what("offset").expected("`:`"))?;
+                        .map_err(|err| err.what("offset").expected("`:` (HH:MM)"))?;
                     let minutes = lexer
                         .next()
-                        .ok_or(DatetimeParseError::new().what("offset").expected("minutes"))?;
+                        .ok_or(DatetimeParseError::new().what("offset").expected("minute"))?;
                     minutes
                         .is(TokenKind::Digits)
-                        .map_err(|err| err.what("offset").expected("minutes"))?;
+                        .map_err(|err| err.what("offset").expected("minute"))?;
 
                     if hours.raw.len() != 2 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("2 digit hours"));
+                            .expected("a two-digit hour (HH)"));
                     }
                     if minutes.raw.len() != 2 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("2 digit minutes"));
+                            .expected("a two-digit minute (MM)"));
                     }
 
                     let hours = hours
@@ -581,12 +589,12 @@ impl FromStr for Datetime {
                     if hours > 23 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("hours between 1 and 23"));
+                            .expected("hours between 0 and 23"));
                     }
                     if minutes > 59 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("minutes between 1 and 59"));
+                            .expected("minutes between 0 and 59"));
                     }
 
                     let total_minutes = sign * (hours as i16 * 60 + minutes as i16);
@@ -602,7 +610,7 @@ impl FromStr for Datetime {
                 Some(_token) => {
                     return Err(DatetimeParseError::new()
                         .what("offset")
-                        .expected("`Z`, +offset, -offset"));
+                        .expected("`Z`, +OFFSET, -OFFSET"));
                 }
                 None => {}
             }
