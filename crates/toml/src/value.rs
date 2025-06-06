@@ -391,7 +391,8 @@ impl fmt::Display for Value {
 impl std::str::FromStr for Value {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Value, Self::Err> {
-        crate::from_str(s)
+        use serde::Deserialize as _;
+        Value::deserialize(crate::de::ValueDeserializer::new(s))
     }
 }
 
