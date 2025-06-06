@@ -1,6 +1,6 @@
 [package]
 name = "toml_datetime"
-version = "0.6.9"
+version = "0.6.10"
 description = "A TOML-compatible datetime type"
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 keywords = ["encoding", "toml"]
