@@ -95,6 +95,22 @@ where
     T::deserialize(Deserializer::new(s))
 }
 
+/// Deserializes bytes into a type.
+///
+/// This function will attempt to interpret `s` as a TOML document and
+/// deserialize `T` from the document.
+///
+/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
+#[cfg(feature = "parse")]
+pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
+where
+    T: serde::de::DeserializeOwned,
+{
+    use serde::de::Error as _;
+    let s = std::str::from_utf8(s).map_err(|e| Error::new(crate::edit::de::Error::custom(e)))?;
+    from_str(s)
+}
+
 /// Deserialization TOML document
 ///
 /// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
