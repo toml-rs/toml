@@ -19,6 +19,10 @@ pub(crate) mod de {
         pub(crate) fn message(&self) -> &str {
             self.inner.as_str()
         }
+
+        pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+            None
+        }
     }
 
     impl serde::de::Error for Error {
