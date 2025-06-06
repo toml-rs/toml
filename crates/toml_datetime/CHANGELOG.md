@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.11] - 2025-06-06
+
 ### Fixes
 
 - Remove trailing space in `FromStr` error
@@ -70,7 +72,8 @@ MSRV is now 1.64.0
 ## [0.5.0] - 2022-10-21
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.11...HEAD
+[0.6.11]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.10...toml_datetime-v0.6.11
 [0.6.10]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.9...toml_datetime-v0.6.10
 [0.6.9]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.8...toml_datetime-v0.6.9
 [0.6.8]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.7...toml_datetime-v0.6.8
