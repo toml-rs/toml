@@ -23,7 +23,7 @@ pub(crate) fn document<'s>(
     source: toml_parse::Source<'s>,
     errors: &mut dyn ErrorSink,
 ) -> Document<&'s str> {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::document");
     let mut state = State::default();
     while let Some(event) = input.next_token() {
@@ -39,7 +39,7 @@ pub(crate) fn document<'s>(
             | EventKind::KeyValSep
             | EventKind::StdTableClose
             | EventKind::ArrayTableClose => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -141,7 +141,7 @@ fn on_table(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> TableHeader {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::on_table");
     let is_array = open_event.kind() == EventKind::ArrayTableOpen;
     let mut current_path = None;
@@ -165,7 +165,7 @@ fn on_table(
             | EventKind::ArrayTableOpen
             | EventKind::Comment
             | EventKind::Newline => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -239,7 +239,7 @@ fn ws_comment_newline(input: &mut Input<'_>) -> Option<toml_parse::Span> {
             | EventKind::ArrayTableOpen
             | EventKind::StdTableClose
             | EventKind::ArrayTableClose => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -280,9 +280,9 @@ impl State {
         value: Value,
         errors: &mut dyn ErrorSink,
     ) {
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         let _scope = TraceScope::new("document::capture_key_value");
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         trace(
             &format!(
                 "path={:?}",
@@ -290,12 +290,12 @@ impl State {
             ),
             anstyle::AnsiColor::Blue.on_default(),
         );
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         trace(
             &format!("key={key}",),
             anstyle::AnsiColor::Blue.on_default(),
         );
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         trace(
             &format!("value={value:?}",),
             anstyle::AnsiColor::Blue.on_default(),
@@ -332,7 +332,7 @@ impl State {
     }
 
     fn finish_table(&mut self, errors: &mut dyn ErrorSink) {
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         let _scope = TraceScope::new("document::finish_table");
         let mut prev_table = std::mem::take(&mut self.current_table);
         if let Some(header) = self.current_header.take() {
@@ -347,7 +347,7 @@ impl State {
             else {
                 return;
             };
-            #[cfg(feature = "unstable-debug")]
+            #[cfg(feature = "debug")]
             trace(
                 &format!("key={key}",),
                 anstyle::AnsiColor::Blue.on_default(),
@@ -444,9 +444,9 @@ fn descend_path<'t>(
     dotted: bool,
     errors: &mut dyn ErrorSink,
 ) -> Option<&'t mut Table> {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::descend_path");
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     trace(
         &format!(
             "path={:?}",

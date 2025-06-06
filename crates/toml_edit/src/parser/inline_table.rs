@@ -19,7 +19,7 @@ pub(crate) fn on_inline_table(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> InlineTable {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("inline_table::on_inline_table");
     let mut result = InlineTable::new();
 
@@ -32,7 +32,7 @@ pub(crate) fn on_inline_table(
             | EventKind::ArrayClose
             | EventKind::ArrayTableClose
             | EventKind::KeySep => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -40,7 +40,7 @@ pub(crate) fn on_inline_table(
                 break;
             }
             EventKind::Error => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -148,7 +148,7 @@ impl State {
         result: &mut InlineTable,
         errors: &mut dyn ErrorSink,
     ) {
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         let _scope = TraceScope::new("inline_table::finish_value");
         self.seen_keyval_sep = false;
         if let (Some((path, key)), Some(mut value)) =
@@ -204,7 +204,7 @@ impl State {
         close_event: &toml_parse::parser::Event,
         result: &mut InlineTable,
     ) {
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         let _scope = TraceScope::new("inline_table::close");
         let span = open_event.span().append(close_event.span());
         let preamble = self
@@ -225,9 +225,9 @@ fn descend_path<'a>(
     dotted: bool,
     errors: &mut dyn ErrorSink,
 ) -> Option<&'a mut InlineTable> {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("inline_table::descend_path");
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     trace(
         &format!("key={:?}", path.iter().map(|k| k.get()).collect::<Vec<_>>()),
         anstyle::AnsiColor::Blue.on_default(),

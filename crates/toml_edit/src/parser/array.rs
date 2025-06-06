@@ -17,7 +17,7 @@ pub(crate) fn on_array(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Array {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("array::on_array");
     let mut result = Array::new();
 
@@ -32,7 +32,7 @@ pub(crate) fn on_array(
             | EventKind::KeyValSep
             | EventKind::StdTableClose
             | EventKind::ArrayTableClose => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -40,7 +40,7 @@ pub(crate) fn on_array(
                 break;
             }
             EventKind::Error => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -107,7 +107,7 @@ impl State {
     }
 
     fn finish_value(&mut self, event: &toml_parse::parser::Event, result: &mut Array) {
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         let _scope = TraceScope::new("array::finish_value");
         if let Some(mut value) = self.current_value.take() {
             let prefix = self
@@ -135,7 +135,7 @@ impl State {
         close_event: &toml_parse::parser::Event,
         result: &mut Array,
     ) {
-        #[cfg(feature = "unstable-debug")]
+        #[cfg(feature = "debug")]
         let _scope = TraceScope::new("array::close");
         let trailing_comma = self.trailing_start.is_some() && !result.is_empty();
         let span = open_event.span().append(close_event.span());

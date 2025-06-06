@@ -13,7 +13,7 @@ pub(crate) fn value(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Value {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("value");
     if let Some(event) = input.next_token() {
         match event.kind() {
@@ -30,14 +30,14 @@ pub(crate) fn value(
             | EventKind::KeyValSep
             | EventKind::StdTableClose
             | EventKind::ArrayTableClose => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
                 );
             }
             EventKind::Whitespace => {
-                #[cfg(feature = "unstable-debug")]
+                #[cfg(feature = "debug")]
                 trace(
                     &format!("unexpected {event:?}"),
                     anstyle::AnsiColor::Red.on_default(),
@@ -63,7 +63,7 @@ pub(crate) fn on_scalar(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Value {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("on_scalar");
     let value_span = event.span();
     let value_raw = RawString::with_span(value_span.start()..value_span.end());

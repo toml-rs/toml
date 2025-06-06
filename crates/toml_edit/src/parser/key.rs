@@ -15,7 +15,7 @@ pub(crate) fn on_key(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> (Vec<Key>, Option<Key>) {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_key");
     let mut result_path = Vec::new();
     let mut result_key = None;
@@ -38,7 +38,7 @@ pub(crate) fn on_key(
                 | EventKind::StdTableClose
                 | EventKind::ArrayTableClose
                 | EventKind::Error => {
-                    #[cfg(feature = "unstable-debug")]
+                    #[cfg(feature = "debug")]
                     trace(
                         &format!("unexpected {event:?}"),
                         anstyle::AnsiColor::Red.on_default(),
@@ -158,7 +158,7 @@ pub(crate) fn on_simple_key(
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> (RawString, InternalString) {
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_simple_key");
     #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
     let raw = unsafe { source.get_unchecked(event) };
