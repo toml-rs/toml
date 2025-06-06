@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 20
+TOML parse error at line 2, column 8
   |
-1 | multi = "first line
-  |                    ^
-invalid basic string
+2 | second line"
+  |        ^
+key with no value, expected `=`

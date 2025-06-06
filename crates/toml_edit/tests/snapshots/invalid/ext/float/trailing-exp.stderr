@@ -2,4 +2,4 @@ TOML parse error at line 1, column 9
   |
 1 | a = 0.0E
   |         ^
-invalid floating-point number
+invalid exponent, expected digits

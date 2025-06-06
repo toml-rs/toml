@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 6
+TOML parse error at line 1, column 14
   |
 1 | a = { b = 1, b.c = 2 }
-  |      ^
-dotted key `b` attempted to extend non-table type (integer)
+  |              ^
+cannot extend value of type integer with a dotted key

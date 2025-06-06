@@ -2,4 +2,4 @@ TOML parse error at line 1, column 28
   |
 1 | bad-uni-esc-ml-5 = """val\Ugggggggg"""
   |                            ^
-invalid unicode 8-digit hex code
+too few unicode value digits, expected unicode hexadecimal value

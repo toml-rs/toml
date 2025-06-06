@@ -1,6 +1,6 @@
-TOML parse error at line 1, column 24
+TOML parse error at line 1, column 25
   |
 1 | rawmulti-cr   = '''null
 '''
-  |                        ^
-invalid multiline literal string
+  |                         ^
+carriage return must be followed by newline, expected newline

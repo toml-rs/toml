@@ -1,6 +1,6 @@
-TOML parse error at line 1, column 21
+TOML parse error at line 1, column 22
   |
 1 | multi-cr   = """null
 """
-  |                     ^
-invalid multiline basic string
+  |                      ^
+carriage return must be followed by newline, expected newline

@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 8
+TOML parse error at line 1, column 9
   |
 1 | [[table] ]
-  |        ^
-invalid table header
-expected `.`, `]]`
+  |         ^
+unclosed array table, expected `]`

@@ -1,6 +1,5 @@
-TOML parse error at line 3, column 3
+TOML parse error at line 3, column 8
   |
 3 |   I don't belong,
-  |   ^
-invalid array
-expected `]`
+  |        ^
+missing comma between array elements, expected `,`

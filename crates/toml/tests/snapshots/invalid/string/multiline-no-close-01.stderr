@@ -2,4 +2,4 @@ TOML parse error at line 2, column 20
   |
 2 |     this will fail
   |                    ^
-invalid multiline basic string
+invalid multi-line basic string, expected `"`

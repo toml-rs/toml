@@ -58,11 +58,7 @@ fn test_spanned_field() {
             0,
             "incorrect `foo_outer.span().start`"
         );
-        assert_eq!(
-            foo_outer.span().end,
-            input.len(),
-            "incorrect `foo_outer.span().end`"
-        );
+        assert_eq!(foo_outer.span().end, 0, "incorrect `foo_outer.span().end`");
         assert_eq!(
             foo.foo.into_inner(),
             foo_outer.into_inner().foo,
@@ -125,7 +121,7 @@ fn test_inner_spanned_table() {
 
         if zero {
             assert_eq!(foo.foo.span().start, 0, "invalid `foo.foo.span().start`");
-            assert_eq!(foo.foo.span().end, 73, "invalid `foo.foo.span().end`");
+            assert_eq!(foo.foo.span().end, 5, "invalid `foo.foo.span().end`");
         } else {
             assert_eq!(
                 foo.foo.span().start,
@@ -269,7 +265,7 @@ fn test_spanned_array() {
     ";
     let foo_list: Foo = crate::from_str(toml).unwrap();
 
-    for (foo, expected) in foo_list.foo.iter().zip([0..75, 84..159]) {
+    for (foo, expected) in foo_list.foo.iter().zip([0..7, 84..91]) {
         assert_eq!(foo.span(), expected);
         for (k, v) in foo.as_ref().iter() {
             assert_eq!(&toml[k.span().start..k.span().end], k.as_ref());

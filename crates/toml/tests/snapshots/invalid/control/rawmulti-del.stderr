@@ -2,4 +2,4 @@ TOML parse error at line 1, column 24
   |
 1 | rawmulti-del  = '''null'''
   |                        ^
-invalid multiline literal string
+invalid multi-line literal string, expected non-single-quote characters

@@ -174,18 +174,30 @@ impl Key {
 
     #[cfg(feature = "parse")]
     fn try_parse_simple(s: &str) -> Result<Key, crate::TomlError> {
-        let mut key = crate::parser::parse_key(s)?;
-        key.despan(s);
-        Ok(key)
+        let source = toml_parse::Source::new(s);
+        let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
+        let mut key = crate::parser::parse_key(source, &mut sink);
+        if let Some(err) = sink.into_inner() {
+            Err(err)
+        } else {
+            key.despan(s);
+            Ok(key)
+        }
     }
 
     #[cfg(feature = "parse")]
     fn try_parse_path(s: &str) -> Result<Vec<Key>, crate::TomlError> {
-        let mut keys = crate::parser::parse_key_path(s)?;
-        for key in &mut keys {
-            key.despan(s);
+        let source = toml_parse::Source::new(s);
+        let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
+        let mut keys = crate::parser::parse_key_path(source, &mut sink);
+        if let Some(err) = sink.into_inner() {
+            Err(err)
+        } else {
+            for key in &mut keys {
+                key.despan(s);
+            }
+            Ok(keys)
         }
-        Ok(keys)
     }
 }
 

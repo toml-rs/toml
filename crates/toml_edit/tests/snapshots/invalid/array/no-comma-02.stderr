@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 18
+TOML parse error at line 1, column 20
   |
 1 | no-comma-2 = [ 1 2 3 ]
-  |                  ^
-invalid array
-expected `]`
+  |                    ^
+missing comma between array elements, expected `,`

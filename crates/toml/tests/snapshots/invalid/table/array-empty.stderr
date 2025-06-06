@@ -2,4 +2,4 @@ TOML parse error at line 1, column 3
   |
 1 | [[]]
   |   ^
-invalid key
+unquoted keys cannot be empty, expected letters, numbers, `-`, `_`

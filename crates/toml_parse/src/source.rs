@@ -233,7 +233,7 @@ impl Span {
 
     /// Extend this `Raw` to the end of `after`
     #[must_use]
-    pub(crate) fn append(&self, after: Self) -> Self {
+    pub fn append(&self, after: Self) -> Self {
         Self::new_unchecked(self.start, after.end)
     }
 }

@@ -1,6 +1,5 @@
-TOML parse error at line 4, column 7
+TOML parse error at line 4, column 9
   |
 4 | gee \   """
-  |       ^
-invalid escape sequence
-expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+  |         ^
+invalid multi-line basic string, expected newline

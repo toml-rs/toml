@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 10
   |
 1 | t = {x=3,,y=4}
-  |         ^
-invalid inline table
-expected `}`
+  |          ^
+extra comma in inline table, expected key

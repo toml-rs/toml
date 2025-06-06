@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 31
+TOML parse error at line 1, column 42
   |
 1 | arrr = { comma-missing = true valid-toml = false }
-  |                               ^
-invalid inline table
-expected `}`
+  |                                          ^
+extra assignment between key-value pairs, expected `,`

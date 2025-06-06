@@ -2,5 +2,4 @@ TOML parse error at line 1, column 3
   |
 1 | a==1
   |   ^
-invalid string
-expected `"`, `'`
+extra `=`, expected nothing

@@ -182,7 +182,7 @@ dependencies = [
  "anstyle",
  "clap_lex",
  "strsim",
- "terminal_size 0.2.6",
+ "terminal_size",
 ]
 
 [[package]]
@@ -859,16 +859,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "terminal_size"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5352447f921fda68cf61b4101566c0bdb5104eff6804d0678e5227580ab6a4e9"
-dependencies = [
- "rustix 0.38.34",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "thread_local"
 version = "1.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -972,6 +962,8 @@ dependencies = [
 name = "toml_edit"
 version = "0.22.27"
 dependencies = [
+ "anstream 0.6.18",
+ "anstyle",
  "indexmap",
  "kstring",
  "proptest",
@@ -983,6 +975,7 @@ dependencies = [
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
+ "toml_parse",
  "toml_write",
  "walkdir",
  "winnow",
@@ -1228,9 +1221,5 @@ version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c06928c8748d81b05c9be96aad92e1b6ff01833332f281e8cfca3be4b35fc9ec"
 dependencies = [
- "anstream 0.3.2",
- "anstyle",
- "is-terminal",
  "memchr",
- "terminal_size 0.4.1",
 ]

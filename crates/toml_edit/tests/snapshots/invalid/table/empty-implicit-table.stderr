@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 9
+TOML parse error at line 1, column 10
   |
 1 | [naughty..naughty]
-  |         ^
-invalid table header
-expected `.`, `]`
+  |          ^
+unquoted keys cannot be empty, expected letters, numbers, `-`, `_`

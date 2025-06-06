@@ -1,6 +1,5 @@
-TOML parse error at line 1, column 23
+TOML parse error at line 1, column 22
   |
 1 | trailing-us-exp-1 = 1_e2
-  |                       ^
-invalid integer
-expected digit
+  |                      ^
+`_` may only go between digits

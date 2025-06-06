@@ -1,6 +1,5 @@
-TOML parse error at line 3, column 13
+TOML parse error at line 3, column 5
   |
 3 | d = 2006-01-32
-  |             ^
-invalid date-time
-value is out of range
+  |     ^^^^^^^^^^
+invalid date, expected day between 01 and 31

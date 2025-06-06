@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 18
+TOML parse error at line 1, column 16
   |
 1 | us-after-oct = 0o_1
-  |                  ^
-invalid octal integer
+  |                ^
+`_` may only go between digits, expected nothing

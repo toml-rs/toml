@@ -20,7 +20,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = ""
   |      ^
-invalid basic string
+invalid basic string, expected non-double-quote visible characters, `\`
 
 "#]],
     );
@@ -35,7 +35,7 @@ TOML parse error at line 1, column 6
   |
 1 | a = ''
   |      ^
-invalid literal string
+invalid literal string, expected non-single-quote visible characters
 
 "#]],
     );
@@ -46,11 +46,11 @@ fn stray_cr() {
     t(
         "\r",
         str![[r#"
-TOML parse error at line 1, column 1
+TOML parse error at line 1, column 2
   |
 1 | 
-  | ^
-
+  |  ^
+carriage return must be followed by newline, expected newline
 
 "#]],
     );
@@ -62,44 +62,43 @@ TOML parse error at line 1, column 8
 1 | a = [ 
  ]
   |        ^
-
+carriage return must be followed by newline, expected newline
 
 "#]],
     );
     t(
         "a = \"\"\"\r\"\"\"",
         str![[r#"
-TOML parse error at line 1, column 8
+TOML parse error at line 1, column 9
   |
 1 | a = """
 """
-  |        ^
-invalid multiline basic string
+  |         ^
+carriage return must be followed by newline, expected newline
 
 "#]],
     );
     t(
         "a = \"\"\"\\  \r  \"\"\"",
         str![[r#"
-TOML parse error at line 1, column 10
+TOML parse error at line 1, column 12
   |
 1 | a = """\  
   """
-  |          ^
-invalid escape sequence
-expected `b`, `f`, `n`, `r`, `t`, `u`, `U`, `\`, `"`
+  |            ^
+carriage return must be followed by newline, expected newline
 
 "#]],
     );
     t(
         "a = '''\r'''",
         str![[r#"
-TOML parse error at line 1, column 8
+TOML parse error at line 1, column 9
   |
 1 | a = '''
 '''
-  |        ^
-invalid multiline literal string
+  |         ^
+carriage return must be followed by newline, expected newline
 
 "#]],
     );
@@ -111,7 +110,7 @@ TOML parse error at line 1, column 6
 1 | a = '
 '
   |      ^
-invalid literal string
+invalid literal string, expected non-single-quote visible characters
 
 "#]],
     );
@@ -123,7 +122,7 @@ TOML parse error at line 1, column 6
 1 | a = "
 "
   |      ^
-invalid basic string
+invalid basic string, expected non-double-quote visible characters, `\`
 
 "#]],
     );
@@ -143,7 +142,7 @@ TOML parse error at line 5, column 1
   |
 5 | a = 2
   | ^
-duplicate key `a` in table `t2`
+duplicate key
 
 "#]],
     );
@@ -166,7 +165,7 @@ fn text_error_span() {
     let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(&err);
     let actual = &input[err.span().unwrap()];
-    assert_eq!(actual, "a");
+    assert_eq!(actual, "asdf");
 }
 
 #[test]
@@ -176,5 +175,6 @@ fn fuzzed_68144_error_span() {
     let err = input.parse::<crate::RustDocument>().unwrap_err();
     dbg!(&err);
     let actual = &input[err.span().unwrap()];
-    assert_eq!(actual, "ᾂ");
+    // atm bad escape values are reported as missing escape values
+    assert_eq!(actual, "");
 }

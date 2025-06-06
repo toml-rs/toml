@@ -2,5 +2,4 @@ TOML parse error at line 1, column 14
   |
 1 | leading-us = _123
   |              ^
-invalid integer
-expected leading digit
+`_` may only go between digits, expected nothing
