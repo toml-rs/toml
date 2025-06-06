@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Remove trailing space in `FromStr` error
+- Use 2-digiti values for bounds in `FromStr` errors
+
 ## [0.6.10] - 2025-06-06
 
 ### Fixes
