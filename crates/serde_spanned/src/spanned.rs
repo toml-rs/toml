@@ -119,6 +119,12 @@ impl std::borrow::Borrow<str> for Spanned<String> {
     }
 }
 
+impl std::borrow::Borrow<str> for Spanned<std::borrow::Cow<'_, str>> {
+    fn borrow(&self) -> &str {
+        self.get_ref()
+    }
+}
+
 impl<T> AsRef<T> for Spanned<T> {
     fn as_ref(&self) -> &T {
         self.get_ref()
