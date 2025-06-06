@@ -7,7 +7,7 @@ use toml_parse::parser::ValidateWhitespace;
 use winnow::stream::Stream as _;
 
 pub(crate) mod array;
-#[cfg(feature = "unstable-debug")]
+#[cfg(feature = "debug")]
 pub(crate) mod debug;
 pub(crate) mod document;
 pub(crate) mod inline_table;
@@ -149,8 +149,8 @@ pub(crate) mod prelude {
 
     pub(crate) type Input<'i> = winnow::stream::TokenSlice<'i, toml_parse::parser::Event>;
 
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     pub(crate) use super::debug::trace;
-    #[cfg(feature = "unstable-debug")]
+    #[cfg(feature = "debug")]
     pub(crate) use super::debug::TraceScope;
 }
