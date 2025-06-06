@@ -4,8 +4,7 @@
 
 macro_rules! parse_value {
     ($s:expr) => {{
-        use serde::Deserialize;
-        let v = toml::Value::deserialize(toml::de::ValueDeserializer::new($s));
+        let v = $s.parse::<toml::Value>();
         assert!(
             v.is_ok(),
             "Failed with `{}` when parsing:

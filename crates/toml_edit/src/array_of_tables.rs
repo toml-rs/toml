@@ -90,8 +90,11 @@ impl ArrayOfTables {
     }
 
     /// Removes a table with the given index.
-    pub fn remove(&mut self, index: usize) {
-        self.values.remove(index);
+    pub fn remove(&mut self, index: usize) -> Table {
+        self.values
+            .remove(index)
+            .into_table()
+            .expect("cannot have any other item in an array-of-tables")
     }
 
     /// Retains only the elements specified by the `keep` predicate.
