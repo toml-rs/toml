@@ -372,17 +372,17 @@ impl FromStr for Datetime {
                 if year.raw.len() != 4 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("a four-digit year"));
+                        .expected("a four-digit year (YYYY) "));
                 }
                 if month.raw.len() != 2 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("a two-digit month"));
+                        .expected("a two-digit month (MM)"));
                 }
                 if day.raw.len() != 2 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("a two-digit day"));
+                        .expected("a two-digit day (DD)"));
                 }
                 let date = Date {
                     year: year.raw.parse().map_err(|_err| DatetimeParseError::new())?,
@@ -487,17 +487,17 @@ impl FromStr for Datetime {
             if hour.raw.len() != 2 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("a two-digit hour"));
+                    .expected("a two-digit hour (HH)"));
             }
             if minute.raw.len() != 2 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("a two-digit minute"));
+                    .expected("a two-digit minute (MM)"));
             }
             if second.raw.len() != 2 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("a two-digit second"));
+                    .expected("a two-digit second (SS)"));
             }
 
             let time = Time {
@@ -569,12 +569,12 @@ impl FromStr for Datetime {
                     if hours.raw.len() != 2 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("a two-digit hour"));
+                            .expected("a two-digit hour (HH)"));
                     }
                     if minutes.raw.len() != 2 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("a two-digit minute"));
+                            .expected("a two-digit minute (MM)"));
                     }
 
                     let hours = hours
