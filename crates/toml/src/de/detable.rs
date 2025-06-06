@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use serde_spanned::Spanned;
 
 use crate::de::DeString;
@@ -11,3 +13,22 @@ use crate::map::Map;
 /// of the keys. Enable the `preserve_order` feature to store entries in the order they appear in
 /// the source file.
 pub type DeTable<'i> = Map<Spanned<DeString<'i>>, Spanned<DeValue<'i>>>;
+
+impl<'i> DeTable<'i> {
+    /// Ensure no data is borrowed
+    pub fn make_owned(&mut self) {
+        let borrowed = std::mem::take(self);
+        let owned = borrowed
+            .into_iter()
+            .map(|(k, mut v)| {
+                let span = k.span();
+                let inner = k.into_inner();
+                let inner = Cow::Owned(inner.into_owned());
+                let k = Spanned::new(span, inner);
+                v.get_mut().make_owned();
+                (k, v)
+            })
+            .collect::<Self>();
+        *self = owned;
+    }
+}

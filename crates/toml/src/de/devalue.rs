@@ -35,6 +35,26 @@ pub enum DeValue<'i> {
 }
 
 impl<'i> DeValue<'i> {
+    /// Ensure no data is borrowed
+    pub fn make_owned(&mut self) {
+        match self {
+            DeValue::String(v) => {
+                let owned = std::mem::take(v);
+                *v = Cow::Owned(owned.into_owned());
+            }
+            DeValue::Integer(..)
+            | DeValue::Float(..)
+            | DeValue::Boolean(..)
+            | DeValue::Datetime(..) => {}
+            DeValue::Array(v) => {
+                for e in v {
+                    e.get_mut().make_owned();
+                }
+            }
+            DeValue::Table(v) => v.make_owned(),
+        }
+    }
+
     /// Index into a TOML array or map. A string index can be used to access a
     /// value in a map, and a usize index can be used to access an element of an
     /// array.
