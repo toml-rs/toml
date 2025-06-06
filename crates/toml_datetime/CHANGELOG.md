@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix bounds checks in `FromStr`
+- Improve `FromStr` error messages
+
 ## [0.6.9] - 2025-04-25
 
 ## [0.6.8] - 2024-07-30
