@@ -372,7 +372,7 @@ impl FromStr for Datetime {
                 if year.raw.len() != 4 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("a four-digit year (YYYY) "));
+                        .expected("a four-digit year (YYYY)"));
                 }
                 if month.raw.len() != 2 {
                     return Err(DatetimeParseError::new()
