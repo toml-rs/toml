@@ -372,7 +372,7 @@ impl FromStr for Datetime {
                 if year.raw.len() != 4 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("a four-digit year (YYYY) "));
+                        .expected("a four-digit year (YYYY)"));
                 }
                 if month.raw.len() != 2 {
                     return Err(DatetimeParseError::new()
@@ -395,15 +395,15 @@ impl FromStr for Datetime {
                 if date.month < 1 || date.month > 12 {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("month between 1 and 12"));
+                        .expected("month between 01 and 12"));
                 }
                 let is_leap_year =
                     (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
                 let (max_days_in_month, expected_day) = match date.month {
-                    2 if is_leap_year => (29, "day between 1 and 29"),
-                    2 => (28, "day between 1 and 28"),
-                    4 | 6 | 9 | 11 => (30, "day between 1 and 30"),
-                    _ => (31, "day between 1 and 31"),
+                    2 if is_leap_year => (29, "day between 01 and 29"),
+                    2 => (28, "day between 01 and 28"),
+                    4 | 6 | 9 | 11 => (30, "day between 01 and 30"),
+                    _ => (31, "day between 01 and 31"),
                 };
                 if date.day < 1 || date.day > max_days_in_month {
                     return Err(DatetimeParseError::new()
@@ -516,18 +516,18 @@ impl FromStr for Datetime {
             if time.hour > 23 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("hour between 0 and 23"));
+                    .expected("hour between 00 and 23"));
             }
             if time.minute > 59 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("minute between 0 and 59"));
+                    .expected("minute between 00 and 59"));
             }
             // 00-58, 00-59, 00-60 based on leap second rules
             if time.second > 60 {
                 return Err(DatetimeParseError::new()
                     .what("time")
-                    .expected("second between 0 and 60"));
+                    .expected("second between 00 and 60"));
             }
             if time.nanosecond > 999_999_999 {
                 return Err(DatetimeParseError::new()
@@ -589,12 +589,12 @@ impl FromStr for Datetime {
                     if hours > 23 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("hours between 0 and 23"));
+                            .expected("hours between 00 and 23"));
                     }
                     if minutes > 59 {
                         return Err(DatetimeParseError::new()
                             .what("offset")
-                            .expected("minutes between 0 and 59"));
+                            .expected("minutes between 00 and 59"));
                     }
 
                     let total_minutes = sign * (hours as i16 * 60 + minutes as i16);
