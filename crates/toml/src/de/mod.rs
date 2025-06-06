@@ -4,9 +4,22 @@
 //! into Rust structures. Note that some top-level functions here are also
 //! provided at the top of the crate.
 
+#[cfg(feature = "parse")]
+mod detable;
+#[cfg(feature = "parse")]
+mod devalue;
 mod error;
 #[cfg(feature = "parse")]
 mod value;
+
+#[cfg(feature = "parse")]
+pub use detable::DeTable;
+#[cfg(feature = "parse")]
+pub use devalue::DeArray;
+#[cfg(feature = "parse")]
+pub use devalue::DeString;
+#[cfg(feature = "parse")]
+pub use devalue::DeValue;
 
 pub use error::Error;
 #[cfg(feature = "parse")]

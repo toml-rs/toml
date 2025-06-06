@@ -1,0 +1,229 @@
+//! Definition of a TOML [value][DeValue] for deserialization
+
+use std::borrow::Cow;
+use std::mem::discriminant;
+use std::ops;
+
+use toml_datetime::Datetime;
+
+use crate::de::DeTable;
+
+/// Type representing a TOML string, payload of the `DeValue::String` variant
+pub type DeString<'i> = Cow<'i, str>;
+
+/// Type representing a TOML array, payload of the `DeValue::Array` variant
+pub type DeArray<'i> = Vec<DeValue<'i>>;
+
+/// Representation of a TOML value.
+#[derive(PartialEq, Clone, Debug)]
+pub enum DeValue<'i> {
+    /// Represents a TOML string
+    String(DeString<'i>),
+    /// Represents a TOML integer
+    Integer(i64),
+    /// Represents a TOML float
+    Float(f64),
+    /// Represents a TOML boolean
+    Boolean(bool),
+    /// Represents a TOML datetime
+    Datetime(Datetime),
+    /// Represents a TOML array
+    Array(DeArray<'i>),
+    /// Represents a TOML table
+    Table(DeTable<'i>),
+}
+
+impl<'i> DeValue<'i> {
+    /// Index into a TOML array or map. A string index can be used to access a
+    /// value in a map, and a usize index can be used to access an element of an
+    /// array.
+    ///
+    /// Returns `None` if the type of `self` does not match the type of the
+    /// index, for example if the index is a string and `self` is an array or a
+    /// number. Also returns `None` if the given key does not exist in the map
+    /// or the given index is not within the bounds of the array.
+    pub fn get<I: Index>(&self, index: I) -> Option<&Self> {
+        index.index(self)
+    }
+
+    /// Extracts the integer value if it is an integer.
+    pub fn as_integer(&self) -> Option<i64> {
+        match *self {
+            DeValue::Integer(i) => Some(i),
+            _ => None,
+        }
+    }
+
+    /// Tests whether this value is an integer.
+    pub fn is_integer(&self) -> bool {
+        self.as_integer().is_some()
+    }
+
+    /// Extracts the float value if it is a float.
+    pub fn as_float(&self) -> Option<f64> {
+        match *self {
+            DeValue::Float(f) => Some(f),
+            _ => None,
+        }
+    }
+
+    /// Tests whether this value is a float.
+    pub fn is_float(&self) -> bool {
+        self.as_float().is_some()
+    }
+
+    /// Extracts the boolean value if it is a boolean.
+    pub fn as_bool(&self) -> Option<bool> {
+        match *self {
+            DeValue::Boolean(b) => Some(b),
+            _ => None,
+        }
+    }
+
+    /// Tests whether this value is a boolean.
+    pub fn is_bool(&self) -> bool {
+        self.as_bool().is_some()
+    }
+
+    /// Extracts the string of this value if it is a string.
+    pub fn as_str(&self) -> Option<&str> {
+        match *self {
+            DeValue::String(ref s) => Some(&**s),
+            _ => None,
+        }
+    }
+
+    /// Tests if this value is a string.
+    pub fn is_str(&self) -> bool {
+        self.as_str().is_some()
+    }
+
+    /// Extracts the datetime value if it is a datetime.
+    ///
+    /// Note that a parsed TOML value will only contain ISO 8601 dates. An
+    /// example date is:
+    ///
+    /// ```notrust
+    /// 1979-05-27T07:32:00Z
+    /// ```
+    pub fn as_datetime(&self) -> Option<&Datetime> {
+        match *self {
+            DeValue::Datetime(ref s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// Tests whether this value is a datetime.
+    pub fn is_datetime(&self) -> bool {
+        self.as_datetime().is_some()
+    }
+
+    /// Extracts the array value if it is an array.
+    pub fn as_array(&self) -> Option<&DeArray<'i>> {
+        match *self {
+            DeValue::Array(ref s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// Tests whether this value is an array.
+    pub fn is_array(&self) -> bool {
+        self.as_array().is_some()
+    }
+
+    /// Extracts the table value if it is a table.
+    pub fn as_table(&self) -> Option<&DeTable<'i>> {
+        match *self {
+            DeValue::Table(ref s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// Tests whether this value is a table.
+    pub fn is_table(&self) -> bool {
+        self.as_table().is_some()
+    }
+
+    /// Tests whether this and another value have the same type.
+    pub fn same_type(&self, other: &DeValue<'_>) -> bool {
+        discriminant(self) == discriminant(other)
+    }
+
+    /// Returns a human-readable representation of the type of this value.
+    pub fn type_str(&self) -> &'static str {
+        match *self {
+            DeValue::String(..) => "string",
+            DeValue::Integer(..) => "integer",
+            DeValue::Float(..) => "float",
+            DeValue::Boolean(..) => "boolean",
+            DeValue::Datetime(..) => "datetime",
+            DeValue::Array(..) => "array",
+            DeValue::Table(..) => "table",
+        }
+    }
+}
+
+impl<I> ops::Index<I> for DeValue<'_>
+where
+    I: Index,
+{
+    type Output = Self;
+
+    fn index(&self, index: I) -> &Self {
+        self.get(index).expect("index not found")
+    }
+}
+
+/// Types that can be used to index a `toml::Value`
+///
+/// Currently this is implemented for `usize` to index arrays and `str` to index
+/// tables.
+///
+/// This trait is sealed and not intended for implementation outside of the
+/// `toml` crate.
+pub trait Index: Sealed {
+    #[doc(hidden)]
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>>;
+}
+
+/// An implementation detail that should not be implemented, this will change in
+/// the future and break code otherwise.
+#[doc(hidden)]
+pub trait Sealed {}
+impl Sealed for usize {}
+impl Sealed for str {}
+impl Sealed for String {}
+impl<T: Sealed + ?Sized> Sealed for &T {}
+
+impl Index for usize {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+        match *val {
+            DeValue::Array(ref a) => a.get(*self),
+            _ => None,
+        }
+    }
+}
+
+impl Index for str {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+        match *val {
+            DeValue::Table(ref a) => a.get(self),
+            _ => None,
+        }
+    }
+}
+
+impl Index for String {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+        self[..].index(val)
+    }
+}
+
+impl<T> Index for &T
+where
+    T: Index + ?Sized,
+{
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+        (**self).index(val)
+    }
+}
