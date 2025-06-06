@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.22.27] - 2025-06-06
+
 ### Features
 
 - Add `ImDocument::into_item`, `DocumentMut::into_item`
@@ -801,7 +803,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.26...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.22.27...HEAD
+[0.22.27]: https://github.com/toml-rs/toml/compare/v0.22.26...v0.22.27
 [0.22.26]: https://github.com/toml-rs/toml/compare/v0.22.25...v0.22.26
 [0.22.25]: https://github.com/toml-rs/toml/compare/v0.22.24...v0.22.25
 [0.22.24]: https://github.com/toml-rs/toml/compare/v0.22.23...v0.22.24

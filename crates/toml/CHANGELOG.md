@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.8.23] - 2025-06-06
+
 ### Fixes
 
 - *(serde)* Serialize struct variants
@@ -318,7 +320,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.22...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.23...HEAD
+[0.8.23]: https://github.com/toml-rs/toml/compare/toml-v0.8.22...toml-v0.8.23
 [0.8.22]: https://github.com/toml-rs/toml/compare/toml-v0.8.21...toml-v0.8.22
 [0.8.21]: https://github.com/toml-rs/toml/compare/toml-v0.8.20...toml-v0.8.21
 [0.8.20]: https://github.com/toml-rs/toml/compare/toml-v0.8.19...toml-v0.8.20
