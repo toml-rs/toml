@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(serde)* Serialize struct variants
+- *(serde)* Serialize tuple variants under their variant name
+
 ## [0.8.22] - 2025-04-28
 
 ### Fixes

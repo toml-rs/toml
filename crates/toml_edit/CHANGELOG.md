@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `ImDocument::into_item`, `DocumentMut::into_item`
+- Add `ImDocument::into_table`, `DocumentMut::into_table`
+- Add `unstable-debug` feature to inspect what is happening during parsing
+
+### Fixes
+
+- *(parse)* Don't lose spans of empty strings
+- *(serde)* Don't skip some nested tables when serializing
+
 ## [0.22.26] - 2025-04-28
 
 ### Fixes
