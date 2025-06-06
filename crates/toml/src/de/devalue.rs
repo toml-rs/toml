@@ -4,6 +4,7 @@ use std::borrow::Cow;
 use std::mem::discriminant;
 use std::ops;
 
+use serde_spanned::Spanned;
 use toml_datetime::Datetime;
 
 use crate::de::DeTable;
@@ -12,7 +13,7 @@ use crate::de::DeTable;
 pub type DeString<'i> = Cow<'i, str>;
 
 /// Type representing a TOML array, payload of the `DeValue::Array` variant
-pub type DeArray<'i> = Vec<DeValue<'i>>;
+pub type DeArray<'i> = Vec<Spanned<DeValue<'i>>>;
 
 /// Representation of a TOML value.
 #[derive(PartialEq, Clone, Debug)]
@@ -42,7 +43,7 @@ impl<'i> DeValue<'i> {
     /// index, for example if the index is a string and `self` is an array or a
     /// number. Also returns `None` if the given key does not exist in the map
     /// or the given index is not within the bounds of the array.
-    pub fn get<I: Index>(&self, index: I) -> Option<&Self> {
+    pub fn get<I: Index>(&self, index: I) -> Option<&Spanned<Self>> {
         index.index(self)
     }
 
@@ -167,9 +168,9 @@ impl<I> ops::Index<I> for DeValue<'_>
 where
     I: Index,
 {
-    type Output = Self;
+    type Output = Spanned<Self>;
 
-    fn index(&self, index: I) -> &Self {
+    fn index(&self, index: I) -> &Spanned<Self> {
         self.get(index).expect("index not found")
     }
 }
@@ -183,7 +184,7 @@ where
 /// `toml` crate.
 pub trait Index: Sealed {
     #[doc(hidden)]
-    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>>;
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r Spanned<DeValue<'i>>>;
 }
 
 /// An implementation detail that should not be implemented, this will change in
@@ -196,7 +197,7 @@ impl Sealed for String {}
 impl<T: Sealed + ?Sized> Sealed for &T {}
 
 impl Index for usize {
-    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r Spanned<DeValue<'i>>> {
         match *val {
             DeValue::Array(ref a) => a.get(*self),
             _ => None,
@@ -205,7 +206,7 @@ impl Index for usize {
 }
 
 impl Index for str {
-    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r Spanned<DeValue<'i>>> {
         match *val {
             DeValue::Table(ref a) => a.get(self),
             _ => None,
@@ -214,7 +215,7 @@ impl Index for str {
 }
 
 impl Index for String {
-    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r Spanned<DeValue<'i>>> {
         self[..].index(val)
     }
 }
@@ -223,7 +224,7 @@ impl<T> Index for &T
 where
     T: Index + ?Sized,
 {
-    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r DeValue<'i>> {
+    fn index<'r, 'i>(&self, val: &'r DeValue<'i>) -> Option<&'r Spanned<DeValue<'i>>> {
         (**self).index(val)
     }
 }
