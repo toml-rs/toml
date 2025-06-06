@@ -31,6 +31,8 @@ pre-release-replacements = [
 default = ["parse", "display"]
 parse = ["dep:toml_edit", "toml_edit?/parse"]
 display = ["dep:toml_edit", "toml_edit?/display"]
+unsafe = ["toml_edit?/unsafe"]
+debug = ["toml_edit?/debug"]
 
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
 # without any consideration for overflowing the stack. Additionally you will
