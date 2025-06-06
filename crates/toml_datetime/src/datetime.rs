@@ -399,16 +399,16 @@ impl FromStr for Datetime {
                 }
                 let is_leap_year =
                     (date.year % 4 == 0) && ((date.year % 100 != 0) || (date.year % 400 == 0));
-                let max_days_in_month = match date.month {
-                    2 if is_leap_year => 29,
-                    2 => 28,
-                    4 | 6 | 9 | 11 => 30,
-                    _ => 31,
+                let (max_days_in_month, expected_day) = match date.month {
+                    2 if is_leap_year => (29, "day between 1 and 29"),
+                    2 => (28, "day between 1 and 28"),
+                    4 | 6 | 9 | 11 => (30, "day between 1 and 30"),
+                    _ => (31, "day between 1 and 31"),
                 };
                 if date.day < 1 || date.day > max_days_in_month {
                     return Err(DatetimeParseError::new()
                         .what("date")
-                        .expected("day between 1 and 31"));
+                        .expected(expected_day));
                 }
 
                 result.date = Some(date);
