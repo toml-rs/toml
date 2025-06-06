@@ -43,9 +43,21 @@ impl<S> ImDocument<S> {
         &self.root
     }
 
+    /// Returns the root item.
+    pub fn into_item(self) -> Item {
+        self.root
+    }
+
     /// Returns a reference to the root table.
     pub fn as_table(&self) -> &Table {
         self.root.as_table().expect("root should always be a table")
+    }
+
+    /// Returns the root table.
+    pub fn into_table(self) -> Table {
+        self.root
+            .into_table()
+            .expect("root should always be a table")
     }
 
     /// Returns an iterator over the root table.
@@ -129,6 +141,11 @@ impl DocumentMut {
         &mut self.root
     }
 
+    /// Returns the root item.
+    pub fn into_item(self) -> Item {
+        self.root
+    }
+
     /// Returns a reference to the root table.
     pub fn as_table(&self) -> &Table {
         self.root.as_table().expect("root should always be a table")
@@ -138,6 +155,13 @@ impl DocumentMut {
     pub fn as_table_mut(&mut self) -> &mut Table {
         self.root
             .as_table_mut()
+            .expect("root should always be a table")
+    }
+
+    /// Returns the root table.
+    pub fn into_table(self) -> Table {
+        self.root
+            .into_table()
             .expect("root should always be a table")
     }
 
