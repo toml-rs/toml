@@ -25,7 +25,6 @@ impl Error {
     }
 
     /// The start/end index into the original document where the error occurred
-    #[cfg(feature = "parse")]
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.inner.span()
     }
