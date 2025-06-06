@@ -15,6 +15,20 @@ use crate::map::Map;
 pub type DeTable<'i> = Map<Spanned<DeString<'i>>, Spanned<DeValue<'i>>>;
 
 impl<'i> DeTable<'i> {
+    /// Parse a TOML document
+    pub fn parse(input: &'i str) -> Result<Spanned<Self>, crate::de::Error> {
+        let source = toml_parse::Source::new(input);
+        let mut errors = None;
+        let value = crate::de::parser::parse_document(source, &mut errors);
+        if let Some(_err) = errors {
+            use serde::de::Error as _;
+            let err = crate::de::Error::custom("failed");
+            Err(err)
+        } else {
+            Ok(value)
+        }
+    }
+
     /// Ensure no data is borrowed
     pub fn make_owned(&mut self) {
         let borrowed = std::mem::take(self);

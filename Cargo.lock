@@ -907,6 +907,8 @@ dependencies = [
 name = "toml"
 version = "0.8.23"
 dependencies = [
+ "anstream 0.6.18",
+ "anstyle",
  "indexmap 2.3.0",
  "serde",
  "serde_json",
@@ -916,7 +918,9 @@ dependencies = [
  "toml-test-harness",
  "toml_datetime",
  "toml_edit",
+ "toml_parse",
  "walkdir",
+ "winnow",
 ]
 
 [[package]]
@@ -961,6 +965,7 @@ dependencies = [
  "lexopt",
  "serde",
  "serde_json",
+ "serde_spanned",
  "toml 0.5.11",
  "toml 0.8.23",
  "toml_edit",

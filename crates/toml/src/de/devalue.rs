@@ -33,6 +33,20 @@ pub enum DeValue<'i> {
 }
 
 impl<'i> DeValue<'i> {
+    /// Parse a TOML document
+    pub fn parse(input: &'i str) -> Result<Spanned<Self>, crate::de::Error> {
+        let source = toml_parse::Source::new(input);
+        let mut errors = None;
+        let value = crate::de::parser::parse_value(source, &mut errors);
+        if let Some(_err) = errors {
+            use serde::de::Error as _;
+            let err = crate::de::Error::custom("failed");
+            Err(err)
+        } else {
+            Ok(value)
+        }
+    }
+
     /// Ensure no data is borrowed
     pub fn make_owned(&mut self) {
         match self {
@@ -145,6 +159,13 @@ impl<'i> DeValue<'i> {
         }
     }
 
+    pub(crate) fn as_array_mut(&mut self) -> Option<&mut DeArray<'i>> {
+        match self {
+            DeValue::Array(s) => Some(s),
+            _ => None,
+        }
+    }
+
     /// Tests whether this value is an array.
     pub fn is_array(&self) -> bool {
         self.as_array().is_some()
@@ -154,6 +175,13 @@ impl<'i> DeValue<'i> {
     pub fn as_table(&self) -> Option<&DeTable<'i>> {
         match *self {
             DeValue::Table(ref s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn as_table_mut(&mut self) -> Option<&mut DeTable<'i>> {
+        match self {
+            DeValue::Table(s) => Some(s),
             _ => None,
         }
     }

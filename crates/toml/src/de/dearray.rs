@@ -6,6 +6,38 @@ use crate::de::DeValue;
 #[derive(Clone)]
 pub struct DeArray<'i> {
     items: Vec<Spanned<DeValue<'i>>>,
+    array_of_tables: bool,
+}
+
+impl<'i> DeArray<'i> {
+    /// Constructs a new, empty `DeArray`.
+    ///
+    /// This will not allocate until elements are pushed onto it.
+    pub const fn new() -> Self {
+        Self {
+            items: Vec::new(),
+            array_of_tables: false,
+        }
+    }
+
+    /// Appends an element to the back of a collection.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the new capacity exceeds `isize::MAX` _bytes_.
+    pub fn push(&mut self, value: Spanned<DeValue<'i>>) {
+        self.items.push(value);
+    }
+}
+
+impl DeArray<'_> {
+    pub(crate) fn is_array_of_tables(&self) -> bool {
+        self.array_of_tables
+    }
+
+    pub(crate) fn set_array_of_tables(&mut self, yes: bool) {
+        self.array_of_tables = yes;
+    }
 }
 
 impl<'i> std::ops::Deref for DeArray<'i> {
@@ -84,6 +116,7 @@ impl<'i> FromIterator<Spanned<DeValue<'i>>> for DeArray<'i> {
     fn from_iter<I: IntoIterator<Item = Spanned<DeValue<'i>>>>(iter: I) -> DeArray<'i> {
         Self {
             items: iter.into_iter().collect(),
+            array_of_tables: false,
         }
     }
 }
@@ -93,6 +126,7 @@ impl Default for DeArray<'static> {
     fn default() -> Self {
         Self {
             items: Default::default(),
+            array_of_tables: false,
         }
     }
 }

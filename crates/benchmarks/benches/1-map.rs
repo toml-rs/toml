@@ -118,6 +118,26 @@ mod toml {
     use crate::NUM_ENTRIES;
 
     #[divan::bench(args = NUM_ENTRIES)]
+    fn detable_owned(bencher: divan::Bencher, num_entries: usize) {
+        bencher
+            .with_inputs(|| gen(num_entries))
+            .input_counter(divan::counter::BytesCount::of_str)
+            .bench_values(|sample| {
+                let mut table = toml::de::DeTable::parse(&sample).unwrap();
+                table.get_mut().make_owned();
+                // SAFETY: `make`_owned` removes references to `sample` and lifetimes don't affect
+                // layout
+                let table = unsafe {
+                    std::mem::transmute::<
+                        serde_spanned::Spanned<toml::de::DeTable<'_>>,
+                        serde_spanned::Spanned<toml::de::DeTable<'static>>,
+                    >(table)
+                };
+                table
+            });
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {
         bencher
             .with_inputs(|| gen(num_entries))

@@ -76,6 +76,13 @@ fn main() -> Result<(), lexopt::Error> {
             #[cfg(debug_assertions)] // Don't interfere with profiling
             println!("{_doc:?}");
         }
+        Parser::DeTable => {
+            let mut _doc = toml::de::DeTable::parse(args.data.content()).unwrap();
+            _doc.get_mut().make_owned();
+            let _doc = std::hint::black_box(_doc);
+            #[cfg(debug_assertions)] // Don't interfere with profiling
+            println!("{_doc:?}");
+        }
         Parser::Table => {
             let _doc = args.data.content().parse::<toml::Table>().unwrap();
             let _doc = std::hint::black_box(_doc);
@@ -109,6 +116,7 @@ impl Args {
                         Some("decoded") => Parser::Decoded,
                         Some("document") => Parser::Document,
                         Some("de") => Parser::De,
+                        Some("detable") => Parser::DeTable,
                         Some("table") => Parser::Table,
                         _ => {
                             return Err(lexopt::Error::UnexpectedValue {
@@ -145,5 +153,6 @@ enum Parser {
     Decoded,
     Document,
     De,
+    DeTable,
     Table,
 }

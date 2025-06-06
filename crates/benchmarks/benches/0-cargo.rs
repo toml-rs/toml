@@ -98,6 +98,21 @@ mod toml {
     use toml_benchmarks::{manifest, Data, MANIFESTS};
 
     #[divan::bench(args=MANIFESTS)]
+    fn detable(sample: &Data<'static>) -> serde_spanned::Spanned<::toml::de::DeTable<'static>> {
+        let table = toml::de::DeTable::parse(sample.content()).unwrap();
+        table
+    }
+
+    #[divan::bench(args=MANIFESTS)]
+    fn detable_owned(
+        sample: &Data<'static>,
+    ) -> serde_spanned::Spanned<::toml::de::DeTable<'static>> {
+        let mut table = toml::de::DeTable::parse(sample.content()).unwrap();
+        table.get_mut().make_owned();
+        table
+    }
+
+    #[divan::bench(args=MANIFESTS)]
     fn document(sample: &Data<'static>) -> ::toml::Table {
         sample.content().parse().unwrap()
     }

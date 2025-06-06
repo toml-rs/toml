@@ -12,6 +12,8 @@ mod detable;
 mod devalue;
 mod error;
 #[cfg(feature = "parse")]
+mod parser;
+#[cfg(feature = "parse")]
 mod value;
 
 #[cfg(feature = "parse")]
