@@ -16,7 +16,7 @@ pub(crate) fn on_array(
     input: &mut Input<'_>,
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
-) -> Array {
+) -> Value {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("array::on_array");
     let mut result = Array::new();
@@ -49,11 +49,11 @@ pub(crate) fn on_array(
             }
             EventKind::InlineTableOpen => {
                 let value = on_inline_table(event, input, source, errors);
-                state.capture_value(event, Value::InlineTable(value));
+                state.capture_value(event, value);
             }
             EventKind::ArrayOpen => {
                 let value = on_array(event, input, source, errors);
-                state.capture_value(event, Value::Array(value));
+                state.capture_value(event, value);
             }
             EventKind::Scalar => {
                 let value = on_scalar(event, source, errors);
@@ -74,7 +74,7 @@ pub(crate) fn on_array(
         }
     }
 
-    result
+    Value::Array(result)
 }
 
 #[derive(Default)]
