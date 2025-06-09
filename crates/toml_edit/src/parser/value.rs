@@ -44,10 +44,10 @@ pub(crate) fn value(
                 );
             }
             EventKind::InlineTableOpen => {
-                return Value::InlineTable(on_inline_table(event, input, source, errors));
+                return on_inline_table(event, input, source, errors);
             }
             EventKind::ArrayOpen => {
-                return Value::Array(on_array(event, input, source, errors));
+                return on_array(event, input, source, errors);
             }
             EventKind::Scalar => {
                 return on_scalar(event, source, errors);

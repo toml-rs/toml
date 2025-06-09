@@ -18,7 +18,7 @@ pub(crate) fn on_inline_table(
     input: &mut Input<'_>,
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
-) -> InlineTable {
+) -> Value {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("inline_table::on_inline_table");
     let mut result = InlineTable::new();
@@ -56,11 +56,11 @@ pub(crate) fn on_inline_table(
             }
             EventKind::InlineTableOpen => {
                 let value = on_inline_table(event, input, source, errors);
-                state.capture_value(event, Value::InlineTable(value));
+                state.capture_value(event, value);
             }
             EventKind::ArrayOpen => {
                 let value = on_array(event, input, source, errors);
-                state.capture_value(event, Value::Array(value));
+                state.capture_value(event, value);
             }
             EventKind::Scalar => {
                 let value = on_scalar(event, source, errors);
@@ -80,7 +80,7 @@ pub(crate) fn on_inline_table(
         }
     }
 
-    result
+    Value::InlineTable(result)
 }
 
 #[derive(Default)]
@@ -173,11 +173,7 @@ impl State {
             // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
             let mixed_table_types = table.is_dotted() == path.is_empty();
             if mixed_table_types {
-                let key_span = key
-                    .as_repr()
-                    .and_then(|r| r.span())
-                    .map(|s| toml_parse::Span::new_unchecked(s.start, s.end))
-                    .unwrap_or_else(|| event.span());
+                let key_span = get_key_span(&key).unwrap_or_else(|| event.span());
                 errors.report_error(ParseError::new("duplicate key").with_unexpected(key_span));
             } else {
                 let key_span = get_key_span(&key).unwrap_or_else(|| event.span());
