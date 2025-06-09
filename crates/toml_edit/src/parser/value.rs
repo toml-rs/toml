@@ -135,34 +135,10 @@ pub(crate) fn on_scalar(
             let value = match i64::from_str_radix(&decoded, radix.value()) {
                 Ok(value) => value,
                 Err(_) => {
-                    let is_valid = match radix {
-                        toml_parse::decoder::IntegerRadix::Bin => |c: char| c == '0' || c == '1',
-                        toml_parse::decoder::IntegerRadix::Oct => {
-                            winnow::stream::AsChar::is_oct_digit
-                        }
-                        toml_parse::decoder::IntegerRadix::Dec => {
-                            winnow::stream::AsChar::is_dec_digit
-                        }
-                        toml_parse::decoder::IntegerRadix::Hex => {
-                            winnow::stream::AsChar::is_hex_digit
-                        }
-                    };
-                    if decoded
-                        .strip_prefix(['+', '-'])
-                        .unwrap_or(&decoded)
-                        .chars()
-                        .all(is_valid)
-                    {
-                        errors.report_error(
-                            ParseError::new("integer number overflowed")
-                                .with_unexpected(event.span()),
-                        );
-                    } else {
-                        errors.report_error(
-                            ParseError::new(radix.invalid_description())
-                                .with_unexpected(event.span()),
-                        );
-                    }
+                    // Assuming the decoder fully validated it, leaving only overflow errors
+                    errors.report_error(
+                        ParseError::new("integer number overflowed").with_unexpected(event.span()),
+                    );
                     i64::MAX
                 }
             };
