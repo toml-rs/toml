@@ -173,11 +173,7 @@ impl State {
             // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
             let mixed_table_types = table.is_dotted() == path.is_empty();
             if mixed_table_types {
-                let key_span = key
-                    .as_repr()
-                    .and_then(|r| r.span())
-                    .map(|s| toml_parse::Span::new_unchecked(s.start, s.end))
-                    .unwrap_or_else(|| event.span());
+                let key_span = get_key_span(&key).unwrap_or_else(|| event.span());
                 errors.report_error(ParseError::new("duplicate key").with_unexpected(key_span));
             } else {
                 let key_span = get_key_span(&key).unwrap_or_else(|| event.span());
