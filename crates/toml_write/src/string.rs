@@ -122,8 +122,8 @@ impl<'s> TomlKeyBuilder<'s> {
 
     pub fn as_default(&self) -> TomlKey<'s> {
         self.as_unquoted()
-            .or_else(|| self.as_basic_pretty())
             .or_else(|| self.as_literal())
+            .or_else(|| self.as_basic_pretty())
             .unwrap_or_else(|| self.as_basic())
     }
 

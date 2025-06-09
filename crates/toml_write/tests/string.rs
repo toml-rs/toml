@@ -73,7 +73,7 @@ fn empty() {
         str![[r#"
 StringResults {
     decoded: "",
-    key_default: "\"\"",
+    key_default: "''",
     key_unquoted: None,
     key_literal: Some(
         "''",
@@ -548,7 +548,7 @@ fn tab() {
         str![[r#"
 StringResults {
     decoded: "\thello\tworld\t",
-    key_default: "\"\\thello\\tworld\\t\"",
+    key_default: "'\thello\tworld\t'",
     key_unquoted: None,
     key_literal: Some(
         "'\thello\tworld\t'",
