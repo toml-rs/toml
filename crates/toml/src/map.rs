@@ -161,6 +161,23 @@ where
         }
     }
 
+    /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
+    #[inline]
+    pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
+    where
+        K: Borrow<Q>,
+        Q: Ord + Eq + Hash + ?Sized,
+    {
+        #[cfg(not(feature = "preserve_order"))]
+        {
+            self.map.remove_entry(key)
+        }
+        #[cfg(feature = "preserve_order")]
+        {
+            self.map.shift_remove_entry(key)
+        }
+    }
+
     /// Retains only the elements specified by the `keep` predicate.
     ///
     /// In other words, remove all pairs `(k, v)` for which `keep(&k, &mut v)`
