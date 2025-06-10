@@ -465,21 +465,6 @@ fn descend_path<'t>(
             }
             crate::Entry::Occupied(entry) => {
                 match entry.into_mut() {
-                    Item::Value(ref existing) => {
-                        let old_span = existing.span().expect("all items have spans");
-                        let old_span =
-                            toml_parse::Span::new_unchecked(old_span.start, old_span.end);
-                        let key_span = get_key_span(key).expect("all keys have spans");
-                        errors.report_error(
-                            ParseError::new(format!(
-                                "cannot extend value of type {} with a dotted key",
-                                existing.type_name()
-                            ))
-                            .with_unexpected(key_span)
-                            .with_context(old_span),
-                        );
-                        return None;
-                    }
                     Item::ArrayOfTables(ref mut array) => {
                         debug_assert!(!array.is_empty());
 
@@ -500,6 +485,21 @@ fn descend_path<'t>(
                             return None;
                         }
                         sweet_child_of_mine
+                    }
+                    Item::Value(ref existing) => {
+                        let old_span = existing.span().expect("all items have spans");
+                        let old_span =
+                            toml_parse::Span::new_unchecked(old_span.start, old_span.end);
+                        let key_span = get_key_span(key).expect("all keys have spans");
+                        errors.report_error(
+                            ParseError::new(format!(
+                                "cannot extend value of type {} with a dotted key",
+                                existing.type_name()
+                            ))
+                            .with_unexpected(key_span)
+                            .with_context(old_span),
+                        );
+                        return None;
                     }
                     Item::None => unreachable!(),
                 }
