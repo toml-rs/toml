@@ -1,17 +1,21 @@
+use serde_spanned::Spanned;
+
+use crate::de::DeArray;
+use crate::de::DeValue;
 use crate::de::Error;
 
-pub(crate) struct ArrayDeserializer {
-    input: Vec<crate::Item>,
+pub(crate) struct ArrayDeserializer<'i> {
+    input: DeArray<'i>,
     span: Option<std::ops::Range<usize>>,
 }
 
-impl ArrayDeserializer {
-    pub(crate) fn new(input: Vec<crate::Item>, span: Option<std::ops::Range<usize>>) -> Self {
+impl<'i> ArrayDeserializer<'i> {
+    pub(crate) fn new(input: DeArray<'i>, span: Option<std::ops::Range<usize>>) -> Self {
         Self { input, span }
     }
 }
 
-impl<'de> serde::Deserializer<'de> for ArrayDeserializer {
+impl<'de> serde::Deserializer<'de> for ArrayDeserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -46,7 +50,7 @@ impl<'de> serde::Deserializer<'de> for ArrayDeserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for ArrayDeserializer {
+impl<'de> serde::de::IntoDeserializer<'de, Error> for ArrayDeserializer<'de> {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -54,19 +58,19 @@ impl serde::de::IntoDeserializer<'_, Error> for ArrayDeserializer {
     }
 }
 
-pub(crate) struct ArraySeqAccess {
-    iter: std::vec::IntoIter<crate::Item>,
+pub(crate) struct ArraySeqAccess<'i> {
+    iter: std::vec::IntoIter<Spanned<DeValue<'i>>>,
 }
 
-impl ArraySeqAccess {
-    pub(crate) fn new(input: Vec<crate::Item>) -> Self {
+impl<'i> ArraySeqAccess<'i> {
+    pub(crate) fn new(input: DeArray<'i>) -> Self {
         Self {
             iter: input.into_iter(),
         }
     }
 }
 
-impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess {
+impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess<'de> {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
@@ -74,9 +78,12 @@ impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess {
         T: serde::de::DeserializeSeed<'de>,
     {
         match self.iter.next() {
-            Some(v) => seed
-                .deserialize(crate::de::ValueDeserializer::new(v))
-                .map(Some),
+            Some(v) => {
+                let span = v.span();
+                let v = v.into_inner();
+                seed.deserialize(crate::de::ValueDeserializer::new(v, Some(span)))
+                    .map(Some)
+            }
             None => Ok(None),
         }
     }

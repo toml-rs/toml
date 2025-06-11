@@ -131,8 +131,6 @@ impl std::str::FromStr for Deserializer {
     }
 }
 
-// Note: this is wrapped by `toml::de::Deserializer` and any trait methods
-// implemented here need to be wrapped there
 impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
     type Error = Error;
 

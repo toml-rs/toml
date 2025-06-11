@@ -55,8 +55,6 @@ impl ValueDeserializer {
     }
 }
 
-// Note: this is wrapped by `toml::de::ValueDeserializer` and any trait methods
-// implemented here need to be wrapped there
 impl<'de> serde::Deserializer<'de> for ValueDeserializer {
     type Error = Error;
 

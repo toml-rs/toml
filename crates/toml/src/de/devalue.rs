@@ -36,11 +36,9 @@ impl<'i> DeValue<'i> {
     /// Parse a TOML document
     pub fn parse(input: &'i str) -> Result<Spanned<Self>, crate::de::Error> {
         let source = toml_parse::Source::new(input);
-        let mut errors = crate::de::parser::error::TomlSink::<Option<_>>::new(source);
+        let mut errors = crate::de::error::TomlSink::<Option<_>>::new(source);
         let value = crate::de::parser::parse_value(source, &mut errors);
         if let Some(err) = errors.into_inner() {
-            use serde::de::Error as _;
-            let err = crate::de::Error::custom(err);
             Err(err)
         } else {
             Ok(value)
