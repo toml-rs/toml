@@ -7,13 +7,11 @@ use std::ops;
 use serde_spanned::Spanned;
 use toml_datetime::Datetime;
 
+use crate::de::DeArray;
 use crate::de::DeTable;
 
 /// Type representing a TOML string, payload of the `DeValue::String` variant
 pub type DeString<'i> = Cow<'i, str>;
-
-/// Type representing a TOML array, payload of the `DeValue::Array` variant
-pub type DeArray<'i> = Vec<Spanned<DeValue<'i>>>;
 
 /// Representation of a TOML value.
 #[derive(PartialEq, Clone, Debug)]

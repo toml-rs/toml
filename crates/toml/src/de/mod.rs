@@ -5,6 +5,8 @@
 //! provided at the top of the crate.
 
 #[cfg(feature = "parse")]
+mod dearray;
+#[cfg(feature = "parse")]
 mod detable;
 #[cfg(feature = "parse")]
 mod devalue;
@@ -13,9 +15,9 @@ mod error;
 mod value;
 
 #[cfg(feature = "parse")]
-pub use detable::DeTable;
+pub use dearray::DeArray;
 #[cfg(feature = "parse")]
-pub use devalue::DeArray;
+pub use detable::DeTable;
 #[cfg(feature = "parse")]
 pub use devalue::DeString;
 #[cfg(feature = "parse")]
