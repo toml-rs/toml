@@ -98,7 +98,7 @@ mod toml {
     use toml_benchmarks::{manifest, Data, MANIFESTS};
 
     #[divan::bench(args=MANIFESTS)]
-    fn document(sample: &Data<'static>) -> ::toml::Value {
+    fn document(sample: &Data<'static>) -> ::toml::Table {
         sample.content().parse().unwrap()
     }
 
