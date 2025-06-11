@@ -1,4 +1,5 @@
 use serde::de::IntoDeserializer as _;
+use serde_spanned::Spanned;
 
 use crate::de::ArrayDeserializer;
 use crate::de::DatetimeDeserializer;
@@ -61,6 +62,20 @@ impl<'i> ValueDeserializer<'i> {
     pub(crate) fn with_struct_key_validation(mut self) -> Self {
         self.validate_struct_keys = true;
         self
+    }
+}
+
+impl<'i> From<Spanned<DeValue<'i>>> for ValueDeserializer<'i> {
+    fn from(root: Spanned<DeValue<'i>>) -> Self {
+        let span = root.span();
+        let root = root.into_inner();
+        Self::new(root, Some(span))
+    }
+}
+
+impl<'i> From<DeValue<'i>> for ValueDeserializer<'i> {
+    fn from(root: DeValue<'i>) -> Self {
+        Self::new(root, None)
     }
 }
 

@@ -48,6 +48,8 @@ use datetime::DatetimeDeserializer;
 #[cfg(feature = "parse")]
 use key::KeyDeserializer;
 #[cfg(feature = "parse")]
+use serde_spanned::Spanned;
+#[cfg(feature = "parse")]
 use spanned::SpannedDeserializer;
 #[cfg(feature = "parse")]
 use table::TableDeserializer;
@@ -136,6 +138,30 @@ impl<'i> Deserializer<'i> {
 
     fn into_table_de(self) -> ValueDeserializer<'i> {
         ValueDeserializer::new(DeValue::Table(self.root), self.span)
+    }
+}
+
+#[cfg(feature = "parse")]
+impl<'i> From<Spanned<DeTable<'i>>> for Deserializer<'i> {
+    fn from(root: Spanned<DeTable<'i>>) -> Self {
+        let span = Some(root.span());
+        let root = root.into_inner();
+        Self {
+            span,
+            root,
+            raw: None,
+        }
+    }
+}
+
+#[cfg(feature = "parse")]
+impl<'i> From<DeTable<'i>> for Deserializer<'i> {
+    fn from(root: DeTable<'i>) -> Self {
+        Self {
+            span: None,
+            root,
+            raw: None,
+        }
     }
 }
 
