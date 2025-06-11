@@ -45,7 +45,7 @@ impl<'i> DeValue<'i> {
             | DeValue::Boolean(..)
             | DeValue::Datetime(..) => {}
             DeValue::Array(v) => {
-                for e in v {
+                for e in v.iter_mut() {
                     e.get_mut().make_owned();
                 }
             }
