@@ -225,3 +225,19 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for ValueDeserializer<'de> {
         self
     }
 }
+
+impl<'de> serde::de::IntoDeserializer<'de, Error> for DeValue<'de> {
+    type Deserializer = ValueDeserializer<'de>;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        ValueDeserializer::from(self)
+    }
+}
+
+impl<'de> serde::de::IntoDeserializer<'de, Error> for Spanned<DeValue<'de>> {
+    type Deserializer = ValueDeserializer<'de>;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        ValueDeserializer::from(self)
+    }
+}

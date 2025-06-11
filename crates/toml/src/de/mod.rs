@@ -268,6 +268,24 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer<'de> {
 }
 
 #[cfg(feature = "parse")]
+impl<'de> serde::de::IntoDeserializer<'de, Error> for DeTable<'de> {
+    type Deserializer = Deserializer<'de>;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        Deserializer::from(self)
+    }
+}
+
+#[cfg(feature = "parse")]
+impl<'de> serde::de::IntoDeserializer<'de, Error> for Spanned<DeTable<'de>> {
+    type Deserializer = Deserializer<'de>;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        Deserializer::from(self)
+    }
+}
+
+#[cfg(feature = "parse")]
 pub(crate) fn validate_struct_keys(
     table: &DeTable<'_>,
     fields: &'static [&'static str],
