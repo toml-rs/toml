@@ -12,6 +12,7 @@ pub(crate) mod array;
 #[cfg(feature = "debug")]
 pub(crate) mod debug;
 pub(crate) mod document;
+pub(crate) mod error;
 pub(crate) mod inline_table;
 pub(crate) mod key;
 pub(crate) mod value;
