@@ -113,6 +113,12 @@ impl<T> Spanned<T> {
     }
 }
 
+impl<T: std::fmt::Display> std::fmt::Display for Spanned<T> {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.get_ref().fmt(fmt)
+    }
+}
+
 impl std::borrow::Borrow<str> for Spanned<String> {
     fn borrow(&self) -> &str {
         self.get_ref()
