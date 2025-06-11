@@ -6,6 +6,7 @@ use serde::de::DeserializeOwned;
 
 mod array;
 mod datetime;
+mod error;
 mod key;
 mod spanned;
 mod table;
@@ -18,78 +19,8 @@ use key::KeyDeserializer;
 use spanned::SpannedDeserializer;
 use table_enum::TableEnumDeserializer;
 
+pub use error::Error;
 pub use value::ValueDeserializer;
-
-/// Errors that can occur when deserializing a type.
-#[derive(Clone, PartialEq, Eq)]
-pub struct Error {
-    inner: crate::TomlError,
-}
-
-impl Error {
-    pub(crate) fn custom<T>(msg: T, span: Option<std::ops::Range<usize>>) -> Self
-    where
-        T: std::fmt::Display,
-    {
-        Error {
-            inner: crate::TomlError::custom(msg.to_string(), span),
-        }
-    }
-
-    /// Add key while unwinding
-    pub fn add_key(&mut self, key: String) {
-        self.inner.add_key(key);
-    }
-
-    /// What went wrong
-    pub fn message(&self) -> &str {
-        self.inner.message()
-    }
-
-    /// The start/end index into the original document where the error occurred
-    pub fn span(&self) -> Option<std::ops::Range<usize>> {
-        self.inner.span()
-    }
-
-    pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
-        self.inner.set_span(span);
-    }
-}
-
-impl serde::de::Error for Error {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: std::fmt::Display,
-    {
-        Error::custom(msg, None)
-    }
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.inner.fmt(f)
-    }
-}
-
-impl std::fmt::Debug for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.inner.fmt(f)
-    }
-}
-
-impl From<crate::TomlError> for Error {
-    fn from(e: crate::TomlError) -> Error {
-        Self { inner: e }
-    }
-}
-
-impl From<Error> for crate::TomlError {
-    fn from(e: Error) -> crate::TomlError {
-        e.inner
-    }
-}
-
-impl std::error::Error for Error {}
 
 /// Deserializes a string into a type.
 ///
@@ -213,7 +144,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
             .into_deserializer()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -229,7 +160,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
             .into_deserializer()
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -247,7 +178,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
             .into_deserializer()
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -266,7 +197,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
             .into_deserializer()
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
@@ -286,7 +217,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
             .into_deserializer()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
-                e.inner.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw.map(|r| r.into()));
                 e
             })
     }
