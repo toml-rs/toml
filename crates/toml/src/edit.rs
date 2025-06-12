@@ -6,7 +6,7 @@ pub(crate) mod de {
 #[cfg(not(feature = "parse"))]
 pub(crate) mod de {
     /// Errors that can occur when deserializing a type.
-    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub(crate) struct Error {
         inner: String,
     }

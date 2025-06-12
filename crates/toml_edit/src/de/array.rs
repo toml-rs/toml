@@ -56,18 +56,6 @@ impl serde::de::IntoDeserializer<'_, Error> for ArrayDeserializer {
     }
 }
 
-impl crate::Array {
-    pub(crate) fn into_deserializer(self) -> ArrayDeserializer {
-        ArrayDeserializer::new(self.values, self.span)
-    }
-}
-
-impl crate::ArrayOfTables {
-    pub(crate) fn into_deserializer(self) -> ArrayDeserializer {
-        ArrayDeserializer::new(self.values, self.span)
-    }
-}
-
 pub(crate) struct ArraySeqAccess {
     iter: std::vec::IntoIter<crate::Item>,
 }

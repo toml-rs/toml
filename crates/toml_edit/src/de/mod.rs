@@ -17,6 +17,7 @@ use array::ArrayDeserializer;
 use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
 use spanned::SpannedDeserializer;
+use table::TableDeserializer;
 use table_enum::TableEnumDeserializer;
 
 pub use error::Error;
@@ -140,8 +141,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         V: serde::de::Visitor<'de>,
     {
         let raw = self.raw;
-        self.root
-            .into_deserializer()
+        ValueDeserializer::new(self.root)
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
                 e.set_raw(raw.map(|r| r.into()));
@@ -156,8 +156,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         V: serde::de::Visitor<'de>,
     {
         let raw = self.raw;
-        self.root
-            .into_deserializer()
+        ValueDeserializer::new(self.root)
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
                 e.set_raw(raw.map(|r| r.into()));
@@ -174,8 +173,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         V: serde::de::Visitor<'de>,
     {
         let raw = self.raw;
-        self.root
-            .into_deserializer()
+        ValueDeserializer::new(self.root)
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
                 e.set_raw(raw.map(|r| r.into()));
@@ -193,8 +191,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         V: serde::de::Visitor<'de>,
     {
         let raw = self.raw;
-        self.root
-            .into_deserializer()
+        ValueDeserializer::new(self.root)
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
                 e.set_raw(raw.map(|r| r.into()));
@@ -213,8 +210,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         V: serde::de::Visitor<'de>,
     {
         let raw = self.raw;
-        self.root
-            .into_deserializer()
+        ValueDeserializer::new(self.root)
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
                 e.set_raw(raw.map(|r| r.into()));

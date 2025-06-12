@@ -1,5 +1,5 @@
 /// Errors that can occur when deserializing a type.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Error {
     inner: crate::edit::de::Error,
 }

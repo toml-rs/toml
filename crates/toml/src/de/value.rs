@@ -1,25 +1,8 @@
-//! Deserializing TOML into Rust structures.
-//!
-//! This module contains all the Serde support for deserializing TOML documents
-//! into Rust structures. Note that some top-level functions here are also
-//! provided at the top of the crate.
+use crate::de::Error;
 
-mod error;
-#[cfg(feature = "parse")]
-mod value;
-
-pub use error::Error;
-#[cfg(feature = "parse")]
-pub use value::ValueDeserializer;
-
-/// Deserializes a string into a type.
+/// Deserialization TOML [value][crate::Value]
 ///
-/// This function will attempt to interpret `s` as a TOML document and
-/// deserialize `T` from the document.
-///
-/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
-///
-/// # Examples
+/// # Example
 ///
 /// ```
 /// use serde::Deserialize;
@@ -35,50 +18,20 @@ pub use value::ValueDeserializer;
 ///     name: String,
 /// }
 ///
-/// let config: Config = toml::from_str(r#"
-///     title = 'TOML Example'
-///
-///     [owner]
-///     name = 'Lisa'
-/// "#).unwrap();
+/// let config = Config::deserialize(toml::de::ValueDeserializer::new(
+///     r#"{ title = 'TOML Example', owner = { name = 'Lisa' } }"#
+/// )).unwrap();
 ///
 /// assert_eq!(config.title, "TOML Example");
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
 #[cfg(feature = "parse")]
-pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
-where
-    T: serde::de::DeserializeOwned,
-{
-    T::deserialize(Deserializer::new(s))
-}
-
-/// Deserializes bytes into a type.
-///
-/// This function will attempt to interpret `s` as a TOML document and
-/// deserialize `T` from the document.
-///
-/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
-#[cfg(feature = "parse")]
-pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
-where
-    T: serde::de::DeserializeOwned,
-{
-    use serde::de::Error as _;
-    let s = std::str::from_utf8(s).map_err(|e| Error::new(crate::edit::de::Error::custom(e)))?;
-    from_str(s)
-}
-
-/// Deserialization TOML document
-///
-/// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
-#[cfg(feature = "parse")]
-pub struct Deserializer<'i> {
+pub struct ValueDeserializer<'i> {
     input: &'i str,
 }
 
 #[cfg(feature = "parse")]
-impl<'i> Deserializer<'i> {
+impl<'i> ValueDeserializer<'i> {
     /// Deserialization implementation for TOML.
     pub fn new(input: &'i str) -> Self {
         Self { input }
@@ -86,14 +39,17 @@ impl<'i> Deserializer<'i> {
 }
 
 #[cfg(feature = "parse")]
-impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
+impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = self
+            .input
+            .parse::<toml_edit::de::ValueDeserializer>()
+            .map_err(Error::new)?;
         inner.deserialize_any(visitor).map_err(Error::new)
     }
 
@@ -103,7 +59,10 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
     where
         V: serde::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = self
+            .input
+            .parse::<toml_edit::de::ValueDeserializer>()
+            .map_err(Error::new)?;
         inner.deserialize_option(visitor).map_err(Error::new)
     }
 
@@ -115,7 +74,10 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
     where
         V: serde::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = self
+            .input
+            .parse::<toml_edit::de::ValueDeserializer>()
+            .map_err(Error::new)?;
         inner
             .deserialize_newtype_struct(name, visitor)
             .map_err(Error::new)
@@ -130,7 +92,10 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
     where
         V: serde::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = self
+            .input
+            .parse::<toml_edit::de::ValueDeserializer>()
+            .map_err(Error::new)?;
         inner
             .deserialize_struct(name, fields, visitor)
             .map_err(Error::new)
@@ -146,7 +111,10 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
     where
         V: serde::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = self
+            .input
+            .parse::<toml_edit::de::ValueDeserializer>()
+            .map_err(Error::new)?;
         inner
             .deserialize_enum(name, variants, visitor)
             .map_err(Error::new)
