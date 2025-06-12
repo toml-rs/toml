@@ -13,9 +13,17 @@ impl toml_test_harness::Decoder for Decoder {
         &self,
         data: &[u8],
     ) -> Result<toml_test_harness::DecodedValue, toml_test_harness::Error> {
+        use itertools::Itertools as _;
+        use serde::de::Deserialize as _;
+
         let data = std::str::from_utf8(data).map_err(toml_test_harness::Error::new)?;
-        let document = data
-            .parse::<toml::Table>()
+        let (table, errors) = toml::de::DeTable::parse_recoverable(data);
+        if !errors.is_empty() {
+            let errors = errors.into_iter().join("\n---\n");
+            let error = toml_test_harness::Error::new(errors);
+            return Err(error);
+        }
+        let document = toml::Table::deserialize(toml::de::Deserializer::from(table))
             .map_err(toml_test_harness::Error::new)?;
         let value = toml::Value::Table(document);
         value_to_decoded(&value)

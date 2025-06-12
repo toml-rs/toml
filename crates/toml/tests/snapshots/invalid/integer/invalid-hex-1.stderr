@@ -3,3 +3,10 @@ TOML parse error at line 1, column 22
 1 | invalid-hex-1 = 0xaafz
   |                      ^
 invalid hexadecimal number
+
+---
+TOML parse error at line 1, column 17
+  |
+1 | invalid-hex-1 = 0xaafz
+  |                 ^^^^^^
+integer number overflowed

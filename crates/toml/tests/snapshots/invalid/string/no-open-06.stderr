@@ -3,3 +3,24 @@ TOML parse error at line 1, column 7
 1 | a = [a"""]
   |       ^
 missing comma between array elements, expected `,`
+
+---
+TOML parse error at line 1, column 12
+  |
+1 | a = [a"""]
+  |            ^
+unclosed array, expected `]`
+
+---
+TOML parse error at line 1, column 6
+  |
+1 | a = [a"""]
+  |      ^
+string values must be quoted, expected literal string
+
+---
+TOML parse error at line 1, column 12
+  |
+1 | a = [a"""]
+  |            ^
+invalid multi-line basic string, expected `"`

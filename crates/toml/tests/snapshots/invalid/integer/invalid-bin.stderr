@@ -3,3 +3,10 @@ TOML parse error at line 1, column 20
 1 | invalid-bin = 0b0012
   |                    ^
 invalid binary number
+
+---
+TOML parse error at line 1, column 15
+  |
+1 | invalid-bin = 0b0012
+  |               ^^^^^^
+integer number overflowed
