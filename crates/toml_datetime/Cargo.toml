@@ -3,7 +3,7 @@ name = "toml_datetime"
 version = "0.6.11"
 description = "A TOML-compatible datetime type"
 categories = ["encoding", "parser-implementations", "parsing", "config"]
-keywords = ["encoding", "toml"]
+keywords = ["encoding", "toml", "no_std"]
 repository.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -23,8 +23,13 @@ pre-release-replacements = [
   {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/toml-rs/toml/compare/{{tag_name}}...HEAD", exactly=1},
 ]
 
+[features]
+default = ["std"]
+alloc = ["serde?/alloc"]
+std = ["alloc"]
+
 [dependencies]
-serde = { version = "1.0.145", optional = true }
+serde = { version = "1.0.145", default-features = false, optional = true }
 
 [lints]
 workspace = true

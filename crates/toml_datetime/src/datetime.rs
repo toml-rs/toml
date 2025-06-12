@@ -1,6 +1,5 @@
-use std::error;
-use std::fmt;
-use std::str::{self, FromStr};
+use core::fmt;
+use core::str::{self, FromStr};
 
 #[cfg(feature = "serde")]
 use serde::{de, ser};
@@ -230,6 +229,7 @@ impl From<Time> for Datetime {
     }
 }
 
+#[cfg(feature = "alloc")]
 impl fmt::Display for Datetime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(ref date) = self.date {
@@ -254,11 +254,12 @@ impl fmt::Display for Date {
     }
 }
 
+#[cfg(feature = "alloc")]
 impl fmt::Display for Time {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:02}:{:02}:{:02}", self.hour, self.minute, self.second)?;
         if self.nanosecond != 0 {
-            let s = format!("{:09}", self.nanosecond);
+            let s = alloc::format!("{:09}", self.nanosecond);
             write!(f, ".{}", s.trim_end_matches('0'))?;
         }
         Ok(())
@@ -762,14 +763,19 @@ impl fmt::Display for DatetimeParseError {
     }
 }
 
-impl error::Error for DatetimeParseError {}
+#[cfg(feature = "std")]
+impl std::error::Error for DatetimeParseError {}
+#[cfg(all(not(feature = "std"), feature = "serde"))]
+impl serde::de::StdError for DatetimeParseError {}
 
 #[cfg(feature = "serde")]
+#[cfg(feature = "alloc")]
 impl ser::Serialize for Datetime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ser::Serializer,
     {
+        use crate::alloc::string::ToString as _;
         use serde::ser::SerializeStruct;
 
         let mut s = serializer.serialize_struct(NAME, 1)?;
@@ -779,6 +785,7 @@ impl ser::Serialize for Datetime {
 }
 
 #[cfg(feature = "serde")]
+#[cfg(feature = "alloc")]
 impl ser::Serialize for Date {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -789,6 +796,7 @@ impl ser::Serialize for Date {
 }
 
 #[cfg(feature = "serde")]
+#[cfg(feature = "alloc")]
 impl ser::Serialize for Time {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
