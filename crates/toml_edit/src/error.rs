@@ -1,6 +1,3 @@
-use std::error::Error as StdError;
-use std::fmt::{Display, Formatter, Result};
-
 /// A TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
@@ -104,8 +101,8 @@ fn render_literal(literal: &str) -> String {
 /// Expected `digit`
 /// While parsing a Time
 /// While parsing a Date-Time
-impl Display for TomlError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+impl std::fmt::Display for TomlError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut context = false;
         if let (Some(raw), Some(span)) = (&self.raw, self.span()) {
             context = true;
@@ -155,7 +152,7 @@ impl Display for TomlError {
     }
 }
 
-impl StdError for TomlError {
+impl std::error::Error for TomlError {
     fn description(&self) -> &'static str {
         "TOML parse error"
     }
