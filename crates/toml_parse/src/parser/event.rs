@@ -159,8 +159,9 @@ where
     }
 }
 
-#[cfg(feature = "std")]
-impl EventReceiver for Vec<Event> {
+#[cfg(feature = "alloc")]
+#[allow(unused_qualifications)]
+impl EventReceiver for alloc::vec::Vec<Event> {
     fn std_table_open(&mut self, span: Span, _error: &mut dyn ErrorSink) {
         self.push(Event {
             kind: EventKind::StdTableOpen,

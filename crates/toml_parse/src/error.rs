@@ -23,8 +23,9 @@ impl ErrorSink for Option<ParseError> {
     }
 }
 
-#[cfg(feature = "std")]
-impl ErrorSink for Vec<ParseError> {
+#[cfg(feature = "alloc")]
+#[allow(unused_qualifications)]
+impl ErrorSink for alloc::vec::Vec<ParseError> {
     fn report_error(&mut self, error: ParseError) {
         self.push(error);
     }
