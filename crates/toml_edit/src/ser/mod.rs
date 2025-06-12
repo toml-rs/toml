@@ -103,7 +103,7 @@ where
 }
 
 /// Errors that can occur when deserializing a type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Error {
     /// Type could not be serialized to TOML
