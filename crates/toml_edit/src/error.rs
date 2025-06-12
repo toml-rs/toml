@@ -152,11 +152,7 @@ impl std::fmt::Display for TomlError {
     }
 }
 
-impl std::error::Error for TomlError {
-    fn description(&self) -> &'static str {
-        "TOML parse error"
-    }
-}
+impl std::error::Error for TomlError {}
 
 fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     if input.is_empty() {
