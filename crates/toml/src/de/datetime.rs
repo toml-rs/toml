@@ -1,6 +1,7 @@
 use serde::de::value::BorrowedStrDeserializer;
 use serde::de::IntoDeserializer;
 
+use crate::alloc_prelude::*;
 use crate::de::Error;
 
 pub(crate) struct DatetimeDeserializer {

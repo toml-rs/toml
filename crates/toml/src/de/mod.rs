@@ -41,6 +41,7 @@ pub use value::ValueDeserializer;
 
 pub use error::Error;
 
+use crate::alloc_prelude::*;
 #[cfg(feature = "parse")]
 use array::ArrayDeserializer;
 #[cfg(feature = "parse")]
@@ -108,7 +109,7 @@ pub fn from_slice<'de, T>(s: &'de [u8]) -> Result<T, Error>
 where
     T: serde::de::Deserialize<'de>,
 {
-    let s = std::str::from_utf8(s).map_err(|e| Error::custom(e.to_string(), None))?;
+    let s = core::str::from_utf8(s).map_err(|e| Error::custom(e.to_string(), None))?;
     from_str(s)
 }
 
@@ -117,7 +118,7 @@ where
 /// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 #[cfg(feature = "parse")]
 pub struct Deserializer<'i> {
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
     root: DeTable<'i>,
     raw: Option<&'i str>,
 }

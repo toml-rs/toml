@@ -6,11 +6,11 @@ use crate::de::Error;
 
 pub(crate) struct ArrayDeserializer<'i> {
     input: DeArray<'i>,
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
 }
 
 impl<'i> ArrayDeserializer<'i> {
-    pub(crate) fn new(input: DeArray<'i>, span: Option<std::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(input: DeArray<'i>, span: Option<core::ops::Range<usize>>) -> Self {
         Self { input, span }
     }
 }
@@ -59,7 +59,7 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for ArrayDeserializer<'de> {
 }
 
 pub(crate) struct ArraySeqAccess<'i> {
-    iter: std::vec::IntoIter<Spanned<DeValue<'i>>>,
+    iter: alloc::vec::IntoIter<Spanned<DeValue<'i>>>,
 }
 
 impl<'i> ArraySeqAccess<'i> {

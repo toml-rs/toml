@@ -8,12 +8,12 @@ use crate::de::Error;
 use crate::map::IntoIter;
 
 pub(crate) struct TableDeserializer<'i> {
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
     items: DeTable<'i>,
 }
 
 impl<'i> TableDeserializer<'i> {
-    pub(crate) fn new(items: DeTable<'i>, span: Option<std::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(items: DeTable<'i>, span: Option<core::ops::Range<usize>>) -> Self {
         Self { span, items }
     }
 }
@@ -108,7 +108,7 @@ impl<'de> IntoDeserializer<'de, Error> for TableDeserializer<'de> {
 
 pub(crate) struct TableMapAccess<'i> {
     iter: IntoIter<Spanned<DeString<'i>>, Spanned<DeValue<'i>>>,
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
     value: Option<(Spanned<DeString<'i>>, Spanned<DeValue<'i>>)>,
 }
 

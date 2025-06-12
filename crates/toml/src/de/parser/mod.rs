@@ -5,6 +5,7 @@ use serde_spanned::Spanned;
 use toml_parse::parser::RecursionGuard;
 use toml_parse::parser::ValidateWhitespace;
 
+use crate::alloc_prelude::*;
 use crate::de::DeTable;
 use crate::de::DeValue;
 

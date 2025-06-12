@@ -4,12 +4,12 @@ use super::Error;
 use crate::de::DeString;
 
 pub(crate) struct KeyDeserializer<'i> {
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
     key: DeString<'i>,
 }
 
 impl<'i> KeyDeserializer<'i> {
-    pub(crate) fn new(key: DeString<'i>, span: Option<std::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(key: DeString<'i>, span: Option<core::ops::Range<usize>>) -> Self {
         KeyDeserializer { span, key }
     }
 }
@@ -94,14 +94,14 @@ impl<'de> serde::de::EnumAccess<'de> for KeyDeserializer<'de> {
 }
 
 pub(crate) struct UnitOnly<E> {
-    marker: std::marker::PhantomData<E>,
+    marker: core::marker::PhantomData<E>,
 }
 
 fn unit_only<T, E>(t: T) -> (T, UnitOnly<E>) {
     (
         t,
         UnitOnly {
-            marker: std::marker::PhantomData,
+            marker: core::marker::PhantomData,
         },
     )
 }

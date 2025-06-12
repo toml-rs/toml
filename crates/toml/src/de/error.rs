@@ -1,15 +1,17 @@
+use crate::alloc_prelude::*;
+
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Error {
     message: String,
-    raw: Option<std::sync::Arc<str>>,
+    raw: Option<alloc::sync::Arc<str>>,
     keys: Vec<String>,
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
 }
 
 impl Error {
     #[cfg(feature = "parse")]
-    pub(crate) fn new(raw: std::sync::Arc<str>, error: toml_parse::ParseError) -> Self {
+    pub(crate) fn new(raw: alloc::sync::Arc<str>, error: toml_parse::ParseError) -> Self {
         let mut message = String::new();
         message.push_str(error.description());
         if let Some(expected) = error.expected() {
@@ -42,9 +44,9 @@ impl Error {
         }
     }
 
-    pub(crate) fn custom<T>(msg: T, span: Option<std::ops::Range<usize>>) -> Self
+    pub(crate) fn custom<T>(msg: T, span: Option<core::ops::Range<usize>>) -> Self
     where
-        T: std::fmt::Display,
+        T: core::fmt::Display,
     {
         Self {
             message: msg.to_string(),
@@ -64,11 +66,11 @@ impl Error {
     }
 
     /// The start/end index into the original document where the error occurred
-    pub fn span(&self) -> Option<std::ops::Range<usize>> {
+    pub fn span(&self) -> Option<core::ops::Range<usize>> {
         self.span.clone()
     }
 
-    pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
+    pub(crate) fn set_span(&mut self, span: Option<core::ops::Range<usize>>) {
         self.span = span;
     }
 
@@ -80,7 +82,7 @@ impl Error {
 impl serde::de::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
-        T: std::fmt::Display,
+        T: core::fmt::Display,
     {
         Error::custom(msg.to_string(), None)
     }
@@ -109,8 +111,8 @@ fn render_literal(literal: &str) -> String {
 /// Expected `digit`
 /// While parsing a Time
 /// While parsing a Date-Time
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut context = false;
         if let (Some(raw), Some(span)) = (&self.raw, self.span()) {
             context = true;
@@ -160,7 +162,10 @@ impl std::fmt::Display for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}
+#[cfg(not(feature = "std"))]
+impl serde::de::StdError for Error {}
 
 fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     if input.is_empty() {
@@ -183,7 +188,7 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     };
     let line = input[0..line_start].iter().filter(|b| **b == b'\n').count();
 
-    let column = std::str::from_utf8(&input[line_start..=index])
+    let column = core::str::from_utf8(&input[line_start..=index])
         .map(|s| s.chars().count() - 1)
         .unwrap_or_else(|_| index - line_start);
     let column = column + column_offset;
@@ -194,7 +199,7 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
 #[cfg(feature = "parse")]
 pub(crate) struct TomlSink<'i, S> {
     source: toml_parse::Source<'i>,
-    raw: Option<std::sync::Arc<str>>,
+    raw: Option<alloc::sync::Arc<str>>,
     sink: S,
 }
 
@@ -219,7 +224,7 @@ impl<'i> toml_parse::ErrorSink for TomlSink<'i, Option<Error>> {
         if self.sink.is_none() {
             let raw = self
                 .raw
-                .get_or_insert_with(|| std::sync::Arc::from(self.source.input()));
+                .get_or_insert_with(|| alloc::sync::Arc::from(self.source.input()));
             let error = Error::new(raw.clone(), error);
             self.sink = Some(error);
         }
@@ -231,7 +236,7 @@ impl<'i> toml_parse::ErrorSink for TomlSink<'i, Vec<Error>> {
     fn report_error(&mut self, error: toml_parse::ParseError) {
         let raw = self
             .raw
-            .get_or_insert_with(|| std::sync::Arc::from(self.source.input()));
+            .get_or_insert_with(|| alloc::sync::Arc::from(self.source.input()));
         let error = Error::new(raw.clone(), error);
         self.sink.push(error);
     }

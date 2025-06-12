@@ -1,3 +1,4 @@
+use crate::alloc_prelude::*;
 use crate::de::DeArray;
 use crate::de::DeValue;
 use crate::de::Error;
@@ -5,11 +6,11 @@ use crate::de::Error;
 /// Deserializes table values into enum variants.
 pub(crate) struct TableEnumDeserializer<'i> {
     value: DeValue<'i>,
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
 }
 
 impl<'i> TableEnumDeserializer<'i> {
-    pub(crate) fn new(value: DeValue<'i>, span: Option<std::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(value: DeValue<'i>, span: Option<core::ops::Range<usize>>) -> Self {
         TableEnumDeserializer { value, span }
     }
 }

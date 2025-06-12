@@ -1,5 +1,6 @@
 use serde_spanned::Spanned;
 
+use crate::alloc_prelude::*;
 use crate::de::parser::array::on_array;
 use crate::de::parser::inline_table::on_inline_table;
 use crate::de::parser::prelude::*;
@@ -72,7 +73,7 @@ pub(crate) fn on_scalar<'i>(
     let raw = unsafe { source.get_unchecked(event) };
     #[cfg(not(feature = "unsafe"))]
     let raw = source.get(event).unwrap();
-    let mut decoded = std::borrow::Cow::Borrowed("");
+    let mut decoded = alloc::borrow::Cow::Borrowed("");
     let kind = raw.decode_scalar(&mut decoded, errors);
     match kind {
         toml_parse::decoder::ScalarKind::String => {

@@ -318,7 +318,7 @@ pub(crate) fn write_value(
     dst: &mut String,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
-    use std::fmt::Write;
+    use core::fmt::Write;
 
     let value = value.map_err(Error::wrap)?;
 

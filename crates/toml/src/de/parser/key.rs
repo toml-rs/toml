@@ -1,5 +1,6 @@
 use serde_spanned::Spanned;
 
+use crate::alloc_prelude::*;
 use crate::de::parser::prelude::*;
 use crate::de::DeString;
 
@@ -114,7 +115,7 @@ impl State {
         let raw = unsafe { source.get_unchecked(key) };
         #[cfg(not(feature = "unsafe"))]
         let raw = source.get(key).unwrap();
-        let mut decoded = std::borrow::Cow::Borrowed("");
+        let mut decoded = alloc::borrow::Cow::Borrowed("");
         raw.decode_key(&mut decoded, errors);
 
         let key = Spanned::new(key_span, decoded);

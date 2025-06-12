@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use alloc::borrow::Cow;
 
 use serde_spanned::Spanned;
 
@@ -29,7 +29,7 @@ impl<'i> DeTable<'i> {
 
     /// Ensure no data is borrowed
     pub fn make_owned(&mut self) {
-        let borrowed = std::mem::take(self);
+        let borrowed = core::mem::take(self);
         let owned = borrowed
             .into_iter()
             .map(|(k, mut v)| {

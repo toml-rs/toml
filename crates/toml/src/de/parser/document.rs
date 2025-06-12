@@ -1,5 +1,6 @@
 use serde_spanned::Spanned;
 
+use crate::alloc_prelude::*;
 use crate::de::parser::key::on_key;
 use crate::de::parser::prelude::*;
 use crate::de::parser::value::value;
@@ -249,7 +250,7 @@ impl<'i> State<'i> {
     fn finish_table(&mut self, errors: &mut dyn ErrorSink) {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("document::finish_table");
-        let prev_table = std::mem::take(&mut self.current_table);
+        let prev_table = core::mem::take(&mut self.current_table);
         if let Some(header) = self.current_header.take() {
             let Some(key) = &header.key else {
                 return;
