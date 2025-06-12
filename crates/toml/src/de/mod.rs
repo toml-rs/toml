@@ -90,9 +90,9 @@ use table_enum::TableEnumDeserializer;
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
 #[cfg(feature = "parse")]
-pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
+pub fn from_str<'de, T>(s: &'de str) -> Result<T, Error>
 where
-    T: serde::de::DeserializeOwned,
+    T: serde::de::Deserialize<'de>,
 {
     T::deserialize(Deserializer::parse(s)?)
 }
@@ -104,9 +104,9 @@ where
 ///
 /// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 #[cfg(feature = "parse")]
-pub fn from_slice<T>(s: &'_ [u8]) -> Result<T, Error>
+pub fn from_slice<'de, T>(s: &'de [u8]) -> Result<T, Error>
 where
-    T: serde::de::DeserializeOwned,
+    T: serde::de::Deserialize<'de>,
 {
     let s = std::str::from_utf8(s).map_err(|e| Error::custom(e.to_string(), None))?;
     from_str(s)
