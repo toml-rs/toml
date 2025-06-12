@@ -31,6 +31,9 @@ use indexmap::{self, IndexMap};
 /// Represents a TOML key/value type.
 pub struct Map<K, V> {
     map: MapImpl<K, V>,
+    dotted: bool,
+    implicit: bool,
+    inline: bool,
 }
 
 #[cfg(not(feature = "preserve_order"))]
@@ -47,6 +50,9 @@ where
     pub fn new() -> Self {
         Map {
             map: MapImpl::new(),
+            dotted: false,
+            implicit: false,
+            inline: false,
         }
     }
 
@@ -58,6 +64,9 @@ where
         let _ = capacity;
         Map {
             map: BTreeMap::new(),
+            dotted: false,
+            implicit: false,
+            inline: false,
         }
     }
 
@@ -67,6 +76,9 @@ where
     pub fn with_capacity(capacity: usize) -> Self {
         Map {
             map: IndexMap::with_capacity(capacity),
+            dotted: false,
+            implicit: false,
+            inline: false,
         }
     }
 
@@ -255,11 +267,43 @@ where
     }
 }
 
+impl<K, V> Map<K, V>
+where
+    K: Ord,
+{
+    pub(crate) fn is_dotted(&self) -> bool {
+        self.dotted
+    }
+
+    pub(crate) fn is_implicit(&self) -> bool {
+        self.implicit
+    }
+
+    pub(crate) fn is_inline(&self) -> bool {
+        self.inline
+    }
+
+    pub(crate) fn set_implicit(&mut self, yes: bool) {
+        self.implicit = yes;
+    }
+
+    pub(crate) fn set_dotted(&mut self, yes: bool) {
+        self.dotted = yes;
+    }
+
+    pub(crate) fn set_inline(&mut self, yes: bool) {
+        self.inline = yes;
+    }
+}
+
 impl<K, V> Default for Map<K, V> {
     #[inline]
     fn default() -> Self {
         Map {
             map: MapImpl::new(),
+            dotted: false,
+            implicit: false,
+            inline: false,
         }
     }
 }
@@ -269,6 +313,9 @@ impl<K: Clone, V: Clone> Clone for Map<K, V> {
     fn clone(&self) -> Self {
         Map {
             map: self.map.clone(),
+            dotted: self.dotted,
+            implicit: self.implicit,
+            inline: self.inline,
         }
     }
 }
@@ -378,6 +425,9 @@ impl<K: Ord + Hash, V> FromIterator<(K, V)> for Map<K, V> {
     {
         Map {
             map: FromIterator::from_iter(iter),
+            dotted: false,
+            implicit: false,
+            inline: false,
         }
     }
 }

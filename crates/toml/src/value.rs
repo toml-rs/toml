@@ -392,7 +392,7 @@ impl std::str::FromStr for Value {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Value, Self::Err> {
         use serde::Deserialize as _;
-        Value::deserialize(crate::de::ValueDeserializer::new(s))
+        Value::deserialize(crate::de::ValueDeserializer::parse(s)?)
     }
 }
 
@@ -565,14 +565,15 @@ impl<'de> de::Deserializer<'de> for Value {
         match self {
             Value::String(variant) => visitor.visit_enum(variant.into_deserializer()),
             Value::Table(variant) => {
-                use de::Error;
                 if variant.is_empty() {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, found 0 elements",
+                        None,
                     ))
                 } else if variant.len() != 1 {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, more than 1 element",
+                        None,
                     ))
                 } else {
                     let deserializer = MapDeserializer::new(variant);

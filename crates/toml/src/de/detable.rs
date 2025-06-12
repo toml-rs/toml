@@ -1,0 +1,46 @@
+use std::borrow::Cow;
+
+use serde_spanned::Spanned;
+
+use crate::de::DeString;
+use crate::de::DeValue;
+use crate::map::Map;
+
+/// Type representing a TOML table, payload of the `Value::Table` variant.
+///
+/// By default it entries are stored in
+/// [lexicographic order](https://doc.rust-lang.org/std/primitive.str.html#impl-Ord-for-str)
+/// of the keys. Enable the `preserve_order` feature to store entries in the order they appear in
+/// the source file.
+pub type DeTable<'i> = Map<Spanned<DeString<'i>>, Spanned<DeValue<'i>>>;
+
+impl<'i> DeTable<'i> {
+    /// Parse a TOML document
+    pub fn parse(input: &'i str) -> Result<Spanned<Self>, crate::de::Error> {
+        let source = toml_parse::Source::new(input);
+        let mut errors = crate::de::error::TomlSink::<Option<_>>::new(source);
+        let value = crate::de::parser::parse_document(source, &mut errors);
+        if let Some(err) = errors.into_inner() {
+            Err(err)
+        } else {
+            Ok(value)
+        }
+    }
+
+    /// Ensure no data is borrowed
+    pub fn make_owned(&mut self) {
+        let borrowed = std::mem::take(self);
+        let owned = borrowed
+            .into_iter()
+            .map(|(k, mut v)| {
+                let span = k.span();
+                let inner = k.into_inner();
+                let inner = Cow::Owned(inner.into_owned());
+                let k = Spanned::new(span, inner);
+                v.get_mut().make_owned();
+                (k, v)
+            })
+            .collect::<Self>();
+        *self = owned;
+    }
+}
