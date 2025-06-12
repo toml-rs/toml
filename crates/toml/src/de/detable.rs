@@ -2,6 +2,7 @@ use alloc::borrow::Cow;
 
 use serde_spanned::Spanned;
 
+use crate::alloc_prelude::*;
 use crate::de::DeString;
 use crate::de::DeValue;
 use crate::map::Map;
@@ -25,6 +26,14 @@ impl<'i> DeTable<'i> {
         } else {
             Ok(value)
         }
+    }
+
+    /// Parse a TOML document, with best effort recovery on error
+    pub fn parse_recoverable(input: &'i str) -> (Spanned<Self>, Vec<crate::de::Error>) {
+        let source = toml_parse::Source::new(input);
+        let mut errors = crate::de::error::TomlSink::<Vec<_>>::new(source);
+        let value = crate::de::parser::parse_document(source, &mut errors);
+        (value, errors.into_inner())
     }
 
     /// Ensure no data is borrowed

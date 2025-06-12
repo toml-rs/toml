@@ -3,3 +3,10 @@ TOML parse error at line 1, column 5
 1 | "key
   |     ^
 key with no value, expected `=`
+
+---
+TOML parse error at line 1, column 5
+  |
+1 | "key
+  |     ^
+invalid basic string, expected `"`

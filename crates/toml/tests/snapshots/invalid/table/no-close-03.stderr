@@ -3,3 +3,10 @@ TOML parse error at line 1, column 21
 1 | ["where will it end]
   |                     ^
 unclosed table, expected `]`
+
+---
+TOML parse error at line 1, column 21
+  |
+1 | ["where will it end]
+  |                     ^
+invalid basic string, expected `"`

@@ -3,3 +3,17 @@ TOML parse error at line 1, column 17
 1 | answer = 42 the ultimate answer?
   |                 ^
 unexpected key or value, expected newline, `#`
+
+---
+TOML parse error at line 1, column 12
+  |
+1 | answer = 42 the ultimate answer?
+  |            ^^^^
+invalid float, expected nothing
+
+---
+TOML parse error at line 1, column 10
+  |
+1 | answer = 42 the ultimate answer?
+  |          ^^^^^^
+invalid float

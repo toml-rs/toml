@@ -3,3 +3,10 @@ TOML parse error at line 1, column 10
 1 | a = 0.0e+
   |          ^
 invalid exponent, expected digits
+
+---
+TOML parse error at line 1, column 5
+  |
+1 | a = 0.0e+
+  |     ^^^^^
+invalid float
