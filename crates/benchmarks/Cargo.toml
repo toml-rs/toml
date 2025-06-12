@@ -11,7 +11,7 @@ release = false
 [features]
 default = []
 simd = ["toml_parse/simd"]
-unsafe = ["toml_parse/unsafe"]
+unsafe = ["toml_parse/unsafe", "toml_edit/unsafe"]
 
 [dependencies]
 serde = { version = "1.0.197", features = ["derive"] }
