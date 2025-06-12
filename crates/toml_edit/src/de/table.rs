@@ -7,6 +7,15 @@ pub(crate) struct TableDeserializer {
     items: crate::table::KeyValuePairs,
 }
 
+impl TableDeserializer {
+    pub(crate) fn new(
+        items: crate::table::KeyValuePairs,
+        span: Option<std::ops::Range<usize>>,
+    ) -> Self {
+        Self { span, items }
+    }
+}
+
 // Note: this is wrapped by `Deserializer` and `ValueDeserializer` and any trait methods
 // implemented here need to be wrapped there
 impl<'de> serde::Deserializer<'de> for TableDeserializer {
@@ -94,24 +103,6 @@ impl IntoDeserializer<'_, Error> for TableDeserializer {
 
     fn into_deserializer(self) -> Self::Deserializer {
         self
-    }
-}
-
-impl crate::Table {
-    pub(crate) fn into_deserializer(self) -> TableDeserializer {
-        TableDeserializer {
-            span: self.span(),
-            items: self.items,
-        }
-    }
-}
-
-impl crate::InlineTable {
-    pub(crate) fn into_deserializer(self) -> TableDeserializer {
-        TableDeserializer {
-            span: self.span(),
-            items: self.items,
-        }
     }
 }
 

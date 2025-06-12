@@ -1,7 +1,9 @@
 use serde::de::IntoDeserializer as _;
 
+use crate::de::ArrayDeserializer;
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
+use crate::de::TableDeserializer;
 
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
@@ -73,13 +75,17 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
                 visitor.visit_map(DatetimeDeserializer::new(v.into_value()))
             }
             crate::Item::Value(crate::Value::Array(v)) => {
-                v.into_deserializer().deserialize_any(visitor)
+                ArrayDeserializer::new(v.values, v.span).deserialize_any(visitor)
             }
             crate::Item::Value(crate::Value::InlineTable(v)) => {
-                v.into_deserializer().deserialize_any(visitor)
+                TableDeserializer::new(v.items, v.span).deserialize_any(visitor)
             }
-            crate::Item::Table(v) => v.into_deserializer().deserialize_any(visitor),
-            crate::Item::ArrayOfTables(v) => v.into_deserializer().deserialize_any(visitor),
+            crate::Item::Table(v) => {
+                TableDeserializer::new(v.items, v.span).deserialize_any(visitor)
+            }
+            crate::Item::ArrayOfTables(v) => {
+                ArrayDeserializer::new(v.values, v.span).deserialize_any(visitor)
+            }
         }
         .map_err(|mut e: Self::Error| {
             if e.span().is_none() {
@@ -199,13 +205,13 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
                         v.span(),
                     ))
                 } else {
-                    v.into_deserializer()
+                    TableDeserializer::new(v.items, v.span)
                         .deserialize_enum(name, variants, visitor)
                 }
             }
-            crate::Item::Table(v) => v
-                .into_deserializer()
-                .deserialize_enum(name, variants, visitor),
+            crate::Item::Table(v) => {
+                TableDeserializer::new(v.items, v.span).deserialize_enum(name, variants, visitor)
+            }
             e => Err(Error::custom("wanted string or table", e.span())),
         }
         .map_err(|mut e: Self::Error| {
@@ -236,12 +242,6 @@ impl serde::de::IntoDeserializer<'_, Error> for crate::Value {
 
     fn into_deserializer(self) -> Self::Deserializer {
         ValueDeserializer::new(crate::Item::Value(self))
-    }
-}
-
-impl crate::Item {
-    pub(crate) fn into_deserializer(self) -> ValueDeserializer {
-        ValueDeserializer::new(self)
     }
 }
 
