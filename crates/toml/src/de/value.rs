@@ -26,20 +26,20 @@ use crate::de::Error;
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
 #[cfg(feature = "parse")]
-pub struct ValueDeserializer<'a> {
-    input: &'a str,
+pub struct ValueDeserializer<'i> {
+    input: &'i str,
 }
 
 #[cfg(feature = "parse")]
-impl<'a> ValueDeserializer<'a> {
+impl<'i> ValueDeserializer<'i> {
     /// Deserialization implementation for TOML.
-    pub fn new(input: &'a str) -> Self {
+    pub fn new(input: &'i str) -> Self {
         Self { input }
     }
 }
 
 #[cfg(feature = "parse")]
-impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
+impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>

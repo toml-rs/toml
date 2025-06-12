@@ -73,20 +73,20 @@ where
 ///
 /// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 #[cfg(feature = "parse")]
-pub struct Deserializer<'a> {
-    input: &'a str,
+pub struct Deserializer<'i> {
+    input: &'i str,
 }
 
 #[cfg(feature = "parse")]
-impl<'a> Deserializer<'a> {
+impl<'i> Deserializer<'i> {
     /// Deserialization implementation for TOML.
-    pub fn new(input: &'a str) -> Self {
+    pub fn new(input: &'i str) -> Self {
         Self { input }
     }
 }
 
 #[cfg(feature = "parse")]
-impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
+impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
