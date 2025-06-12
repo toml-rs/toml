@@ -1,6 +1,7 @@
 use serde::de;
 use serde::ser;
 
+use crate::alloc_prelude::*;
 use crate::map::Map;
 use crate::Value;
 
@@ -40,8 +41,8 @@ impl Table {
 }
 
 #[cfg(feature = "display")]
-impl std::fmt::Display for Table {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Table {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         crate::ser::to_string(self)
             .expect("Unable to represent value as string")
             .fmt(f)
@@ -49,7 +50,7 @@ impl std::fmt::Display for Table {
 }
 
 #[cfg(feature = "parse")]
-impl std::str::FromStr for Table {
+impl core::str::FromStr for Table {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         crate::from_str(s)

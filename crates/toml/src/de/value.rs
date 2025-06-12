@@ -37,7 +37,7 @@ use crate::de::TableDeserializer;
 /// # }
 /// ```
 pub struct ValueDeserializer<'i> {
-    span: Option<std::ops::Range<usize>>,
+    span: Option<core::ops::Range<usize>>,
     input: DeValue<'i>,
     validate_struct_keys: bool,
 }
@@ -51,7 +51,7 @@ impl<'i> ValueDeserializer<'i> {
         Ok(Self::new(input, Some(span)))
     }
 
-    pub(crate) fn new(input: DeValue<'i>, span: Option<std::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(input: DeValue<'i>, span: Option<core::ops::Range<usize>>) -> Self {
         Self {
             input,
             span,

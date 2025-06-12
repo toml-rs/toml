@@ -12,7 +12,7 @@ impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
     fn visit_item_mut(&mut self, node: &mut toml_edit::Item) {
         let is_parent_value = self.is_value;
         if !is_parent_value {
-            let other = std::mem::take(node);
+            let other = core::mem::take(node);
             let other = match other.into_table().map(toml_edit::Item::Table) {
                 Ok(i) => i,
                 Err(i) => i,

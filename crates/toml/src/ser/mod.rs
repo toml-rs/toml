@@ -11,6 +11,8 @@ mod map;
 #[cfg(feature = "display")]
 mod ser_value;
 
+use crate::alloc_prelude::*;
+
 #[cfg(feature = "display")]
 pub use ser_value::ValueSerializer;
 
@@ -90,7 +92,7 @@ pub struct Error {
 }
 
 impl Error {
-    pub(crate) fn new(inner: impl std::fmt::Display) -> Self {
+    pub(crate) fn new(inner: impl core::fmt::Display) -> Self {
         Self {
             inner: crate::edit::ser::Error::Custom(inner.to_string()),
         }
@@ -123,25 +125,28 @@ impl Error {
 impl serde::ser::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
-        T: std::fmt::Display,
+        T: core::fmt::Display,
     {
         Error::new(msg)
     }
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.inner.fmt(f)
     }
 }
 
-impl std::fmt::Debug for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.inner.fmt(f)
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}
+#[cfg(not(feature = "std"))]
+impl serde::de::StdError for Error {}
 
 /// Serialization for TOML documents.
 ///
@@ -464,7 +469,7 @@ pub(crate) fn write_document(
     mut settings: crate::fmt::DocumentFormatter,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
-    use std::fmt::Write;
+    use core::fmt::Write;
     use toml_edit::visit_mut::VisitMut as _;
 
     let value = value.map_err(Error::wrap)?;

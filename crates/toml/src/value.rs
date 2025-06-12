@@ -1,17 +1,21 @@
 //! Definition of a TOML [value][Value]
 
-use std::collections::{BTreeMap, HashMap};
-use std::fmt;
-use std::hash::Hash;
-use std::mem::discriminant;
-use std::ops;
-use std::vec;
+use alloc::collections::BTreeMap;
+use alloc::vec;
+use core::fmt;
+use core::hash::Hash;
+use core::mem::discriminant;
+use core::ops;
+#[cfg(feature = "std")]
+use std::collections::HashMap;
 
 use serde::de;
 use serde::de::IntoDeserializer;
 use serde::ser;
-
 use toml_datetime::__unstable as datetime;
+
+use crate::alloc_prelude::*;
+
 pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
 
 /// Type representing a TOML array, payload of the `Value::Array` variant
@@ -266,6 +270,7 @@ impl<S: Into<String>, V: Into<Value>> From<BTreeMap<S, V>> for Value {
     }
 }
 
+#[cfg(feature = "std")]
 impl<S: Into<String> + Hash + Eq, V: Into<Value>> From<HashMap<S, V>> for Value {
     fn from(val: HashMap<S, V>) -> Value {
         let table = val.into_iter().map(|(s, v)| (s.into(), v.into())).collect();
@@ -388,7 +393,7 @@ impl fmt::Display for Value {
 }
 
 #[cfg(feature = "parse")]
-impl std::str::FromStr for Value {
+impl core::str::FromStr for Value {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Value, Self::Err> {
         use serde::Deserialize as _;

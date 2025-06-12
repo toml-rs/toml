@@ -1,12 +1,13 @@
 //! Definition of a TOML [value][DeValue] for deserialization
 
-use std::borrow::Cow;
-use std::mem::discriminant;
-use std::ops;
+use alloc::borrow::Cow;
+use core::mem::discriminant;
+use core::ops;
 
 use serde_spanned::Spanned;
 use toml_datetime::Datetime;
 
+use crate::alloc_prelude::*;
 use crate::de::DeArray;
 use crate::de::DeTable;
 
@@ -49,7 +50,7 @@ impl<'i> DeValue<'i> {
     pub fn make_owned(&mut self) {
         match self {
             DeValue::String(v) => {
-                let owned = std::mem::take(v);
+                let owned = core::mem::take(v);
                 *v = Cow::Owned(owned.into_owned());
             }
             DeValue::Integer(..)
