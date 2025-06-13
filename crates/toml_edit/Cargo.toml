@@ -30,6 +30,8 @@ default = ["parse", "display"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["dep:toml_write"]
 unsafe = ["toml_parse?/unsafe"]
+# Enable features that improve performance. For maximum performance, you may
+# also want to enable the "unsafe" feature.
 perf = ["dep:kstring", "toml_parse?/simd"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 debug = ["toml_parse?/debug", "dep:anstream", "dep:anstyle"]
