@@ -66,6 +66,7 @@ toml-test-data = "2.3.0"
 snapbox = "0.6.0"
 walkdir = "2.5.0"
 itertools = "0.14.0"
+serde-untagged = "0.1.7"
 
 [[test]]
 name = "decoder_compliance"
