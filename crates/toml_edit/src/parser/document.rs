@@ -458,6 +458,7 @@ fn descend_path<'t>(
         table = match table.entry_format(key) {
             crate::Entry::Vacant(entry) => {
                 let mut new_table = Table::new();
+                new_table.span = key.span();
                 new_table.set_implicit(true);
                 new_table.set_dotted(dotted);
 

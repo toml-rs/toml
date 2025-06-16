@@ -4,7 +4,9 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
+use serde::de::{Deserializer, MapAccess};
 use serde::Deserialize;
+use serde_untagged::UntaggedEnumVisitor;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
@@ -300,5 +302,113 @@ unknown field `fake`, expected `real`
 
 "#]]
         .raw()
+    );
+}
+
+#[test]
+fn implicit_tables() {
+    #[derive(Debug)]
+    #[allow(dead_code)]
+    enum SpannedValue {
+        String(String),
+        Map(Vec<(String, Spanned<SpannedValue>)>),
+    }
+
+    impl<'de> Deserialize<'de> for SpannedValue {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            let data = UntaggedEnumVisitor::new()
+                .string(|str| Ok(SpannedValue::String(str.into())))
+                .map(|mut map| {
+                    let mut result = Vec::new();
+
+                    while let Some((k, v)) = map.next_entry()? {
+                        result.push((k, v));
+                    }
+
+                    Ok(SpannedValue::Map(result))
+                })
+                .deserialize(deserializer)?;
+
+            Ok(data)
+        }
+    }
+
+    const INPUT: &str = r#"
+[foo.bar]
+alice.bob = { one.two = "qux" }
+"#;
+
+    let result = crate::from_str::<SpannedValue>(INPUT);
+    assert_data_eq!(
+        result.unwrap().to_debug(),
+        str![[r#"
+Map(
+    [
+        (
+            "foo",
+            Spanned {
+                span: 2..5,
+                value: Map(
+                    [
+                        (
+                            "bar",
+                            Spanned {
+                                span: 1..10,
+                                value: Map(
+                                    [
+                                        (
+                                            "alice",
+                                            Spanned {
+                                                span: 11..16,
+                                                value: Map(
+                                                    [
+                                                        (
+                                                            "bob",
+                                                            Spanned {
+                                                                span: 23..42,
+                                                                value: Map(
+                                                                    [
+                                                                        (
+                                                                            "one",
+                                                                            Spanned {
+                                                                                span: 25..28,
+                                                                                value: Map(
+                                                                                    [
+                                                                                        (
+                                                                                            "two",
+                                                                                            Spanned {
+                                                                                                span: 35..40,
+                                                                                                value: String(
+                                                                                                    "qux",
+                                                                                                ),
+                                                                                            },
+                                                                                        ),
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        ),
+                    ],
+                ),
+            },
+        ),
+    ],
+)
+
+"#]]
     );
 }

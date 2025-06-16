@@ -62,6 +62,7 @@ proptest = "1.5.0"
 walkdir = "2.5.0"
 serde_spanned = { path = "../serde_spanned" }
 toml_types = { path = "../toml", package = "toml", default-features = false, features = ["preserve_order"] }
+serde-untagged = "0.1.7"
 
 [[test]]
 name = "testsuite"
