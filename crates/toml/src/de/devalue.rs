@@ -15,7 +15,7 @@ use crate::de::DeTable;
 pub type DeString<'i> = Cow<'i, str>;
 
 /// Representation of a TOML value.
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum DeValue<'i> {
     /// Represents a TOML string
     String(DeString<'i>),
