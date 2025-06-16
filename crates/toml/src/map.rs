@@ -269,6 +269,29 @@ where
             iter: self.map.values(),
         }
     }
+
+    /// Scan through each key-value pair in the map and keep those where the
+    /// closure `keep` returns `true`.
+    ///
+    /// The elements are visited in order, and remaining elements keep their
+    /// order.
+    ///
+    /// Computes in **O(n)** time (average).
+    pub(crate) fn retain2<F>(&mut self, mut keep: F)
+    where
+        F: FnMut(&mut K, &mut V) -> bool,
+    {
+        self.map = core::mem::take(&mut self.map)
+            .into_iter()
+            .flat_map(move |(mut k, mut v)| {
+                if keep(&mut k, &mut v) {
+                    Some((k, v))
+                } else {
+                    None
+                }
+            })
+            .collect();
+    }
 }
 
 impl<K, V> Map<K, V>
