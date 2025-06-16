@@ -40,8 +40,12 @@ pub struct Map<K, V> {
 
 #[cfg(not(feature = "preserve_order"))]
 type MapImpl<K, V> = BTreeMap<K, V>;
+#[cfg(all(feature = "preserve_order", not(feature = "fast_hash")))]
+type RandomState = std::collections::hash_map::RandomState;
+#[cfg(all(feature = "preserve_order", feature = "fast_hash"))]
+type RandomState = foldhash::fast::RandomState;
 #[cfg(feature = "preserve_order")]
-type MapImpl<K, V> = IndexMap<K, V>;
+type MapImpl<K, V> = IndexMap<K, V, RandomState>;
 
 impl<K, V> Map<K, V>
 where
@@ -51,6 +55,9 @@ where
     #[inline]
     pub fn new() -> Self {
         Map {
+            #[cfg(feature = "preserve_order")]
+            map: MapImpl::with_hasher(RandomState::default()),
+            #[cfg(not(feature = "preserve_order"))]
             map: MapImpl::new(),
             dotted: false,
             implicit: false,
@@ -64,12 +71,7 @@ where
     pub fn with_capacity(capacity: usize) -> Self {
         // does not support with_capacity
         let _ = capacity;
-        Map {
-            map: BTreeMap::new(),
-            dotted: false,
-            implicit: false,
-            inline: false,
-        }
+        Self::new()
     }
 
     #[cfg(feature = "preserve_order")]
@@ -77,7 +79,7 @@ where
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
         Map {
-            map: IndexMap::with_capacity(capacity),
+            map: IndexMap::with_capacity_and_hasher(capacity, RandomState::default()),
             dotted: false,
             implicit: false,
             inline: false,
@@ -298,15 +300,13 @@ where
     }
 }
 
-impl<K, V> Default for Map<K, V> {
+impl<K, V> Default for Map<K, V>
+where
+    K: Ord + Hash,
+{
     #[inline]
     fn default() -> Self {
-        Map {
-            map: MapImpl::new(),
-            dotted: false,
-            implicit: false,
-            inline: false,
-        }
+        Self::new()
     }
 }
 
