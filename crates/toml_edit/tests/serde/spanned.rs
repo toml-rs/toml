@@ -343,18 +343,71 @@ alice.bob = { one.two = "qux" }
 
     let result = crate::from_str::<SpannedValue>(INPUT);
     assert_data_eq!(
-        result.unwrap_err().to_string(),
+        result.unwrap().to_debug(),
         str![[r#"
-TOML parse error at line 1, column 1
-  |
-1 | 
-  | ^
-invalid type: string "bar", expected a borrowed string
-
-
-
-in `foo`
-
+Map(
+    [
+        (
+            "foo",
+            Spanned {
+                span: 2..5,
+                value: Map(
+                    [
+                        (
+                            "bar",
+                            Spanned {
+                                span: 1..10,
+                                value: Map(
+                                    [
+                                        (
+                                            "alice",
+                                            Spanned {
+                                                span: 11..16,
+                                                value: Map(
+                                                    [
+                                                        (
+                                                            "bob",
+                                                            Spanned {
+                                                                span: 23..42,
+                                                                value: Map(
+                                                                    [
+                                                                        (
+                                                                            "one",
+                                                                            Spanned {
+                                                                                span: 25..28,
+                                                                                value: Map(
+                                                                                    [
+                                                                                        (
+                                                                                            "two",
+                                                                                            Spanned {
+                                                                                                span: 35..40,
+                                                                                                value: String(
+                                                                                                    "qux",
+                                                                                                ),
+                                                                                            },
+                                                                                        ),
+                                                                                    ],
+                                                                                ),
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        ),
+                    ],
+                ),
+            },
+        ),
+    ],
+)
 
 "#]]
     );
