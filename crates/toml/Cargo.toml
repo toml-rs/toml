@@ -33,6 +33,9 @@ std = ["indexmap?/std"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["std", "dep:toml_edit", "toml_edit?/display"]
 unsafe = ["toml_parse?/unsafe"]
+# Enable features that improve performance. For maximum performance, you may
+# also want to enable the "unsafe" feature.
+perf = ["toml_parse?/simd"]
 debug = ["std", "toml_parse?/debug", "dep:anstream", "dep:anstyle"]
 
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
