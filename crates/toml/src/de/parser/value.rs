@@ -4,6 +4,7 @@ use crate::alloc_prelude::*;
 use crate::de::parser::array::on_array;
 use crate::de::parser::inline_table::on_inline_table;
 use crate::de::parser::prelude::*;
+use crate::de::DeInteger;
 use crate::de::DeValue;
 
 /// ```bnf
@@ -56,7 +57,7 @@ pub(crate) fn value<'i>(
         }
     }
 
-    Spanned::new(0..0, DeValue::Integer(0))
+    Spanned::new(0..0, DeValue::Integer(Default::default()))
 }
 
 pub(crate) fn on_scalar<'i>(
@@ -124,18 +125,12 @@ pub(crate) fn on_scalar<'i>(
             };
             Spanned::new(value_span, DeValue::Float(value))
         }
-        toml_parse::decoder::ScalarKind::Integer(radix) => {
-            let value = match i64::from_str_radix(&decoded, radix.value()) {
-                Ok(value) => value,
-                Err(_) => {
-                    // Assuming the decoder fully validated it, leaving only overflow errors
-                    errors.report_error(
-                        ParseError::new("integer number overflowed").with_unexpected(event.span()),
-                    );
-                    i64::MAX
-                }
-            };
-            Spanned::new(value_span, DeValue::Integer(value))
-        }
+        toml_parse::decoder::ScalarKind::Integer(radix) => Spanned::new(
+            value_span,
+            DeValue::Integer(DeInteger {
+                inner: decoded,
+                radix: radix.value(),
+            }),
+        ),
     }
 }

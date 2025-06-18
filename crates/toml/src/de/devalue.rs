@@ -14,13 +14,58 @@ use crate::de::DeTable;
 /// Type representing a TOML string, payload of the `DeValue::String` variant
 pub type DeString<'i> = Cow<'i, str>;
 
+/// Represents a TOML integer
+#[derive(Clone, Debug)]
+pub struct DeInteger<'i> {
+    pub(crate) inner: DeString<'i>,
+    pub(crate) radix: u32,
+}
+
+impl DeInteger<'_> {
+    pub(crate) fn to_i64(&self) -> Option<i64> {
+        i64::from_str_radix(self.inner.as_ref(), self.radix).ok()
+    }
+
+    pub(crate) fn as_str(&self) -> &str {
+        self.inner.as_ref()
+    }
+}
+
+impl Default for DeInteger<'_> {
+    fn default() -> Self {
+        Self {
+            inner: DeString::Borrowed("0"),
+            radix: 10,
+        }
+    }
+}
+
+impl core::fmt::Display for DeInteger<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self.radix {
+            2 => "0b".fmt(formatter)?,
+            8 => "0o".fmt(formatter)?,
+            10 => {}
+            16 => "0x".fmt(formatter)?,
+            _ => {
+                unreachable!(
+                    "we should only ever have 2, 8, 10, and 16 radix, not {}",
+                    self.radix
+                )
+            }
+        }
+        self.as_str().fmt(formatter)?;
+        Ok(())
+    }
+}
+
 /// Representation of a TOML value.
 #[derive(Clone, Debug)]
 pub enum DeValue<'i> {
     /// Represents a TOML string
     String(DeString<'i>),
     /// Represents a TOML integer
-    Integer(i64),
+    Integer(DeInteger<'i>),
     /// Represents a TOML float
     Float(f64),
     /// Represents a TOML boolean
@@ -87,8 +132,8 @@ impl<'i> DeValue<'i> {
     }
 
     /// Extracts the integer value if it is an integer.
-    pub fn as_integer(&self) -> Option<i64> {
-        match *self {
+    pub fn as_integer(&self) -> Option<&DeInteger<'i>> {
+        match self {
             DeValue::Integer(i) => Some(i),
             _ => None,
         }

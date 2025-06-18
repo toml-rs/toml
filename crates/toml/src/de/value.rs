@@ -90,7 +90,13 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         match self.input {
             DeValue::String(DeString::Owned(v)) => visitor.visit_string(v),
             DeValue::String(DeString::Borrowed(v)) => visitor.visit_str(v),
-            DeValue::Integer(v) => visitor.visit_i64(v),
+            DeValue::Integer(v) => {
+                if let Some(v) = v.to_i64() {
+                    visitor.visit_i64(v)
+                } else {
+                    Err(Error::custom("integer number overflowed", None))
+                }
+            }
             DeValue::Float(v) => visitor.visit_f64(v),
             DeValue::Boolean(v) => visitor.visit_bool(v),
             DeValue::Datetime(v) => visitor.visit_map(DatetimeDeserializer::new(v)),
