@@ -93,6 +93,8 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             DeValue::Integer(v) => {
                 if let Some(v) = v.to_i64() {
                     visitor.visit_i64(v)
+                } else if let Some(v) = v.to_u64() {
+                    visitor.visit_u64(v)
                 } else {
                     Err(Error::custom("integer number overflowed", None))
                 }

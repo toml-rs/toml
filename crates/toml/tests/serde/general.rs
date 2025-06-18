@@ -1080,13 +1080,11 @@ a_b = {value}
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(
-        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        crate::from_str::<Foo>(&encoded).unwrap().to_debug(),
         str![[r#"
-TOML parse error at line 2, column 7
-  |
-2 | a_b = 18446744073709551615
-  |       ^^^^^^^^^^^^^^^^^^^^
-integer number overflowed
+Foo {
+    a_b: 18446744073709551615,
+}
 
 "#]]
         .raw()

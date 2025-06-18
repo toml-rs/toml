@@ -22,6 +22,9 @@ pub struct DeInteger<'i> {
 }
 
 impl DeInteger<'_> {
+    pub(crate) fn to_u64(&self) -> Option<u64> {
+        u64::from_str_radix(self.inner.as_ref(), self.radix).ok()
+    }
     pub(crate) fn to_i64(&self) -> Option<i64> {
         i64::from_str_radix(self.inner.as_ref(), self.radix).ok()
     }
