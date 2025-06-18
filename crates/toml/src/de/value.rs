@@ -97,7 +97,13 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
                     Err(Error::custom("integer number overflowed", None))
                 }
             }
-            DeValue::Float(v) => visitor.visit_f64(v),
+            DeValue::Float(v) => {
+                if let Some(v) = v.to_f64() {
+                    visitor.visit_f64(v)
+                } else {
+                    Err(Error::custom("floating-point number overflowed", None))
+                }
+            }
             DeValue::Boolean(v) => visitor.visit_bool(v),
             DeValue::Datetime(v) => visitor.visit_map(DatetimeDeserializer::new(v)),
             DeValue::Array(v) => ArrayDeserializer::new(v, span.clone()).deserialize_any(visitor),

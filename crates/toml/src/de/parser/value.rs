@@ -4,6 +4,7 @@ use crate::alloc_prelude::*;
 use crate::de::parser::array::on_array;
 use crate::de::parser::inline_table::on_inline_table;
 use crate::de::parser::prelude::*;
+use crate::de::DeFloat;
 use crate::de::DeInteger;
 use crate::de::DeValue;
 
@@ -100,30 +101,7 @@ pub(crate) fn on_scalar<'i>(
             Spanned::new(value_span, DeValue::Datetime(value))
         }
         toml_parse::decoder::ScalarKind::Float => {
-            let value = match decoded.parse::<f64>() {
-                Ok(value) => {
-                    if value.is_infinite()
-                        && !(decoded
-                            .strip_prefix(['+', '-'])
-                            .unwrap_or(&decoded)
-                            .chars()
-                            .all(|c| c.is_ascii_alphabetic()))
-                    {
-                        errors.report_error(
-                            ParseError::new("floating-point number overflowed")
-                                .with_unexpected(event.span()),
-                        );
-                    }
-                    value
-                }
-                Err(_) => {
-                    errors.report_error(
-                        ParseError::new(kind.invalid_description()).with_unexpected(event.span()),
-                    );
-                    f64::NAN
-                }
-            };
-            Spanned::new(value_span, DeValue::Float(value))
+            Spanned::new(value_span, DeValue::Float(DeFloat { inner: decoded }))
         }
         toml_parse::decoder::ScalarKind::Integer(radix) => Spanned::new(
             value_span,

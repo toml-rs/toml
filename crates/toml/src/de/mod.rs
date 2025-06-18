@@ -33,6 +33,8 @@ pub use dearray::DeArray;
 #[cfg(feature = "parse")]
 pub use detable::DeTable;
 #[cfg(feature = "parse")]
+pub use devalue::DeFloat;
+#[cfg(feature = "parse")]
 pub use devalue::DeInteger;
 #[cfg(feature = "parse")]
 pub use devalue::DeString;
