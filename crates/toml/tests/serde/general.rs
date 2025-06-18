@@ -1130,13 +1130,11 @@ a_b = {value}
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(
-        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        crate::from_str::<Foo>(&encoded).unwrap().to_debug(),
         str![[r#"
-TOML parse error at line 2, column 7
-  |
-2 | a_b = -170141183460469231731687303715884105728
-  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-i128 is not supported
+Foo {
+    a_b: -170141183460469231731687303715884105728,
+}
 
 "#]]
         .raw()
@@ -1182,13 +1180,11 @@ a_b = {value}
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(
-        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        crate::from_str::<Foo>(&encoded).unwrap().to_debug(),
         str![[r#"
-TOML parse error at line 2, column 7
-  |
-2 | a_b = 170141183460469231731687303715884105727
-  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-i128 is not supported
+Foo {
+    a_b: 170141183460469231731687303715884105727,
+}
 
 "#]]
         .raw()
@@ -1234,13 +1230,11 @@ a_b = {value}
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(
-        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        crate::from_str::<Foo>(&encoded).unwrap().to_debug(),
         str![[r#"
-TOML parse error at line 2, column 7
-  |
-2 | a_b = 340282366920938463463374607431768211455
-  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-u128 is not supported
+Foo {
+    a_b: 340282366920938463463374607431768211455,
+}
 
 "#]]
         .raw()

@@ -95,6 +95,10 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
                     visitor.visit_i64(v)
                 } else if let Some(v) = v.to_u64() {
                     visitor.visit_u64(v)
+                } else if let Some(v) = v.to_i128() {
+                    visitor.visit_i128(v)
+                } else if let Some(v) = v.to_u128() {
+                    visitor.visit_u128(v)
                 } else {
                     Err(Error::custom("integer number overflowed", None))
                 }
@@ -117,6 +121,20 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             }
             e
         })
+    }
+
+    fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
+    }
+
+    fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`
