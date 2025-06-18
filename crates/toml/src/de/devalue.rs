@@ -14,15 +14,105 @@ use crate::de::DeTable;
 /// Type representing a TOML string, payload of the `DeValue::String` variant
 pub type DeString<'i> = Cow<'i, str>;
 
+/// Represents a TOML integer
+#[derive(Clone, Debug)]
+pub struct DeInteger<'i> {
+    pub(crate) inner: DeString<'i>,
+    pub(crate) radix: u32,
+}
+
+impl DeInteger<'_> {
+    pub(crate) fn to_u64(&self) -> Option<u64> {
+        u64::from_str_radix(self.inner.as_ref(), self.radix).ok()
+    }
+    pub(crate) fn to_i64(&self) -> Option<i64> {
+        i64::from_str_radix(self.inner.as_ref(), self.radix).ok()
+    }
+    pub(crate) fn to_u128(&self) -> Option<u128> {
+        u128::from_str_radix(self.inner.as_ref(), self.radix).ok()
+    }
+    pub(crate) fn to_i128(&self) -> Option<i128> {
+        i128::from_str_radix(self.inner.as_ref(), self.radix).ok()
+    }
+
+    pub(crate) fn as_str(&self) -> &str {
+        self.inner.as_ref()
+    }
+}
+
+impl Default for DeInteger<'_> {
+    fn default() -> Self {
+        Self {
+            inner: DeString::Borrowed("0"),
+            radix: 10,
+        }
+    }
+}
+
+impl core::fmt::Display for DeInteger<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self.radix {
+            2 => "0b".fmt(formatter)?,
+            8 => "0o".fmt(formatter)?,
+            10 => {}
+            16 => "0x".fmt(formatter)?,
+            _ => {
+                unreachable!(
+                    "we should only ever have 2, 8, 10, and 16 radix, not {}",
+                    self.radix
+                )
+            }
+        }
+        self.as_str().fmt(formatter)?;
+        Ok(())
+    }
+}
+
+/// Represents a TOML integer
+#[derive(Clone, Debug)]
+pub struct DeFloat<'i> {
+    pub(crate) inner: DeString<'i>,
+}
+
+impl DeFloat<'_> {
+    pub(crate) fn to_f64(&self) -> Option<f64> {
+        let f: f64 = self.inner.as_ref().parse().ok()?;
+        if f.is_infinite() && !self.as_str().contains("inf") {
+            None
+        } else {
+            Some(f)
+        }
+    }
+
+    pub(crate) fn as_str(&self) -> &str {
+        self.inner.as_ref()
+    }
+}
+
+impl Default for DeFloat<'_> {
+    fn default() -> Self {
+        Self {
+            inner: DeString::Borrowed("0.0"),
+        }
+    }
+}
+
+impl core::fmt::Display for DeFloat<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.as_str().fmt(formatter)?;
+        Ok(())
+    }
+}
+
 /// Representation of a TOML value.
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum DeValue<'i> {
     /// Represents a TOML string
     String(DeString<'i>),
     /// Represents a TOML integer
-    Integer(i64),
+    Integer(DeInteger<'i>),
     /// Represents a TOML float
-    Float(f64),
+    Float(DeFloat<'i>),
     /// Represents a TOML boolean
     Boolean(bool),
     /// Represents a TOML datetime
@@ -87,8 +177,8 @@ impl<'i> DeValue<'i> {
     }
 
     /// Extracts the integer value if it is an integer.
-    pub fn as_integer(&self) -> Option<i64> {
-        match *self {
+    pub fn as_integer(&self) -> Option<&DeInteger<'i>> {
+        match self {
             DeValue::Integer(i) => Some(i),
             _ => None,
         }
@@ -100,8 +190,8 @@ impl<'i> DeValue<'i> {
     }
 
     /// Extracts the float value if it is a float.
-    pub fn as_float(&self) -> Option<f64> {
-        match *self {
+    pub fn as_float(&self) -> Option<&DeFloat<'i>> {
+        match self {
             DeValue::Float(f) => Some(f),
             _ => None,
         }

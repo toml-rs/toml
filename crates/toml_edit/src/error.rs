@@ -2,14 +2,14 @@
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
     message: String,
-    raw: Option<std::sync::Arc<str>>,
+    input: Option<std::sync::Arc<str>>,
     keys: Vec<String>,
     span: Option<std::ops::Range<usize>>,
 }
 
 impl TomlError {
     #[cfg(feature = "parse")]
-    pub(crate) fn new(raw: std::sync::Arc<str>, error: toml_parse::ParseError) -> Self {
+    pub(crate) fn new(input: std::sync::Arc<str>, error: toml_parse::ParseError) -> Self {
         let mut message = String::new();
         message.push_str(error.description());
         if let Some(expected) = error.expected() {
@@ -36,7 +36,7 @@ impl TomlError {
 
         Self {
             message,
-            raw: Some(raw),
+            input: Some(input),
             keys: Vec::new(),
             span,
         }
@@ -46,7 +46,7 @@ impl TomlError {
     pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,
-            raw: None,
+            input: None,
             keys: Vec::new(),
             span,
         }
@@ -73,8 +73,8 @@ impl TomlError {
     }
 
     #[cfg(feature = "serde")]
-    pub(crate) fn set_raw(&mut self, raw: Option<String>) {
-        self.raw = raw.map(|s| s.into());
+    pub(crate) fn set_input(&mut self, input: Option<&str>) {
+        self.input = input.map(|s| s.into());
     }
 }
 
@@ -104,14 +104,14 @@ fn render_literal(literal: &str) -> String {
 impl std::fmt::Display for TomlError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut context = false;
-        if let (Some(raw), Some(span)) = (&self.raw, self.span()) {
+        if let (Some(input), Some(span)) = (&self.input, self.span()) {
             context = true;
 
-            let (line, column) = translate_position(raw.as_bytes(), span.start);
+            let (line, column) = translate_position(input.as_bytes(), span.start);
             let line_num = line + 1;
             let col_num = column + 1;
             let gutter = line_num.to_string().len();
-            let content = raw.split('\n').nth(line).expect("valid line number");
+            let content = input.split('\n').nth(line).expect("valid line number");
             let highlight_len = span.end - span.start;
             // Allow highlight to go one past the line
             let highlight_len = highlight_len.min(content.len().saturating_sub(column));
@@ -186,7 +186,7 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
 #[cfg(feature = "parse")]
 pub(crate) struct TomlSink<'i, S> {
     source: toml_parse::Source<'i>,
-    raw: Option<std::sync::Arc<str>>,
+    input: Option<std::sync::Arc<str>>,
     sink: S,
 }
 
@@ -195,7 +195,7 @@ impl<'i, S: Default> TomlSink<'i, S> {
     pub(crate) fn new(source: toml_parse::Source<'i>) -> Self {
         Self {
             source,
-            raw: None,
+            input: None,
             sink: Default::default(),
         }
     }
@@ -209,10 +209,10 @@ impl<'i, S: Default> TomlSink<'i, S> {
 impl<'i> toml_parse::ErrorSink for TomlSink<'i, Option<TomlError>> {
     fn report_error(&mut self, error: toml_parse::ParseError) {
         if self.sink.is_none() {
-            let raw = self
-                .raw
+            let input = self
+                .input
                 .get_or_insert_with(|| std::sync::Arc::from(self.source.input()));
-            let error = TomlError::new(raw.clone(), error);
+            let error = TomlError::new(input.clone(), error);
             self.sink = Some(error);
         }
     }
@@ -221,10 +221,10 @@ impl<'i> toml_parse::ErrorSink for TomlSink<'i, Option<TomlError>> {
 #[cfg(feature = "parse")]
 impl<'i> toml_parse::ErrorSink for TomlSink<'i, Vec<TomlError>> {
     fn report_error(&mut self, error: toml_parse::ParseError) {
-        let raw = self
-            .raw
+        let input = self
+            .input
             .get_or_insert_with(|| std::sync::Arc::from(self.source.input()));
-        let error = TomlError::new(raw.clone(), error);
+        let error = TomlError::new(input.clone(), error);
         self.sink.push(error);
     }
 }

@@ -998,7 +998,7 @@ debug = true
 }
 
 #[test]
-fn integer_min() {
+fn i64_min() {
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
         a_b: i64,
@@ -1011,24 +1011,7 @@ fn integer_min() {
 }
 
 #[test]
-fn integer_too_big() {
-    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-    struct Foo {
-        a_b: u64,
-    }
-
-    let native = Foo { a_b: u64::MAX };
-    let err = crate::SerdeTable::try_from(native.clone()).unwrap_err();
-    assert_data_eq!(err.to_string(), str!["u64 value was too large"].raw());
-    let err = crate::to_string(&native).unwrap_err();
-    assert_data_eq!(
-        err.to_string(),
-        str!["out-of-range value for u64 type"].raw()
-    );
-}
-
-#[test]
-fn integer_max() {
+fn i64_max() {
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
         a_b: i64,
@@ -1038,6 +1021,150 @@ fn integer_max() {
         Foo { a_b: i64::MAX },
         map! { a_b: crate::SerdeValue::Integer(i64::MAX) },
     }
+}
+
+#[test]
+fn u64_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: u64,
+    }
+
+    let value = u64::MAX;
+    let literal = Foo { a_b: value };
+    let encoded = format!(
+        "
+a_b = {value}
+"
+    );
+
+    // Through a string equivalent
+    println!("to_string");
+    assert_data_eq!(
+        crate::to_string(&literal).unwrap_err().to_string(),
+        str!["out-of-range value for u64 type"].raw()
+    );
+    println!("literal, from_str(toml)");
+    assert_data_eq!(
+        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        str![[r#"
+TOML parse error at line 2, column 7
+  |
+2 | a_b = 18446744073709551615
+  |       ^^^^^^^^^^^^^^^^^^^^
+integer number overflowed
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn i128_min() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: i128,
+    }
+
+    let value = i128::MIN;
+    let literal = Foo { a_b: value };
+    let encoded = format!(
+        "
+a_b = {value}
+"
+    );
+
+    // Through a string equivalent
+    println!("to_string");
+    assert_data_eq!(
+        crate::to_string(&literal).unwrap_err().to_string(),
+        str!["i128 is not supported"].raw()
+    );
+    println!("literal, from_str(toml)");
+    assert_data_eq!(
+        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        str![[r#"
+TOML parse error at line 2, column 7
+  |
+2 | a_b = -170141183460469231731687303715884105728
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+integer number overflowed
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn i128_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: i128,
+    }
+
+    let value = i128::MAX;
+    let literal = Foo { a_b: value };
+    let encoded = format!(
+        "
+a_b = {value}
+"
+    );
+
+    // Through a string equivalent
+    println!("to_string");
+    assert_data_eq!(
+        crate::to_string(&literal).unwrap_err().to_string(),
+        str!["i128 is not supported"].raw()
+    );
+    println!("literal, from_str(toml)");
+    assert_data_eq!(
+        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        str![[r#"
+TOML parse error at line 2, column 7
+  |
+2 | a_b = 170141183460469231731687303715884105727
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+integer number overflowed
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn u128_max() {
+    #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+    struct Foo {
+        a_b: u128,
+    }
+
+    let value = u128::MAX;
+    let literal = Foo { a_b: value };
+    let encoded = format!(
+        "
+a_b = {value}
+"
+    );
+
+    // Through a string equivalent
+    println!("to_string");
+    assert_data_eq!(
+        crate::to_string(&literal).unwrap_err().to_string(),
+        str!["u128 is not supported"].raw()
+    );
+    println!("literal, from_str(toml)");
+    assert_data_eq!(
+        crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
+        str![[r#"
+TOML parse error at line 2, column 7
+  |
+2 | a_b = 340282366920938463463374607431768211455
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+integer number overflowed
+
+"#]]
+        .raw()
+    );
 }
 
 #[test]

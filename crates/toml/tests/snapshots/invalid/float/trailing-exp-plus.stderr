@@ -3,10 +3,3 @@ TOML parse error at line 1, column 26
 1 | trailing-exp-plus = 0.0e+
   |                          ^
 invalid exponent, expected digits
-
----
-TOML parse error at line 1, column 21
-  |
-1 | trailing-exp-plus = 0.0e+
-  |                     ^^^^^
-invalid float

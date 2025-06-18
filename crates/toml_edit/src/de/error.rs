@@ -33,8 +33,9 @@ impl Error {
         self.inner.set_span(span);
     }
 
-    pub(crate) fn set_raw(&mut self, raw: Option<String>) {
-        self.inner.set_raw(raw);
+    /// Provide the encoded TOML the error applies to
+    pub fn set_input(&mut self, input: Option<&str>) {
+        self.inner.set_input(input);
     }
 }
 

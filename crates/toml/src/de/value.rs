@@ -90,8 +90,26 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         match self.input {
             DeValue::String(DeString::Owned(v)) => visitor.visit_string(v),
             DeValue::String(DeString::Borrowed(v)) => visitor.visit_str(v),
-            DeValue::Integer(v) => visitor.visit_i64(v),
-            DeValue::Float(v) => visitor.visit_f64(v),
+            DeValue::Integer(v) => {
+                if let Some(v) = v.to_i64() {
+                    visitor.visit_i64(v)
+                } else if let Some(v) = v.to_u64() {
+                    visitor.visit_u64(v)
+                } else if let Some(v) = v.to_i128() {
+                    visitor.visit_i128(v)
+                } else if let Some(v) = v.to_u128() {
+                    visitor.visit_u128(v)
+                } else {
+                    Err(Error::custom("integer number overflowed", None))
+                }
+            }
+            DeValue::Float(v) => {
+                if let Some(v) = v.to_f64() {
+                    visitor.visit_f64(v)
+                } else {
+                    Err(Error::custom("floating-point number overflowed", None))
+                }
+            }
             DeValue::Boolean(v) => visitor.visit_bool(v),
             DeValue::Datetime(v) => visitor.visit_map(DatetimeDeserializer::new(v)),
             DeValue::Array(v) => ArrayDeserializer::new(v, span.clone()).deserialize_any(visitor),
@@ -103,6 +121,20 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             }
             e
         })
+    }
+
+    fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
+    }
+
+    fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value, Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
     }
 
     // `None` is interpreted as a missing field so be sure to implement `Some`

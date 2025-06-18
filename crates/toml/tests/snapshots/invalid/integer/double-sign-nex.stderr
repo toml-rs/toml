@@ -3,10 +3,3 @@ TOML parse error at line 1, column 20
 1 | double-sign-nex = --99
   |                    ^
 redundant numeric sign, expected nothing
-
----
-TOML parse error at line 1, column 19
-  |
-1 | double-sign-nex = --99
-  |                   ^^^^
-integer number overflowed

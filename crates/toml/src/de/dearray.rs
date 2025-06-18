@@ -132,15 +132,6 @@ impl Default for DeArray<'static> {
     }
 }
 
-impl PartialEq for DeArray<'_> {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        self.items.eq(&other.items)
-    }
-}
-
-impl Eq for DeArray<'_> {}
-
 impl core::fmt::Debug for DeArray<'_> {
     #[inline]
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

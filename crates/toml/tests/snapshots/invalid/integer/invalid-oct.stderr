@@ -3,10 +3,3 @@ TOML parse error at line 1, column 19
 1 | invalid-oct = 0o778
   |                   ^
 invalid octal number
-
----
-TOML parse error at line 1, column 15
-  |
-1 | invalid-oct = 0o778
-  |               ^^^^^
-integer number overflowed
