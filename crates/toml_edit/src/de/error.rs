@@ -33,7 +33,8 @@ impl Error {
         self.inner.set_span(span);
     }
 
-    pub(crate) fn set_input(&mut self, input: Option<&str>) {
+    /// Provide the encoded TOML the error applies to
+    pub fn set_input(&mut self, input: Option<&str>) {
         self.inner.set_input(input);
     }
 }

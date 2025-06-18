@@ -74,7 +74,8 @@ impl Error {
         self.span = span;
     }
 
-    pub(crate) fn set_input(&mut self, input: Option<&str>) {
+    /// Provide the encoded TOML the error applies to
+    pub fn set_input(&mut self, input: Option<&str>) {
         self.input = input.map(|s| s.into());
     }
 }
