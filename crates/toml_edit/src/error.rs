@@ -73,7 +73,7 @@ impl TomlError {
     }
 
     #[cfg(feature = "serde")]
-    pub(crate) fn set_raw(&mut self, raw: Option<String>) {
+    pub(crate) fn set_raw(&mut self, raw: Option<&str>) {
         self.raw = raw.map(|s| s.into());
     }
 }

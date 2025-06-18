@@ -33,7 +33,7 @@ impl Error {
         self.inner.set_span(span);
     }
 
-    pub(crate) fn set_raw(&mut self, raw: Option<String>) {
+    pub(crate) fn set_raw(&mut self, raw: Option<&str>) {
         self.inner.set_raw(raw);
     }
 }

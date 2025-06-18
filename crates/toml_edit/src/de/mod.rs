@@ -131,7 +131,7 @@ impl std::str::FromStr for Deserializer {
     }
 }
 
-impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
+impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -142,7 +142,8 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         ValueDeserializer::new(self.root)
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                let raw = raw.as_ref().map(|r| r.as_ref());
+                e.set_raw(raw);
                 e
             })
     }
@@ -157,7 +158,8 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         ValueDeserializer::new(self.root)
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                let raw = raw.as_ref().map(|r| r.as_ref());
+                e.set_raw(raw);
                 e
             })
     }
@@ -174,7 +176,8 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         ValueDeserializer::new(self.root)
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                let raw = raw.as_ref().map(|r| r.as_ref());
+                e.set_raw(raw);
                 e
             })
     }
@@ -192,7 +195,8 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         ValueDeserializer::new(self.root)
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                let raw = raw.as_ref().map(|r| r.as_ref());
+                e.set_raw(raw);
                 e
             })
     }
@@ -211,7 +215,8 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         ValueDeserializer::new(self.root)
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                let raw = raw.as_ref().map(|r| r.as_ref());
+                e.set_raw(raw);
                 e
             })
     }
