@@ -143,7 +143,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
                 let raw = raw.as_ref().map(|r| r.as_ref());
-                e.set_raw(raw);
+                e.set_input(raw);
                 e
             })
     }
@@ -159,7 +159,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
                 let raw = raw.as_ref().map(|r| r.as_ref());
-                e.set_raw(raw);
+                e.set_input(raw);
                 e
             })
     }
@@ -177,7 +177,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
                 let raw = raw.as_ref().map(|r| r.as_ref());
-                e.set_raw(raw);
+                e.set_input(raw);
                 e
             })
     }
@@ -196,7 +196,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
                 let raw = raw.as_ref().map(|r| r.as_ref());
-                e.set_raw(raw);
+                e.set_input(raw);
                 e
             })
     }
@@ -216,7 +216,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
                 let raw = raw.as_ref().map(|r| r.as_ref());
-                e.set_raw(raw);
+                e.set_input(raw);
                 e
             })
     }
