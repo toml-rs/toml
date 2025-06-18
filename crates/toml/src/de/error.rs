@@ -74,7 +74,7 @@ impl Error {
         self.span = span;
     }
 
-    pub(crate) fn set_raw(&mut self, raw: Option<String>) {
+    pub(crate) fn set_raw(&mut self, raw: Option<&str>) {
         self.raw = raw.map(|s| s.into());
     }
 }

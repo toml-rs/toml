@@ -178,7 +178,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         self.into_table_de()
             .deserialize_any(visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw);
                 e
             })
     }
@@ -193,7 +193,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         self.into_table_de()
             .deserialize_option(visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw);
                 e
             })
     }
@@ -210,7 +210,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         self.into_table_de()
             .deserialize_newtype_struct(name, visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw);
                 e
             })
     }
@@ -228,7 +228,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         self.into_table_de()
             .deserialize_struct(name, fields, visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw);
                 e
             })
     }
@@ -247,7 +247,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         self.into_table_de()
             .deserialize_enum(name, variants, visitor)
             .map_err(|mut e: Self::Error| {
-                e.set_raw(raw.map(|r| r.into()));
+                e.set_raw(raw);
                 e
             })
     }
