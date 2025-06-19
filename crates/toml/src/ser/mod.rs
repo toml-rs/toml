@@ -134,9 +134,9 @@ impl<'d> Serializer<'d> {
 impl<'d> serde::ser::Serializer for Serializer<'d> {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = array::SerializeDocumentArray<'d>;
-    type SerializeTuple = array::SerializeDocumentArray<'d>;
-    type SerializeTupleStruct = array::SerializeDocumentArray<'d>;
+    type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
     type SerializeMap = map::SerializeDocumentMap<'d>;
     type SerializeStruct = map::SerializeDocumentMap<'d>;

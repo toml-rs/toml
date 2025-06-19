@@ -4,64 +4,6 @@ use super::style::Style;
 use super::write_document;
 use super::{Error, Serializer};
 
-type InnerSerializeDocumentSeq =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
-
-#[doc(hidden)]
-pub struct SerializeDocumentArray<'d> {
-    inner: InnerSerializeDocumentSeq,
-    dst: &'d mut String,
-    settings: Style,
-}
-
-impl serde::ser::SerializeSeq for SerializeDocumentArray<'_> {
-    type Ok = ();
-    type Error = Error;
-
-    fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: serde::ser::Serialize + ?Sized,
-    {
-        self.inner.serialize_element(value).map_err(Error::wrap)
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
-    }
-}
-
-impl serde::ser::SerializeTuple for SerializeDocumentArray<'_> {
-    type Ok = ();
-    type Error = Error;
-
-    fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: serde::ser::Serialize + ?Sized,
-    {
-        self.inner.serialize_element(value).map_err(Error::wrap)
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
-    }
-}
-
-impl serde::ser::SerializeTupleStruct for SerializeDocumentArray<'_> {
-    type Ok = ();
-    type Error = Error;
-
-    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
-    where
-        T: serde::ser::Serialize + ?Sized,
-    {
-        self.inner.serialize_field(value).map_err(Error::wrap)
-    }
-
-    fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
-    }
-}
-
 type InnerSerializeDocumentTupleVariant =
     <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeTupleVariant;
 
