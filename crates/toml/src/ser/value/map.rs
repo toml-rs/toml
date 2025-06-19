@@ -18,8 +18,8 @@ impl<'d> SerializeMap<'d> {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeMap<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeMap for SerializeMap<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
@@ -41,8 +41,8 @@ impl serde::ser::SerializeMap for SerializeMap<'_> {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeMap<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeStruct for SerializeMap<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
@@ -78,8 +78,8 @@ impl<'d> SerializeValueStructVariant<'d> {
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeValueStructVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeStructVariant for SerializeValueStructVariant<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     #[inline]

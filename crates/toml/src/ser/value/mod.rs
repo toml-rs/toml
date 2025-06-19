@@ -62,7 +62,7 @@ impl<'d> ValueSerializer<'d> {
 }
 
 impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
-    type Ok = ();
+    type Ok = &'d mut String;
     type Error = Error;
     type SerializeSeq = array::SerializeValueArray<'d>;
     type SerializeTuple = array::SerializeValueArray<'d>;
@@ -320,12 +320,12 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 pub(crate) fn write_value(
     dst: &mut String,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
-) -> Result<(), Error> {
+) -> Result<&mut String, Error> {
     use core::fmt::Write;
 
     let value = value.map_err(Error::wrap)?;
 
     write!(dst, "{value}").unwrap();
 
-    Ok(())
+    Ok(dst)
 }

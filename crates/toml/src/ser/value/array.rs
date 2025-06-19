@@ -18,8 +18,8 @@ impl<'d> SerializeValueArray<'d> {
     }
 }
 
-impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
@@ -34,8 +34,8 @@ impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
     }
 }
 
-impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTuple for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
@@ -50,8 +50,8 @@ impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeValueArray<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTupleStruct for SerializeValueArray<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
@@ -84,8 +84,8 @@ impl<'d> SerializeValueTupleVariant<'d> {
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeValueTupleVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTupleVariant for SerializeValueTupleVariant<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
