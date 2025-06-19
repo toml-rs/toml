@@ -1,6 +1,6 @@
+use super::fmt::DocumentFormatter;
 use super::write_document;
 use super::{Error, Serializer};
-use crate::fmt::DocumentFormatter;
 
 type InnerSerializeDocumentSeq =
     <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;

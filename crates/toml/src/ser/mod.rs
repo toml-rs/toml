@@ -7,6 +7,8 @@
 #[cfg(feature = "display")]
 mod array;
 #[cfg(feature = "display")]
+mod fmt;
+#[cfg(feature = "display")]
 mod map;
 #[cfg(feature = "display")]
 mod ser_value;
@@ -162,7 +164,7 @@ impl serde::de::StdError for Error {}
 #[cfg(feature = "display")]
 pub struct Serializer<'d> {
     dst: &'d mut String,
-    settings: crate::fmt::DocumentFormatter,
+    settings: fmt::DocumentFormatter,
 }
 
 #[cfg(feature = "display")]
@@ -466,7 +468,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 #[cfg(feature = "display")]
 pub(crate) fn write_document(
     dst: &mut String,
-    mut settings: crate::fmt::DocumentFormatter,
+    mut settings: fmt::DocumentFormatter,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
     use core::fmt::Write;

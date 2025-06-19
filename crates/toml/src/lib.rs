@@ -172,8 +172,6 @@ pub mod ser;
 pub mod macros;
 
 mod edit;
-#[cfg(feature = "display")]
-mod fmt;
 mod table;
 
 #[cfg(feature = "parse")]
