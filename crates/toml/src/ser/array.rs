@@ -14,16 +14,6 @@ pub struct SerializeDocumentArray<'d> {
     settings: Style,
 }
 
-impl<'d> SerializeDocumentArray<'d> {
-    pub(crate) fn seq(ser: Serializer<'d>, inner: InnerSerializeDocumentSeq) -> Self {
-        Self {
-            inner,
-            dst: ser.dst,
-            settings: ser.settings,
-        }
-    }
-}
-
 impl serde::ser::SerializeSeq for SerializeDocumentArray<'_> {
     type Ok = ();
     type Error = Error;

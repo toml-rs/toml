@@ -1295,7 +1295,7 @@ fn float_max() {
 fn unsupported_root_type() {
     let native = "value";
     let err = crate::to_string_pretty(&native).unwrap_err();
-    assert_data_eq!(err.to_string(), str!["unsupported rust type"].raw());
+    assert_data_eq!(err.to_string(), str!["unsupported str type"].raw());
 }
 
 #[test]

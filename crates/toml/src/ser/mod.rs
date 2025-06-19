@@ -142,179 +142,99 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     type SerializeStruct = map::SerializeDocumentMap<'d>;
     type SerializeStructVariant = map::SerializeDocumentStructVariant<'d>;
 
-    fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_bool(v),
-        )
+    fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("bool")))
     }
 
-    fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i8(v),
-        )
+    fn serialize_i8(self, _v: i8) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("i8")))
     }
 
-    fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i16(v),
-        )
+    fn serialize_i16(self, _v: i16) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("i16")))
     }
 
-    fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i32(v),
-        )
+    fn serialize_i32(self, _v: i32) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("i32")))
     }
 
-    fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i64(v),
-        )
+    fn serialize_i64(self, _v: i64) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("i64")))
     }
 
-    fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u8(v),
-        )
+    fn serialize_u8(self, _v: u8) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("u8")))
     }
 
-    fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u16(v),
-        )
+    fn serialize_u16(self, _v: u16) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("u16")))
     }
 
-    fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u32(v),
-        )
+    fn serialize_u32(self, _v: u32) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("u32")))
     }
 
-    fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u64(v),
-        )
+    fn serialize_u64(self, _v: u64) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("u64")))
     }
 
-    fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_f32(v),
-        )
+    fn serialize_f32(self, _v: f32) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("f32")))
     }
 
-    fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_f64(v),
-        )
+    fn serialize_f64(self, _v: f64) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("f64")))
     }
 
-    fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_char(v),
-        )
+    fn serialize_char(self, _v: char) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("char")))
     }
 
-    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_str(v),
-        )
+    fn serialize_str(self, _v: &str) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("str")))
     }
 
-    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_bytes(v),
-        )
+    fn serialize_bytes(self, _v: &[u8]) -> Result<Self::Ok, Self::Error> {
+        Err(Error::unsupported_type(Some("bytes")))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_none(),
-        )
+        Err(Error::unsupported_type(Some("None")))
     }
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_some(v),
-        )
+        v.serialize(self)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_unit(),
-        )
+        Err(Error::unsupported_type(Some("unit")))
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_unit_struct(name),
-        )
+        Err(Error::unsupported_type(Some(name)))
     }
 
     fn serialize_unit_variant(
         self,
         name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_unit_variant(
-                name,
-                variant_index,
-                variant,
-            ),
-        )
+        Err(Error::unsupported_type(Some(name)))
     }
 
-    fn serialize_newtype_struct<T>(self, name: &'static str, v: &T) -> Result<Self::Ok, Self::Error>
+    fn serialize_newtype_struct<T>(
+        self,
+        _name: &'static str,
+        v: &T,
+    ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        write_document(
-            self.dst,
-            self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_newtype_struct(name, v),
-        )
+        v.serialize(self)
     }
 
     fn serialize_newtype_variant<T>(
@@ -339,12 +259,8 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         )
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_seq(len)
-            .map_err(Error::wrap)?;
-        let ser = array::SerializeDocumentArray::seq(self, ser);
-        Ok(ser)
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        Err(Error::unsupported_type(Some("array")))
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
