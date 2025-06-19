@@ -164,7 +164,7 @@ impl serde::de::StdError for Error {}
 #[cfg(feature = "display")]
 pub struct Serializer<'d> {
     dst: &'d mut String,
-    settings: style::DocumentFormatter,
+    settings: style::Style,
 }
 
 #[cfg(feature = "display")]
@@ -468,7 +468,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 #[cfg(feature = "display")]
 pub(crate) fn write_document(
     dst: &mut String,
-    mut settings: style::DocumentFormatter,
+    mut settings: style::Style,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
     use core::fmt::Write;

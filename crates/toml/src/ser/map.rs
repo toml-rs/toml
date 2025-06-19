@@ -1,4 +1,4 @@
-use super::style::DocumentFormatter;
+use super::style::Style;
 use super::write_document;
 use super::{Error, Serializer};
 
@@ -9,7 +9,7 @@ type InnerSerializeDocumentTable =
 pub struct SerializeDocumentTable<'d> {
     inner: InnerSerializeDocumentTable,
     dst: &'d mut String,
-    settings: DocumentFormatter,
+    settings: Style,
 }
 
 impl<'d> SerializeDocumentTable<'d> {
@@ -86,7 +86,7 @@ type InnerSerializeDocumentStructVariant =
 pub struct SerializeDocumentStructVariant<'d> {
     inner: InnerSerializeDocumentStructVariant,
     dst: &'d mut String,
-    settings: DocumentFormatter,
+    settings: Style,
 }
 
 impl<'d> SerializeDocumentStructVariant<'d> {

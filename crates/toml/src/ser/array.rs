@@ -1,4 +1,4 @@
-use super::style::DocumentFormatter;
+use super::style::Style;
 use super::write_document;
 use super::{Error, Serializer};
 
@@ -9,7 +9,7 @@ type InnerSerializeDocumentSeq =
 pub struct SerializeDocumentArray<'d> {
     inner: InnerSerializeDocumentSeq,
     dst: &'d mut String,
-    settings: DocumentFormatter,
+    settings: Style,
 }
 
 impl<'d> SerializeDocumentArray<'d> {
@@ -77,7 +77,7 @@ type InnerSerializeDocumentTupleVariant =
 pub struct SerializeDocumentTupleVariant<'d> {
     inner: InnerSerializeDocumentTupleVariant,
     dst: &'d mut String,
-    settings: DocumentFormatter,
+    settings: Style,
 }
 
 impl<'d> SerializeDocumentTupleVariant<'d> {
