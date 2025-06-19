@@ -5,10 +5,13 @@ mod map;
 use toml_write::TomlWrite as _;
 
 use super::Error;
+use crate::alloc_prelude::*;
 #[allow(clippy::wildcard_imports)]
-use array::*;
+pub(crate) use array::*;
 #[allow(clippy::wildcard_imports)]
-use map::*;
+pub(crate) use key::*;
+#[allow(clippy::wildcard_imports)]
+pub(crate) use map::*;
 
 /// Serialization for TOML [values][crate::Value].
 ///

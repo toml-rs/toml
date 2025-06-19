@@ -7,6 +7,7 @@ use super::array::SerializeValueArray;
 use super::key::KeySerializer;
 use super::Error;
 use super::ValueSerializer;
+use crate::alloc_prelude::*;
 
 #[doc(hidden)]
 #[allow(clippy::large_enum_variant)]
@@ -157,7 +158,7 @@ impl<'d> SerializeTable<'d> {
         })
     }
 
-    fn end(self) -> Result<&'d mut String, Error> {
+    pub(crate) fn end(self) -> Result<&'d mut String, Error> {
         if self.seen_value {
             self.dst.space()?;
         }
@@ -436,13 +437,13 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
     }
 }
 
-struct MapValueSerializer<'d> {
+pub(crate) struct MapValueSerializer<'d> {
     dst: &'d mut String,
     is_none: &'d mut bool,
 }
 
 impl<'d> MapValueSerializer<'d> {
-    fn new(dst: &'d mut String, is_none: &'d mut bool) -> Self {
+    pub(crate) fn new(dst: &'d mut String, is_none: &'d mut bool) -> Self {
         Self { dst, is_none }
     }
 }

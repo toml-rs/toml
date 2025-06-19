@@ -290,10 +290,10 @@ in `bar`
             }
         },
         str![[r#"
-TOML parse error at line 2, column 7
+TOML parse error at line 1, column 15
   |
-2 | bar = "a"
-  |       ^^^
+1 | foo = { bar = "a" }
+  |               ^^^
 invalid type: string "a", expected isize
 
 "#]],
@@ -407,11 +407,7 @@ fn parse_tuple_variant() {
     assert_data_eq!(
         raw,
         str![[r#"
-[[inner]]
-Int = [1, 1]
-
-[[inner]]
-String = ["2", "2"]
+inner = [{ Int = [1, 1] }, { String = ["2", "2"] }]
 
 "#]]
         .raw()
@@ -420,17 +416,7 @@ String = ["2", "2"]
     assert_data_eq!(
         raw,
         str![[r#"
-[[inner]]
-Int = [
-    1,
-    1,
-]
-
-[[inner]]
-String = [
-    "2",
-    "2",
-]
+inner = [{ Int = [1, 1] }, { String = ["2", "2"] }]
 
 "#]]
         .raw()
@@ -481,17 +467,7 @@ fn parse_struct_variant() {
     assert_data_eq!(
         raw,
         str![[r#"
-[[inner]]
-
-[inner.Int]
-first = 1
-second = 1
-
-[[inner]]
-
-[inner.String]
-first = "2"
-second = "2"
+inner = [{ Int = { first = 1, second = 1 } }, { String = { first = "2", second = "2" } }]
 
 "#]]
         .raw()
@@ -500,17 +476,7 @@ second = "2"
     assert_data_eq!(
         raw,
         str![[r#"
-[[inner]]
-
-[inner.Int]
-first = 1
-second = 1
-
-[[inner]]
-
-[inner.String]
-first = "2"
-second = "2"
+inner = [{ Int = { first = 1, second = 1 } }, { String = { first = "2", second = "2" } }]
 
 "#]]
         .raw()
@@ -992,8 +958,7 @@ fn newline_table() {
     assert_data_eq!(
         raw,
         str![[r#"
-[package]
-name = "foo"
+package = { name = "foo" }
 
 "#]]
     );
@@ -1001,8 +966,7 @@ name = "foo"
     assert_data_eq!(
         raw,
         str![[r#"
-[package]
-name = "foo"
+package = { name = "foo" }
 
 "#]]
     );
@@ -1043,8 +1007,7 @@ fn newline_dotted_table() {
     assert_data_eq!(
         raw,
         str![[r#"
-[profile.dev]
-debug = true
+profile = { dev = { debug = true } }
 
 "#]]
     );
@@ -1052,8 +1015,7 @@ debug = true
     assert_data_eq!(
         raw,
         str![[r#"
-[profile.dev]
-debug = true
+profile = { dev = { debug = true } }
 
 "#]]
     );
@@ -1110,14 +1072,8 @@ fn newline_mixed_tables() {
         raw,
         str![[r#"
 cargo_features = []
-
-[package]
-name = "foo"
-version = "1.0.0"
-authors = []
-
-[profile.dev]
-debug = true
+package = { name = "foo", version = "1.0.0", authors = [] }
+profile = { dev = { debug = true } }
 
 "#]]
     );
@@ -1126,14 +1082,8 @@ debug = true
         raw,
         str![[r#"
 cargo_features = []
-
-[package]
-name = "foo"
-version = "1.0.0"
-authors = []
-
-[profile.dev]
-debug = true
+package = { name = "foo", version = "1.0.0", authors = [] }
+profile = { dev = { debug = true } }
 
 "#]]
     );
@@ -1652,11 +1602,7 @@ values = [1, 2, 3]
     assert_data_eq!(
         raw,
         str![[r#"
-values = [
-    1,
-    2,
-    3,
-]
+values = [1, 2, 3]
 
 "#]]
         .raw()
@@ -1695,17 +1641,7 @@ fn serialize_array_with_optional_struct_field() {
     assert_data_eq!(
         raw,
         str![[r#"
-[[values]]
-x = 0
-y = 4
-
-[[values]]
-x = 2
-y = 5
-
-[[values]]
-x = 3
-y = 7
+values = [{ x = 0, y = 4 }, { x = 2, y = 5 }, { x = 3, y = 7 }]
 
 "#]]
         .raw()
@@ -1714,17 +1650,7 @@ y = 7
     assert_data_eq!(
         raw,
         str![[r#"
-[[values]]
-x = 0
-y = 4
-
-[[values]]
-x = 2
-y = 5
-
-[[values]]
-x = 3
-y = 7
+values = [{ x = 0, y = 4 }, { x = 2, y = 5 }, { x = 3, y = 7 }]
 
 "#]]
         .raw()
@@ -1741,16 +1667,7 @@ y = 7
     assert_data_eq!(
         raw,
         str![[r#"
-[[values]]
-x = 0
-y = 4
-
-[[values]]
-x = 2
-
-[[values]]
-x = 3
-y = 7
+values = [{ x = 0, y = 4 }, { x = 2 }, { x = 3, y = 7 }]
 
 "#]]
         .raw()
@@ -1759,16 +1676,7 @@ y = 7
     assert_data_eq!(
         raw,
         str![[r#"
-[[values]]
-x = 0
-y = 4
-
-[[values]]
-x = 2
-
-[[values]]
-x = 3
-y = 7
+values = [{ x = 0, y = 4 }, { x = 2 }, { x = 3, y = 7 }]
 
 "#]]
         .raw()
@@ -1811,12 +1719,7 @@ values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 
     assert_data_eq!(
         raw,
         str![[r#"
-values = [
-    { Optional = { x = 0, y = 4 } },
-    "Empty",
-    { Optional = { x = 2, y = 5 } },
-    { Optional = { x = 3, y = 7 } },
-]
+values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
 
 "#]]
         .raw()
@@ -1839,12 +1742,7 @@ values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { 
     assert_data_eq!(
         raw,
         str![[r#"
-values = [
-    { Optional = { x = 0, y = 4 } },
-    "Empty",
-    { Optional = { x = 2 } },
-    { Optional = { x = 3, y = 7 } },
-]
+values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
 
 "#]]
         .raw()
@@ -1898,14 +1796,10 @@ a = \"foo\"
     assert_data_eq!(
         crate::to_string(&value).unwrap(),
         str![[r#"
-[bar]
-
-[baz]
-
-[bazv]
-a = "foo"
-
-[foo]
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
 
 "#]]
         .raw()
@@ -1913,14 +1807,10 @@ a = "foo"
     assert_data_eq!(
         crate::to_string_pretty(&value).unwrap(),
         str![[r#"
-[bar]
-
-[baz]
-
-[bazv]
-a = "foo"
-
-[foo]
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
 
 "#]]
         .raw()
@@ -2051,14 +1941,10 @@ a = \"foo\"
     assert_data_eq!(
         crate::to_string(&value).unwrap(),
         str![[r#"
-[bar]
-
-[baz]
-
-[bazv]
-a = "foo"
-
-[foo]
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
 
 "#]]
         .raw()
@@ -2066,14 +1952,10 @@ a = "foo"
     assert_data_eq!(
         crate::to_string_pretty(&value).unwrap(),
         str![[r#"
-[bar]
-
-[baz]
-
-[bazv]
-a = "foo"
-
-[foo]
+bar = {}
+baz = {}
+bazv = { a = "foo" }
+foo = {}
 
 "#]]
         .raw()

@@ -7,10 +7,14 @@
 mod array;
 mod map;
 
+use toml_write::TomlWrite as _;
+
 use crate::alloc_prelude::*;
 
 use super::error::Error;
 use super::style;
+use super::value;
+use super::value::ValueSerializer;
 
 /// Serialization for TOML documents.
 ///
@@ -53,14 +57,14 @@ impl<'d> Serializer<'d> {
 }
 
 impl<'d> serde::ser::Serializer for Serializer<'d> {
-    type Ok = ();
+    type Ok = &'d mut String;
     type Error = Error;
     type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
-    type SerializeMap = map::SerializeDocumentMap<'d>;
-    type SerializeStruct = map::SerializeDocumentMap<'d>;
+    type SerializeMap = map::SerializeDocumentTable<'d>;
+    type SerializeStruct = map::SerializeDocumentTable<'d>;
     type SerializeStructVariant = map::SerializeDocumentStructVariant<'d>;
 
     fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
@@ -160,24 +164,21 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_newtype_variant<T>(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        write_document(
-            self.dst,
-            self.style,
-            toml_edit::ser::ValueSerializer::new().serialize_newtype_variant(
-                name,
-                variant_index,
-                variant,
-                value,
-            ),
-        )
+        self.dst.key(variant)?;
+        self.dst.space()?;
+        self.dst.keyval_sep()?;
+        self.dst.space()?;
+        value.serialize(ValueSerializer::new(self.dst))?;
+        self.dst.newline()?;
+        Ok(self.dst)
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
@@ -198,20 +199,16 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_tuple_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        array::SerializeDocumentTupleVariant::tuple(self, name, variant_index, variant, len)
+        array::SerializeDocumentTupleVariant::tuple(self.dst, variant, len)
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_map(len)
-            .map_err(Error::wrap)?;
-        let ser = map::SerializeDocumentMap::map(self, ser);
-        Ok(ser)
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+        map::SerializeDocumentTable::map(self.dst)
     }
 
     fn serialize_struct(
@@ -224,35 +221,11 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        map::SerializeDocumentStructVariant::struct_(self, name, variant_index, variant, len)
+        map::SerializeDocumentStructVariant::struct_(self.dst, variant, len)
     }
-}
-
-pub(crate) fn write_document(
-    dst: &mut String,
-    mut style: style::Style,
-    value: Result<toml_edit::Value, crate::edit::ser::Error>,
-) -> Result<(), Error> {
-    use core::fmt::Write;
-    use toml_edit::visit_mut::VisitMut as _;
-
-    let value = value.map_err(Error::wrap)?;
-    let mut table = match toml_edit::Item::Value(value).into_table() {
-        Ok(i) => i,
-        Err(_) => {
-            return Err(Error::unsupported_type(None));
-        }
-    };
-
-    style.visit_table_mut(&mut table);
-
-    let doc: toml_edit::DocumentMut = table.into();
-    write!(dst, "{doc}").unwrap();
-
-    Ok(())
 }

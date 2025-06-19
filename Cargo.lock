@@ -941,7 +941,6 @@ dependencies = [
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
- "toml_edit",
  "toml_parse",
  "toml_write",
  "walkdir",

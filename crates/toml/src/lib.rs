@@ -171,7 +171,6 @@ pub mod ser;
 #[doc(hidden)]
 pub mod macros;
 
-mod edit;
 mod table;
 
 #[cfg(feature = "parse")]

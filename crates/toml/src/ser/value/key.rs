@@ -1,6 +1,7 @@
 use toml_write::TomlWrite as _;
 
 use super::Error;
+use crate::alloc_prelude::*;
 
 pub(crate) struct KeySerializer<'d> {
     pub(crate) dst: &'d mut String,

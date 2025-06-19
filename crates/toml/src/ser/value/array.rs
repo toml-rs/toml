@@ -1,6 +1,7 @@
 use toml_write::TomlWrite as _;
 
 use super::Error;
+use crate::alloc_prelude::*;
 
 #[doc(hidden)]
 pub struct SerializeValueArray<'d> {

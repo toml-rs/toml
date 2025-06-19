@@ -199,10 +199,7 @@ metadata.msrv = "1.65.0"
 [package.metadata.release.pre-release-replacements]
 "#;
     let expected = str![[r#"
-[package.metadata]
-msrv = "1.65.0"
-
-[package.metadata.release.pre-release-replacements]
+package = { metadata = { msrv = "1.65.0", release = { pre-release-replacements = {} } } }
 
 "#]];
     let document = input.parse::<crate::RustDocument>().unwrap();
@@ -428,10 +425,7 @@ p.a=4
 [p.o]
 "#;
     let expected = str![[r#"
-[p]
-a = 4
-
-[p.o]
+p = { a = 4, o = {} }
 
 "#]];
     let document = input.parse::<crate::RustDocument>().unwrap();

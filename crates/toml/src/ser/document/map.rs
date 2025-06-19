@@ -1,99 +1,138 @@
-use serde::Serializer as _;
+use core::fmt::Write as _;
 
-use super::style::Style;
-use super::write_document;
-use super::{Error, Serializer};
+use toml_write::TomlWrite as _;
 
-type InnerSerializeDocumentMap =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
+use super::value::KeySerializer;
+use super::value::MapValueSerializer;
+use super::value::SerializeTable;
+use super::Error;
+use crate::alloc_prelude::*;
 
 #[doc(hidden)]
-pub struct SerializeDocumentMap<'d> {
-    inner: InnerSerializeDocumentMap,
+pub struct SerializeDocumentTable<'d> {
     dst: &'d mut String,
-    style: Style,
+    key: Option<String>,
 }
 
-impl<'d> SerializeDocumentMap<'d> {
-    pub(crate) fn map(ser: Serializer<'d>, inner: InnerSerializeDocumentMap) -> Self {
-        Self {
-            inner,
-            dst: ser.dst,
-            style: ser.style,
-        }
+impl<'d> SerializeDocumentTable<'d> {
+    pub(crate) fn map(dst: &'d mut String) -> Result<Self, Error> {
+        Ok(Self { dst, key: None })
+    }
+
+    fn end(self) -> Result<&'d mut String, Error> {
+        Ok(self.dst)
     }
 }
 
-impl serde::ser::SerializeMap for SerializeDocumentMap<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_key(input).map_err(Error::wrap)
+        let mut encoded_key = String::new();
+        input.serialize(KeySerializer {
+            dst: &mut encoded_key,
+        })?;
+        self.key = Some(encoded_key);
+        Ok(())
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_value(value).map_err(Error::wrap)
+        let encoded_key = self
+            .key
+            .take()
+            .expect("always called after `serialize_key`");
+        let mut encoded_value = String::new();
+        let mut is_none = false;
+        let value_serializer = MapValueSerializer::new(&mut encoded_value, &mut is_none);
+        let res = value.serialize(value_serializer);
+        match res {
+            Ok(_) => {
+                write!(self.dst, "{encoded_key}")?;
+                self.dst.space()?;
+                self.dst.keyval_sep()?;
+                self.dst.space()?;
+                write!(self.dst, "{encoded_value}")?;
+                self.dst.newline()?;
+            }
+            Err(e) => {
+                if !(e == Error::unsupported_none() && is_none) {
+                    return Err(e);
+                }
+            }
+        }
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        self.end()
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeDocumentMap<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(key, value).map_err(Error::wrap)
+        let mut encoded_value = String::new();
+        let mut is_none = false;
+        let value_serializer = MapValueSerializer::new(&mut encoded_value, &mut is_none);
+        let res = value.serialize(value_serializer);
+        match res {
+            Ok(_) => {
+                self.dst.key(key)?;
+                self.dst.space()?;
+                self.dst.keyval_sep()?;
+                self.dst.space()?;
+                write!(self.dst, "{encoded_value}")?;
+                self.dst.newline()?;
+            }
+            Err(e) => {
+                if !(e == Error::unsupported_none() && is_none) {
+                    return Err(e);
+                }
+            }
+        }
+
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        self.end()
     }
 }
 
-type InnerSerializeDocumentStructVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeStructVariant;
-
-#[doc(hidden)]
 pub struct SerializeDocumentStructVariant<'d> {
-    inner: InnerSerializeDocumentStructVariant,
-    dst: &'d mut String,
-    style: Style,
+    inner: SerializeTable<'d>,
 }
 
 impl<'d> SerializeDocumentStructVariant<'d> {
     pub(crate) fn struct_(
-        ser: Serializer<'d>,
-        name: &'static str,
-        variant_index: u32,
+        dst: &'d mut String,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self, Error> {
-        let inner = toml_edit::ser::ValueSerializer::new()
-            .serialize_struct_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
+        dst.key(variant)?;
+        dst.space()?;
+        dst.keyval_sep()?;
+        dst.space()?;
         Ok(Self {
-            inner,
-            dst: ser.dst,
-            style: ser.style,
+            inner: SerializeTable::map(dst)?,
         })
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     #[inline]
@@ -101,11 +140,13 @@ impl serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(key, value).map_err(Error::wrap)
+        serde::ser::SerializeStruct::serialize_field(&mut self.inner, key, value)
     }
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        let dst = self.inner.end()?;
+        dst.newline()?;
+        Ok(dst)
     }
 }

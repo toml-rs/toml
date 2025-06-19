@@ -1,50 +1,45 @@
-use serde::Serializer as _;
+use serde::ser::SerializeSeq as _;
+use toml_write::TomlWrite as _;
 
-use super::style::Style;
-use super::write_document;
-use super::{Error, Serializer};
-
-type InnerSerializeDocumentTupleVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeTupleVariant;
+use super::value::SerializeValueArray;
+use super::Error;
+use crate::alloc_prelude::*;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTupleVariant<'d> {
-    inner: InnerSerializeDocumentTupleVariant,
-    dst: &'d mut String,
-    style: Style,
+    inner: SerializeValueArray<'d>,
 }
 
 impl<'d> SerializeDocumentTupleVariant<'d> {
     pub(crate) fn tuple(
-        ser: Serializer<'d>,
-        name: &'static str,
-        variant_index: u32,
+        dst: &'d mut String,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self, Error> {
-        let inner = toml_edit::ser::ValueSerializer::new()
-            .serialize_tuple_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
+        dst.key(variant)?;
+        dst.space()?;
+        dst.keyval_sep()?;
+        dst.space()?;
         Ok(Self {
-            inner,
-            dst: ser.dst,
-            style: ser.style,
+            inner: SerializeValueArray::seq(dst)?,
         })
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'d> {
+    type Ok = &'d mut String;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(value).map_err(Error::wrap)
+        self.inner.serialize_element(value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        let dst = self.inner.end()?;
+        dst.newline()?;
+        Ok(dst)
     }
 }

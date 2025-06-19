@@ -336,7 +336,7 @@ impl ser::SerializeMap for SerializeMap {
                 self.map.insert(key, value);
             }
             Err(crate::ser::Error {
-                inner: crate::edit::ser::Error::UnsupportedNone,
+                inner: crate::ser::ErrorInner::UnsupportedNone,
             }) => {}
             Err(e) => return Err(e),
         }

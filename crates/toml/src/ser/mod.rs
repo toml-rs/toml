@@ -17,6 +17,7 @@ use crate::alloc_prelude::*;
 #[cfg(feature = "display")]
 pub use document::Serializer;
 pub use error::Error;
+pub(crate) use error::ErrorInner;
 #[cfg(feature = "display")]
 pub use value::ValueSerializer;
 

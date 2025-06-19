@@ -82,17 +82,10 @@ this is the first line\\nthis is the second line
 '''
 ",
         str![[r#"
-[example]
-array = [
-    "item 1",
-    "item 2",
-]
-empty = []
-oneline = "this has no newlines."
-text = '''
+example = { array = ["item 1", "item 2"], empty = [], oneline = "this has no newlines.", text = '''
 
 this is the first line\nthis is the second line
-'''
+''' }
 
 "#]],
     );
@@ -128,31 +121,23 @@ this is the fourth line
 """
 "#,
         str![[r#"
-[example]
-f = "\f"
-glass = """
+example = { f = "\f", glass = """
 Nothing too unusual, except that I can eat glass in:
 - Greek: Μπορώ να φάω σπασμένα γυαλιά χωρίς να πάθω τίποτα. 
 - Polish: Mogę jeść szkło, i mi nie szkodzi. 
 - Hindi: मैं काँच खा सकता हूँ, मुझे उस से कोई पीडा नहीं होती. 
 - Japanese: 私はガラスを食べられます。それは私を傷つけません。 
-"""
-r = "\r"
-r_newline = """
+""", r = "\r", r_newline = """
 \r
-"""
-single = "this is a single line but has '' cuz it's tricky"
-single_tricky = "single line with ''' in it"
-tabs = """
+""", single = "this is a single line but has '' cuz it's tricky", single_tricky = "single line with ''' in it", tabs = """
 this is pretty standard
 \texcept for some   \ttabs right here
-"""
-text = """
+""", text = """
 this is the first line.
 This has a ''' in it and ""\" cuz it's tricky yo
 Also ' and " because why not
 this is the fourth line
-"""
+""" }
 
 "#]],
     );
@@ -175,17 +160,9 @@ key = "bar"
 single = "this is a single line string"
 "#,
         str![[r#"
-[abc]
-doc = "this is a table"
-
-[[array]]
-key = "foo"
-
-[[array]]
-key = "bar"
-
-[example]
-single = "this is a single line string"
+abc = { doc = "this is a table" }
+array = [{ key = "foo" }, { key = "bar" }]
+example = { single = "this is a single line string" }
 
 "#]],
     );
@@ -197,7 +174,7 @@ fn empty_table() {
         r#"[example]
 "#,
         str![[r#"
-[example]
+example = {}
 
 "#]],
     );
@@ -217,10 +194,8 @@ debug = true
         str![[r#"
 authors = []
 name = "foo"
+profile = { dev = { debug = true } }
 version = "0.0.0"
-
-[profile.dev]
-debug = true
 
 "#]],
     );
