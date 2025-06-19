@@ -199,8 +199,8 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     type SerializeTuple = array::SerializeDocumentArray<'d>;
     type SerializeTupleStruct = array::SerializeDocumentArray<'d>;
     type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
-    type SerializeMap = map::SerializeDocumentTable<'d>;
-    type SerializeStruct = map::SerializeDocumentTable<'d>;
+    type SerializeMap = map::SerializeDocumentMap<'d>;
+    type SerializeStruct = map::SerializeDocumentMap<'d>;
     type SerializeStructVariant = map::SerializeDocumentStructVariant<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -404,7 +404,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_seq(len)
             .map_err(Error::wrap)?;
-        let ser = array::SerializeDocumentArray::new(self, ser);
+        let ser = array::SerializeDocumentArray::seq(self, ser);
         Ok(ser)
     }
 
@@ -427,18 +427,14 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_tuple_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        let ser = array::SerializeDocumentTupleVariant::new(self, ser);
-        Ok(ser)
+        array::SerializeDocumentTupleVariant::tuple(self, name, variant_index, variant, len)
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_map(len)
             .map_err(Error::wrap)?;
-        let ser = map::SerializeDocumentTable::new(self, ser);
+        let ser = map::SerializeDocumentMap::map(self, ser);
         Ok(ser)
     }
 
@@ -457,11 +453,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_struct_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        let ser = map::SerializeDocumentStructVariant::new(self, ser);
-        Ok(ser)
+        map::SerializeDocumentStructVariant::struct_(self, name, variant_index, variant, len)
     }
 }
 

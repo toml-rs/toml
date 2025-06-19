@@ -69,8 +69,8 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
     type SerializeTuple = array::SerializeValueArray<'d>;
     type SerializeTupleStruct = array::SerializeValueArray<'d>;
     type SerializeTupleVariant = array::SerializeValueTupleVariant<'d>;
-    type SerializeMap = map::SerializeValueTable<'d>;
-    type SerializeStruct = map::SerializeValueTable<'d>;
+    type SerializeMap = map::SerializeMap<'d>;
+    type SerializeStruct = map::SerializeMap<'d>;
     type SerializeStructVariant = map::SerializeValueStructVariant<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -253,7 +253,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_seq(len)
             .map_err(Error::wrap)?;
-        let ser = array::SerializeValueArray::new(self, ser);
+        let ser = array::SerializeValueArray::seq(self, ser);
         Ok(ser)
     }
 
@@ -279,7 +279,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_tuple_variant(name, variant_index, variant, len)
             .map_err(Error::wrap)?;
-        let ser = array::SerializeValueTupleVariant::new(self, ser);
+        let ser = array::SerializeValueTupleVariant::tuple(self, ser);
         Ok(ser)
     }
 
@@ -287,7 +287,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_map(len)
             .map_err(Error::wrap)?;
-        let ser = map::SerializeValueTable::new(self, ser);
+        let ser = map::SerializeMap::map(self, ser);
         Ok(ser)
     }
 
@@ -299,7 +299,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_struct(name, len)
             .map_err(Error::wrap)?;
-        let ser = map::SerializeValueTable::new(self, ser);
+        let ser = map::SerializeMap::map(self, ser);
         Ok(ser)
     }
 
@@ -313,7 +313,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_struct_variant(name, variant_index, variant, len)
             .map_err(Error::wrap)?;
-        let ser = map::SerializeValueStructVariant::new(self, ser);
+        let ser = map::SerializeValueStructVariant::struct_(self, ser);
         Ok(ser)
     }
 }

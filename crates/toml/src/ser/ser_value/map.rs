@@ -1,17 +1,16 @@
 use super::write_value;
 use super::{Error, ValueSerializer};
 
-type InnerSerializeValueTable =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
+type InnerSerializeMap = <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
 
 #[doc(hidden)]
-pub struct SerializeValueTable<'d> {
-    inner: InnerSerializeValueTable,
+pub struct SerializeMap<'d> {
+    inner: InnerSerializeMap,
     dst: &'d mut String,
 }
 
-impl<'d> SerializeValueTable<'d> {
-    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueTable) -> Self {
+impl<'d> SerializeMap<'d> {
+    pub(crate) fn map(ser: ValueSerializer<'d>, inner: InnerSerializeMap) -> Self {
         Self {
             inner,
             dst: ser.dst,
@@ -19,7 +18,7 @@ impl<'d> SerializeValueTable<'d> {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeValueTable<'_> {
+impl serde::ser::SerializeMap for SerializeMap<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -42,7 +41,7 @@ impl serde::ser::SerializeMap for SerializeValueTable<'_> {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeValueTable<'_> {
+impl serde::ser::SerializeStruct for SerializeMap<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -68,7 +67,10 @@ pub struct SerializeValueStructVariant<'d> {
 }
 
 impl<'d> SerializeValueStructVariant<'d> {
-    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueStructVariant) -> Self {
+    pub(crate) fn struct_(
+        ser: ValueSerializer<'d>,
+        inner: InnerSerializeValueStructVariant,
+    ) -> Self {
         Self {
             inner,
             dst: ser.dst,

@@ -1,3 +1,5 @@
+use serde::Serializer as _;
+
 use super::style::Style;
 use super::write_document;
 use super::{Error, Serializer};
@@ -13,7 +15,7 @@ pub struct SerializeDocumentArray<'d> {
 }
 
 impl<'d> SerializeDocumentArray<'d> {
-    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentSeq) -> Self {
+    pub(crate) fn seq(ser: Serializer<'d>, inner: InnerSerializeDocumentSeq) -> Self {
         Self {
             inner,
             dst: ser.dst,
@@ -81,12 +83,21 @@ pub struct SerializeDocumentTupleVariant<'d> {
 }
 
 impl<'d> SerializeDocumentTupleVariant<'d> {
-    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentTupleVariant) -> Self {
-        Self {
+    pub(crate) fn tuple(
+        ser: Serializer<'d>,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
+    ) -> Result<Self, Error> {
+        let inner = toml_edit::ser::ValueSerializer::new()
+            .serialize_tuple_variant(name, variant_index, variant, len)
+            .map_err(Error::wrap)?;
+        Ok(Self {
             inner,
             dst: ser.dst,
             settings: ser.settings,
-        }
+        })
     }
 }
 

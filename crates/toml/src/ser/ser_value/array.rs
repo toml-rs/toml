@@ -10,7 +10,7 @@ pub struct SerializeValueArray<'d> {
 }
 
 impl<'d> SerializeValueArray<'d> {
-    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueSeq) -> Self {
+    pub(crate) fn seq(ser: ValueSerializer<'d>, inner: InnerSerializeValueSeq) -> Self {
         Self {
             inner,
             dst: ser.dst,
@@ -76,7 +76,7 @@ pub struct SerializeValueTupleVariant<'d> {
 }
 
 impl<'d> SerializeValueTupleVariant<'d> {
-    pub(crate) fn new(ser: ValueSerializer<'d>, inner: InnerSerializeValueTupleVariant) -> Self {
+    pub(crate) fn tuple(ser: ValueSerializer<'d>, inner: InnerSerializeValueTupleVariant) -> Self {
         Self {
             inner,
             dst: ser.dst,

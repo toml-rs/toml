@@ -1,19 +1,21 @@
+use serde::Serializer as _;
+
 use super::style::Style;
 use super::write_document;
 use super::{Error, Serializer};
 
-type InnerSerializeDocumentTable =
+type InnerSerializeDocumentMap =
     <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
 
 #[doc(hidden)]
-pub struct SerializeDocumentTable<'d> {
-    inner: InnerSerializeDocumentTable,
+pub struct SerializeDocumentMap<'d> {
+    inner: InnerSerializeDocumentMap,
     dst: &'d mut String,
     settings: Style,
 }
 
-impl<'d> SerializeDocumentTable<'d> {
-    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentTable) -> Self {
+impl<'d> SerializeDocumentMap<'d> {
+    pub(crate) fn map(ser: Serializer<'d>, inner: InnerSerializeDocumentMap) -> Self {
         Self {
             inner,
             dst: ser.dst,
@@ -22,7 +24,7 @@ impl<'d> SerializeDocumentTable<'d> {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
+impl serde::ser::SerializeMap for SerializeDocumentMap<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -45,7 +47,7 @@ impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
+impl serde::ser::SerializeStruct for SerializeDocumentMap<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -61,7 +63,7 @@ impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeDocumentTable<'_> {
+impl serde::ser::SerializeStructVariant for SerializeDocumentMap<'_> {
     type Ok = ();
     type Error = Error;
 
@@ -90,12 +92,21 @@ pub struct SerializeDocumentStructVariant<'d> {
 }
 
 impl<'d> SerializeDocumentStructVariant<'d> {
-    pub(crate) fn new(ser: Serializer<'d>, inner: InnerSerializeDocumentStructVariant) -> Self {
-        Self {
+    pub(crate) fn struct_(
+        ser: Serializer<'d>,
+        name: &'static str,
+        variant_index: u32,
+        variant: &'static str,
+        len: usize,
+    ) -> Result<Self, Error> {
+        let inner = toml_edit::ser::ValueSerializer::new()
+            .serialize_struct_variant(name, variant_index, variant, len)
+            .map_err(Error::wrap)?;
+        Ok(Self {
             inner,
             dst: ser.dst,
             settings: ser.settings,
-        }
+        })
     }
 }
 
