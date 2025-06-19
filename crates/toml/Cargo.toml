@@ -28,7 +28,7 @@ pre-release-replacements = [
 ]
 
 [features]
-default = ["parse", "display"]
+default = ["std", "parse", "display"]
 std = ["indexmap?/std"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["std", "dep:toml_edit", "toml_edit?/display"]
