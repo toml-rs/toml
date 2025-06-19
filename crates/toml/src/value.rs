@@ -1037,13 +1037,13 @@ impl ser::Serializer for TableSerializer {
     type Ok = Table;
     type Error = crate::ser::Error;
 
-    type SerializeSeq = ser::Impossible<Table, crate::ser::Error>;
-    type SerializeTuple = ser::Impossible<Table, crate::ser::Error>;
-    type SerializeTupleStruct = ser::Impossible<Table, crate::ser::Error>;
-    type SerializeTupleVariant = ser::Impossible<Table, crate::ser::Error>;
+    type SerializeSeq = ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = ser::Impossible<Self::Ok, Self::Error>;
     type SerializeMap = SerializeMap;
     type SerializeStruct = SerializeMap;
-    type SerializeStructVariant = ser::Impossible<Table, crate::ser::Error>;
+    type SerializeStructVariant = ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, _value: bool) -> Result<Table, crate::ser::Error> {
         Err(crate::ser::Error::unsupported_type(None))
