@@ -1,4 +1,4 @@
-use super::fmt::DocumentFormatter;
+use super::style::DocumentFormatter;
 use super::write_document;
 use super::{Error, Serializer};
 

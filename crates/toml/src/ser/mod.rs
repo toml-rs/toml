@@ -7,11 +7,11 @@
 #[cfg(feature = "display")]
 mod array;
 #[cfg(feature = "display")]
-mod fmt;
-#[cfg(feature = "display")]
 mod map;
 #[cfg(feature = "display")]
 mod ser_value;
+#[cfg(feature = "display")]
+mod style;
 
 use crate::alloc_prelude::*;
 
@@ -164,7 +164,7 @@ impl serde::de::StdError for Error {}
 #[cfg(feature = "display")]
 pub struct Serializer<'d> {
     dst: &'d mut String,
-    settings: fmt::DocumentFormatter,
+    settings: style::DocumentFormatter,
 }
 
 #[cfg(feature = "display")]
@@ -468,7 +468,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 #[cfg(feature = "display")]
 pub(crate) fn write_document(
     dst: &mut String,
-    mut settings: fmt::DocumentFormatter,
+    mut settings: style::DocumentFormatter,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
     use core::fmt::Write;
