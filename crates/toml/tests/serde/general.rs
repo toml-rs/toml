@@ -1364,10 +1364,7 @@ date = 2022-01-01
     );
 
     let toml = crate::to_string_value(&input.date).unwrap();
-    assert_data_eq!(
-        toml,
-        str![[r#"{ "$__toml_private_datetime" = "2022-01-01" }"#]]
-    );
+    assert_data_eq!(toml, str![[r#"2022-01-01"#]]);
 }
 
 #[test]
@@ -1395,10 +1392,7 @@ date = 2024-01-01
     );
 
     let toml = crate::to_string_value(&input.date).unwrap();
-    assert_data_eq!(
-        toml,
-        str![[r#"{ "$__toml_private_datetime" = "2024-01-01" }"#]]
-    );
+    assert_data_eq!(toml, str![[r#"2024-01-01"#]]);
 }
 
 #[test]
@@ -1427,10 +1421,7 @@ date = 05:00:00
     );
 
     let toml = crate::to_string_value(&input.date).unwrap();
-    assert_data_eq!(
-        toml,
-        str![[r#"{ "$__toml_private_datetime" = "05:00:00" }"#]]
-    );
+    assert_data_eq!(toml, str![[r#"05:00:00"#]]);
 }
 
 #[test]
