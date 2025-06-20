@@ -139,6 +139,8 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
         if serde_spanned::__unstable::is_spanned(name, fields) {
             if let Some(span) = self.input.span() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self, span));
+            } else {
+                return Err(Error::custom("value is missing a span", None));
             }
         }
 
