@@ -1263,6 +1263,7 @@ fn serialize_datetime_issue_333() {
             offset: None,
         },
     };
+
     let toml = crate::to_string(&input).unwrap();
     assert_data_eq!(
         toml,
@@ -1271,6 +1272,9 @@ date = 2022-01-01
 
 "#]]
     );
+
+    let toml = crate::to_string_value(&input.date).unwrap();
+    assert_data_eq!(toml, str!["2022-01-01"]);
 }
 
 #[test]
@@ -1296,6 +1300,9 @@ date = 2024-01-01
 "#]]
         .raw()
     );
+
+    let toml = crate::to_string_value(&input.date).unwrap();
+    assert_data_eq!(toml, str!["2024-01-01"]);
 }
 
 #[test]
@@ -1322,6 +1329,9 @@ date = 05:00:00
 "#]]
         .raw()
     );
+
+    let toml = crate::to_string_value(&input.date).unwrap();
+    assert_data_eq!(toml, str!["05:00:00"]);
 }
 
 #[test]
