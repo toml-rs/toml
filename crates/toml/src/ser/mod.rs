@@ -6,13 +6,17 @@
 
 #[cfg(feature = "display")]
 mod array;
+mod error;
 #[cfg(feature = "display")]
 mod map;
 #[cfg(feature = "display")]
 mod ser_value;
+#[cfg(feature = "display")]
+mod style;
 
 use crate::alloc_prelude::*;
 
+pub use error::Error;
 #[cfg(feature = "display")]
 pub use ser_value::ValueSerializer;
 
@@ -85,69 +89,6 @@ where
     Ok(output)
 }
 
-/// Errors that can occur when serializing a type.
-#[derive(Clone, PartialEq, Eq)]
-pub struct Error {
-    pub(crate) inner: crate::edit::ser::Error,
-}
-
-impl Error {
-    pub(crate) fn new(inner: impl core::fmt::Display) -> Self {
-        Self {
-            inner: crate::edit::ser::Error::Custom(inner.to_string()),
-        }
-    }
-
-    #[cfg(feature = "display")]
-    pub(crate) fn wrap(inner: crate::edit::ser::Error) -> Self {
-        Self { inner }
-    }
-
-    pub(crate) fn unsupported_type(t: Option<&'static str>) -> Self {
-        Self {
-            inner: crate::edit::ser::Error::UnsupportedType(t),
-        }
-    }
-
-    pub(crate) fn unsupported_none() -> Self {
-        Self {
-            inner: crate::edit::ser::Error::UnsupportedNone,
-        }
-    }
-
-    pub(crate) fn key_not_string() -> Self {
-        Self {
-            inner: crate::edit::ser::Error::KeyNotString,
-        }
-    }
-}
-
-impl serde::ser::Error for Error {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: core::fmt::Display,
-    {
-        Error::new(msg)
-    }
-}
-
-impl core::fmt::Display for Error {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        self.inner.fmt(f)
-    }
-}
-
-impl core::fmt::Debug for Error {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        self.inner.fmt(f)
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for Error {}
-#[cfg(not(feature = "std"))]
-impl serde::de::StdError for Error {}
-
 /// Serialization for TOML documents.
 ///
 /// This structure implements serialization support for TOML to serialize an
@@ -162,7 +103,7 @@ impl serde::de::StdError for Error {}
 #[cfg(feature = "display")]
 pub struct Serializer<'d> {
     dst: &'d mut String,
-    settings: crate::fmt::DocumentFormatter,
+    settings: style::Style,
 }
 
 #[cfg(feature = "display")]
@@ -197,8 +138,8 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     type SerializeTuple = array::SerializeDocumentArray<'d>;
     type SerializeTupleStruct = array::SerializeDocumentArray<'d>;
     type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
-    type SerializeMap = map::SerializeDocumentTable<'d>;
-    type SerializeStruct = map::SerializeDocumentTable<'d>;
+    type SerializeMap = map::SerializeDocumentMap<'d>;
+    type SerializeStruct = map::SerializeDocumentMap<'d>;
     type SerializeStructVariant = map::SerializeDocumentStructVariant<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -402,7 +343,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_seq(len)
             .map_err(Error::wrap)?;
-        let ser = array::SerializeDocumentArray::new(self, ser);
+        let ser = array::SerializeDocumentArray::seq(self, ser);
         Ok(ser)
     }
 
@@ -425,18 +366,14 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_tuple_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        let ser = array::SerializeDocumentTupleVariant::new(self, ser);
-        Ok(ser)
+        array::SerializeDocumentTupleVariant::tuple(self, name, variant_index, variant, len)
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         let ser = toml_edit::ser::ValueSerializer::new()
             .serialize_map(len)
             .map_err(Error::wrap)?;
-        let ser = map::SerializeDocumentTable::new(self, ser);
+        let ser = map::SerializeDocumentMap::map(self, ser);
         Ok(ser)
     }
 
@@ -455,18 +392,14 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
-            .serialize_struct_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        let ser = map::SerializeDocumentStructVariant::new(self, ser);
-        Ok(ser)
+        map::SerializeDocumentStructVariant::struct_(self, name, variant_index, variant, len)
     }
 }
 
 #[cfg(feature = "display")]
 pub(crate) fn write_document(
     dst: &mut String,
-    mut settings: crate::fmt::DocumentFormatter,
+    mut settings: style::Style,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
     use core::fmt::Write;

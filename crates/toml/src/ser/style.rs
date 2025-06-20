@@ -1,10 +1,10 @@
 #[derive(Copy, Clone, Default)]
-pub(crate) struct DocumentFormatter {
+pub(crate) struct Style {
     pub(crate) multiline_array: bool,
     is_value: bool,
 }
 
-impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
+impl toml_edit::visit_mut::VisitMut for Style {
     fn visit_document_mut(&mut self, node: &mut toml_edit::DocumentMut) {
         toml_edit::visit_mut::visit_document_mut(self, node);
     }
