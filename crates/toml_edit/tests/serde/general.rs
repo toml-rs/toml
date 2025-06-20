@@ -1252,7 +1252,7 @@ fn serialize_datetime_issue_333() {
         date: crate::Datetime,
     }
 
-    let toml = crate::to_string(&Struct {
+    let input = Struct {
         date: crate::Datetime {
             date: Some(crate::Date {
                 year: 2022,
@@ -1262,8 +1262,8 @@ fn serialize_datetime_issue_333() {
             time: None,
             offset: None,
         },
-    })
-    .unwrap();
+    };
+    let toml = crate::to_string(&input).unwrap();
     assert_data_eq!(
         toml,
         str![[r#"
@@ -1331,7 +1331,7 @@ fn deserialize_date() {
         date: crate::Date,
     }
 
-    let document: Document = crate::from_str("date = 2024-01-01").unwrap();
+    let document = crate::from_str::<Document>("date = 2024-01-01").unwrap();
     assert_data_eq!(
         document.date.to_debug(),
         str![[r#"
@@ -1358,7 +1358,7 @@ fn deserialize_time() {
         time: crate::Time,
     }
 
-    let document: Document = crate::from_str("time = 05:00:00").unwrap();
+    let document = crate::from_str::<Document>("time = 05:00:00").unwrap();
     assert_data_eq!(
         document.time.to_debug(),
         str![[r#"
