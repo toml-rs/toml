@@ -10,15 +10,15 @@ mod error;
 #[cfg(feature = "display")]
 mod map;
 #[cfg(feature = "display")]
-mod ser_value;
-#[cfg(feature = "display")]
 mod style;
+#[cfg(feature = "display")]
+mod value;
 
 use crate::alloc_prelude::*;
 
 pub use error::Error;
 #[cfg(feature = "display")]
-pub use ser_value::ValueSerializer;
+pub use value::ValueSerializer;
 
 /// Serialize the given data structure as a String of TOML.
 ///
