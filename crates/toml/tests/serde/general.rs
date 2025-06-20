@@ -137,7 +137,15 @@ fn application_decode_error() {
     let d_bad1 = crate::SerdeValue::String("not an isize".to_owned());
     let d_bad2 = crate::SerdeValue::Integer(11);
 
-    assert_eq!(Range10(5), d_good.try_into().unwrap());
+    assert_data_eq!(
+        d_good.try_into::<Range10>().unwrap().to_debug(),
+        str![[r#"
+Range10(
+    5,
+)
+
+"#]]
+    );
 
     let err1: Result<Range10, _> = d_bad1.try_into();
     assert!(err1.is_err());
@@ -1334,7 +1342,7 @@ fn serialize_datetime_issue_333() {
         date: crate::Datetime,
     }
 
-    let toml = crate::to_string(&Struct {
+    let input = Struct {
         date: crate::Datetime {
             date: Some(crate::Date {
                 year: 2022,
@@ -1344,9 +1352,19 @@ fn serialize_datetime_issue_333() {
             time: None,
             offset: None,
         },
-    })
-    .unwrap();
-    assert_eq!(toml, "date = 2022-01-01\n");
+    };
+
+    let toml = crate::to_string(&input).unwrap();
+    assert_data_eq!(
+        toml,
+        str![[r#"
+date = 2022-01-01
+
+"#]]
+    );
+
+    let toml = crate::to_string_value(&input.date).unwrap();
+    assert_data_eq!(toml, str![[r#"2022-01-01"#]]);
 }
 
 #[test]
@@ -1372,6 +1390,9 @@ date = 2024-01-01
 "#]]
         .raw()
     );
+
+    let toml = crate::to_string_value(&input.date).unwrap();
+    assert_data_eq!(toml, str![[r#"2024-01-01"#]]);
 }
 
 #[test]
@@ -1398,6 +1419,9 @@ date = 05:00:00
 "#]]
         .raw()
     );
+
+    let toml = crate::to_string_value(&input.date).unwrap();
+    assert_data_eq!(toml, str![[r#"05:00:00"#]]);
 }
 
 #[test]
@@ -1407,14 +1431,17 @@ fn deserialize_date() {
         date: crate::Date,
     }
 
-    let document: Document = crate::from_str("date = 2024-01-01").unwrap();
-    assert_eq!(
-        document.date,
-        crate::Date {
-            year: 2024,
-            month: 1,
-            day: 1
-        }
+    let document = crate::from_str::<Document>("date = 2024-01-01").unwrap();
+    assert_data_eq!(
+        document.date.to_debug(),
+        str![[r#"
+Date {
+    year: 2024,
+    month: 1,
+    day: 1,
+}
+
+"#]],
     );
 
     let err = crate::from_str::<Document>("date = 2024-01-01T05:00:00").unwrap_err();
@@ -1431,15 +1458,18 @@ fn deserialize_time() {
         time: crate::Time,
     }
 
-    let document: Document = crate::from_str("time = 05:00:00").unwrap();
-    assert_eq!(
-        document.time,
-        crate::Time {
-            hour: 5,
-            minute: 0,
-            second: 0,
-            nanosecond: 0,
-        }
+    let document = crate::from_str::<Document>("time = 05:00:00").unwrap();
+    assert_data_eq!(
+        document.time.to_debug(),
+        str![[r#"
+Time {
+    hour: 5,
+    minute: 0,
+    second: 0,
+    nanosecond: 0,
+}
+
+"#]],
     );
 
     let err = crate::from_str::<Document>("time = 2024-01-01T05:00:00").unwrap_err();
@@ -1609,19 +1639,32 @@ a = \"foo\"
 [foo]";
     let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
 
-    let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
-    expected.insert("bar".to_owned(), CanBeEmpty::default());
-    expected.insert("baz".to_owned(), CanBeEmpty::default());
-    expected.insert(
-        "bazv".to_owned(),
-        CanBeEmpty {
-            a: Some("foo".to_owned()),
-            b: None,
-        },
-    );
-    expected.insert("foo".to_owned(), CanBeEmpty::default());
+    assert_data_eq!(
+        value.to_debug(),
+        str![[r#"
+{
+    "bar": CanBeEmpty {
+        a: None,
+        b: None,
+    },
+    "baz": CanBeEmpty {
+        a: None,
+        b: None,
+    },
+    "bazv": CanBeEmpty {
+        a: Some(
+            "foo",
+        ),
+        b: None,
+    },
+    "foo": CanBeEmpty {
+        a: None,
+        b: None,
+    },
+}
 
-    assert_eq!(value, expected);
+"#]]
+    );
     assert_data_eq!(
         crate::to_string(&value).unwrap(),
         str![[r#"
@@ -1718,19 +1761,48 @@ a = \"foo\"
 [foo]";
     let value: BTreeMap<String, CanBeEmpty> = crate::from_str(input).unwrap();
 
-    let mut expected: BTreeMap<String, CanBeEmpty> = BTreeMap::new();
-    expected.insert("bar".to_owned(), CanBeEmpty::default());
-    expected.insert("baz".to_owned(), CanBeEmpty::default());
-    expected.insert(
-        "bazv".to_owned(),
-        CanBeEmpty {
-            a: NewType(Some("foo".to_owned())),
-            b: NewType(None),
-        },
-    );
-    expected.insert("foo".to_owned(), CanBeEmpty::default());
+    assert_data_eq!(
+        value.to_debug(),
+        str![[r#"
+{
+    "bar": CanBeEmpty {
+        a: NewType(
+            None,
+        ),
+        b: NewType(
+            None,
+        ),
+    },
+    "baz": CanBeEmpty {
+        a: NewType(
+            None,
+        ),
+        b: NewType(
+            None,
+        ),
+    },
+    "bazv": CanBeEmpty {
+        a: NewType(
+            Some(
+                "foo",
+            ),
+        ),
+        b: NewType(
+            None,
+        ),
+    },
+    "foo": CanBeEmpty {
+        a: NewType(
+            None,
+        ),
+        b: NewType(
+            None,
+        ),
+    },
+}
 
-    assert_eq!(value, expected);
+"#]]
+    );
     assert_data_eq!(
         crate::to_string(&value).unwrap(),
         str![[r#"
@@ -1774,5 +1846,13 @@ edition = "2021"
         Ok(_) => panic!("should fail"),
         Err(err) => err,
     };
-    assert_eq!(err.span(), Some(61..66));
+    assert_data_eq!(
+        err.span().to_debug(),
+        str![[r#"
+Some(
+    61..66,
+)
+
+"#]]
+    );
 }

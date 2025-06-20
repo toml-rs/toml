@@ -293,10 +293,14 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 
     fn serialize_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        self.serialize_map(Some(len))
+        let ser = toml_edit::ser::ValueSerializer::new()
+            .serialize_struct(name, len)
+            .map_err(Error::wrap)?;
+        let ser = map::SerializeValueTable::new(self, ser);
+        Ok(ser)
     }
 
     fn serialize_struct_variant(
