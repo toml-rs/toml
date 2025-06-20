@@ -31,10 +31,10 @@ pub enum Encoding {
 impl Encoding {
     pub const fn description(&self) -> &'static str {
         match self {
-            Encoding::LiteralString => crate::lexer::TokenKind::LiteralString.description(),
-            Encoding::BasicString => crate::lexer::TokenKind::BasicString.description(),
-            Encoding::MlLiteralString => crate::lexer::TokenKind::MlLiteralString.description(),
-            Encoding::MlBasicString => crate::lexer::TokenKind::MlBasicString.description(),
+            Self::LiteralString => crate::lexer::TokenKind::LiteralString.description(),
+            Self::BasicString => crate::lexer::TokenKind::BasicString.description(),
+            Self::MlLiteralString => crate::lexer::TokenKind::MlLiteralString.description(),
+            Self::MlBasicString => crate::lexer::TokenKind::MlBasicString.description(),
         }
     }
 }

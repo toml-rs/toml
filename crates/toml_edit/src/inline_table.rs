@@ -462,7 +462,7 @@ impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for InlineTable {
     where
         I: IntoIterator<Item = (K, V)>,
     {
-        let mut table = InlineTable::new();
+        let mut table = Self::new();
         table.extend(iter);
         table
     }

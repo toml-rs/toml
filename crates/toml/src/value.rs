@@ -49,7 +49,7 @@ impl Value {
     ///
     /// This conversion can fail if `T`'s implementation of `Serialize` decides to
     /// fail, or if `T` contains a map with non-string keys.
-    pub fn try_from<T>(value: T) -> Result<Value, crate::ser::Error>
+    pub fn try_from<T>(value: T) -> Result<Self, crate::ser::Error>
     where
         T: ser::Serialize,
     {
@@ -80,7 +80,7 @@ impl Value {
     /// index, for example if the index is a string and `self` is an array or a
     /// number. Also returns `None` if the given key does not exist in the map
     /// or the given index is not within the bounds of the array.
-    pub fn get<I: Index>(&self, index: I) -> Option<&Value> {
+    pub fn get<I: Index>(&self, index: I) -> Option<&Self> {
         index.index(self)
     }
 
@@ -92,14 +92,14 @@ impl Value {
     /// index, for example if the index is a string and `self` is an array or a
     /// number. Also returns `None` if the given key does not exist in the map
     /// or the given index is not within the bounds of the array.
-    pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Value> {
+    pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Self> {
         index.index_mut(self)
     }
 
     /// Extracts the integer value if it is an integer.
     pub fn as_integer(&self) -> Option<i64> {
         match *self {
-            Value::Integer(i) => Some(i),
+            Self::Integer(i) => Some(i),
             _ => None,
         }
     }
@@ -112,7 +112,7 @@ impl Value {
     /// Extracts the float value if it is a float.
     pub fn as_float(&self) -> Option<f64> {
         match *self {
-            Value::Float(f) => Some(f),
+            Self::Float(f) => Some(f),
             _ => None,
         }
     }
@@ -125,7 +125,7 @@ impl Value {
     /// Extracts the boolean value if it is a boolean.
     pub fn as_bool(&self) -> Option<bool> {
         match *self {
-            Value::Boolean(b) => Some(b),
+            Self::Boolean(b) => Some(b),
             _ => None,
         }
     }
@@ -138,7 +138,7 @@ impl Value {
     /// Extracts the string of this value if it is a string.
     pub fn as_str(&self) -> Option<&str> {
         match *self {
-            Value::String(ref s) => Some(&**s),
+            Self::String(ref s) => Some(&**s),
             _ => None,
         }
     }
@@ -158,7 +158,7 @@ impl Value {
     /// ```
     pub fn as_datetime(&self) -> Option<&Datetime> {
         match *self {
-            Value::Datetime(ref s) => Some(s),
+            Self::Datetime(ref s) => Some(s),
             _ => None,
         }
     }
@@ -169,17 +169,17 @@ impl Value {
     }
 
     /// Extracts the array value if it is an array.
-    pub fn as_array(&self) -> Option<&Vec<Value>> {
+    pub fn as_array(&self) -> Option<&Vec<Self>> {
         match *self {
-            Value::Array(ref s) => Some(s),
+            Self::Array(ref s) => Some(s),
             _ => None,
         }
     }
 
     /// Extracts the array value if it is an array.
-    pub fn as_array_mut(&mut self) -> Option<&mut Vec<Value>> {
+    pub fn as_array_mut(&mut self) -> Option<&mut Vec<Self>> {
         match *self {
-            Value::Array(ref mut s) => Some(s),
+            Self::Array(ref mut s) => Some(s),
             _ => None,
         }
     }
@@ -192,7 +192,7 @@ impl Value {
     /// Extracts the table value if it is a table.
     pub fn as_table(&self) -> Option<&Table> {
         match *self {
-            Value::Table(ref s) => Some(s),
+            Self::Table(ref s) => Some(s),
             _ => None,
         }
     }
@@ -200,7 +200,7 @@ impl Value {
     /// Extracts the table value if it is a table.
     pub fn as_table_mut(&mut self) -> Option<&mut Table> {
         match *self {
-            Value::Table(ref mut s) => Some(s),
+            Self::Table(ref mut s) => Some(s),
             _ => None,
         }
     }
@@ -211,20 +211,20 @@ impl Value {
     }
 
     /// Tests whether this and another value have the same type.
-    pub fn same_type(&self, other: &Value) -> bool {
+    pub fn same_type(&self, other: &Self) -> bool {
         discriminant(self) == discriminant(other)
     }
 
     /// Returns a human-readable representation of the type of this value.
     pub fn type_str(&self) -> &'static str {
         match *self {
-            Value::String(..) => "string",
-            Value::Integer(..) => "integer",
-            Value::Float(..) => "float",
-            Value::Boolean(..) => "boolean",
-            Value::Datetime(..) => "datetime",
-            Value::Array(..) => "array",
-            Value::Table(..) => "table",
+            Self::String(..) => "string",
+            Self::Integer(..) => "integer",
+            Self::Float(..) => "float",
+            Self::Boolean(..) => "boolean",
+            Self::Datetime(..) => "datetime",
+            Self::Array(..) => "array",
+            Self::Table(..) => "table",
         }
     }
 }
@@ -233,9 +233,9 @@ impl<I> ops::Index<I> for Value
 where
     I: Index,
 {
-    type Output = Value;
+    type Output = Self;
 
-    fn index(&self, index: I) -> &Value {
+    fn index(&self, index: I) -> &Self {
         self.get(index).expect("index not found")
     }
 }
@@ -244,38 +244,38 @@ impl<I> ops::IndexMut<I> for Value
 where
     I: Index,
 {
-    fn index_mut(&mut self, index: I) -> &mut Value {
+    fn index_mut(&mut self, index: I) -> &mut Self {
         self.get_mut(index).expect("index not found")
     }
 }
 
 impl<'a> From<&'a str> for Value {
     #[inline]
-    fn from(val: &'a str) -> Value {
-        Value::String(val.to_owned())
+    fn from(val: &'a str) -> Self {
+        Self::String(val.to_owned())
     }
 }
 
-impl<V: Into<Value>> From<Vec<V>> for Value {
-    fn from(val: Vec<V>) -> Value {
-        Value::Array(val.into_iter().map(|v| v.into()).collect())
+impl<V: Into<Self>> From<Vec<V>> for Value {
+    fn from(val: Vec<V>) -> Self {
+        Self::Array(val.into_iter().map(|v| v.into()).collect())
     }
 }
 
-impl<S: Into<String>, V: Into<Value>> From<BTreeMap<S, V>> for Value {
-    fn from(val: BTreeMap<S, V>) -> Value {
+impl<S: Into<String>, V: Into<Self>> From<BTreeMap<S, V>> for Value {
+    fn from(val: BTreeMap<S, V>) -> Self {
         let table = val.into_iter().map(|(s, v)| (s.into(), v.into())).collect();
 
-        Value::Table(table)
+        Self::Table(table)
     }
 }
 
 #[cfg(feature = "std")]
-impl<S: Into<String> + Hash + Eq, V: Into<Value>> From<HashMap<S, V>> for Value {
-    fn from(val: HashMap<S, V>) -> Value {
+impl<S: Into<String> + Hash + Eq, V: Into<Self>> From<HashMap<S, V>> for Value {
+    fn from(val: HashMap<S, V>) -> Self {
         let table = val.into_iter().map(|(s, v)| (s.into(), v.into())).collect();
 
-        Value::Table(table)
+        Self::Table(table)
     }
 }
 
@@ -395,9 +395,9 @@ impl fmt::Display for Value {
 #[cfg(feature = "parse")]
 impl core::str::FromStr for Value {
     type Err = crate::de::Error;
-    fn from_str(s: &str) -> Result<Value, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         use serde::Deserialize as _;
-        Value::deserialize(crate::de::ValueDeserializer::parse(s)?)
+        Self::deserialize(crate::de::ValueDeserializer::parse(s)?)
     }
 }
 
@@ -407,19 +407,19 @@ impl ser::Serialize for Value {
         S: ser::Serializer,
     {
         match *self {
-            Value::String(ref s) => serializer.serialize_str(s),
-            Value::Integer(i) => serializer.serialize_i64(i),
-            Value::Float(f) => serializer.serialize_f64(f),
-            Value::Boolean(b) => serializer.serialize_bool(b),
-            Value::Datetime(ref s) => s.serialize(serializer),
-            Value::Array(ref a) => a.serialize(serializer),
-            Value::Table(ref t) => t.serialize(serializer),
+            Self::String(ref s) => serializer.serialize_str(s),
+            Self::Integer(i) => serializer.serialize_i64(i),
+            Self::Float(f) => serializer.serialize_f64(f),
+            Self::Boolean(b) => serializer.serialize_bool(b),
+            Self::Datetime(ref s) => s.serialize(serializer),
+            Self::Array(ref a) => a.serialize(serializer),
+            Self::Table(ref t) => t.serialize(serializer),
         }
     }
 }
 
 impl<'de> de::Deserialize<'de> for Value {
-    fn deserialize<D>(deserializer: D) -> Result<Value, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
     {
@@ -527,12 +527,12 @@ impl<'de> de::Deserializer<'de> for Value {
         V: de::Visitor<'de>,
     {
         match self {
-            Value::Boolean(v) => visitor.visit_bool(v),
-            Value::Integer(n) => visitor.visit_i64(n),
-            Value::Float(n) => visitor.visit_f64(n),
-            Value::String(v) => visitor.visit_string(v),
-            Value::Datetime(v) => visitor.visit_string(v.to_string()),
-            Value::Array(v) => {
+            Self::Boolean(v) => visitor.visit_bool(v),
+            Self::Integer(n) => visitor.visit_i64(n),
+            Self::Float(n) => visitor.visit_f64(n),
+            Self::String(v) => visitor.visit_string(v),
+            Self::Datetime(v) => visitor.visit_string(v.to_string()),
+            Self::Array(v) => {
                 let len = v.len();
                 let mut deserializer = SeqDeserializer::new(v);
                 let seq = visitor.visit_seq(&mut deserializer)?;
@@ -543,7 +543,7 @@ impl<'de> de::Deserializer<'de> for Value {
                     Err(de::Error::invalid_length(len, &"fewer elements in array"))
                 }
             }
-            Value::Table(v) => {
+            Self::Table(v) => {
                 let len = v.len();
                 let mut deserializer = MapDeserializer::new(v);
                 let map = visitor.visit_map(&mut deserializer)?;
@@ -568,8 +568,8 @@ impl<'de> de::Deserializer<'de> for Value {
         V: de::Visitor<'de>,
     {
         match self {
-            Value::String(variant) => visitor.visit_enum(variant.into_deserializer()),
-            Value::Table(variant) => {
+            Self::String(variant) => visitor.visit_enum(variant.into_deserializer()),
+            Self::Table(variant) => {
                 if variant.is_empty() {
                     Err(crate::de::Error::custom(
                         "wanted exactly 1 element, found 0 elements",
@@ -625,7 +625,7 @@ pub(crate) struct SeqDeserializer {
 
 impl SeqDeserializer {
     fn new(vec: Vec<Value>) -> Self {
-        SeqDeserializer {
+        Self {
             iter: vec.into_iter(),
         }
     }
@@ -659,7 +659,7 @@ pub(crate) struct MapDeserializer {
 
 impl MapDeserializer {
     fn new(map: Table) -> Self {
-        MapDeserializer {
+        Self {
             iter: map.into_iter(),
             value: None,
         }
@@ -737,7 +737,7 @@ pub(crate) struct MapEnumDeserializer {
 
 impl MapEnumDeserializer {
     pub(crate) fn new(value: Value) -> Self {
-        MapEnumDeserializer { value }
+        Self { value }
     }
 }
 
@@ -958,7 +958,7 @@ impl ser::Serializer for ValueSerializer {
     where
         T: ser::Serialize + ?Sized,
     {
-        let value = value.serialize(ValueSerializer)?;
+        let value = value.serialize(Self)?;
         let mut table = Table::new();
         table.insert(variant.to_owned(), value);
         Ok(table.into())

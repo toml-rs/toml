@@ -21,27 +21,27 @@ impl Error {
     where
         T: std::fmt::Display,
     {
-        Error::Custom(msg.to_string())
+        Self::Custom(msg.to_string())
     }
 
     pub(crate) fn unsupported_type(t: Option<&'static str>) -> Self {
-        Error::UnsupportedType(t)
+        Self::UnsupportedType(t)
     }
 
     pub(crate) fn out_of_range(t: Option<&'static str>) -> Self {
-        Error::OutOfRange(t)
+        Self::OutOfRange(t)
     }
 
     pub(crate) fn unsupported_none() -> Self {
-        Error::UnsupportedNone
+        Self::UnsupportedNone
     }
 
     pub(crate) fn key_not_string() -> Self {
-        Error::KeyNotString
+        Self::KeyNotString
     }
 
     pub(crate) fn date_invalid() -> Self {
-        Error::DateInvalid
+        Self::DateInvalid
     }
 }
 
@@ -70,13 +70,13 @@ impl std::fmt::Display for Error {
 }
 
 impl From<crate::TomlError> for Error {
-    fn from(e: crate::TomlError) -> Error {
+    fn from(e: crate::TomlError) -> Self {
         Self::custom(e)
     }
 }
 
 impl From<Error> for crate::TomlError {
-    fn from(e: Error) -> crate::TomlError {
+    fn from(e: Error) -> Self {
         Self::custom(e.to_string(), None)
     }
 }

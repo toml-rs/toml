@@ -392,7 +392,7 @@ impl<V: Into<Value>> FromIterator<V> for Array {
         I: IntoIterator<Item = V>,
     {
         let v = iter.into_iter().map(|a| Item::Value(a.into()));
-        Array {
+        Self {
             values: v.collect(),
             ..Default::default()
         }

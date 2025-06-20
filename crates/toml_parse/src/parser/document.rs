@@ -952,10 +952,10 @@ fn on_inline_table_open(
     impl State {
         fn expected(&self) -> &'static [Expected] {
             match self {
-                State::NeedsKey => &[Expected::Description("key")],
-                State::NeedsEquals => &[Expected::Literal("=")],
-                State::NeedsValue => &[Expected::Description("value")],
-                State::NeedsComma => &[Expected::Literal(",")],
+                Self::NeedsKey => &[Expected::Description("key")],
+                Self::NeedsEquals => &[Expected::Literal("=")],
+                Self::NeedsValue => &[Expected::Description("value")],
+                Self::NeedsComma => &[Expected::Literal(",")],
             }
         }
     }

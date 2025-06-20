@@ -42,7 +42,7 @@ impl serde::ser::Error for Error {
     where
         T: core::fmt::Display,
     {
-        Error::new(msg)
+        Self::new(msg)
     }
 }
 

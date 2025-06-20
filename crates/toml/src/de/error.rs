@@ -85,7 +85,7 @@ impl serde::de::Error for Error {
     where
         T: core::fmt::Display,
     {
-        Error::custom(msg.to_string(), None)
+        Self::custom(msg.to_string(), None)
     }
 }
 

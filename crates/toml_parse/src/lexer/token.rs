@@ -64,43 +64,43 @@ pub enum TokenKind {
 impl TokenKind {
     pub const fn description(&self) -> &'static str {
         match self {
-            TokenKind::Dot => "`.`",
-            TokenKind::Equals => "`=`",
-            TokenKind::Comma => "`,`",
-            TokenKind::LeftSquareBracket => "`[`",
-            TokenKind::RightSquareBracket => "`]`",
-            TokenKind::LeftCurlyBracket => "`{`",
-            TokenKind::RightCurlyBracket => "`}`",
-            TokenKind::Whitespace => "whitespace",
-            TokenKind::Comment => "comment",
-            TokenKind::Newline => "newline",
-            TokenKind::LiteralString => "literal string",
-            TokenKind::BasicString => "basic string",
-            TokenKind::MlLiteralString => "multi-line literal string",
-            TokenKind::MlBasicString => "multi-line basic string",
-            TokenKind::Atom => "token",
-            TokenKind::Eof => "end-of-input",
+            Self::Dot => "`.`",
+            Self::Equals => "`=`",
+            Self::Comma => "`,`",
+            Self::LeftSquareBracket => "`[`",
+            Self::RightSquareBracket => "`]`",
+            Self::LeftCurlyBracket => "`{`",
+            Self::RightCurlyBracket => "`}`",
+            Self::Whitespace => "whitespace",
+            Self::Comment => "comment",
+            Self::Newline => "newline",
+            Self::LiteralString => "literal string",
+            Self::BasicString => "basic string",
+            Self::MlLiteralString => "multi-line literal string",
+            Self::MlBasicString => "multi-line basic string",
+            Self::Atom => "token",
+            Self::Eof => "end-of-input",
         }
     }
 
     pub fn encoding(&self) -> Option<Encoding> {
         match self {
-            TokenKind::LiteralString => Some(Encoding::LiteralString),
-            TokenKind::BasicString => Some(Encoding::BasicString),
-            TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
-            TokenKind::MlBasicString => Some(Encoding::MlBasicString),
-            TokenKind::Atom
-            | TokenKind::LeftSquareBracket
-            | TokenKind::RightSquareBracket
-            | TokenKind::Dot
-            | TokenKind::Equals
-            | TokenKind::Comma
-            | TokenKind::RightCurlyBracket
-            | TokenKind::LeftCurlyBracket
-            | TokenKind::Whitespace
-            | TokenKind::Newline
-            | TokenKind::Comment
-            | TokenKind::Eof => None,
+            Self::LiteralString => Some(Encoding::LiteralString),
+            Self::BasicString => Some(Encoding::BasicString),
+            Self::MlLiteralString => Some(Encoding::MlLiteralString),
+            Self::MlBasicString => Some(Encoding::MlBasicString),
+            Self::Atom
+            | Self::LeftSquareBracket
+            | Self::RightSquareBracket
+            | Self::Dot
+            | Self::Equals
+            | Self::Comma
+            | Self::RightCurlyBracket
+            | Self::LeftCurlyBracket
+            | Self::Whitespace
+            | Self::Newline
+            | Self::Comment
+            | Self::Eof => None,
         }
     }
 }

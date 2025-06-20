@@ -152,7 +152,7 @@ impl Key {
     }
 
     #[cfg(feature = "parse")]
-    fn try_parse_simple(s: &str) -> Result<Key, crate::TomlError> {
+    fn try_parse_simple(s: &str) -> Result<Self, crate::TomlError> {
         let source = toml_parse::Source::new(s);
         let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
         let mut key = crate::parser::parse_key(source, &mut sink);
@@ -165,7 +165,7 @@ impl Key {
     }
 
     #[cfg(feature = "parse")]
-    fn try_parse_path(s: &str) -> Result<Vec<Key>, crate::TomlError> {
+    fn try_parse_path(s: &str) -> Result<Vec<Self>, crate::TomlError> {
         let source = toml_parse::Source::new(s);
         let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
         let mut keys = crate::parser::parse_key_path(source, &mut sink);
@@ -229,7 +229,7 @@ impl Eq for Key {}
 
 impl PartialEq for Key {
     #[inline]
-    fn eq(&self, other: &Key) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         PartialEq::eq(self.get(), other.get())
     }
 }
@@ -270,37 +270,37 @@ impl FromStr for Key {
     /// if fails, tries as basic quoted key (surrounds with "")
     /// and then literal quoted key (surrounds with '')
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Key::try_parse_simple(s)
+        Self::try_parse_simple(s)
     }
 }
 
 impl<'b> From<&'b str> for Key {
     fn from(s: &'b str) -> Self {
-        Key::new(s)
+        Self::new(s)
     }
 }
 
 impl<'b> From<&'b String> for Key {
     fn from(s: &'b String) -> Self {
-        Key::new(s)
+        Self::new(s)
     }
 }
 
 impl From<String> for Key {
     fn from(s: String) -> Self {
-        Key::new(s)
+        Self::new(s)
     }
 }
 
 impl From<InternalString> for Key {
     fn from(s: InternalString) -> Self {
-        Key::new(s)
+        Self::new(s)
     }
 }
 
 #[doc(hidden)]
 impl From<Key> for InternalString {
-    fn from(key: Key) -> InternalString {
+    fn from(key: Key) -> Self {
         key.key
     }
 }

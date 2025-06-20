@@ -143,7 +143,7 @@ pub struct Repr {
 
 impl Repr {
     pub(crate) fn new_unchecked(raw: impl Into<RawString>) -> Self {
-        Repr {
+        Self {
             raw_value: raw.into(),
         }
     }

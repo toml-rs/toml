@@ -13,7 +13,7 @@ type Inner = String;
 impl InternalString {
     /// Create an empty string
     pub fn new() -> Self {
-        InternalString(Inner::new())
+        Self(Inner::new())
     }
 
     /// Access the underlying string
@@ -61,7 +61,7 @@ impl From<&str> for InternalString {
         #[cfg(not(feature = "perf"))]
         let inner = String::from(s);
 
-        InternalString(inner)
+        Self(inner)
     }
 }
 
@@ -69,20 +69,20 @@ impl From<String> for InternalString {
     #[inline]
     fn from(s: String) -> Self {
         #[allow(clippy::useless_conversion)] // handle any string type
-        InternalString(s.into())
+        Self(s.into())
     }
 }
 
 impl From<&String> for InternalString {
     #[inline]
     fn from(s: &String) -> Self {
-        InternalString(s.into())
+        Self(s.into())
     }
 }
 
-impl From<&InternalString> for InternalString {
+impl From<&Self> for InternalString {
     #[inline]
-    fn from(s: &InternalString) -> Self {
+    fn from(s: &Self) -> Self {
         s.clone()
     }
 }
@@ -100,7 +100,7 @@ impl From<std::borrow::Cow<'_, str>> for InternalString {
 impl From<Box<str>> for InternalString {
     #[inline]
     fn from(s: Box<str>) -> Self {
-        InternalString(s.into())
+        Self(s.into())
     }
 }
 

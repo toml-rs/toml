@@ -133,7 +133,7 @@ impl FromIterator<Table> for ArrayOfTables {
         I: IntoIterator<Item = Table>,
     {
         let v = iter.into_iter().map(Item::Table);
-        ArrayOfTables {
+        Self {
             values: v.collect(),
             span: None,
         }

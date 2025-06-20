@@ -265,7 +265,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
 
 #[cfg(feature = "parse")]
 impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer<'de> {
-    type Deserializer = Deserializer<'de>;
+    type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
         self

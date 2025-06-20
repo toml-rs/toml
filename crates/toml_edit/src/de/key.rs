@@ -9,7 +9,7 @@ pub(crate) struct KeyDeserializer {
 
 impl KeyDeserializer {
     pub(crate) fn new(key: crate::Key, span: Option<std::ops::Range<usize>>) -> Self {
-        KeyDeserializer { span, key }
+        Self { span, key }
     }
 }
 
