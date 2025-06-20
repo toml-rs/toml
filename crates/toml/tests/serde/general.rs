@@ -290,10 +290,10 @@ in `bar`
             }
         },
         str![[r#"
-TOML parse error at line 1, column 15
+TOML parse error at line 2, column 7
   |
-1 | foo = { bar = "a" }
-  |               ^^^
+2 | bar = "a"
+  |       ^^^
 invalid type: string "a", expected isize
 
 "#]],
@@ -958,7 +958,8 @@ fn newline_table() {
     assert_data_eq!(
         raw,
         str![[r#"
-package = { name = "foo" }
+[package]
+name = "foo"
 
 "#]]
     );
@@ -966,7 +967,8 @@ package = { name = "foo" }
     assert_data_eq!(
         raw,
         str![[r#"
-package = { name = "foo" }
+[package]
+name = "foo"
 
 "#]]
     );
@@ -1007,7 +1009,10 @@ fn newline_dotted_table() {
     assert_data_eq!(
         raw,
         str![[r#"
-profile = { dev = { debug = true } }
+[profile.dev]
+debug = true
+
+[profile]
 
 "#]]
     );
@@ -1015,7 +1020,10 @@ profile = { dev = { debug = true } }
     assert_data_eq!(
         raw,
         str![[r#"
-profile = { dev = { debug = true } }
+[profile.dev]
+debug = true
+
+[profile]
 
 "#]]
     );
@@ -1072,8 +1080,16 @@ fn newline_mixed_tables() {
         raw,
         str![[r#"
 cargo_features = []
-package = { name = "foo", version = "1.0.0", authors = [] }
-profile = { dev = { debug = true } }
+
+[package]
+name = "foo"
+version = "1.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+
+[profile]
 
 "#]]
     );
@@ -1082,8 +1098,16 @@ profile = { dev = { debug = true } }
         raw,
         str![[r#"
 cargo_features = []
-package = { name = "foo", version = "1.0.0", authors = [] }
-profile = { dev = { debug = true } }
+
+[package]
+name = "foo"
+version = "1.0.0"
+authors = []
+
+[profile.dev]
+debug = true
+
+[profile]
 
 "#]]
     );
@@ -1796,10 +1820,14 @@ a = \"foo\"
     assert_data_eq!(
         crate::to_string(&value).unwrap(),
         str![[r#"
-bar = {}
-baz = {}
-bazv = { a = "foo" }
-foo = {}
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
 
 "#]]
         .raw()
@@ -1807,10 +1835,14 @@ foo = {}
     assert_data_eq!(
         crate::to_string_pretty(&value).unwrap(),
         str![[r#"
-bar = {}
-baz = {}
-bazv = { a = "foo" }
-foo = {}
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
 
 "#]]
         .raw()
@@ -1941,10 +1973,14 @@ a = \"foo\"
     assert_data_eq!(
         crate::to_string(&value).unwrap(),
         str![[r#"
-bar = {}
-baz = {}
-bazv = { a = "foo" }
-foo = {}
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
 
 "#]]
         .raw()
@@ -1952,10 +1988,14 @@ foo = {}
     assert_data_eq!(
         crate::to_string_pretty(&value).unwrap(),
         str![[r#"
-bar = {}
-baz = {}
-bazv = { a = "foo" }
-foo = {}
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
 
 "#]]
         .raw()

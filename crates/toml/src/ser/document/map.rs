@@ -3,29 +3,38 @@ use core::fmt::Write as _;
 use toml_write::TomlWrite as _;
 
 use super::value::KeySerializer;
-use super::value::MapValueSerializer;
-use super::value::SerializeTable;
+use super::value::ValueSerializer;
+use super::Buffer;
 use super::Error;
+use super::SerializationStrategy;
+use super::Serializer;
+use super::Table;
 use crate::alloc_prelude::*;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTable<'d> {
-    dst: &'d mut String,
+    buf: &'d mut Buffer,
+    table: Table,
     key: Option<String>,
 }
 
 impl<'d> SerializeDocumentTable<'d> {
-    pub(crate) fn map(dst: &'d mut String) -> Result<Self, Error> {
-        Ok(Self { dst, key: None })
+    pub(crate) fn map(buf: &'d mut Buffer, table: Table) -> Result<Self, Error> {
+        Ok(Self {
+            buf,
+            table,
+            key: None,
+        })
     }
 
-    fn end(self) -> Result<&'d mut String, Error> {
-        Ok(self.dst)
+    fn end(self) -> Result<&'d mut Buffer, Error> {
+        self.buf.push(self.table);
+        Ok(self.buf)
     }
 }
 
 impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
-    type Ok = &'d mut String;
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
@@ -48,23 +57,25 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
             .key
             .take()
             .expect("always called after `serialize_key`");
-        let mut encoded_value = String::new();
-        let mut is_none = false;
-        let value_serializer = MapValueSerializer::new(&mut encoded_value, &mut is_none);
-        let res = value.serialize(value_serializer);
-        match res {
-            Ok(_) => {
-                write!(self.dst, "{encoded_key}")?;
-                self.dst.space()?;
-                self.dst.keyval_sep()?;
-                self.dst.space()?;
-                write!(self.dst, "{encoded_value}")?;
-                self.dst.newline()?;
+        match SerializationStrategy::from(value) {
+            SerializationStrategy::Value => {
+                let dst = self.table.body_mut();
+
+                write!(dst, "{encoded_key}")?;
+                dst.space()?;
+                dst.keyval_sep()?;
+                dst.space()?;
+                let value_serializer = ValueSerializer::new(dst);
+                let dst = value.serialize(value_serializer)?;
+                dst.newline()?;
             }
-            Err(e) => {
-                if !(e == Error::unsupported_none() && is_none) {
-                    return Err(e);
-                }
+            SerializationStrategy::Table | SerializationStrategy::Unknown => {
+                let child = self.table.child(encoded_key);
+                let value_serializer = Serializer::with_table(self.buf, child);
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Skip => {
+                // silently drop these key-value pairs
             }
         }
         Ok(())
@@ -76,30 +87,32 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
 }
 
 impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
-    type Ok = &'d mut String;
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        let mut encoded_value = String::new();
-        let mut is_none = false;
-        let value_serializer = MapValueSerializer::new(&mut encoded_value, &mut is_none);
-        let res = value.serialize(value_serializer);
-        match res {
-            Ok(_) => {
-                self.dst.key(key)?;
-                self.dst.space()?;
-                self.dst.keyval_sep()?;
-                self.dst.space()?;
-                write!(self.dst, "{encoded_value}")?;
-                self.dst.newline()?;
+        match SerializationStrategy::from(value) {
+            SerializationStrategy::Value => {
+                let dst = self.table.body_mut();
+
+                dst.key(key)?;
+                dst.space()?;
+                dst.keyval_sep()?;
+                dst.space()?;
+                let value_serializer = ValueSerializer::new(dst);
+                let dst = value.serialize(value_serializer)?;
+                dst.newline()?;
             }
-            Err(e) => {
-                if !(e == Error::unsupported_none() && is_none) {
-                    return Err(e);
-                }
+            SerializationStrategy::Table | SerializationStrategy::Unknown => {
+                let child = self.table.child(key.to_owned());
+                let value_serializer = Serializer::with_table(self.buf, child);
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Skip => {
+                // silently drop these key-value pairs
             }
         }
 
@@ -111,28 +124,8 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
     }
 }
 
-pub struct SerializeDocumentStructVariant<'d> {
-    inner: SerializeTable<'d>,
-}
-
-impl<'d> SerializeDocumentStructVariant<'d> {
-    pub(crate) fn struct_(
-        dst: &'d mut String,
-        variant: &'static str,
-        _len: usize,
-    ) -> Result<Self, Error> {
-        dst.key(variant)?;
-        dst.space()?;
-        dst.keyval_sep()?;
-        dst.space()?;
-        Ok(Self {
-            inner: SerializeTable::map(dst)?,
-        })
-    }
-}
-
-impl<'d> serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'d> {
-    type Ok = &'d mut String;
+impl<'d> serde::ser::SerializeStructVariant for SerializeDocumentTable<'d> {
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     #[inline]
@@ -140,13 +133,11 @@ impl<'d> serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeStruct::serialize_field(&mut self.inner, key, value)
+        serde::ser::SerializeStruct::serialize_field(self, key, value)
     }
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let dst = self.inner.end()?;
-        dst.newline()?;
-        Ok(dst)
+        self.end()
     }
 }

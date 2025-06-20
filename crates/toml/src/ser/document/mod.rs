@@ -5,16 +5,20 @@
 //! are also provided at the top of the crate.
 
 mod array;
+mod buffer;
 mod map;
+mod strategy;
 
 use toml_write::TomlWrite as _;
 
-use crate::alloc_prelude::*;
-
-use super::error::Error;
 use super::style;
 use super::value;
-use super::value::ValueSerializer;
+use super::Error;
+use crate::alloc_prelude::*;
+use buffer::Table;
+use strategy::SerializationStrategy;
+
+pub use buffer::Buffer;
 
 /// Serialization for TOML documents.
 ///
@@ -29,19 +33,21 @@ use super::value::ValueSerializer;
 /// To serialize TOML values, instead of documents, see
 /// [`ValueSerializer`][super::value::ValueSerializer].
 pub struct Serializer<'d> {
-    dst: &'d mut String,
+    buf: &'d mut Buffer,
     style: style::Style,
+    table: Table,
 }
 
 impl<'d> Serializer<'d> {
     /// Creates a new serializer which will emit TOML into the buffer provided.
     ///
     /// The serializer can then be used to serialize a type after which the data
-    /// will be present in `dst`.
-    pub fn new(dst: &'d mut String) -> Self {
+    /// will be present in `buf`.
+    pub fn new(buf: &'d mut Buffer) -> Self {
         Self {
-            dst,
+            buf,
             style: Default::default(),
+            table: Table::root(),
         }
     }
 
@@ -49,15 +55,28 @@ impl<'d> Serializer<'d> {
     ///
     /// For greater customization, instead serialize to a
     /// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
-    pub fn pretty(dst: &'d mut String) -> Self {
-        let mut ser = Serializer::new(dst);
+    pub fn pretty(buf: &'d mut Buffer) -> Self {
+        let mut ser = Serializer::new(buf);
         ser.style.multiline_array = true;
         ser
+    }
+
+    pub(crate) fn with_table(buf: &'d mut Buffer, table: Table) -> Self {
+        Self {
+            buf,
+            style: Default::default(),
+            table,
+        }
+    }
+
+    fn end(self) -> Result<&'d mut Buffer, Error> {
+        self.buf.push(self.table);
+        Ok(self.buf)
     }
 }
 
 impl<'d> serde::ser::Serializer for Serializer<'d> {
-    type Ok = &'d mut String;
+    type Ok = &'d mut Buffer;
     type Error = Error;
     type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
@@ -65,7 +84,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
     type SerializeMap = map::SerializeDocumentTable<'d>;
     type SerializeStruct = map::SerializeDocumentTable<'d>;
-    type SerializeStructVariant = map::SerializeDocumentStructVariant<'d>;
+    type SerializeStructVariant = map::SerializeDocumentTable<'d>;
 
     fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
         Err(Error::unsupported_type(Some("bool")))
@@ -124,7 +143,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Err(Error::unsupported_type(Some("None")))
+        Err(Error::unsupported_none())
     }
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
@@ -163,7 +182,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     }
 
     fn serialize_newtype_variant<T>(
-        self,
+        mut self,
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,
@@ -172,13 +191,29 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.dst.key(variant)?;
-        self.dst.space()?;
-        self.dst.keyval_sep()?;
-        self.dst.space()?;
-        value.serialize(ValueSerializer::new(self.dst))?;
-        self.dst.newline()?;
-        Ok(self.dst)
+        match SerializationStrategy::from(value) {
+            SerializationStrategy::Value => {
+                let dst = self.table.body_mut();
+
+                dst.key(variant)?;
+                dst.space()?;
+                dst.keyval_sep()?;
+                dst.space()?;
+                let value_serializer = value::ValueSerializer::new(dst);
+                let dst = value.serialize(value_serializer)?;
+                dst.newline()?;
+            }
+            SerializationStrategy::Table | SerializationStrategy::Unknown => {
+                let child = self.table.child(variant.to_owned());
+                let value_serializer = Serializer::with_table(self.buf, child);
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Skip => {
+                // silently drop these key-value pairs
+            }
+        }
+
+        self.end()
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
@@ -204,11 +239,11 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        array::SerializeDocumentTupleVariant::tuple(self.dst, variant, len)
+        array::SerializeDocumentTupleVariant::tuple(self.buf, self.table, variant, len)
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        map::SerializeDocumentTable::map(self.dst)
+        map::SerializeDocumentTable::map(self.buf, self.table)
     }
 
     fn serialize_struct(
@@ -224,8 +259,9 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        map::SerializeDocumentStructVariant::struct_(self.dst, variant, len)
+        let child = self.table.child(variant.to_owned());
+        map::SerializeDocumentTable::map(self.buf, child)
     }
 }

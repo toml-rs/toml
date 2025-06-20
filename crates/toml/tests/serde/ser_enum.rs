@@ -141,7 +141,8 @@ mod enum_tuple {
     #[test]
     fn nested_to_string() {
         let expected = str![[r#"
-val = { Tuple = [-123, true] }
+[val]
+Tuple = [-123, true]
 
 "#]];
         let input = Val {
@@ -158,7 +159,8 @@ val = { Tuple = [-123, true] }
     #[test]
     fn nested_to_string_pretty() {
         let expected = str![[r#"
-val = { Tuple = [-123, true] }
+[val]
+Tuple = [-123, true]
 
 "#]];
         let input = Val {
@@ -205,7 +207,8 @@ mod enum_newtype {
     #[test]
     fn nested_to_string() {
         let expected = str![[r#"
-val = { NewType = "value" }
+[val]
+NewType = "value"
 
 "#]];
         let input = Val {
@@ -222,7 +225,8 @@ val = { NewType = "value" }
     #[test]
     fn nested_to_string_pretty() {
         let expected = str![[r#"
-val = { NewType = "value" }
+[val]
+NewType = "value"
 
 "#]];
         let input = Val {
@@ -269,7 +273,8 @@ mod enum_struct {
     #[test]
     fn to_string() {
         let expected = str![[r#"
-Struct = { value = -123 }
+[Struct]
+value = -123
 
 "#]];
         let input = TheEnum::Struct { value: -123 };
@@ -284,7 +289,8 @@ Struct = { value = -123 }
     #[test]
     fn to_string_pretty() {
         let expected = str![[r#"
-Struct = { value = -123 }
+[Struct]
+value = -123
 
 "#]];
         let input = TheEnum::Struct { value: -123 };
@@ -299,7 +305,8 @@ Struct = { value = -123 }
     #[test]
     fn nested_to_string() {
         let expected = str![[r#"
-val = { Struct = { value = -123 } }
+[val.Struct]
+value = -123
 
 "#]];
         let input = Val {
@@ -316,7 +323,8 @@ val = { Struct = { value = -123 } }
     #[test]
     fn nested_to_string_pretty() {
         let expected = str![[r#"
-val = { Struct = { value = -123 } }
+[val.Struct]
+value = -123
 
 "#]];
         let input = Val {
