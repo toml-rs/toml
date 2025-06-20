@@ -160,8 +160,8 @@ fn hashmap() {
 
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
-        set: HashSet<char>,
         map: BTreeMap<String, isize>,
+        set: HashSet<char>,
     }
 
     equivalent! {
@@ -179,11 +179,11 @@ fn hashmap() {
             }
         },
         map! {
-            set: crate::SerdeValue::Array(vec![crate::SerdeValue::String("a".to_owned())]),
             map: map! {
                 bar: crate::SerdeValue::Integer(4),
                 foo: crate::SerdeValue::Integer(10)
-            }
+            },
+            set: crate::SerdeValue::Array(vec![crate::SerdeValue::String("a".to_owned())])
         },
     }
 }
