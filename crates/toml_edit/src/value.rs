@@ -32,20 +32,20 @@ impl Value {
     /// Text description of value type
     pub fn type_name(&self) -> &'static str {
         match self {
-            Value::String(..) => "string",
-            Value::Integer(..) => "integer",
-            Value::Float(..) => "float",
-            Value::Boolean(..) => "boolean",
-            Value::Datetime(..) => "datetime",
-            Value::Array(..) => "array",
-            Value::InlineTable(..) => "inline table",
+            Self::String(..) => "string",
+            Self::Integer(..) => "integer",
+            Self::Float(..) => "float",
+            Self::Boolean(..) => "boolean",
+            Self::Datetime(..) => "datetime",
+            Self::Array(..) => "array",
+            Self::InlineTable(..) => "inline table",
         }
     }
 
     /// Casts `self` to str.
     pub fn as_str(&self) -> Option<&str> {
         match *self {
-            Value::String(ref value) => Some(value.value()),
+            Self::String(ref value) => Some(value.value()),
             _ => None,
         }
     }
@@ -58,7 +58,7 @@ impl Value {
     /// Casts `self` to integer.
     pub fn as_integer(&self) -> Option<i64> {
         match *self {
-            Value::Integer(ref value) => Some(*value.value()),
+            Self::Integer(ref value) => Some(*value.value()),
             _ => None,
         }
     }
@@ -71,7 +71,7 @@ impl Value {
     /// Casts `self` to float.
     pub fn as_float(&self) -> Option<f64> {
         match *self {
-            Value::Float(ref value) => Some(*value.value()),
+            Self::Float(ref value) => Some(*value.value()),
             _ => None,
         }
     }
@@ -84,7 +84,7 @@ impl Value {
     /// Casts `self` to boolean.
     pub fn as_bool(&self) -> Option<bool> {
         match *self {
-            Value::Boolean(ref value) => Some(*value.value()),
+            Self::Boolean(ref value) => Some(*value.value()),
             _ => None,
         }
     }
@@ -97,7 +97,7 @@ impl Value {
     /// Casts `self` to date-time.
     pub fn as_datetime(&self) -> Option<&Datetime> {
         match *self {
-            Value::Datetime(ref value) => Some(value.value()),
+            Self::Datetime(ref value) => Some(value.value()),
             _ => None,
         }
     }
@@ -110,7 +110,7 @@ impl Value {
     /// Casts `self` to array.
     pub fn as_array(&self) -> Option<&Array> {
         match *self {
-            Value::Array(ref value) => Some(value),
+            Self::Array(ref value) => Some(value),
             _ => None,
         }
     }
@@ -118,7 +118,7 @@ impl Value {
     /// Casts `self` to mutable array.
     pub fn as_array_mut(&mut self) -> Option<&mut Array> {
         match *self {
-            Value::Array(ref mut value) => Some(value),
+            Self::Array(ref mut value) => Some(value),
             _ => None,
         }
     }
@@ -131,7 +131,7 @@ impl Value {
     /// Casts `self` to inline table.
     pub fn as_inline_table(&self) -> Option<&InlineTable> {
         match *self {
-            Value::InlineTable(ref value) => Some(value),
+            Self::InlineTable(ref value) => Some(value),
             _ => None,
         }
     }
@@ -139,7 +139,7 @@ impl Value {
     /// Casts `self` to mutable inline table.
     pub fn as_inline_table_mut(&mut self) -> Option<&mut InlineTable> {
         match *self {
-            Value::InlineTable(ref mut value) => Some(value),
+            Self::InlineTable(ref mut value) => Some(value),
             _ => None,
         }
     }
@@ -159,13 +159,13 @@ impl Value {
     ///```
     pub fn decor_mut(&mut self) -> &mut Decor {
         match self {
-            Value::String(f) => f.decor_mut(),
-            Value::Integer(f) => f.decor_mut(),
-            Value::Float(f) => f.decor_mut(),
-            Value::Boolean(f) => f.decor_mut(),
-            Value::Datetime(f) => f.decor_mut(),
-            Value::Array(a) => a.decor_mut(),
-            Value::InlineTable(t) => t.decor_mut(),
+            Self::String(f) => f.decor_mut(),
+            Self::Integer(f) => f.decor_mut(),
+            Self::Float(f) => f.decor_mut(),
+            Self::Boolean(f) => f.decor_mut(),
+            Self::Datetime(f) => f.decor_mut(),
+            Self::Array(a) => a.decor_mut(),
+            Self::InlineTable(t) => t.decor_mut(),
         }
     }
 
@@ -177,13 +177,13 @@ impl Value {
     ///```
     pub fn decor(&self) -> &Decor {
         match *self {
-            Value::String(ref f) => f.decor(),
-            Value::Integer(ref f) => f.decor(),
-            Value::Float(ref f) => f.decor(),
-            Value::Boolean(ref f) => f.decor(),
-            Value::Datetime(ref f) => f.decor(),
-            Value::Array(ref a) => a.decor(),
-            Value::InlineTable(ref t) => t.decor(),
+            Self::String(ref f) => f.decor(),
+            Self::Integer(ref f) => f.decor(),
+            Self::Float(ref f) => f.decor(),
+            Self::Boolean(ref f) => f.decor(),
+            Self::Datetime(ref f) => f.decor(),
+            Self::Array(ref a) => a.decor(),
+            Self::InlineTable(ref t) => t.decor(),
         }
     }
 
@@ -212,25 +212,25 @@ impl Value {
     /// This generally requires an [`ImDocument`][crate::ImDocument].
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         match self {
-            Value::String(f) => f.span(),
-            Value::Integer(f) => f.span(),
-            Value::Float(f) => f.span(),
-            Value::Boolean(f) => f.span(),
-            Value::Datetime(f) => f.span(),
-            Value::Array(a) => a.span(),
-            Value::InlineTable(t) => t.span(),
+            Self::String(f) => f.span(),
+            Self::Integer(f) => f.span(),
+            Self::Float(f) => f.span(),
+            Self::Boolean(f) => f.span(),
+            Self::Datetime(f) => f.span(),
+            Self::Array(a) => a.span(),
+            Self::InlineTable(t) => t.span(),
         }
     }
 
     pub(crate) fn despan(&mut self, input: &str) {
         match self {
-            Value::String(f) => f.despan(input),
-            Value::Integer(f) => f.despan(input),
-            Value::Float(f) => f.despan(input),
-            Value::Boolean(f) => f.despan(input),
-            Value::Datetime(f) => f.despan(input),
-            Value::Array(a) => a.despan(input),
-            Value::InlineTable(t) => t.despan(input),
+            Self::String(f) => f.despan(input),
+            Self::Integer(f) => f.despan(input),
+            Self::Float(f) => f.despan(input),
+            Self::Boolean(f) => f.despan(input),
+            Self::Datetime(f) => f.despan(input),
+            Self::Array(a) => a.despan(input),
+            Self::InlineTable(t) => t.despan(input),
         }
     }
 }
@@ -255,8 +255,8 @@ impl FromStr for Value {
     }
 }
 
-impl<'b> From<&'b Value> for Value {
-    fn from(s: &'b Value) -> Self {
+impl<'b> From<&'b Self> for Value {
+    fn from(s: &'b Self) -> Self {
         s.clone()
     }
 }
@@ -275,7 +275,7 @@ impl<'b> From<&'b String> for Value {
 
 impl From<String> for Value {
     fn from(s: String) -> Self {
-        Value::String(Formatted::new(s))
+        Self::String(Formatted::new(s))
     }
 }
 
@@ -293,26 +293,26 @@ impl From<InternalString> for Value {
 
 impl From<i64> for Value {
     fn from(i: i64) -> Self {
-        Value::Integer(Formatted::new(i))
+        Self::Integer(Formatted::new(i))
     }
 }
 
 impl From<f64> for Value {
     fn from(f: f64) -> Self {
         // Preserve sign of NaN. It may get written to TOML as `-nan`.
-        Value::Float(Formatted::new(f))
+        Self::Float(Formatted::new(f))
     }
 }
 
 impl From<bool> for Value {
     fn from(b: bool) -> Self {
-        Value::Boolean(Formatted::new(b))
+        Self::Boolean(Formatted::new(b))
     }
 }
 
 impl From<Datetime> for Value {
     fn from(d: Datetime) -> Self {
-        Value::Datetime(Formatted::new(d))
+        Self::Datetime(Formatted::new(d))
     }
 }
 
@@ -332,33 +332,33 @@ impl From<Time> for Value {
 
 impl From<Array> for Value {
     fn from(array: Array) -> Self {
-        Value::Array(array)
+        Self::Array(array)
     }
 }
 
 impl From<InlineTable> for Value {
     fn from(table: InlineTable) -> Self {
-        Value::InlineTable(table)
+        Self::InlineTable(table)
     }
 }
 
-impl<V: Into<Value>> FromIterator<V> for Value {
+impl<V: Into<Self>> FromIterator<V> for Value {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = V>,
     {
         let array: Array = iter.into_iter().collect();
-        Value::Array(array)
+        Self::Array(array)
     }
 }
 
-impl<K: Into<Key>, V: Into<Value>> FromIterator<(K, V)> for Value {
+impl<K: Into<Key>, V: Into<Self>> FromIterator<(K, V)> for Value {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = (K, V)>,
     {
         let table: InlineTable = iter.into_iter().collect();
-        Value::InlineTable(table)
+        Self::InlineTable(table)
     }
 }
 

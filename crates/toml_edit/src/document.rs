@@ -29,7 +29,7 @@ impl<S: AsRef<str>> Document<S> {
         if let Some(err) = sink.into_inner() {
             Err(err)
         } else {
-            Ok(Document {
+            Ok(Self {
                 root: doc.root,
                 trailing: doc.trailing,
                 raw,

@@ -208,7 +208,7 @@ impl Time {
 
 impl From<Date> for Datetime {
     fn from(other: Date) -> Self {
-        Datetime {
+        Self {
             date: Some(other),
             time: None,
             offset: None,
@@ -218,7 +218,7 @@ impl From<Date> for Datetime {
 
 impl From<Time> for Datetime {
     fn from(other: Time) -> Self {
-        Datetime {
+        Self {
             date: None,
             time: Some(other),
             offset: None,
@@ -266,8 +266,8 @@ impl fmt::Display for Time {
 impl fmt::Display for Offset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Offset::Z => write!(f, "Z"),
-            Offset::Custom { mut minutes } => {
+            Self::Z => write!(f, "Z"),
+            Self::Custom { mut minutes } => {
                 let mut sign = '+';
                 if minutes < 0 {
                     minutes *= -1;
@@ -284,7 +284,7 @@ impl fmt::Display for Offset {
 impl FromStr for Datetime {
     type Err = DatetimeParseError;
 
-    fn from_str(date: &str) -> Result<Datetime, DatetimeParseError> {
+    fn from_str(date: &str) -> Result<Self, DatetimeParseError> {
         // Accepted formats:
         //
         // 0000-00-00T00:00:00.00Z
@@ -328,7 +328,7 @@ impl FromStr for Datetime {
         //
         // local-time = partial-time
         // ```
-        let mut result = Datetime {
+        let mut result = Self {
             date: None,
             time: None,
             offset: None,
@@ -805,7 +805,7 @@ impl serde::ser::Serialize for Time {
 
 #[cfg(feature = "serde")]
 impl<'de> serde::de::Deserialize<'de> for Datetime {
-    fn deserialize<D>(deserializer: D) -> Result<Datetime, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::de::Deserializer<'de>,
     {
@@ -838,7 +838,7 @@ impl<'de> serde::de::Deserialize<'de> for Datetime {
 
 #[cfg(feature = "serde")]
 impl<'de> serde::de::Deserialize<'de> for Date {
-    fn deserialize<D>(deserializer: D) -> Result<Date, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::de::Deserializer<'de>,
     {
@@ -858,7 +858,7 @@ impl<'de> serde::de::Deserialize<'de> for Date {
 
 #[cfg(feature = "serde")]
 impl<'de> serde::de::Deserialize<'de> for Time {
-    fn deserialize<D>(deserializer: D) -> Result<Time, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::de::Deserializer<'de>,
     {
@@ -881,7 +881,7 @@ struct DatetimeKey;
 
 #[cfg(feature = "serde")]
 impl<'de> serde::de::Deserialize<'de> for DatetimeKey {
-    fn deserialize<D>(deserializer: D) -> Result<DatetimeKey, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::de::Deserializer<'de>,
     {
@@ -907,7 +907,7 @@ impl<'de> serde::de::Deserialize<'de> for DatetimeKey {
         }
 
         deserializer.deserialize_identifier(FieldVisitor)?;
-        Ok(DatetimeKey)
+        Ok(Self)
     }
 }
 
@@ -919,7 +919,7 @@ pub struct DatetimeFromString {
 
 #[cfg(feature = "serde")]
 impl<'de> serde::de::Deserialize<'de> for DatetimeFromString {
-    fn deserialize<D>(deserializer: D) -> Result<DatetimeFromString, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::de::Deserializer<'de>,
     {

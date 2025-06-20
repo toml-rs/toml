@@ -320,7 +320,7 @@ fn implicit_tables() {
             D: Deserializer<'de>,
         {
             let data = UntaggedEnumVisitor::new()
-                .string(|str| Ok(SpannedValue::String(str.into())))
+                .string(|str| Ok(Self::String(str.into())))
                 .map(|mut map| {
                     let mut result = Vec::new();
 
@@ -328,7 +328,7 @@ fn implicit_tables() {
                         result.push((k, v));
                     }
 
-                    Ok(SpannedValue::Map(result))
+                    Ok(Self::Map(result))
                 })
                 .deserialize(deserializer)?;
 

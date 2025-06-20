@@ -127,7 +127,7 @@ impl std::str::FromStr for Deserializer {
     /// Parses a document from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let doc: crate::Document<_> = s.parse().map_err(Error::from)?;
-        Ok(Deserializer::from(doc))
+        Ok(Self::from(doc))
     }
 }
 
@@ -229,7 +229,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
 }
 
 impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
-    type Deserializer = Deserializer;
+    type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
         self

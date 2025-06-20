@@ -89,7 +89,7 @@ impl<T> Spanned<T> {
     /// # type DetailedDependency = std::collections::BTreeMap<String, String>;
     /// ```
     pub fn new(range: core::ops::Range<usize>, value: T) -> Self {
-        Spanned { span: range, value }
+        Self { span: range, value }
     }
 
     /// Byte range
@@ -177,7 +177,7 @@ impl<'de, T> serde::de::Deserialize<'de> for Spanned<T>
 where
     T: serde::de::Deserialize<'de>,
 {
-    fn deserialize<D>(deserializer: D) -> Result<Spanned<T>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::de::Deserializer<'de>,
     {

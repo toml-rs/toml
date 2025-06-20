@@ -7,7 +7,7 @@ pub(crate) struct TableEnumDeserializer {
 
 impl TableEnumDeserializer {
     pub(crate) fn new(value: crate::Item) -> Self {
-        TableEnumDeserializer { value }
+        Self { value }
     }
 }
 

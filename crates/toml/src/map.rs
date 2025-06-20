@@ -54,7 +54,7 @@ where
     /// Makes a new empty Map.
     #[inline]
     pub fn new() -> Self {
-        Map {
+        Self {
             #[cfg(feature = "preserve_order")]
             map: MapImpl::with_hasher(RandomState::default()),
             #[cfg(not(feature = "preserve_order"))]
@@ -78,7 +78,7 @@ where
     /// Makes a new empty Map with the given initial capacity.
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
-        Map {
+        Self {
             map: IndexMap::with_capacity_and_hasher(capacity, RandomState::default()),
             dotted: false,
             implicit: false,
@@ -345,7 +345,7 @@ where
 impl<K: Clone, V: Clone> Clone for Map<K, V> {
     #[inline]
     fn clone(&self) -> Self {
-        Map {
+        Self {
             map: self.map.clone(),
             dotted: self.dotted,
             implicit: self.implicit,
@@ -457,7 +457,7 @@ impl<K: Ord + Hash, V> FromIterator<(K, V)> for Map<K, V> {
     where
         T: IntoIterator<Item = (K, V)>,
     {
-        Map {
+        Self {
             map: FromIterator::from_iter(iter),
             dotted: false,
             implicit: false,

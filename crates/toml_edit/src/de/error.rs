@@ -9,7 +9,7 @@ impl Error {
     where
         T: std::fmt::Display,
     {
-        Error {
+        Self {
             inner: crate::TomlError::custom(msg.to_string(), span),
         }
     }
@@ -44,7 +44,7 @@ impl serde::de::Error for Error {
     where
         T: std::fmt::Display,
     {
-        Error::custom(msg, None)
+        Self::custom(msg, None)
     }
 }
 
@@ -61,13 +61,13 @@ impl std::fmt::Debug for Error {
 }
 
 impl From<crate::TomlError> for Error {
-    fn from(e: crate::TomlError) -> Error {
+    fn from(e: crate::TomlError) -> Self {
         Self { inner: e }
     }
 }
 
 impl From<Error> for crate::TomlError {
-    fn from(e: Error) -> crate::TomlError {
+    fn from(e: Error) -> Self {
         e.inner
     }
 }

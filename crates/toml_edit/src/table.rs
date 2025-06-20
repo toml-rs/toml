@@ -476,7 +476,7 @@ impl<K: Into<Key>, V: Into<Item>> FromIterator<(K, V)> for Table {
     where
         I: IntoIterator<Item = (K, V)>,
     {
-        let mut table = Table::new();
+        let mut table = Self::new();
         table.extend(iter);
         table
     }
