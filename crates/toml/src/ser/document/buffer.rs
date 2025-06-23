@@ -46,7 +46,7 @@ fn required_table(table: &Table) -> bool {
     if table.key.is_none() {
         !table.body.is_empty()
     } else {
-        true
+        !table.body.is_empty() || !table.has_children
     }
 }
 
@@ -54,6 +54,7 @@ fn required_table(table: &Table) -> bool {
 pub(crate) struct Table {
     key: Option<Vec<String>>,
     body: String,
+    has_children: bool,
 }
 
 impl Table {
@@ -61,6 +62,7 @@ impl Table {
         Self {
             key: None,
             body: String::new(),
+            has_children: false,
         }
     }
 
@@ -68,10 +70,12 @@ impl Table {
         &mut self.body
     }
 
-    pub(crate) fn child(&self, key: String) -> Self {
+    pub(crate) fn child(&mut self, key: String) -> Self {
+        self.has_children = true;
         let mut child = Self {
             key: self.key.clone(),
             body: String::new(),
+            has_children: false,
         };
         child.key.get_or_insert_with(Vec::new).push(key);
         child

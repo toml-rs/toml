@@ -201,12 +201,8 @@ metadata.msrv = "1.65.0"
     let expected = str![[r#"
 [package.metadata.release.pre-release-replacements]
 
-[package.metadata.release]
-
 [package.metadata]
 msrv = "1.65.0"
-
-[package]
 
 "#]];
     let document = input.parse::<crate::RustDocument>().unwrap();

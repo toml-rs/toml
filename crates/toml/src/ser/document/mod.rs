@@ -255,7 +255,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     }
 
     fn serialize_struct_variant(
-        self,
+        mut self,
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,

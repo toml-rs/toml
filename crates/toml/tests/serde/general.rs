@@ -1012,8 +1012,6 @@ fn newline_dotted_table() {
 [profile.dev]
 debug = true
 
-[profile]
-
 "#]]
     );
     let raw = crate::to_string_pretty(&package).unwrap();
@@ -1022,8 +1020,6 @@ debug = true
         str![[r#"
 [profile.dev]
 debug = true
-
-[profile]
 
 "#]]
     );
@@ -1089,8 +1085,6 @@ authors = []
 [profile.dev]
 debug = true
 
-[profile]
-
 "#]]
     );
     let raw = crate::to_string_pretty(&package).unwrap();
@@ -1106,8 +1100,6 @@ authors = []
 
 [profile.dev]
 debug = true
-
-[profile]
 
 "#]]
     );

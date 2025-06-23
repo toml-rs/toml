@@ -215,8 +215,6 @@ version = "0.0.0"
 [profile.dev]
 debug = true
 
-[profile]
-
 "#]],
     );
 }
