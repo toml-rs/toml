@@ -47,7 +47,6 @@ use super::Error;
 /// ).unwrap();
 /// println!("{}", value)
 /// ```
-#[cfg(feature = "display")]
 pub struct ValueSerializer<'d> {
     dst: &'d mut String,
 }
