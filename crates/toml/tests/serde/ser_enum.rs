@@ -160,7 +160,10 @@ Tuple = [-123, true]
     fn nested_to_string_pretty() {
         let expected = str![[r#"
 [val]
-Tuple = [-123, true]
+Tuple = [
+    -123,
+    true,
+]
 
 "#]];
         let input = Val {
@@ -392,7 +395,15 @@ enums = ["Plain", { Tuple = [-123, true] }, { NewType = "value" }, { Struct = { 
     #[test]
     fn to_string_pretty() {
         let expected = str![[r#"
-enums = ["Plain", { Tuple = [-123, true] }, { NewType = "value" }, { Struct = { value = -123 } }]
+enums = [
+    "Plain",
+    { Tuple = [
+    -123,
+    true,
+] },
+    { NewType = "value" },
+    { Struct = { value = -123 } },
+]
 
 "#]];
         let input = Multi {

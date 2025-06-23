@@ -83,7 +83,10 @@ this is the first line\\nthis is the second line
 ",
         str![[r#"
 [example]
-array = ["item 1", "item 2"]
+array = [
+    "item 1",
+    "item 2",
+]
 empty = []
 oneline = "this has no newlines."
 text = '''
@@ -172,7 +175,10 @@ key = "bar"
 single = "this is a single line string"
 "#,
         str![[r#"
-array = [{ key = "foo" }, { key = "bar" }]
+array = [
+    { key = "foo" },
+    { key = "bar" },
+]
 
 [abc]
 doc = "this is a table"

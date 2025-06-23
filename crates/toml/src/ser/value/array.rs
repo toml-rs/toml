@@ -1,3 +1,5 @@
+use core::fmt::Write as _;
+
 use toml_write::TomlWrite as _;
 
 use super::Error;
@@ -22,6 +24,9 @@ impl<'d> SerializeValueArray<'d> {
     }
 
     fn end(self) -> Result<&'d mut String, Error> {
+        if self.style.multiline_array && self.seen_value {
+            self.dst.newline()?;
+        }
         self.dst.close_array()?;
         Ok(self.dst)
     }
@@ -35,12 +40,20 @@ impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        if self.seen_value {
-            self.dst.val_sep()?;
-            self.dst.space()?;
+        if self.style.multiline_array {
+            self.dst.newline()?;
+            write!(self.dst, "    ")?;
+        } else {
+            if self.seen_value {
+                self.dst.val_sep()?;
+                self.dst.space()?;
+            }
         }
         self.seen_value = true;
         value.serialize(super::ValueSerializer::with_style(self.dst, self.style))?;
+        if self.style.multiline_array {
+            self.dst.val_sep()?;
+        }
         Ok(())
     }
 

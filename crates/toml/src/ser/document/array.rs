@@ -1,3 +1,5 @@
+use core::fmt::Write as _;
+
 use toml_write::TomlWrite as _;
 
 use super::style::Style;
@@ -47,17 +49,28 @@ impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'d>
     {
         let dst = self.table.body_mut();
 
-        if self.seen_value {
-            dst.val_sep()?;
-            dst.space()?;
+        if self.style.multiline_array {
+            dst.newline()?;
+            write!(dst, "    ")?;
+        } else {
+            if self.seen_value {
+                dst.val_sep()?;
+                dst.space()?;
+            }
         }
         self.seen_value = true;
         value.serialize(ValueSerializer::with_style(dst, self.style))?;
+        if self.style.multiline_array {
+            dst.val_sep()?;
+        }
         Ok(())
     }
 
     fn end(mut self) -> Result<Self::Ok, Self::Error> {
         let dst = self.table.body_mut();
+        if self.style.multiline_array && self.seen_value {
+            dst.newline()?;
+        }
         dst.close_array()?;
         dst.newline()?;
         self.buf.push(self.table);
