@@ -189,7 +189,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         T: serde::ser::Serialize + ?Sized,
     {
         match SerializationStrategy::from(value) {
-            SerializationStrategy::Value => {
+            SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
                 let dst = self.table.body_mut();
 
                 dst.key(variant)?;

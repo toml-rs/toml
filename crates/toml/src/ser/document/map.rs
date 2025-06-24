@@ -61,7 +61,7 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
             .take()
             .expect("always called after `serialize_key`");
         match SerializationStrategy::from(value) {
-            SerializationStrategy::Value => {
+            SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
                 let dst = self.table.body_mut();
 
                 write!(dst, "{encoded_key}")?;
@@ -98,7 +98,7 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
         T: serde::ser::Serialize + ?Sized,
     {
         match SerializationStrategy::from(value) {
-            SerializationStrategy::Value => {
+            SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
                 let dst = self.table.body_mut();
 
                 dst.key(key)?;
