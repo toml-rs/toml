@@ -44,10 +44,11 @@ impl<'d> Serializer<'d> {
     /// The serializer can then be used to serialize a type after which the data
     /// will be present in `buf`.
     pub fn new(buf: &'d mut Buffer) -> Self {
+        let table = buf.root_table();
         Self {
             buf,
             style: Default::default(),
-            table: Table::root(),
+            table,
         }
     }
 
@@ -200,7 +201,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.table.child(variant.to_owned());
+                let child = self.buf.child_table(&mut self.table, variant.to_owned());
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
@@ -257,7 +258,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let child = self.table.child(variant.to_owned());
+        let child = self.buf.child_table(&mut self.table, variant.to_owned());
         map::SerializeDocumentTable::map(self.buf, child, self.style)
     }
 }

@@ -5,7 +5,7 @@ use crate::alloc_prelude::*;
 /// TOML Document serialization buffer
 #[derive(Debug, Default)]
 pub struct Buffer {
-    tables: Vec<Table>,
+    tables: Vec<Option<Table>>,
 }
 
 impl Buffer {
@@ -19,18 +19,42 @@ impl Buffer {
         self.tables.clear();
     }
 
+    pub(crate) fn root_table(&mut self) -> Table {
+        self.new_table(None)
+    }
+
+    pub(crate) fn child_table(&mut self, parent: &mut Table, key: String) -> Table {
+        parent.has_children = true;
+        let mut key_path = parent.key.clone();
+        key_path.get_or_insert_with(Vec::new).push(key);
+        self.new_table(key_path)
+    }
+
+    pub(crate) fn new_table(&mut self, key: Option<Vec<String>>) -> Table {
+        let pos = self.tables.len();
+        let table = Table {
+            key,
+            body: String::new(),
+            has_children: false,
+            pos,
+        };
+        self.tables.push(None);
+        table
+    }
+
     pub(crate) fn push(&mut self, table: Table) {
-        if table.key.is_none() {
-            self.tables.insert(0, table);
-        } else {
-            self.tables.push(table);
-        }
+        let pos = table.pos;
+        self.tables[pos] = Some(table);
     }
 }
 
 impl core::fmt::Display for Buffer {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut tables = self.tables.iter().filter(|t| required_table(t));
+        let mut tables = self
+            .tables
+            .iter()
+            .filter_map(|t| t.as_ref())
+            .filter(|t| required_table(t));
         if let Some(table) = tables.next() {
             table.fmt(f)?;
         }
@@ -55,30 +79,12 @@ pub(crate) struct Table {
     key: Option<Vec<String>>,
     body: String,
     has_children: bool,
+    pos: usize,
 }
 
 impl Table {
-    pub(crate) fn root() -> Self {
-        Self {
-            key: None,
-            body: String::new(),
-            has_children: false,
-        }
-    }
-
     pub(crate) fn body_mut(&mut self) -> &mut String {
         &mut self.body
-    }
-
-    pub(crate) fn child(&mut self, key: String) -> Self {
-        self.has_children = true;
-        let mut child = Self {
-            key: self.key.clone(),
-            body: String::new(),
-            has_children: false,
-        };
-        child.key.get_or_insert_with(Vec::new).push(key);
-        child
     }
 }
 

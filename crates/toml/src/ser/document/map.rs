@@ -73,7 +73,7 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.table.child(encoded_key);
+                let child = self.buf.child_table(&mut self.table, encoded_key);
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
@@ -110,7 +110,7 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.table.child(key.to_owned());
+                let child = self.buf.child_table(&mut self.table, key.to_owned());
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
