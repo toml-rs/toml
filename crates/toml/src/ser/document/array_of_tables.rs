@@ -1,88 +1,42 @@
-//! Serializing Rust structures into TOML.
-//!
-//! This module contains all the Serde support for serializing Rust structures
-//! into TOML documents (as strings). Note that some top-level functions here
-//! are also provided at the top of the crate.
-
-mod array;
-mod array_of_tables;
-mod buffer;
-mod map;
-mod strategy;
-
-use toml_write::TomlWrite as _;
-
-use super::style;
-use super::value;
+use super::style::Style;
+use super::Buffer;
 use super::Error;
+use super::Serializer;
+use super::Table;
 use crate::alloc_prelude::*;
-use buffer::Table;
-use strategy::SerializationStrategy;
 
-pub use buffer::Buffer;
-
-/// Serialization for TOML documents.
-///
-/// This structure implements serialization support for TOML to serialize an
-/// arbitrary type to TOML. Note that the TOML format does not support all
-/// datatypes in Rust, such as enums, tuples, and tuple structs. These types
-/// will generate an error when serialized.
-///
-/// Currently a serializer always writes its output to an in-memory `String`,
-/// which is passed in when creating the serializer itself.
-///
-/// To serialize TOML values, instead of documents, see
-/// [`ValueSerializer`][super::value::ValueSerializer].
-pub struct Serializer<'d> {
+pub(crate) struct ArrayOfTablesSerializer<'d> {
     buf: &'d mut Buffer,
-    style: style::Style,
-    table: Table,
+    parent: Table,
+    key: String,
+    style: Style,
 }
 
-impl<'d> Serializer<'d> {
+impl<'d> ArrayOfTablesSerializer<'d> {
     /// Creates a new serializer which will emit TOML into the buffer provided.
     ///
     /// The serializer can then be used to serialize a type after which the data
-    /// will be present in `buf`.
-    pub fn new(buf: &'d mut Buffer) -> Self {
-        let table = buf.root_table();
+    /// will be present in `dst`.
+    pub(crate) fn new(buf: &'d mut Buffer, parent: Table, key: String, style: Style) -> Self {
         Self {
             buf,
-            style: Default::default(),
-            table,
+            parent,
+            key,
+            style,
         }
-    }
-
-    /// Apply a default "pretty" policy to the document
-    ///
-    /// For greater customization, instead serialize to a
-    /// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
-    pub fn pretty(buf: &'d mut Buffer) -> Self {
-        let mut ser = Serializer::new(buf);
-        ser.style.multiline_array = true;
-        ser
-    }
-
-    pub(crate) fn with_table(buf: &'d mut Buffer, table: Table, style: style::Style) -> Self {
-        Self { buf, style, table }
-    }
-
-    fn end(self) -> Result<&'d mut Buffer, Error> {
-        self.buf.push(self.table);
-        Ok(self.buf)
     }
 }
 
-impl<'d> serde::ser::Serializer for Serializer<'d> {
+impl<'d> serde::ser::Serializer for ArrayOfTablesSerializer<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
-    type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
-    type SerializeMap = map::SerializeDocumentTable<'d>;
-    type SerializeStruct = map::SerializeDocumentTable<'d>;
-    type SerializeStructVariant = map::SerializeDocumentTable<'d>;
+    type SerializeSeq = SerializeArrayOfTablesSerializer<'d>;
+    type SerializeTuple = SerializeArrayOfTablesSerializer<'d>;
+    type SerializeTupleStruct = SerializeArrayOfTablesSerializer<'d>;
+    type SerializeTupleVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeMap = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
         Err(Error::unsupported_type(Some("bool")))
@@ -180,42 +134,25 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     }
 
     fn serialize_newtype_variant<T>(
-        mut self,
+        self,
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,
-        value: &T,
+        _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        match SerializationStrategy::from(value) {
-            SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
-                let dst = self.table.body_mut();
-
-                dst.key(variant)?;
-                dst.space()?;
-                dst.keyval_sep()?;
-                dst.space()?;
-                let value_serializer = value::ValueSerializer::with_style(dst, self.style);
-                let dst = value.serialize(value_serializer)?;
-                dst.newline()?;
-            }
-            SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.buf.child_table(&mut self.table, variant.to_owned());
-                let value_serializer = Serializer::with_table(self.buf, child, self.style);
-                value.serialize(value_serializer)?;
-            }
-            SerializationStrategy::Skip => {
-                // silently drop these key-value pairs
-            }
-        }
-
-        self.end()
+        Err(Error::unsupported_type(Some(variant)))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        Err(Error::unsupported_type(Some("array")))
+        Ok(SerializeArrayOfTablesSerializer::seq(
+            self.buf,
+            self.parent,
+            self.key,
+            self.style,
+        ))
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
@@ -235,32 +172,104 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        array::SerializeDocumentTupleVariant::tuple(self.buf, self.table, variant, len, self.style)
+        Err(Error::unsupported_type(Some(variant)))
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        map::SerializeDocumentTable::map(self.buf, self.table, self.style)
+        Err(Error::unsupported_type(Some("map")))
     }
 
     fn serialize_struct(
         self,
-        _name: &'static str,
-        len: usize,
+        name: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        self.serialize_map(Some(len))
+        Err(Error::unsupported_type(Some(name)))
     }
 
     fn serialize_struct_variant(
-        mut self,
+        self,
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let child = self.buf.child_table(&mut self.table, variant.to_owned());
-        self.buf.push(self.table);
-        map::SerializeDocumentTable::map(self.buf, child, self.style)
+        Err(Error::unsupported_type(Some(variant)))
+    }
+}
+
+#[doc(hidden)]
+pub(crate) struct SerializeArrayOfTablesSerializer<'d> {
+    buf: &'d mut Buffer,
+    parent: Table,
+    key: String,
+    style: Style,
+}
+
+impl<'d> SerializeArrayOfTablesSerializer<'d> {
+    pub(crate) fn seq(buf: &'d mut Buffer, parent: Table, key: String, style: Style) -> Self {
+        Self {
+            buf,
+            parent,
+            key,
+            style,
+        }
+    }
+
+    fn end(self) -> Result<&'d mut Buffer, Error> {
+        Ok(self.buf)
+    }
+}
+
+impl<'d> serde::ser::SerializeSeq for SerializeArrayOfTablesSerializer<'d> {
+    type Ok = &'d mut Buffer;
+    type Error = Error;
+
+    fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        let child = self.buf.element_table(&mut self.parent, self.key.clone());
+        let value_serializer = Serializer::with_table(self.buf, child, self.style);
+        value.serialize(value_serializer)?;
+        Ok(())
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        self.end()
+    }
+}
+
+impl<'d> serde::ser::SerializeTuple for SerializeArrayOfTablesSerializer<'d> {
+    type Ok = &'d mut Buffer;
+    type Error = Error;
+
+    fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        serde::ser::SerializeSeq::serialize_element(self, value)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        serde::ser::SerializeSeq::end(self)
+    }
+}
+
+impl<'d> serde::ser::SerializeTupleStruct for SerializeArrayOfTablesSerializer<'d> {
+    type Ok = &'d mut Buffer;
+    type Error = Error;
+
+    fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
+    where
+        T: serde::ser::Serialize + ?Sized,
+    {
+        serde::ser::SerializeSeq::serialize_element(self, value)
+    }
+
+    fn end(self) -> Result<Self::Ok, Self::Error> {
+        serde::ser::SerializeSeq::end(self)
     }
 }

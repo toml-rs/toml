@@ -175,13 +175,14 @@ key = "bar"
 single = "this is a single line string"
 "#,
         str![[r#"
-array = [
-    { key = "foo" },
-    { key = "bar" },
-]
-
 [abc]
 doc = "this is a table"
+
+[[array]]
+key = "foo"
+
+[[array]]
+key = "bar"
 
 [example]
 single = "this is a single line string"

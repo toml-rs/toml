@@ -2,6 +2,7 @@ use core::fmt::Write as _;
 
 use toml_write::TomlWrite as _;
 
+use super::array_of_tables::ArrayOfTablesSerializer;
 use super::style::Style;
 use super::value::KeySerializer;
 use super::value::ValueSerializer;
@@ -61,7 +62,7 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
             .take()
             .expect("always called after `serialize_key`");
         match SerializationStrategy::from(value) {
-            SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
+            SerializationStrategy::Value => {
                 let dst = self.table.body_mut();
 
                 write!(dst, "{encoded_key}")?;
@@ -71,6 +72,16 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
                 let value_serializer = ValueSerializer::with_style(dst, self.style);
                 let dst = value.serialize(value_serializer)?;
                 dst.newline()?;
+            }
+            SerializationStrategy::ArrayOfTables => {
+                self.table.has_children(true);
+                let value_serializer = ArrayOfTablesSerializer::new(
+                    self.buf,
+                    self.table.clone(),
+                    encoded_key,
+                    self.style,
+                );
+                value.serialize(value_serializer)?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
                 let child = self.buf.child_table(&mut self.table, encoded_key);
@@ -98,7 +109,7 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
         T: serde::ser::Serialize + ?Sized,
     {
         match SerializationStrategy::from(value) {
-            SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
+            SerializationStrategy::Value => {
                 let dst = self.table.body_mut();
 
                 dst.key(key)?;
@@ -108,6 +119,16 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
                 let value_serializer = ValueSerializer::with_style(dst, self.style);
                 let dst = value.serialize(value_serializer)?;
                 dst.newline()?;
+            }
+            SerializationStrategy::ArrayOfTables => {
+                self.table.has_children(true);
+                let value_serializer = ArrayOfTablesSerializer::new(
+                    self.buf,
+                    self.table.clone(),
+                    key.to_owned(),
+                    self.style,
+                );
+                value.serialize(value_serializer)?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
                 let child = self.buf.child_table(&mut self.table, key.to_owned());
