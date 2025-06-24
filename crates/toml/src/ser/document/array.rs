@@ -11,7 +11,7 @@ type InnerSerializeDocumentTupleVariant =
 pub struct SerializeDocumentTupleVariant<'d> {
     inner: InnerSerializeDocumentTupleVariant,
     dst: &'d mut String,
-    settings: Style,
+    style: Style,
 }
 
 impl<'d> SerializeDocumentTupleVariant<'d> {
@@ -28,7 +28,7 @@ impl<'d> SerializeDocumentTupleVariant<'d> {
         Ok(Self {
             inner,
             dst: ser.dst,
-            settings: ser.settings,
+            style: ser.style,
         })
     }
 }
@@ -45,6 +45,6 @@ impl serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_document(self.dst, self.style, self.inner.end())
     }
 }

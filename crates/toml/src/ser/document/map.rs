@@ -11,7 +11,7 @@ type InnerSerializeDocumentMap =
 pub struct SerializeDocumentMap<'d> {
     inner: InnerSerializeDocumentMap,
     dst: &'d mut String,
-    settings: Style,
+    style: Style,
 }
 
 impl<'d> SerializeDocumentMap<'d> {
@@ -19,7 +19,7 @@ impl<'d> SerializeDocumentMap<'d> {
         Self {
             inner,
             dst: ser.dst,
-            settings: ser.settings,
+            style: ser.style,
         }
     }
 }
@@ -43,7 +43,7 @@ impl serde::ser::SerializeMap for SerializeDocumentMap<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_document(self.dst, self.style, self.inner.end())
     }
 }
 
@@ -59,7 +59,7 @@ impl serde::ser::SerializeStruct for SerializeDocumentMap<'_> {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_document(self.dst, self.style, self.inner.end())
     }
 }
 
@@ -70,7 +70,7 @@ type InnerSerializeDocumentStructVariant =
 pub struct SerializeDocumentStructVariant<'d> {
     inner: InnerSerializeDocumentStructVariant,
     dst: &'d mut String,
-    settings: Style,
+    style: Style,
 }
 
 impl<'d> SerializeDocumentStructVariant<'d> {
@@ -87,7 +87,7 @@ impl<'d> SerializeDocumentStructVariant<'d> {
         Ok(Self {
             inner,
             dst: ser.dst,
-            settings: ser.settings,
+            style: ser.style,
         })
     }
 }
@@ -106,6 +106,6 @@ impl serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.settings, self.inner.end())
+        write_document(self.dst, self.style, self.inner.end())
     }
 }

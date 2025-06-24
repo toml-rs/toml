@@ -26,7 +26,7 @@ use super::style;
 /// [`ValueSerializer`][super::value::ValueSerializer].
 pub struct Serializer<'d> {
     dst: &'d mut String,
-    settings: style::Style,
+    style: style::Style,
 }
 
 impl<'d> Serializer<'d> {
@@ -37,7 +37,7 @@ impl<'d> Serializer<'d> {
     pub fn new(dst: &'d mut String) -> Self {
         Self {
             dst,
-            settings: Default::default(),
+            style: Default::default(),
         }
     }
 
@@ -47,7 +47,7 @@ impl<'d> Serializer<'d> {
     /// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
     pub fn pretty(dst: &'d mut String) -> Self {
         let mut ser = Serializer::new(dst);
-        ser.settings.multiline_array = true;
+        ser.style.multiline_array = true;
         ser
     }
 }
@@ -170,7 +170,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
     {
         write_document(
             self.dst,
-            self.settings,
+            self.style,
             toml_edit::ser::ValueSerializer::new().serialize_newtype_variant(
                 name,
                 variant_index,
@@ -235,7 +235,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
 pub(crate) fn write_document(
     dst: &mut String,
-    mut settings: style::Style,
+    mut style: style::Style,
     value: Result<toml_edit::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
     use core::fmt::Write;
@@ -249,7 +249,7 @@ pub(crate) fn write_document(
         }
     };
 
-    settings.visit_table_mut(&mut table);
+    style.visit_table_mut(&mut table);
 
     let doc: toml_edit::DocumentMut = table.into();
     write!(dst, "{doc}").unwrap();
