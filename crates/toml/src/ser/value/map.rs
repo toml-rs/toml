@@ -6,6 +6,7 @@ use super::array::SerializeTupleVariant;
 use super::array::SerializeValueArray;
 use super::key::KeySerializer;
 use super::Error;
+use super::Style;
 use super::ValueSerializer;
 use crate::alloc_prelude::*;
 
@@ -17,15 +18,19 @@ pub enum SerializeMap<'d> {
 }
 
 impl<'d> SerializeMap<'d> {
-    pub(crate) fn map(dst: &'d mut String) -> Result<Self, Error> {
-        Ok(Self::Table(SerializeTable::map(dst)?))
+    pub(crate) fn map(dst: &'d mut String, style: Style) -> Result<Self, Error> {
+        Ok(Self::Table(SerializeTable::map(dst, style)?))
     }
 
-    pub(crate) fn struct_(name: &'static str, dst: &'d mut String) -> Result<Self, Error> {
+    pub(crate) fn struct_(
+        name: &'static str,
+        dst: &'d mut String,
+        style: Style,
+    ) -> Result<Self, Error> {
         if name == toml_datetime::__unstable::NAME {
             Ok(Self::Datetime(SerializeDatetime::new(dst)))
         } else {
-            Ok(Self::map(dst)?)
+            Ok(Self::map(dst, style)?)
         }
     }
 }
@@ -146,15 +151,17 @@ pub struct SerializeTable<'d> {
     dst: &'d mut String,
     seen_value: bool,
     key: Option<String>,
+    style: Style,
 }
 
 impl<'d> SerializeTable<'d> {
-    pub(crate) fn map(dst: &'d mut String) -> Result<Self, Error> {
+    pub(crate) fn map(dst: &'d mut String, style: Style) -> Result<Self, Error> {
         dst.open_inline_table()?;
         Ok(Self {
             dst,
             seen_value: false,
             key: None,
+            style,
         })
     }
 
@@ -193,7 +200,8 @@ impl<'d> serde::ser::SerializeMap for SerializeTable<'d> {
             .expect("always called after `serialize_key`");
         let mut encoded_value = String::new();
         let mut is_none = false;
-        let value_serializer = MapValueSerializer::new(&mut encoded_value, &mut is_none);
+        let value_serializer =
+            MapValueSerializer::new(&mut encoded_value, &mut is_none, self.style);
         let res = value.serialize(value_serializer);
         match res {
             Ok(_) => {
@@ -234,7 +242,8 @@ impl<'d> serde::ser::SerializeStruct for SerializeTable<'d> {
     {
         let mut encoded_value = String::new();
         let mut is_none = false;
-        let value_serializer = MapValueSerializer::new(&mut encoded_value, &mut is_none);
+        let value_serializer =
+            MapValueSerializer::new(&mut encoded_value, &mut is_none, self.style);
         let res = value.serialize(value_serializer);
         match res {
             Ok(_) => {
@@ -440,11 +449,16 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
 pub(crate) struct MapValueSerializer<'d> {
     dst: &'d mut String,
     is_none: &'d mut bool,
+    style: Style,
 }
 
 impl<'d> MapValueSerializer<'d> {
-    pub(crate) fn new(dst: &'d mut String, is_none: &'d mut bool) -> Self {
-        Self { dst, is_none }
+    pub(crate) fn new(dst: &'d mut String, is_none: &'d mut bool, style: Style) -> Self {
+        Self {
+            dst,
+            is_none,
+            style,
+        }
     }
 }
 
@@ -460,59 +474,59 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
     type SerializeStructVariant = SerializeStructVariant<'d>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_bool(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_bool(v)
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_i8(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_i8(v)
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_i16(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_i16(v)
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_i32(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_i32(v)
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_i64(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_i64(v)
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_u8(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_u8(v)
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_u16(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_u16(v)
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_u32(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_u32(v)
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_u64(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_u64(v)
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_f32(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_f32(v)
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_f64(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_f64(v)
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_char(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_char(v)
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_str(v)
+        ValueSerializer::with_style(self.dst, self.style).serialize_str(v)
     }
 
     fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_bytes(value)
+        ValueSerializer::with_style(self.dst, self.style).serialize_bytes(value)
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -524,15 +538,15 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        ValueSerializer::new(self.dst).serialize_some(value)
+        ValueSerializer::with_style(self.dst, self.style).serialize_some(value)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_unit()
+        ValueSerializer::with_style(self.dst, self.style).serialize_unit()
     }
 
     fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_unit_struct(name)
+        ValueSerializer::with_style(self.dst, self.style).serialize_unit_struct(name)
     }
 
     fn serialize_unit_variant(
@@ -541,7 +555,11 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
         variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_unit_variant(name, variant_index, variant)
+        ValueSerializer::with_style(self.dst, self.style).serialize_unit_variant(
+            name,
+            variant_index,
+            variant,
+        )
     }
 
     fn serialize_newtype_struct<T>(
@@ -565,7 +583,7 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        ValueSerializer::new(self.dst).serialize_newtype_variant(
+        ValueSerializer::with_style(self.dst, self.style).serialize_newtype_variant(
             name,
             variant_index,
             variant,
@@ -574,11 +592,11 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_seq(len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_seq(len)
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_tuple(len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_tuple(len)
     }
 
     fn serialize_tuple_struct(
@@ -586,7 +604,7 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_tuple_struct(name, len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_tuple_struct(name, len)
     }
 
     fn serialize_tuple_variant(
@@ -596,11 +614,16 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_tuple_variant(name, variant_index, variant, len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_tuple_variant(
+            name,
+            variant_index,
+            variant,
+            len,
+        )
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_map(len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_map(len)
     }
 
     fn serialize_struct(
@@ -608,7 +631,7 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_struct(name, len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_struct(name, len)
     }
 
     fn serialize_struct_variant(
@@ -618,7 +641,12 @@ impl<'d> serde::ser::Serializer for MapValueSerializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        ValueSerializer::new(self.dst).serialize_struct_variant(name, variant_index, variant, len)
+        ValueSerializer::with_style(self.dst, self.style).serialize_struct_variant(
+            name,
+            variant_index,
+            variant,
+            len,
+        )
     }
 }
 
@@ -631,6 +659,7 @@ impl<'d> SerializeStructVariant<'d> {
         dst: &'d mut String,
         variant: &'static str,
         _len: usize,
+        style: Style,
     ) -> Result<Self, Error> {
         dst.open_inline_table()?;
         dst.space()?;
@@ -639,7 +668,7 @@ impl<'d> SerializeStructVariant<'d> {
         dst.keyval_sep()?;
         dst.space()?;
         Ok(Self {
-            inner: SerializeTable::map(dst)?,
+            inner: SerializeTable::map(dst, style)?,
         })
     }
 }

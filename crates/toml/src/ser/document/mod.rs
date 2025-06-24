@@ -61,12 +61,8 @@ impl<'d> Serializer<'d> {
         ser
     }
 
-    pub(crate) fn with_table(buf: &'d mut Buffer, table: Table) -> Self {
-        Self {
-            buf,
-            style: Default::default(),
-            table,
-        }
+    pub(crate) fn with_table(buf: &'d mut Buffer, table: Table, style: style::Style) -> Self {
+        Self { buf, style, table }
     }
 
     fn end(self) -> Result<&'d mut Buffer, Error> {
@@ -199,13 +195,13 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
                 dst.space()?;
                 dst.keyval_sep()?;
                 dst.space()?;
-                let value_serializer = value::ValueSerializer::new(dst);
+                let value_serializer = value::ValueSerializer::with_style(dst, self.style);
                 let dst = value.serialize(value_serializer)?;
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
                 let child = self.table.child(variant.to_owned());
-                let value_serializer = Serializer::with_table(self.buf, child);
+                let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
             SerializationStrategy::Skip => {
@@ -239,11 +235,11 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        array::SerializeDocumentTupleVariant::tuple(self.buf, self.table, variant, len)
+        array::SerializeDocumentTupleVariant::tuple(self.buf, self.table, variant, len, self.style)
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        map::SerializeDocumentTable::map(self.buf, self.table)
+        map::SerializeDocumentTable::map(self.buf, self.table, self.style)
     }
 
     fn serialize_struct(
@@ -262,6 +258,6 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         let child = self.table.child(variant.to_owned());
-        map::SerializeDocumentTable::map(self.buf, child)
+        map::SerializeDocumentTable::map(self.buf, child, self.style)
     }
 }

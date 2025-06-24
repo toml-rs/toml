@@ -2,6 +2,7 @@ use core::fmt::Write as _;
 
 use toml_write::TomlWrite as _;
 
+use super::style::Style;
 use super::value::KeySerializer;
 use super::value::ValueSerializer;
 use super::Buffer;
@@ -16,14 +17,16 @@ pub struct SerializeDocumentTable<'d> {
     buf: &'d mut Buffer,
     table: Table,
     key: Option<String>,
+    style: Style,
 }
 
 impl<'d> SerializeDocumentTable<'d> {
-    pub(crate) fn map(buf: &'d mut Buffer, table: Table) -> Result<Self, Error> {
+    pub(crate) fn map(buf: &'d mut Buffer, table: Table, style: Style) -> Result<Self, Error> {
         Ok(Self {
             buf,
             table,
             key: None,
+            style,
         })
     }
 
@@ -65,13 +68,13 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
                 dst.space()?;
                 dst.keyval_sep()?;
                 dst.space()?;
-                let value_serializer = ValueSerializer::new(dst);
+                let value_serializer = ValueSerializer::with_style(dst, self.style);
                 let dst = value.serialize(value_serializer)?;
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
                 let child = self.table.child(encoded_key);
-                let value_serializer = Serializer::with_table(self.buf, child);
+                let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
             SerializationStrategy::Skip => {
@@ -102,13 +105,13 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
                 dst.space()?;
                 dst.keyval_sep()?;
                 dst.space()?;
-                let value_serializer = ValueSerializer::new(dst);
+                let value_serializer = ValueSerializer::with_style(dst, self.style);
                 let dst = value.serialize(value_serializer)?;
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
                 let child = self.table.child(key.to_owned());
-                let value_serializer = Serializer::with_table(self.buf, child);
+                let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
             SerializationStrategy::Skip => {

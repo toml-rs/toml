@@ -1,5 +1,6 @@
 use toml_write::TomlWrite as _;
 
+use super::style::Style;
 use super::value::ValueSerializer;
 use super::Buffer;
 use super::Error;
@@ -10,6 +11,7 @@ pub struct SerializeDocumentTupleVariant<'d> {
     buf: &'d mut Buffer,
     table: Table,
     seen_value: bool,
+    style: Style,
 }
 
 impl<'d> SerializeDocumentTupleVariant<'d> {
@@ -18,6 +20,7 @@ impl<'d> SerializeDocumentTupleVariant<'d> {
         mut table: Table,
         variant: &'static str,
         _len: usize,
+        style: Style,
     ) -> Result<Self, Error> {
         let dst = table.body_mut();
         dst.key(variant)?;
@@ -29,6 +32,7 @@ impl<'d> SerializeDocumentTupleVariant<'d> {
             buf,
             table,
             seen_value: false,
+            style,
         })
     }
 }
@@ -48,7 +52,7 @@ impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'d>
             dst.space()?;
         }
         self.seen_value = true;
-        value.serialize(ValueSerializer::new(dst))?;
+        value.serialize(ValueSerializer::with_style(dst, self.style))?;
         Ok(())
     }
 

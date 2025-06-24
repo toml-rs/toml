@@ -1,20 +1,23 @@
 use toml_write::TomlWrite as _;
 
 use super::Error;
+use super::Style;
 use crate::alloc_prelude::*;
 
 #[doc(hidden)]
 pub struct SerializeValueArray<'d> {
     dst: &'d mut String,
     seen_value: bool,
+    style: Style,
 }
 
 impl<'d> SerializeValueArray<'d> {
-    pub(crate) fn seq(dst: &'d mut String) -> Result<Self, Error> {
+    pub(crate) fn seq(dst: &'d mut String, style: Style) -> Result<Self, Error> {
         dst.open_array()?;
         Ok(Self {
             dst,
             seen_value: false,
+            style,
         })
     }
 
@@ -37,7 +40,7 @@ impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
             self.dst.space()?;
         }
         self.seen_value = true;
-        value.serialize(super::ValueSerializer::new(self.dst))?;
+        value.serialize(super::ValueSerializer::with_style(self.dst, self.style))?;
         Ok(())
     }
 
@@ -87,6 +90,7 @@ impl<'d> SerializeTupleVariant<'d> {
         dst: &'d mut String,
         variant: &'static str,
         _len: usize,
+        style: Style,
     ) -> Result<Self, Error> {
         dst.open_inline_table()?;
         dst.space()?;
@@ -95,7 +99,7 @@ impl<'d> SerializeTupleVariant<'d> {
         dst.keyval_sep()?;
         dst.space()?;
         Ok(Self {
-            inner: SerializeValueArray::seq(dst)?,
+            inner: SerializeValueArray::seq(dst, style)?,
         })
     }
 }

@@ -4,6 +4,7 @@ mod map;
 
 use toml_write::TomlWrite as _;
 
+use super::style::Style;
 use super::Error;
 use crate::alloc_prelude::*;
 #[allow(clippy::wildcard_imports)]
@@ -59,6 +60,7 @@ pub(crate) use map::*;
 /// ```
 pub struct ValueSerializer<'d> {
     dst: &'d mut String,
+    style: Style,
 }
 
 impl<'d> ValueSerializer<'d> {
@@ -67,7 +69,14 @@ impl<'d> ValueSerializer<'d> {
     /// The serializer can then be used to serialize a type after which the data
     /// will be present in `dst`.
     pub fn new(dst: &'d mut String) -> Self {
-        Self { dst }
+        Self {
+            dst,
+            style: Default::default(),
+        }
+    }
+
+    pub(crate) fn with_style(dst: &'d mut String, style: Style) -> Self {
+        Self { dst, style }
     }
 }
 
@@ -229,14 +238,14 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         self.dst.space()?;
         self.dst.keyval_sep()?;
         self.dst.space()?;
-        value.serialize(ValueSerializer::new(self.dst))?;
+        value.serialize(ValueSerializer::with_style(self.dst, self.style))?;
         self.dst.space()?;
         self.dst.close_inline_table()?;
         Ok(self.dst)
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        SerializeValueArray::seq(self.dst)
+        SerializeValueArray::seq(self.dst, self.style)
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
@@ -258,11 +267,11 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        SerializeTupleVariant::tuple(self.dst, variant, len)
+        SerializeTupleVariant::tuple(self.dst, variant, len, self.style)
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        SerializeMap::map(self.dst)
+        SerializeMap::map(self.dst, self.style)
     }
 
     fn serialize_struct(
@@ -270,7 +279,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        SerializeMap::struct_(name, self.dst)
+        SerializeMap::struct_(name, self.dst, self.style)
     }
 
     fn serialize_struct_variant(
@@ -280,6 +289,6 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        SerializeStructVariant::struct_(self.dst, variant, len)
+        SerializeStructVariant::struct_(self.dst, variant, len, self.style)
     }
 }
