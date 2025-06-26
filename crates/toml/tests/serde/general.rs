@@ -46,6 +46,12 @@ macro_rules! error {
             Err(e) => assert_data_eq!(e.to_string(), $msg_parse.raw()),
         }
 
+        println!("attempting parsing of pretty");
+        match crate::from_str::<$ty>(&crate::to_string_pretty(&$toml).unwrap()) {
+            Ok(_) => panic!("successful"),
+            Err(_) => {}
+        }
+
         println!("attempting toml decoding");
         match $toml.try_into::<$ty>() {
             Ok(_) => panic!("successful"),

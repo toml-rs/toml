@@ -32,6 +32,12 @@ macro_rules! error {
             Ok(_) => panic!("successful"),
             Err(e) => assert_data_eq!(e.to_string(), $msg_parse.raw()),
         }
+
+        println!("attempting parsing of pretty");
+        match crate::from_str::<$ty>(&crate::to_string_pretty(&$toml).unwrap()) {
+            Ok(_) => panic!("successful"),
+            Err(_) => {}
+        }
     }};
 }
 
