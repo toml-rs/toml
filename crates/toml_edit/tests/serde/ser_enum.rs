@@ -75,7 +75,7 @@ mod enum_unit {
     }
 
     #[test]
-    fn nested_to_string() {
+    fn nested_to_string_pretty() {
         let expected = str![[r#"
 val = "Plain"
 
@@ -122,7 +122,7 @@ mod enum_tuple {
     }
 
     #[test]
-    fn nested_to_string() {
+    fn nested_to_string_pretty() {
         let expected = str![[r#"
 [val]
 Tuple = [
@@ -173,7 +173,7 @@ mod enum_newtype {
     }
 
     #[test]
-    fn nested_to_string() {
+    fn nested_to_string_pretty() {
         let expected = str![[r#"
 [val]
 NewType = "value"
@@ -221,7 +221,7 @@ mod enum_struct {
     }
 
     #[test]
-    fn to_string() {
+    fn to_string_pretty() {
         let expected = str![[r#"
 [Struct]
 value = -123
@@ -237,7 +237,7 @@ value = -123
     }
 
     #[test]
-    fn nested_to_string() {
+    fn nested_to_string_pretty() {
         let expected = str![[r#"
 [val.Struct]
 value = -123
@@ -282,7 +282,7 @@ mod array_enum {
     }
 
     #[test]
-    fn to_string() {
+    fn to_string_pretty() {
         let expected = str![[r#"
 enums = [
     "Plain",
