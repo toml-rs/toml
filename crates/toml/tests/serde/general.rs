@@ -18,21 +18,34 @@ macro_rules! equivalent {
             t!(crate::to_string(&toml)),
             t!(crate::to_string(&literal)).raw()
         );
-        println!("literal, from_str(toml)");
+
+        println!("to_string_pretty");
+        assert_data_eq!(
+            t!(crate::to_string_pretty(&toml)),
+            t!(crate::to_string_pretty(&literal)).raw()
+        );
+
+        println!("literal, from_str(toml.to_string())");
         assert_eq!(literal, t!(crate::from_str(&t!(crate::to_string(&toml)))));
-        println!("toml, from_str(literal)");
+
+        println!("literal, from_str(toml.to_string_pretty())");
+        assert_eq!(
+            literal,
+            t!(crate::from_str(&t!(crate::to_string_pretty(&toml))))
+        );
+
+        println!("toml, from_str(literal.to_string())");
         assert_eq!(toml, t!(crate::from_str(&t!(crate::to_string(&literal)))));
 
-        // In/out of Value is equivalent
-        println!("Table::try_from(literal)");
-        assert_eq!(toml, t!(toml::Table::try_from(literal.clone())));
-        println!("Value::try_from(literal)");
+        println!("toml, from_str(literal.to_string_pretty())");
         assert_eq!(
-            toml::Value::Table(toml.clone()),
-            t!(toml::Value::try_from(literal.clone()))
+            toml,
+            t!(crate::from_str(&t!(crate::to_string_pretty(&literal))))
         );
+
         println!("toml.try_into()");
         assert_eq!(literal, t!(toml.clone().try_into()));
+
         println!("Value::Table(toml).try_into()");
         assert_eq!(literal, t!(toml::Value::Table(toml.clone()).try_into()));
     }};

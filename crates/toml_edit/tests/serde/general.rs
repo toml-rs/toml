@@ -18,10 +18,30 @@ macro_rules! equivalent {
             t!(crate::to_string(&toml)),
             t!(crate::to_string(&literal)).raw()
         );
-        println!("literal, from_str(toml)");
+
+        println!("to_string_pretty");
+        assert_data_eq!(
+            t!(crate::to_string_pretty(&toml)),
+            t!(crate::to_string_pretty(&literal)).raw()
+        );
+
+        println!("literal, from_str(toml.to_string())");
         assert_eq!(literal, t!(crate::from_str(&t!(crate::to_string(&toml)))));
-        println!("toml, from_str(literal)");
+
+        println!("literal, from_str(toml.to_string_pretty())");
+        assert_eq!(
+            literal,
+            t!(crate::from_str(&t!(crate::to_string_pretty(&toml))))
+        );
+
+        println!("toml, from_str(literal.to_string())");
         assert_eq!(toml, t!(crate::from_str(&t!(crate::to_string(&literal)))));
+
+        println!("toml, from_str(literal.to_string_pretty())");
+        assert_eq!(
+            toml,
+            t!(crate::from_str(&t!(crate::to_string_pretty(&literal))))
+        );
     }};
 }
 
