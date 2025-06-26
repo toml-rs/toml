@@ -22,6 +22,27 @@ impl toml_test_harness::Encoder for Encoder {
     }
 }
 
+#[derive(Copy, Clone)]
+pub(crate) struct EncoderPretty;
+
+impl toml_test_harness::Encoder for EncoderPretty {
+    fn name(&self) -> &str {
+        "toml"
+    }
+
+    fn encode(
+        &self,
+        data: toml_test_harness::DecodedValue,
+    ) -> Result<String, toml_test_harness::Error> {
+        let value = from_decoded(&data)?;
+        let toml::Value::Table(document) = value else {
+            return Err(toml_test_harness::Error::new("no root table"));
+        };
+        let s = toml::to_string_pretty(&document).map_err(toml_test_harness::Error::new)?;
+        Ok(s)
+    }
+}
+
 fn from_decoded(
     decoded: &toml_test_harness::DecodedValue,
 ) -> Result<toml::Value, toml_test_harness::Error> {
