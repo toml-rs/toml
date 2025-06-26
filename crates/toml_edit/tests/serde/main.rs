@@ -14,9 +14,9 @@ mod de_enum;
 mod de_errors;
 mod general;
 mod ser_enum;
-mod ser_formatting;
-mod ser_formatting_raw;
 mod ser_tables_last;
+mod ser_to_string;
+mod ser_to_string_pretty;
 mod spanned;
 
 use serde_spanned::Spanned;

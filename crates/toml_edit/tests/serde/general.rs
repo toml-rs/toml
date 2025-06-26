@@ -18,10 +18,30 @@ macro_rules! equivalent {
             t!(crate::to_string(&toml)),
             t!(crate::to_string(&literal)).raw()
         );
-        println!("literal, from_str(toml)");
+
+        println!("to_string_pretty");
+        assert_data_eq!(
+            t!(crate::to_string_pretty(&toml)),
+            t!(crate::to_string_pretty(&literal)).raw()
+        );
+
+        println!("literal, from_str(toml.to_string())");
         assert_eq!(literal, t!(crate::from_str(&t!(crate::to_string(&toml)))));
-        println!("toml, from_str(literal)");
+
+        println!("literal, from_str(toml.to_string_pretty())");
+        assert_eq!(
+            literal,
+            t!(crate::from_str(&t!(crate::to_string_pretty(&toml))))
+        );
+
+        println!("toml, from_str(literal.to_string())");
         assert_eq!(toml, t!(crate::from_str(&t!(crate::to_string(&literal)))));
+
+        println!("toml, from_str(literal.to_string_pretty())");
+        assert_eq!(
+            toml,
+            t!(crate::from_str(&t!(crate::to_string_pretty(&literal))))
+        );
     }};
 }
 
@@ -31,6 +51,12 @@ macro_rules! error {
         match crate::from_str::<$ty>(&crate::to_string(&$toml).unwrap()) {
             Ok(_) => panic!("successful"),
             Err(e) => assert_data_eq!(e.to_string(), $msg_parse.raw()),
+        }
+
+        println!("attempting parsing of pretty");
+        match crate::from_str::<$ty>(&crate::to_string_pretty(&$toml).unwrap()) {
+            Ok(_) => panic!("successful"),
+            Err(_) => {}
         }
     }};
 }
@@ -374,6 +400,25 @@ inner = [{ Int = [1, 1] }, { String = ["2", "2"] }]
 "#]]
         .raw()
     );
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[inner]]
+Int = [
+    1,
+    1,
+]
+
+[[inner]]
+String = [
+    "2",
+    "2",
+]
+
+"#]]
+        .raw()
+    );
 
     equivalent! {
         Document {
@@ -421,6 +466,25 @@ fn parse_struct_variant() {
         raw,
         str![[r#"
 inner = [{ Int = { first = 1, second = 1 } }, { String = { first = "2", second = "2" } }]
+
+"#]]
+        .raw()
+    );
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[inner]]
+
+[inner.Int]
+first = 1
+second = 1
+
+[[inner]]
+
+[inner.String]
+first = "2"
+second = "2"
 
 "#]]
         .raw()
@@ -611,6 +675,7 @@ fn extra_keys() {
     let toml = map! { a: crate::SerdeValue::Integer(2), b: crate::SerdeValue::Integer(2) };
     assert!(toml.clone().try_into::<Foo>().is_ok());
     assert!(crate::from_str::<Foo>(&crate::to_string(&toml).unwrap()).is_ok());
+    assert!(crate::from_str::<Foo>(&crate::to_string_pretty(&toml).unwrap()).is_ok());
 }
 
 #[test]
@@ -861,6 +926,14 @@ fn newline_key_value() {
     let package = Package {
         name: "foo".to_owned(),
     };
+    let raw = crate::to_string(&package).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+name = "foo"
+
+"#]]
+    );
     let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
@@ -888,6 +961,14 @@ fn newline_table() {
             name: "foo".to_owned(),
         },
     };
+    let raw = crate::to_string(&package).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+package = { name = "foo" }
+
+"#]]
+    );
     let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
@@ -930,6 +1011,14 @@ fn newline_dotted_table() {
             },
         },
     };
+    let raw = crate::to_string(&package).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+profile = { dev = { debug = true } }
+
+"#]]
+    );
     let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
@@ -987,6 +1076,16 @@ fn newline_mixed_tables() {
             },
         },
     };
+    let raw = crate::to_string(&package).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+cargo_features = []
+package = { name = "foo", version = "1.0.0", authors = [] }
+profile = { dev = { debug = true } }
+
+"#]]
+    );
     let raw = crate::to_string_pretty(&package).unwrap();
     assert_data_eq!(
         raw,
@@ -1052,6 +1151,11 @@ a_b = {value}
         crate::to_string(&literal).unwrap_err().to_string(),
         str!["out-of-range value for u64 type"].raw()
     );
+    println!("to_string_pretty");
+    assert_data_eq!(
+        crate::to_string_pretty(&literal).unwrap_err().to_string(),
+        str!["out-of-range value for u64 type"].raw()
+    );
     println!("literal, from_str(toml)");
     assert_data_eq!(
         crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
@@ -1086,6 +1190,11 @@ a_b = {value}
     println!("to_string");
     assert_data_eq!(
         crate::to_string(&literal).unwrap_err().to_string(),
+        str!["i128 is not supported"].raw()
+    );
+    println!("to_string_pretty");
+    assert_data_eq!(
+        crate::to_string_pretty(&literal).unwrap_err().to_string(),
         str!["i128 is not supported"].raw()
     );
     println!("literal, from_str(toml)");
@@ -1124,6 +1233,11 @@ a_b = {value}
         crate::to_string(&literal).unwrap_err().to_string(),
         str!["i128 is not supported"].raw()
     );
+    println!("to_string_pretty");
+    assert_data_eq!(
+        crate::to_string_pretty(&literal).unwrap_err().to_string(),
+        str!["i128 is not supported"].raw()
+    );
     println!("literal, from_str(toml)");
     assert_data_eq!(
         crate::from_str::<Foo>(&encoded).unwrap_err().to_string(),
@@ -1158,6 +1272,11 @@ a_b = {value}
     println!("to_string");
     assert_data_eq!(
         crate::to_string(&literal).unwrap_err().to_string(),
+        str!["u128 is not supported"].raw()
+    );
+    println!("to_string_pretty");
+    assert_data_eq!(
+        crate::to_string_pretty(&literal).unwrap_err().to_string(),
         str!["u128 is not supported"].raw()
     );
     println!("literal, from_str(toml)");
@@ -1204,6 +1323,8 @@ fn float_max() {
 #[test]
 fn unsupported_root_type() {
     let native = "value";
+    let err = crate::to_string(&native).unwrap_err();
+    assert_data_eq!(err.to_string(), str!["unsupported rust type"].raw());
     let err = crate::to_string_pretty(&native).unwrap_err();
     assert_data_eq!(err.to_string(), str!["unsupported rust type"].raw());
 }
@@ -1216,6 +1337,8 @@ fn unsupported_nested_type() {
     }
 
     let native = Foo { unused: () };
+    let err = crate::to_string(&native).unwrap_err();
+    assert_data_eq!(err.to_string(), str!["unsupported unit type"].raw());
     let err = crate::to_string_pretty(&native).unwrap_err();
     assert_data_eq!(err.to_string(), str!["unsupported unit type"].raw());
 }
@@ -1272,6 +1395,14 @@ date = 2022-01-01
 
 "#]]
     );
+    let toml = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        toml,
+        str![[r#"
+date = 2022-01-01
+
+"#]]
+    );
 
     let toml = crate::to_string_value(&input.date).unwrap();
     assert_data_eq!(toml, str!["2022-01-01"]);
@@ -1292,6 +1423,15 @@ fn serialize_date() {
         },
     };
     let raw = crate::to_string(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+date = 2024-01-01
+
+"#]]
+        .raw()
+    );
+    let raw = crate::to_string_pretty(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1321,6 +1461,15 @@ fn serialize_time() {
         },
     };
     let raw = crate::to_string(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+date = 05:00:00
+
+"#]]
+        .raw()
+    );
+    let raw = crate::to_string_pretty(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
@@ -1408,11 +1557,26 @@ values = [1, 2, 3]
 "#]]
         .raw()
     );
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+values = [
+    1,
+    2,
+    3,
+]
+
+"#]]
+        .raw()
+    );
 
     let input = Document {
         values: vec![Some(1), None, Some(3)],
     };
     let err = crate::to_string(&input).unwrap_err();
+    assert_data_eq!(err.to_string(), str!["unsupported None value"].raw());
+    let err = crate::to_string_pretty(&input).unwrap_err();
     assert_data_eq!(err.to_string(), str!["unsupported None value"].raw());
 }
 
@@ -1445,6 +1609,25 @@ values = [{ x = 0, y = 4 }, { x = 2, y = 5 }, { x = 3, y = 7 }]
 "#]]
         .raw()
     );
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[values]]
+x = 0
+y = 4
+
+[[values]]
+x = 2
+y = 5
+
+[[values]]
+x = 3
+y = 7
+
+"#]]
+        .raw()
+    );
 
     let input = Document {
         values: vec![
@@ -1458,6 +1641,24 @@ values = [{ x = 0, y = 4 }, { x = 2, y = 5 }, { x = 3, y = 7 }]
         raw,
         str![[r#"
 values = [{ x = 0, y = 4 }, { x = 2 }, { x = 3, y = 7 }]
+
+"#]]
+        .raw()
+    );
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+[[values]]
+x = 0
+y = 4
+
+[[values]]
+x = 2
+
+[[values]]
+x = 3
+y = 7
 
 "#]]
         .raw()
@@ -1496,6 +1697,20 @@ fn serialize_array_with_enum_of_optional_struct_field() {
 values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 } }, { Optional = { x = 3, y = 7 } }]
 
 "#]].raw());
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+values = [
+    { Optional = { x = 0, y = 4 } },
+    "Empty",
+    { Optional = { x = 2, y = 5 } },
+    { Optional = { x = 3, y = 7 } },
+]
+
+"#]]
+        .raw()
+    );
 
     let input = Document {
         values: vec![
@@ -1510,6 +1725,20 @@ values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2, y = 5 
 values = [{ Optional = { x = 0, y = 4 } }, "Empty", { Optional = { x = 2 } }, { Optional = { x = 3, y = 7 } }]
 
 "#]].raw());
+    let raw = crate::to_string_pretty(&input).unwrap();
+    assert_data_eq!(
+        raw,
+        str![[r#"
+values = [
+    { Optional = { x = 0, y = 4 } },
+    "Empty",
+    { Optional = { x = 2 } },
+    { Optional = { x = 3, y = 7 } },
+]
+
+"#]]
+        .raw()
+    );
 }
 
 #[test]
@@ -1563,6 +1792,21 @@ bar = {}
 baz = {}
 bazv = { a = "foo" }
 foo = {}
+
+"#]]
+        .raw()
+    );
+    assert_data_eq!(
+        crate::to_string_pretty(&value).unwrap(),
+        str![[r#"
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
 
 "#]]
         .raw()
@@ -1697,6 +1941,21 @@ bar = {}
 baz = {}
 bazv = { a = "foo" }
 foo = {}
+
+"#]]
+        .raw()
+    );
+    assert_data_eq!(
+        crate::to_string_pretty(&value).unwrap(),
+        str![[r#"
+[bar]
+
+[baz]
+
+[bazv]
+a = "foo"
+
+[foo]
 
 "#]]
         .raw()

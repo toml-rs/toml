@@ -83,6 +83,23 @@ val = "Plain"
         let input = Val {
             val: TheEnum::Plain,
         };
+        let toml = t!(crate::to_string(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn nested_to_string_pretty() {
+        let expected = str![[r#"
+val = "Plain"
+
+"#]];
+        let input = Val {
+            val: TheEnum::Plain,
+        };
         let toml = t!(crate::to_string_pretty(&input));
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Val>(&toml));
@@ -123,6 +140,24 @@ mod enum_tuple {
 
     #[test]
     fn nested_to_string() {
+        let expected = str![[r#"
+[val]
+Tuple = [-123, true]
+
+"#]];
+        let input = Val {
+            val: TheEnum::Tuple(-123, true),
+        };
+        let toml = t!(crate::to_string(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn nested_to_string_pretty() {
         let expected = str![[r#"
 [val]
 Tuple = [
@@ -182,6 +217,24 @@ NewType = "value"
         let input = Val {
             val: TheEnum::NewType("value".to_owned()),
         };
+        let toml = t!(crate::to_string(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn nested_to_string_pretty() {
+        let expected = str![[r#"
+[val]
+NewType = "value"
+
+"#]];
+        let input = Val {
+            val: TheEnum::NewType("value".to_owned()),
+        };
         let toml = t!(crate::to_string_pretty(&input));
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<Val>(&toml));
@@ -228,6 +281,22 @@ value = -123
 
 "#]];
         let input = TheEnum::Struct { value: -123 };
+        let toml = t!(crate::to_string(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<TheEnum>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<TheEnum>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn to_string_pretty() {
+        let expected = str![[r#"
+[Struct]
+value = -123
+
+"#]];
+        let input = TheEnum::Struct { value: -123 };
         let toml = t!(crate::to_string_pretty(&input));
         assert_data_eq!(&toml, expected);
         let roundtrip = t!(crate::from_str::<TheEnum>(&toml));
@@ -238,6 +307,24 @@ value = -123
 
     #[test]
     fn nested_to_string() {
+        let expected = str![[r#"
+[val.Struct]
+value = -123
+
+"#]];
+        let input = Val {
+            val: TheEnum::Struct { value: -123 },
+        };
+        let toml = t!(crate::to_string(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Val>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Val>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn nested_to_string_pretty() {
         let expected = str![[r#"
 [val.Struct]
 value = -123
@@ -283,6 +370,30 @@ mod array_enum {
 
     #[test]
     fn to_string() {
+        let expected = str![[r#"
+enums = ["Plain", { Tuple = [-123, true] }, { NewType = "value" }, { Struct = { value = -123 } }]
+
+"#]];
+        let input = Multi {
+            enums: {
+                vec![
+                    TheEnum::Plain,
+                    TheEnum::Tuple(-123, true),
+                    TheEnum::NewType("value".to_owned()),
+                    TheEnum::Struct { value: -123 },
+                ]
+            },
+        };
+        let toml = t!(crate::to_string(&input));
+        assert_data_eq!(&toml, expected);
+        let roundtrip = t!(crate::from_str::<Multi>(&toml));
+        assert_eq!(roundtrip, input);
+        let json = json_from_toml_str::<Multi>(&toml);
+        assert_eq!(json, input);
+    }
+
+    #[test]
+    fn to_string_pretty() {
         let expected = str![[r#"
 enums = [
     "Plain",
