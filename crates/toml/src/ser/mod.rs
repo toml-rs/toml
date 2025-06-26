@@ -15,8 +15,11 @@ mod value;
 use crate::alloc_prelude::*;
 
 #[cfg(feature = "display")]
+pub use document::Buffer;
+#[cfg(feature = "display")]
 pub use document::Serializer;
 pub use error::Error;
+pub(crate) use error::ErrorInner;
 #[cfg(feature = "display")]
 pub use value::ValueSerializer;
 
@@ -63,10 +66,10 @@ pub fn to_string<T>(value: &T) -> Result<String, Error>
 where
     T: serde::ser::Serialize + ?Sized,
 {
-    let mut output = String::new();
+    let mut output = Buffer::new();
     let serializer = Serializer::new(&mut output);
     value.serialize(serializer)?;
-    Ok(output)
+    Ok(output.to_string())
 }
 
 /// Serialize the given data structure as a "pretty" String of TOML.
@@ -83,8 +86,8 @@ pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
     T: serde::ser::Serialize + ?Sized,
 {
-    let mut output = String::new();
+    let mut output = Buffer::new();
     let serializer = Serializer::pretty(&mut output);
     value.serialize(serializer)?;
-    Ok(output)
+    Ok(output.to_string())
 }

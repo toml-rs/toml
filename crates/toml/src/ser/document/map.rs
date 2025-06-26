@@ -1,99 +1,155 @@
-use serde::Serializer as _;
+use core::fmt::Write as _;
 
+use toml_write::TomlWrite as _;
+
+use super::array_of_tables::ArrayOfTablesSerializer;
 use super::style::Style;
-use super::write_document;
-use super::{Error, Serializer};
-
-type InnerSerializeDocumentMap =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
+use super::value::KeySerializer;
+use super::value::ValueSerializer;
+use super::Buffer;
+use super::Error;
+use super::SerializationStrategy;
+use super::Serializer;
+use super::Table;
+use crate::alloc_prelude::*;
 
 #[doc(hidden)]
-pub struct SerializeDocumentMap<'d> {
-    inner: InnerSerializeDocumentMap,
-    dst: &'d mut String,
+pub struct SerializeDocumentTable<'d> {
+    buf: &'d mut Buffer,
+    table: Table,
+    key: Option<String>,
     style: Style,
 }
 
-impl<'d> SerializeDocumentMap<'d> {
-    pub(crate) fn map(ser: Serializer<'d>, inner: InnerSerializeDocumentMap) -> Self {
-        Self {
-            inner,
-            dst: ser.dst,
-            style: ser.style,
-        }
+impl<'d> SerializeDocumentTable<'d> {
+    pub(crate) fn map(buf: &'d mut Buffer, table: Table, style: Style) -> Result<Self, Error> {
+        Ok(Self {
+            buf,
+            table,
+            key: None,
+            style,
+        })
+    }
+
+    fn end(self) -> Result<&'d mut Buffer, Error> {
+        self.buf.push(self.table);
+        Ok(self.buf)
     }
 }
 
-impl serde::ser::SerializeMap for SerializeDocumentMap<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_key(input).map_err(Error::wrap)
+        let mut encoded_key = String::new();
+        input.serialize(KeySerializer {
+            dst: &mut encoded_key,
+        })?;
+        self.key = Some(encoded_key);
+        Ok(())
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_value(value).map_err(Error::wrap)
+        let encoded_key = self
+            .key
+            .take()
+            .expect("always called after `serialize_key`");
+        match SerializationStrategy::from(value) {
+            SerializationStrategy::Value => {
+                let dst = self.table.body_mut();
+
+                write!(dst, "{encoded_key}")?;
+                dst.space()?;
+                dst.keyval_sep()?;
+                dst.space()?;
+                let value_serializer = ValueSerializer::with_style(dst, self.style);
+                let dst = value.serialize(value_serializer)?;
+                dst.newline()?;
+            }
+            SerializationStrategy::ArrayOfTables => {
+                self.table.has_children(true);
+                let value_serializer = ArrayOfTablesSerializer::new(
+                    self.buf,
+                    self.table.clone(),
+                    encoded_key,
+                    self.style,
+                );
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Table | SerializationStrategy::Unknown => {
+                let child = self.buf.child_table(&mut self.table, encoded_key);
+                let value_serializer = Serializer::with_table(self.buf, child, self.style);
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Skip => {
+                // silently drop these key-value pairs
+            }
+        }
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        self.end()
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeDocumentMap<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(key, value).map_err(Error::wrap)
+        match SerializationStrategy::from(value) {
+            SerializationStrategy::Value => {
+                let dst = self.table.body_mut();
+
+                dst.key(key)?;
+                dst.space()?;
+                dst.keyval_sep()?;
+                dst.space()?;
+                let value_serializer = ValueSerializer::with_style(dst, self.style);
+                let dst = value.serialize(value_serializer)?;
+                dst.newline()?;
+            }
+            SerializationStrategy::ArrayOfTables => {
+                self.table.has_children(true);
+                let value_serializer = ArrayOfTablesSerializer::new(
+                    self.buf,
+                    self.table.clone(),
+                    key.to_owned(),
+                    self.style,
+                );
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Table | SerializationStrategy::Unknown => {
+                let child = self.buf.child_table(&mut self.table, key.to_owned());
+                let value_serializer = Serializer::with_table(self.buf, child, self.style);
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Skip => {
+                // silently drop these key-value pairs
+            }
+        }
+
+        Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        self.end()
     }
 }
 
-type InnerSerializeDocumentStructVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeStructVariant;
-
-#[doc(hidden)]
-pub struct SerializeDocumentStructVariant<'d> {
-    inner: InnerSerializeDocumentStructVariant,
-    dst: &'d mut String,
-    style: Style,
-}
-
-impl<'d> SerializeDocumentStructVariant<'d> {
-    pub(crate) fn struct_(
-        ser: Serializer<'d>,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
-    ) -> Result<Self, Error> {
-        let inner = toml_edit::ser::ValueSerializer::new()
-            .serialize_struct_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
-        Ok(Self {
-            inner,
-            dst: ser.dst,
-            style: ser.style,
-        })
-    }
-}
-
-impl serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeStructVariant for SerializeDocumentTable<'d> {
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     #[inline]
@@ -101,11 +157,11 @@ impl serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(key, value).map_err(Error::wrap)
+        serde::ser::SerializeStruct::serialize_field(self, key, value)
     }
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+        self.end()
     }
 }

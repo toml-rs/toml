@@ -1,50 +1,79 @@
-use serde::Serializer as _;
+use core::fmt::Write as _;
+
+use toml_write::TomlWrite as _;
 
 use super::style::Style;
-use super::write_document;
-use super::{Error, Serializer};
-
-type InnerSerializeDocumentTupleVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeTupleVariant;
+use super::value::ValueSerializer;
+use super::Buffer;
+use super::Error;
+use super::Table;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTupleVariant<'d> {
-    inner: InnerSerializeDocumentTupleVariant,
-    dst: &'d mut String,
+    buf: &'d mut Buffer,
+    table: Table,
+    seen_value: bool,
     style: Style,
 }
 
 impl<'d> SerializeDocumentTupleVariant<'d> {
     pub(crate) fn tuple(
-        ser: Serializer<'d>,
-        name: &'static str,
-        variant_index: u32,
+        buf: &'d mut Buffer,
+        mut table: Table,
         variant: &'static str,
-        len: usize,
+        _len: usize,
+        style: Style,
     ) -> Result<Self, Error> {
-        let inner = toml_edit::ser::ValueSerializer::new()
-            .serialize_tuple_variant(name, variant_index, variant, len)
-            .map_err(Error::wrap)?;
+        let dst = table.body_mut();
+        dst.key(variant)?;
+        dst.space()?;
+        dst.keyval_sep()?;
+        dst.space()?;
+        dst.open_array()?;
         Ok(Self {
-            inner,
-            dst: ser.dst,
-            style: ser.style,
+            buf,
+            table,
+            seen_value: false,
+            style,
         })
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'_> {
-    type Ok = ();
+impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'d> {
+    type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        self.inner.serialize_field(value).map_err(Error::wrap)
+        let dst = self.table.body_mut();
+
+        if self.style.multiline_array {
+            dst.newline()?;
+            write!(dst, "    ")?;
+        } else {
+            if self.seen_value {
+                dst.val_sep()?;
+                dst.space()?;
+            }
+        }
+        self.seen_value = true;
+        value.serialize(ValueSerializer::with_style(dst, self.style))?;
+        if self.style.multiline_array {
+            dst.val_sep()?;
+        }
+        Ok(())
     }
 
-    fn end(self) -> Result<Self::Ok, Self::Error> {
-        write_document(self.dst, self.style, self.inner.end())
+    fn end(mut self) -> Result<Self::Ok, Self::Error> {
+        let dst = self.table.body_mut();
+        if self.style.multiline_array && self.seen_value {
+            dst.newline()?;
+        }
+        dst.close_array()?;
+        dst.newline()?;
+        self.buf.push(self.table);
+        Ok(self.buf)
     }
 }
