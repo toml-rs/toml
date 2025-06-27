@@ -38,11 +38,10 @@ impl<'i> DeTable<'i> {
 
     /// Ensure no data is borrowed
     pub fn make_owned(&mut self) {
-        self.retain2(|k, v| {
+        self.mut_entries(|k, v| {
             let owned = core::mem::take(k.get_mut());
             *k.get_mut() = Cow::Owned(owned.into_owned());
             v.get_mut().make_owned();
-            true
         });
     }
 }
