@@ -8,12 +8,6 @@
 mod array;
 #[cfg(feature = "parse")]
 mod datetime;
-#[cfg(feature = "parse")]
-mod dearray;
-#[cfg(feature = "parse")]
-mod detable;
-#[cfg(feature = "parse")]
-mod devalue;
 mod error;
 #[cfg(feature = "parse")]
 mod key;
@@ -29,17 +23,17 @@ mod table_enum;
 mod value;
 
 #[cfg(feature = "parse")]
-pub use dearray::DeArray;
+pub use parser::DeArray;
 #[cfg(feature = "parse")]
-pub use detable::DeTable;
+pub use parser::DeFloat;
 #[cfg(feature = "parse")]
-pub use devalue::DeFloat;
+pub use parser::DeInteger;
 #[cfg(feature = "parse")]
-pub use devalue::DeInteger;
+pub use parser::DeString;
 #[cfg(feature = "parse")]
-pub use devalue::DeString;
+pub use parser::DeTable;
 #[cfg(feature = "parse")]
-pub use devalue::DeValue;
+pub use parser::DeValue;
 #[cfg(feature = "parse")]
 pub use value::ValueDeserializer;
 
