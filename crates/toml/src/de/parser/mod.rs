@@ -5,13 +5,21 @@ use serde_spanned::Spanned;
 use toml_parse::parser::RecursionGuard;
 use toml_parse::parser::ValidateWhitespace;
 
+pub use dearray::DeArray;
+pub use detable::DeTable;
+pub use devalue::DeFloat;
+pub use devalue::DeInteger;
+pub use devalue::DeString;
+pub use devalue::DeValue;
+
 use crate::alloc_prelude::*;
-use crate::de::DeTable;
-use crate::de::DeValue;
 
 pub(crate) mod array;
+pub(crate) mod dearray;
 #[cfg(feature = "debug")]
 pub(crate) mod debug;
+pub(crate) mod detable;
+pub(crate) mod devalue;
 pub(crate) mod document;
 pub(crate) mod inline_table;
 pub(crate) mod key;

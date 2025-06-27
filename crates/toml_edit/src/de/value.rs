@@ -161,9 +161,9 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
         if self.validate_struct_keys {
             let span = self.input.span();
             match &self.input {
-                crate::Item::Table(values) => super::validate_struct_keys(&values.items, fields),
+                crate::Item::Table(values) => validate_struct_keys(&values.items, fields),
                 crate::Item::Value(crate::Value::InlineTable(values)) => {
-                    super::validate_struct_keys(&values.items, fields)
+                    validate_struct_keys(&values.items, fields)
                 }
                 _ => Ok(()),
             }
@@ -253,5 +253,38 @@ impl std::str::FromStr for ValueDeserializer {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let value = s.parse::<crate::Value>().map_err(Error::from)?;
         Ok(value.into_deserializer())
+    }
+}
+
+pub(crate) fn validate_struct_keys(
+    table: &crate::table::KeyValuePairs,
+    fields: &'static [&'static str],
+) -> Result<(), Error> {
+    let extra_fields = table
+        .keys()
+        .filter_map(|key| {
+            if !fields.contains(&key.get()) {
+                Some(key.clone())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    if extra_fields.is_empty() {
+        Ok(())
+    } else {
+        Err(Error::custom(
+            format!(
+                "unexpected keys in table: {}, available keys: {}",
+                extra_fields
+                    .iter()
+                    .map(|k| k.get())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                fields.join(", "),
+            ),
+            extra_fields[0].span(),
+        ))
     }
 }

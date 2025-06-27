@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! A map of `String` to [Value].
+//! A map of `String` to [Value][crate::Value].
 //!
 //! By default the map is backed by a [`BTreeMap`]. Enable the `preserve_order`
 //! feature of toml-rs to use [`IndexMap`] instead.
@@ -14,18 +14,13 @@
 //! [`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 //! [`IndexMap`]: https://docs.rs/indexmap
 
+#[cfg(not(feature = "preserve_order"))]
+use alloc::collections::{btree_map, BTreeMap};
 use core::borrow::Borrow;
 use core::fmt::{self, Debug};
 use core::hash::Hash;
 use core::iter::FromIterator;
 use core::ops;
-use serde::{de, ser};
-
-#[cfg(not(feature = "preserve_order"))]
-use alloc::collections::{btree_map, BTreeMap};
-
-use crate::alloc_prelude::*;
-use crate::value::Value;
 
 #[cfg(feature = "preserve_order")]
 use indexmap::{self, IndexMap};
@@ -391,64 +386,6 @@ impl<K: Debug, V: Debug> Debug for Map<K, V> {
     #[inline]
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         self.map.fmt(formatter)
-    }
-}
-
-impl ser::Serialize for Map<String, Value> {
-    #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        use serde::ser::SerializeMap;
-        let mut map = serializer.serialize_map(Some(self.len()))?;
-        for (k, v) in self {
-            map.serialize_key(k)?;
-            map.serialize_value(v)?;
-        }
-        map.end()
-    }
-}
-
-impl<'de> de::Deserialize<'de> for Map<String, Value> {
-    #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        struct Visitor;
-
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Map<String, Value>;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a map")
-            }
-
-            #[inline]
-            fn visit_unit<E>(self) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                Ok(Map::new())
-            }
-
-            #[inline]
-            fn visit_map<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
-            where
-                V: de::MapAccess<'de>,
-            {
-                let mut values = Map::new();
-
-                while let Some((key, value)) = visitor.next_entry()? {
-                    values.insert(key, value);
-                }
-
-                Ok(values)
-            }
-        }
-
-        deserializer.deserialize_map(Visitor)
     }
 }
 

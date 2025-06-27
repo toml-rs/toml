@@ -1,12 +1,14 @@
 use serde::de::IntoDeserializer as _;
 use serde_spanned::Spanned;
 
-use crate::de::ArrayDeserializer;
-use crate::de::DatetimeDeserializer;
+use super::ArrayDeserializer;
+use super::DatetimeDeserializer;
+use super::TableDeserializer;
+use crate::alloc_prelude::*;
 use crate::de::DeString;
+use crate::de::DeTable;
 use crate::de::DeValue;
 use crate::de::Error;
-use crate::de::TableDeserializer;
 
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
@@ -203,7 +205,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         if self.validate_struct_keys {
             let span = self.span.clone();
             match &self.input {
-                DeValue::Table(values) => super::validate_struct_keys(values, fields),
+                DeValue::Table(values) => validate_struct_keys(values, fields),
                 _ => Ok(()),
             }
             .map_err(|mut e: Self::Error| {
@@ -271,5 +273,38 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for Spanned<DeValue<'de>> {
 
     fn into_deserializer(self) -> Self::Deserializer {
         ValueDeserializer::from(self)
+    }
+}
+
+pub(crate) fn validate_struct_keys(
+    table: &DeTable<'_>,
+    fields: &'static [&'static str],
+) -> Result<(), Error> {
+    let extra_fields = table
+        .keys()
+        .filter_map(|key| {
+            if !fields.contains(&key.get_ref().as_ref()) {
+                Some(key.clone())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    if extra_fields.is_empty() {
+        Ok(())
+    } else {
+        Err(Error::custom(
+            format!(
+                "unexpected keys in table: {}, available keys: {}",
+                extra_fields
+                    .iter()
+                    .map(|k| k.get_ref().as_ref())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                fields.join(", "),
+            ),
+            Some(extra_fields[0].span()),
+        ))
     }
 }
