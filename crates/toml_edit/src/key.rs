@@ -5,7 +5,6 @@ use std::str::FromStr;
 use toml_write::ToTomlKey as _;
 
 use crate::repr::{Decor, Repr};
-use crate::InternalString;
 
 /// For Key/[`Value`][crate::Value] pairs under a [`Table`][crate::Table] header or inside an
 /// [`InlineTable`][crate::InlineTable]
@@ -32,7 +31,7 @@ use crate::InternalString;
 /// To parse a key use `FromStr` trait implementation: `"string".parse::<Key>()`.
 #[derive(Debug)]
 pub struct Key {
-    key: InternalString,
+    key: String,
     pub(crate) repr: Option<Repr>,
     pub(crate) leaf_decor: Decor,
     pub(crate) dotted_decor: Decor,
@@ -40,7 +39,7 @@ pub struct Key {
 
 impl Key {
     /// Create a new table key
-    pub fn new(key: impl Into<InternalString>) -> Self {
+    pub fn new(key: impl Into<String>) -> Self {
         Self {
             key: key.into(),
             repr: None,
@@ -292,14 +291,8 @@ impl From<String> for Key {
     }
 }
 
-impl From<InternalString> for Key {
-    fn from(s: InternalString) -> Self {
-        Self::new(s)
-    }
-}
-
 #[doc(hidden)]
-impl From<Key> for InternalString {
+impl From<Key> for String {
     fn from(key: Key) -> Self {
         key.key
     }

@@ -5,7 +5,7 @@ use toml_datetime::{Date, Datetime, Time};
 
 use crate::key::Key;
 use crate::repr::{Decor, Formatted};
-use crate::{Array, InlineTable, InternalString, RawString};
+use crate::{Array, InlineTable, RawString};
 
 /// For [`Key`]/Value pairs under a [`Table`][crate::Table] header or inside another
 /// Value
@@ -276,18 +276,6 @@ impl<'b> From<&'b String> for Value {
 impl From<String> for Value {
     fn from(s: String) -> Self {
         Self::String(Formatted::new(s))
-    }
-}
-
-impl<'b> From<&'b InternalString> for Value {
-    fn from(s: &'b InternalString) -> Self {
-        s.as_str().into()
-    }
-}
-
-impl From<InternalString> for Value {
-    fn from(s: InternalString) -> Self {
-        s.as_str().into()
     }
 }
 

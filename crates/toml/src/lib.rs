@@ -147,7 +147,7 @@
 // Presence of this annotation is picked up by tools such as cargo-geiger
 // and lets them ensure that there is indeed no unsafe code as opposed to
 // something they couldn't detect (e.g. unsafe added via macro expansion, etc).
-#![cfg_attr(not(feature = "unsafe"), forbid(unsafe_code))]
+#![forbid(unsafe_code)]
 #![warn(missing_docs)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]

@@ -84,7 +84,6 @@ mod encode;
 mod error;
 mod index;
 mod inline_table;
-mod internal_string;
 mod item;
 mod key;
 #[cfg(feature = "parse")]
@@ -116,7 +115,6 @@ pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,
     InlineTableIterMut, InlineVacantEntry,
 };
-pub use crate::internal_string::InternalString;
 pub use crate::item::{array, table, value, Item};
 pub use crate::key::{Key, KeyMut};
 pub use crate::raw_string::RawString;

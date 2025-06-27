@@ -2,7 +2,6 @@ use crate::key::Key;
 use crate::parser::prelude::*;
 use crate::repr::Decor;
 use crate::repr::Repr;
-use crate::InternalString;
 use crate::RawString;
 
 /// ```bnf
@@ -133,9 +132,6 @@ impl State {
         let key_span = key.span();
         let key_raw = RawString::with_span(key_span.start()..key_span.end());
 
-        #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
-        let raw = unsafe { source.get_unchecked(key) };
-        #[cfg(not(feature = "unsafe"))]
         let raw = source.get(key).unwrap();
         let mut decoded = std::borrow::Cow::Borrowed("");
         raw.decode_key(&mut decoded, errors);
@@ -157,12 +153,9 @@ pub(crate) fn on_simple_key(
     event: &toml_parse::parser::Event,
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
-) -> (RawString, InternalString) {
+) -> (RawString, String) {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_simple_key");
-    #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
-    let raw = unsafe { source.get_unchecked(event) };
-    #[cfg(not(feature = "unsafe"))]
     let raw = source.get(event).unwrap();
 
     let mut key = std::borrow::Cow::Borrowed("");
@@ -170,6 +163,6 @@ pub(crate) fn on_simple_key(
 
     let span = event.span();
     let raw = RawString::with_span(span.start()..span.end());
-    let key = InternalString::from(key);
+    let key = String::from(key);
     (raw, key)
 }

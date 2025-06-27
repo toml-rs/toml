@@ -68,9 +68,6 @@ pub(crate) fn on_scalar(
     let value_span = event.span();
     let value_raw = RawString::with_span(value_span.start()..value_span.end());
 
-    #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
-    let raw = unsafe { source.get_unchecked(event) };
-    #[cfg(not(feature = "unsafe"))]
     let raw = source.get(event).unwrap();
     let mut decoded = std::borrow::Cow::Borrowed("");
     let kind = raw.decode_scalar(&mut decoded, errors);

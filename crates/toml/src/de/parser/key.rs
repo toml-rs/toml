@@ -111,9 +111,6 @@ impl State {
         let key_span = key.span();
         let key_span = key_span.start()..key_span.end();
 
-        #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
-        let raw = unsafe { source.get_unchecked(key) };
-        #[cfg(not(feature = "unsafe"))]
         let raw = source.get(key).unwrap();
         let mut decoded = alloc::borrow::Cow::Borrowed("");
         raw.decode_key(&mut decoded, errors);
