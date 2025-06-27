@@ -5,7 +5,7 @@ use indexmap::map::IndexMap;
 use crate::key::Key;
 use crate::repr::Decor;
 use crate::value::DEFAULT_VALUE_DECOR;
-use crate::{InlineTable, InternalString, Item, KeyMut, Value};
+use crate::{InlineTable, Item, KeyMut, Value};
 
 /// A TOML table, a top-level collection of key/[`Value`] pairs under a header and logical
 /// sub-tables
@@ -328,7 +328,7 @@ impl Table {
 
     /// Gets the given key's corresponding entry in the Table for in-place manipulation.
     pub fn entry<'a>(&'a mut self, key: &str) -> Entry<'a> {
-        // Accept a `&str` rather than an owned type to keep `InternalString`, well, internal
+        // Accept a `&str` rather than an owned type to keep `String`, well, internal
         match self.items.entry(key.into()) {
             indexmap::map::Entry::Occupied(entry) => Entry::Occupied(OccupiedEntry { entry }),
             indexmap::map::Entry::Vacant(entry) => Entry::Vacant(VacantEntry { entry }),
@@ -511,7 +511,7 @@ impl<K: Into<Key>, V: Into<Item>> FromIterator<(K, V)> for Table {
 }
 
 impl IntoIterator for Table {
-    type Item = (InternalString, Item);
+    type Item = (String, Item);
     type IntoIter = IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -551,7 +551,7 @@ pub(crate) const DEFAULT_TABLE_DECOR: (&str, &str) = ("\n", "");
 pub(crate) const DEFAULT_KEY_PATH_DECOR: (&str, &str) = ("", "");
 
 /// An owned iterator type over [`Table`]'s [`Key`]/[`Item`] pairs
-pub type IntoIter = Box<dyn Iterator<Item = (InternalString, Item)>>;
+pub type IntoIter = Box<dyn Iterator<Item = (String, Item)>>;
 /// An iterator type over [`Table`]'s [`Key`]/[`Item`] pairs
 pub type Iter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Item)> + 'a>;
 /// A mutable iterator type over [`Table`]'s [`Key`]/[`Item`] pairs

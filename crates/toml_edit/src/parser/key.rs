@@ -2,7 +2,6 @@ use crate::key::Key;
 use crate::parser::prelude::*;
 use crate::repr::Decor;
 use crate::repr::Repr;
-use crate::InternalString;
 use crate::RawString;
 
 /// ```bnf
@@ -154,7 +153,7 @@ pub(crate) fn on_simple_key(
     event: &toml_parse::parser::Event,
     source: toml_parse::Source<'_>,
     errors: &mut dyn ErrorSink,
-) -> (RawString, InternalString) {
+) -> (RawString, String) {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_simple_key");
     let raw = source.get(event).unwrap();
@@ -164,6 +163,6 @@ pub(crate) fn on_simple_key(
 
     let span = event.span();
     let raw = RawString::with_span(span.start()..span.end());
-    let key = InternalString::from(key);
+    let key = String::from(key);
     (raw, key)
 }

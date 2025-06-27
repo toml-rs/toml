@@ -1,5 +1,3 @@
-use crate::InternalString;
-
 /// Opaque string storage for raw TOML; internal to `toml_edit`
 #[derive(PartialEq, Eq, Clone, Hash)]
 pub struct RawString(RawStringInner);
@@ -7,7 +5,7 @@ pub struct RawString(RawStringInner);
 #[derive(PartialEq, Eq, Clone, Hash)]
 enum RawStringInner {
     Empty,
-    Explicit(InternalString),
+    Explicit(String),
     Spanned(std::ops::Range<usize>),
 }
 
@@ -131,7 +129,7 @@ impl From<&str> for RawString {
         if s.is_empty() {
             Self(RawStringInner::Empty)
         } else {
-            InternalString::from(s).into()
+            String::from(s).into()
         }
     }
 }
@@ -142,7 +140,7 @@ impl From<String> for RawString {
         if s.is_empty() {
             Self(RawStringInner::Empty)
         } else {
-            InternalString::from(s).into()
+            Self(RawStringInner::Explicit(s))
         }
     }
 }
@@ -153,25 +151,7 @@ impl From<&String> for RawString {
         if s.is_empty() {
             Self(RawStringInner::Empty)
         } else {
-            InternalString::from(s).into()
-        }
-    }
-}
-
-impl From<InternalString> for RawString {
-    #[inline]
-    fn from(inner: InternalString) -> Self {
-        Self(RawStringInner::Explicit(inner))
-    }
-}
-
-impl From<&InternalString> for RawString {
-    #[inline]
-    fn from(s: &InternalString) -> Self {
-        if s.is_empty() {
-            Self(RawStringInner::Empty)
-        } else {
-            InternalString::from(s).into()
+            String::from(s).into()
         }
     }
 }
@@ -182,7 +162,7 @@ impl From<Box<str>> for RawString {
         if s.is_empty() {
             Self(RawStringInner::Empty)
         } else {
-            InternalString::from(s).into()
+            String::from(s).into()
         }
     }
 }
