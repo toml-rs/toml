@@ -1,7 +1,7 @@
 use serde::de::IntoDeserializer;
 
-use super::Error;
 use crate::de::DeString;
+use crate::de::Error;
 
 pub(crate) struct KeyDeserializer<'i> {
     span: Option<core::ops::Range<usize>>,
