@@ -29,7 +29,6 @@ pre-release-replacements = [
 default = ["parse", "display"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["dep:toml_write"]
-perf = ["toml_parse?/simd"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 debug = ["toml_parse?/debug", "dep:anstream", "dep:anstyle", "display"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
