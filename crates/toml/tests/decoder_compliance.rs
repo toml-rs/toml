@@ -1,6 +1,6 @@
 mod decoder;
 
-#[cfg(all(feature = "parse", feature = "display"))]
+#[cfg(all(feature = "parse", feature = "display", feature = "serde"))]
 fn main() {
     let invalid_ext = walkdir::WalkDir::new("tests/fixtures/invalid")
         .sort_by_file_name()
@@ -28,5 +28,5 @@ fn main() {
     harness.test();
 }
 
-#[cfg(not(all(feature = "parse", feature = "display")))]
+#[cfg(not(all(feature = "parse", feature = "display", feature = "serde")))]
 fn main() {}

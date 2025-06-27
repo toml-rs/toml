@@ -49,8 +49,12 @@ jobs:
     - uses: taiki-e/install-action@cargo-hack
     - name: Build
       run: cargo test --workspace --no-run
-    - name: Test
-      run: cargo hack test --each-feature --workspace
+    - name: Test workspace
+      run: cargo hack test --each-feature --exclude-features debug --workspace
+    - name: Test toml
+      run: cargo hack test --feature-powerset --exclude-features debug -p toml
+    - name: Test benchmarks
+      run: cargo hack check --feature-powerset -p toml_benchmarks --all-targets
   msrv:
     name: "Check MSRV"
     runs-on: ubuntu-latest
