@@ -1,7 +1,7 @@
 mod decoder;
 mod encoder;
 
-#[cfg(all(feature = "parse", feature = "display"))]
+#[cfg(all(feature = "parse", feature = "display", feature = "serde"))]
 fn main() {
     let encoder = encoder::Encoder;
     let decoder = decoder::Decoder;
@@ -10,5 +10,5 @@ fn main() {
     harness.test();
 }
 
-#[cfg(not(all(feature = "parse", feature = "display")))]
+#[cfg(not(all(feature = "parse", feature = "display", feature = "serde")))]
 fn main() {}

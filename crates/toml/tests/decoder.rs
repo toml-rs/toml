@@ -1,4 +1,4 @@
-#![cfg(all(feature = "parse", feature = "display"))]
+#![cfg(all(feature = "parse", feature = "display", feature = "serde"))]
 #![allow(dead_code)]
 
 #[derive(Copy, Clone)]

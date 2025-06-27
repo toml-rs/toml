@@ -1,5 +1,5 @@
 #![recursion_limit = "256"]
-#![cfg(all(feature = "parse", feature = "display"))]
+#![cfg(all(feature = "parse", feature = "display", feature = "serde"))]
 
 macro_rules! map( ($($k:expr => $v:expr),*) => ({
     let mut _m = Map::new();

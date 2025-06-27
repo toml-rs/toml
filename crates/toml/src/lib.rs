@@ -17,7 +17,8 @@
 //!
 //! A TOML document is represented with the [`Table`] type which maps `String` to the [`Value`] enum:
 //!
-//! ```rust
+#![cfg_attr(not(feature = "default"), doc = " ```ignore")]
+#![cfg_attr(feature = "default", doc = " ```")]
 //! # use toml::value::{Datetime, Array, Table};
 //! pub enum Value {
 //!     String(String),
@@ -34,8 +35,8 @@
 //!
 //! The easiest way to parse a TOML document is via the [`Table`] type:
 //!
-#![cfg_attr(not(feature = "parse"), doc = " ```ignore")]
-#![cfg_attr(feature = "parse", doc = " ```")]
+#![cfg_attr(not(feature = "default"), doc = " ```ignore")]
+#![cfg_attr(feature = "default", doc = " ```")]
 //! use toml::Table;
 //!
 //! let value = "foo = 'bar'".parse::<Table>().unwrap();
@@ -71,8 +72,8 @@
 //!
 //! An example of deserializing with TOML is:
 //!
-#![cfg_attr(not(feature = "parse"), doc = " ```ignore")]
-#![cfg_attr(feature = "parse", doc = " ```")]
+#![cfg_attr(not(feature = "default"), doc = " ```ignore")]
+#![cfg_attr(feature = "default", doc = " ```")]
 //! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
@@ -104,8 +105,8 @@
 //!
 //! You can serialize types in a similar fashion:
 //!
-#![cfg_attr(not(feature = "display"), doc = " ```ignore")]
-#![cfg_attr(feature = "display", doc = " ```")]
+#![cfg_attr(not(feature = "default"), doc = " ```ignore")]
+#![cfg_attr(feature = "default", doc = " ```")]
 //! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
@@ -163,26 +164,33 @@ pub(crate) mod alloc_prelude {
 }
 
 pub mod map;
+#[cfg(feature = "serde")]
 pub mod value;
 
 pub mod de;
+#[cfg(feature = "serde")]
 pub mod ser;
 
 #[doc(hidden)]
+#[cfg(feature = "serde")]
 pub mod macros;
 
+#[cfg(feature = "serde")]
 mod table;
 
+#[doc(inline)]
 #[cfg(feature = "parse")]
-#[doc(inline)]
+#[cfg(feature = "serde")]
 pub use crate::de::{from_slice, from_str, Deserializer};
-#[cfg(feature = "display")]
 #[doc(inline)]
+#[cfg(feature = "display")]
+#[cfg(feature = "serde")]
 pub use crate::ser::{to_string, to_string_pretty, Serializer};
 #[doc(inline)]
+#[cfg(feature = "serde")]
 pub use crate::value::Value;
-
 pub use serde_spanned::Spanned;
+#[cfg(feature = "serde")]
 pub use table::Table;
 
 // Shortcuts for the module doc-comment

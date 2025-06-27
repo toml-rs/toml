@@ -5,14 +5,17 @@
 //! provided at the top of the crate.
 
 #[cfg(feature = "parse")]
+#[cfg(feature = "serde")]
 mod deserializer;
 mod error;
 #[cfg(feature = "parse")]
 mod parser;
 
 #[cfg(feature = "parse")]
+#[cfg(feature = "serde")]
 pub use deserializer::Deserializer;
 #[cfg(feature = "parse")]
+#[cfg(feature = "serde")]
 pub use deserializer::ValueDeserializer;
 #[cfg(feature = "parse")]
 pub use parser::DeArray;
@@ -65,6 +68,7 @@ use crate::alloc_prelude::*;
 /// assert_eq!(config.owner.name, "Lisa");
 /// ```
 #[cfg(feature = "parse")]
+#[cfg(feature = "serde")]
 pub fn from_str<'de, T>(s: &'de str) -> Result<T, Error>
 where
     T: serde::de::Deserialize<'de>,
@@ -79,6 +83,7 @@ where
 ///
 /// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 #[cfg(feature = "parse")]
+#[cfg(feature = "serde")]
 pub fn from_slice<'de, T>(s: &'de [u8]) -> Result<T, Error>
 where
     T: serde::de::Deserialize<'de>,

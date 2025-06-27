@@ -61,7 +61,7 @@ snapbox = "0.6.0"
 proptest = "1.5.0"
 walkdir = "2.5.0"
 serde_spanned = { path = "../serde_spanned" }
-toml_types = { path = "../toml", package = "toml", default-features = false, features = ["preserve_order"] }
+toml_types = { path = "../toml", package = "toml", default-features = false, features = ["serde", "preserve_order"] }
 serde-untagged = "0.1.7"
 
 [[test]]

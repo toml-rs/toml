@@ -1,6 +1,6 @@
 #![recursion_limit = "256"]
 #![allow(clippy::dbg_macro)]
-#![cfg(all(feature = "parse", feature = "display"))]
+#![cfg(all(feature = "parse", feature = "display", feature = "serde"))]
 
 macro_rules! parse_value {
     ($s:expr) => {{

@@ -28,8 +28,9 @@ pre-release-replacements = [
 ]
 
 [features]
-default = ["std", "parse", "display"]
+default = ["std", "serde", "parse", "display"]
 std = ["indexmap?/std"]
+serde = ["dep:serde", "toml_datetime/serde", "serde_spanned/serde"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["dep:toml_write"]
 unsafe = ["toml_parse?/unsafe"]
@@ -49,15 +50,15 @@ unbounded = []
 preserve_order = ["dep:indexmap", "std"]
 
 [dependencies]
-serde = { version = "1.0.145", default-features = false, features = ["alloc"] }
+serde = { version = "1.0.145", default-features = false, features = ["alloc"], optional = true }
 indexmap = { version = "2.0.0", default-features = false, optional = true }
 toml_parse = { version = "0.1.0", path = "../toml_parse", default-features = false, features = ["alloc"], optional = true }
 winnow = { version = "0.7.10", default-features = false, optional = true }
 anstream = { version = "0.6.15", optional = true }
 anstyle = { version = "1.0.8", optional = true }
-toml_datetime = { version = "0.6.11", path = "../toml_datetime", default-features = false, features = ["serde", "alloc"] }
+toml_datetime = { version = "0.6.11", path = "../toml_datetime", default-features = false, features = ["alloc"] }
 toml_write = { version = "0.1.0", path = "../toml_write", optional = true }
-serde_spanned = { version = "0.6.9", path = "../serde_spanned", default-features = false, features = ["serde", "alloc"] }
+serde_spanned = { version = "0.6.9", path = "../serde_spanned", default-features = false, features = ["alloc"] }
 foldhash = { version = "0.1.5", default-features = false, optional = true }
 
 [dev-dependencies]
@@ -84,15 +85,15 @@ harness = false
 
 [[example]]
 name = "decode"
-required-features = ["parse", "display"]
+required-features = ["parse", "display", "serde"]
 
 [[example]]
 name = "enum_external"
-required-features = ["parse", "display"]
+required-features = ["parse", "display", "serde"]
 
 [[example]]
 name = "toml2json"
-required-features = ["parse", "display"]
+required-features = ["parse", "display", "serde"]
 
 [lints]
 workspace = true
