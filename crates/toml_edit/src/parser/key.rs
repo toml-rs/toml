@@ -133,9 +133,6 @@ impl State {
         let key_span = key.span();
         let key_raw = RawString::with_span(key_span.start()..key_span.end());
 
-        #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
-        let raw = unsafe { source.get_unchecked(key) };
-        #[cfg(not(feature = "unsafe"))]
         let raw = source.get(key).unwrap();
         let mut decoded = std::borrow::Cow::Borrowed("");
         raw.decode_key(&mut decoded, errors);
@@ -160,9 +157,6 @@ pub(crate) fn on_simple_key(
 ) -> (RawString, InternalString) {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_simple_key");
-    #[cfg(feature = "unsafe")] // SAFETY: lexing and parsing all with same source
-    let raw = unsafe { source.get_unchecked(event) };
-    #[cfg(not(feature = "unsafe"))]
     let raw = source.get(event).unwrap();
 
     let mut key = std::borrow::Cow::Borrowed("");
