@@ -33,7 +33,6 @@ std = ["indexmap?/std"]
 serde = ["dep:serde", "toml_datetime/serde", "serde_spanned/serde"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["dep:toml_write"]
-unsafe = ["toml_parse?/unsafe"]
 fast_hash = ["preserve_order", "dep:foldhash"]
 debug = ["std", "toml_parse?/debug", "dep:anstream", "dep:anstyle"]
 
