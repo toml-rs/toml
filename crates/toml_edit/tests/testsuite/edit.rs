@@ -1465,3 +1465,18 @@ fn assert_key_value_roundtrip(input: &str, expected: impl IntoData) {
     });
     assert_data_eq!(actual, expected.raw());
 }
+
+#[test]
+fn table_under_inline() {
+    let mut doc = DocumentMut::new();
+    doc["tool"]["typst-test"] = table();
+    doc["tool"]["typst-test"]["tests"] = value("tests");
+
+    assert_data_eq!(
+        doc.to_string(),
+        str![[r#"
+tool = { typst-test.tests = "tests" }
+
+"#]]
+    );
+}
