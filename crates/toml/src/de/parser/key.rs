@@ -115,7 +115,7 @@ impl State {
         let mut decoded = alloc::borrow::Cow::Borrowed("");
         raw.decode_key(&mut decoded, errors);
 
-        let key = Spanned::new(key_span, decoded);
+        let key = Spanned::new(key_span, decoded.into());
         if let Some(last_key) = result_key.replace(key) {
             result_path.push(last_key);
         }

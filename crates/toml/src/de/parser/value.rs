@@ -76,7 +76,7 @@ pub(crate) fn on_scalar<'i>(
     let kind = raw.decode_scalar(&mut decoded, errors);
     match kind {
         toml_parse::decoder::ScalarKind::String => {
-            Spanned::new(value_span, DeValue::String(decoded))
+            Spanned::new(value_span, DeValue::String(decoded.into()))
         }
         toml_parse::decoder::ScalarKind::Boolean(value) => {
             Spanned::new(value_span, DeValue::Boolean(value))
@@ -97,13 +97,16 @@ pub(crate) fn on_scalar<'i>(
             };
             Spanned::new(value_span, DeValue::Datetime(value))
         }
-        toml_parse::decoder::ScalarKind::Float => {
-            Spanned::new(value_span, DeValue::Float(DeFloat { inner: decoded }))
-        }
+        toml_parse::decoder::ScalarKind::Float => Spanned::new(
+            value_span,
+            DeValue::Float(DeFloat {
+                inner: decoded.into(),
+            }),
+        ),
         toml_parse::decoder::ScalarKind::Integer(radix) => Spanned::new(
             value_span,
             DeValue::Integer(DeInteger {
-                inner: decoded,
+                inner: decoded.into(),
                 radix: radix.value(),
             }),
         ),

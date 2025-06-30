@@ -1,6 +1,5 @@
 //! Definition of a TOML [value][DeValue] for deserialization
 
-use alloc::borrow::Cow;
 use core::mem::discriminant;
 use core::ops;
 
@@ -12,7 +11,132 @@ use crate::de::DeArray;
 use crate::de::DeTable;
 
 /// Type representing a TOML string, payload of the `DeValue::String` variant
-pub type DeString<'i> = Cow<'i, str>;
+#[derive(Clone)]
+pub enum DeString<'a> {
+    /// Borrowed data.
+    Borrowed(&'a str),
+
+    /// Owned data.
+    Owned(String),
+}
+
+impl DeString<'_> {
+    pub fn as_str(&self) -> &str {
+        match *self {
+            Self::Borrowed(borrowed) => borrowed,
+            Self::Owned(ref owned) => owned.as_str(),
+        }
+    }
+
+    pub fn make_owned(&mut self) {
+        let owned = core::mem::take(self);
+        *self = DeString::Owned(owned.into_owned());
+    }
+
+    /// Extracts the owned data.
+    ///
+    /// Clones the data if it is not already owned.
+    pub fn into_owned(self) -> String {
+        match self {
+            Self::Borrowed(borrowed) => borrowed.to_owned(),
+            Self::Owned(owned) => owned,
+        }
+    }
+}
+
+impl Default for DeString<'_> {
+    fn default() -> Self {
+        Self::Owned(Default::default())
+    }
+}
+
+impl<'a> From<alloc::borrow::Cow<'a, str>> for DeString<'a> {
+    fn from(other: alloc::borrow::Cow<'a, str>) -> Self {
+        match other {
+            alloc::borrow::Cow::Borrowed(s) => Self::Borrowed(s),
+            alloc::borrow::Cow::Owned(s) => Self::Owned(s),
+        }
+    }
+}
+
+impl<'a> core::borrow::Borrow<str> for DeString<'a> {
+    fn borrow(&self) -> &str {
+        &**self
+    }
+}
+
+impl core::borrow::Borrow<str> for Spanned<DeString<'_>> {
+    fn borrow(&self) -> &str {
+        self.get_ref()
+    }
+}
+
+impl ops::Deref for DeString<'_> {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        match *self {
+            Self::Borrowed(borrowed) => borrowed,
+            Self::Owned(ref owned) => owned.as_str(),
+        }
+    }
+}
+
+impl AsRef<str> for DeString<'_> {
+    fn as_ref(&self) -> &str {
+        self
+    }
+}
+
+impl Eq for DeString<'_> {}
+
+impl Ord for DeString<'_> {
+    #[inline]
+
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        Ord::cmp(&**self, &**other)
+    }
+}
+
+impl<'a, 'b> PartialEq<DeString<'b>> for DeString<'a> {
+    #[inline]
+    fn eq(&self, other: &DeString<'b>) -> bool {
+        PartialEq::eq(&**self, &**other)
+    }
+}
+
+impl<'a> PartialOrd for DeString<'a> {
+    #[inline]
+    fn partial_cmp(&self, other: &DeString<'a>) -> Option<core::cmp::Ordering> {
+        PartialOrd::partial_cmp(&**self, &**other)
+    }
+}
+
+impl core::hash::Hash for DeString<'_> {
+    #[inline]
+
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        core::hash::Hash::hash(&**self, state)
+    }
+}
+
+impl core::fmt::Debug for DeString<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            Self::Borrowed(ref b) => core::fmt::Debug::fmt(b, f),
+            Self::Owned(ref o) => core::fmt::Debug::fmt(o, f),
+        }
+    }
+}
+
+impl core::fmt::Display for DeString<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            Self::Borrowed(ref b) => core::fmt::Display::fmt(b, f),
+            Self::Owned(ref o) => core::fmt::Display::fmt(o, f),
+        }
+    }
+}
 
 /// Represents a TOML integer
 #[derive(Clone, Debug)]
@@ -147,10 +271,7 @@ impl<'i> DeValue<'i> {
     /// Ensure no data is borrowed
     pub fn make_owned(&mut self) {
         match self {
-            DeValue::String(v) => {
-                let owned = core::mem::take(v);
-                *v = Cow::Owned(owned.into_owned());
-            }
+            DeValue::String(v) => v.make_owned(),
             DeValue::Integer(..)
             | DeValue::Float(..)
             | DeValue::Boolean(..)

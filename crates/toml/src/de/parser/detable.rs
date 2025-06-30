@@ -1,5 +1,3 @@
-use alloc::borrow::Cow;
-
 use serde_spanned::Spanned;
 
 use crate::alloc_prelude::*;
@@ -39,8 +37,7 @@ impl<'i> DeTable<'i> {
     /// Ensure no data is borrowed
     pub fn make_owned(&mut self) {
         self.mut_entries(|k, v| {
-            let owned = core::mem::take(k.get_mut());
-            *k.get_mut() = Cow::Owned(owned.into_owned());
+            k.get_mut().make_owned();
             v.get_mut().make_owned();
         });
     }
