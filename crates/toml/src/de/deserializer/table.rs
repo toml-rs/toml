@@ -60,6 +60,8 @@ impl<'de> serde::Deserializer<'de> for TableDeserializer<'de> {
         if serde_spanned::__unstable::is_spanned(name, fields) {
             if let Some(span) = self.span.clone() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self, span));
+            } else {
+                return Err(Error::custom("value is missing a span", None));
             }
         }
 
