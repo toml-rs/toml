@@ -24,6 +24,9 @@ mod datetime;
 #[cfg(feature = "serde")]
 #[cfg(feature = "alloc")]
 pub mod de;
+#[cfg(feature = "serde")]
+#[cfg(feature = "alloc")]
+pub mod ser;
 
 pub use crate::datetime::Date;
 pub use crate::datetime::Datetime;
