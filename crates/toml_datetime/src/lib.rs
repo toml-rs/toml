@@ -21,6 +21,10 @@ extern crate alloc;
 
 mod datetime;
 
+#[cfg(feature = "serde")]
+#[cfg(feature = "alloc")]
+pub mod de;
+
 pub use crate::datetime::Date;
 pub use crate::datetime::Datetime;
 pub use crate::datetime::DatetimeParseError;

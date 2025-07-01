@@ -100,6 +100,10 @@ pub const FIELD: &str = "$__toml_private_datetime";
 #[doc(hidden)]
 #[cfg(feature = "serde")]
 pub const NAME: &str = "$__toml_private_Datetime";
+#[cfg(feature = "serde")]
+pub(crate) fn is_datetime(name: &'static str) -> bool {
+    name == NAME
+}
 
 /// A parsed TOML date value
 ///

@@ -190,7 +190,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             }
         }
 
-        if name == toml_datetime::__unstable::NAME && fields == [toml_datetime::__unstable::FIELD] {
+        if toml_datetime::de::is_datetime(name) {
             let span = self.span.clone();
             if let DeValue::Datetime(d) = self.input {
                 return visitor.visit_map(DatetimeDeserializer::new(d)).map_err(

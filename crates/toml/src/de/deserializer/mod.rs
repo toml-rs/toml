@@ -5,7 +5,6 @@
 //! provided at the top of the crate.
 
 mod array;
-mod datetime;
 mod key;
 mod table;
 mod table_enum;
@@ -17,12 +16,12 @@ use crate::de::DeTable;
 use crate::de::DeValue;
 use crate::de::Error;
 use array::ArrayDeserializer;
-use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
 use serde_spanned::de::SpannedDeserializer;
 use serde_spanned::Spanned;
 use table::TableDeserializer;
 use table_enum::TableEnumDeserializer;
+use toml_datetime::de::DatetimeDeserializer;
 
 /// Deserialization for TOML [documents][crate::Table].
 ///
