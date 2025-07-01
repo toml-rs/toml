@@ -8,7 +8,6 @@ mod array;
 mod datetime;
 mod error;
 mod key;
-mod spanned;
 mod table;
 mod table_enum;
 mod value;
@@ -16,7 +15,6 @@ mod value;
 use array::ArrayDeserializer;
 use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
-use spanned::SpannedDeserializer;
 use table::TableDeserializer;
 use table_enum::TableEnumDeserializer;
 

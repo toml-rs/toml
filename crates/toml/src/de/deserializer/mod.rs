@@ -7,7 +7,6 @@
 mod array;
 mod datetime;
 mod key;
-mod spanned;
 mod table;
 mod table_enum;
 mod value;
@@ -20,8 +19,8 @@ use crate::de::Error;
 use array::ArrayDeserializer;
 use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
+use serde_spanned::de::SpannedDeserializer;
 use serde_spanned::Spanned;
-use spanned::SpannedDeserializer;
 use table::TableDeserializer;
 use table_enum::TableEnumDeserializer;
 

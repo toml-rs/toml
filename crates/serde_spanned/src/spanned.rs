@@ -7,21 +7,16 @@ use core::hash::{Hash, Hasher};
 //
 // In general, supported deserializers should catch this and not literally emit
 // these strings but rather emit `Spanned` as they're intended.
-#[doc(hidden)]
 #[cfg(feature = "serde")]
-pub const NAME: &str = "$__serde_spanned_private_Spanned";
-#[doc(hidden)]
+pub(crate) const NAME: &str = "$__serde_spanned_private_Spanned";
 #[cfg(feature = "serde")]
-pub const START_FIELD: &str = "$__serde_spanned_private_start";
-#[doc(hidden)]
+pub(crate) const START_FIELD: &str = "$__serde_spanned_private_start";
 #[cfg(feature = "serde")]
-pub const END_FIELD: &str = "$__serde_spanned_private_end";
-#[doc(hidden)]
+pub(crate) const END_FIELD: &str = "$__serde_spanned_private_end";
 #[cfg(feature = "serde")]
-pub const VALUE_FIELD: &str = "$__serde_spanned_private_value";
-#[doc(hidden)]
+pub(crate) const VALUE_FIELD: &str = "$__serde_spanned_private_value";
 #[cfg(feature = "serde")]
-pub fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
+pub(crate) fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
     name == NAME && fields == [START_FIELD, END_FIELD, VALUE_FIELD]
 }
 
@@ -111,6 +106,13 @@ impl<T> Spanned<T> {
     pub fn get_mut(&mut self) -> &mut T {
         &mut self.value
     }
+}
+
+#[cfg(feature = "serde")]
+impl<T> Spanned<T> {
+    pub(crate) const START_FIELD: &str = START_FIELD;
+    pub(crate) const END_FIELD: &str = END_FIELD;
+    pub(crate) const VALUE_FIELD: &str = VALUE_FIELD;
 }
 
 impl<T: core::fmt::Display> core::fmt::Display for Spanned<T> {
