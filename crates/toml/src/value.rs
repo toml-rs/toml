@@ -12,7 +12,6 @@ use std::collections::HashMap;
 use serde::de;
 use serde::de::IntoDeserializer;
 use serde::ser;
-use toml_datetime::__unstable as datetime;
 
 use crate::alloc_prelude::*;
 
@@ -494,7 +493,8 @@ impl<'de> de::Deserialize<'de> for Value {
                 let datetime = visitor.next_key_seed(DatetimeOrTable { key: &mut key })?;
                 match datetime {
                     Some(true) => {
-                        let date: datetime::DatetimeFromString = visitor.next_value()?;
+                        let date: toml_datetime::__unstable::DatetimeFromString =
+                            visitor.next_value()?;
                         return Ok(Value::Datetime(date.value));
                     }
                     None => return Ok(Value::Table(Table::new())),
@@ -1167,7 +1167,7 @@ impl de::Visitor<'_> for DatetimeOrTable<'_> {
     where
         E: de::Error,
     {
-        if s == datetime::FIELD {
+        if s == toml_datetime::__unstable::FIELD {
             Ok(true)
         } else {
             self.key.push_str(s);
@@ -1179,7 +1179,7 @@ impl de::Visitor<'_> for DatetimeOrTable<'_> {
     where
         E: de::Error,
     {
-        if s == datetime::FIELD {
+        if s == toml_datetime::__unstable::FIELD {
             Ok(true)
         } else {
             *self.key = s;
