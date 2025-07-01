@@ -136,7 +136,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
     where
         V: serde::de::Visitor<'de>,
     {
-        if serde_spanned::de::is_spanned(name, fields) {
+        if serde_spanned::de::is_spanned(name) {
             if let Some(span) = self.input.span() {
                 return visitor.visit_map(
                     serde_spanned::de::SpannedDeserializer::<Self, Error>::new(self, span),

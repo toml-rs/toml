@@ -6,8 +6,8 @@ use serde::de::IntoDeserializer as _;
 use crate::Spanned;
 
 /// Check if deserializing a [`Spanned`]
-pub fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
-    crate::spanned::is_spanned(name, fields)
+pub fn is_spanned(name: &'static str) -> bool {
+    crate::spanned::is_spanned(name)
 }
 
 /// Deserializer / format support for emitting [`Spanned`]

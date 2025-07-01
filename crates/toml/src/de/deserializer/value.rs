@@ -182,7 +182,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
     where
         V: serde::de::Visitor<'de>,
     {
-        if serde_spanned::de::is_spanned(name, fields) {
+        if serde_spanned::de::is_spanned(name) {
             if let Some(span) = self.span.clone() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self, span));
             } else {

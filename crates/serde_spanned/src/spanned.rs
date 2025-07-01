@@ -16,8 +16,8 @@ pub(crate) const END_FIELD: &str = "$__serde_spanned_private_end";
 #[cfg(feature = "serde")]
 pub(crate) const VALUE_FIELD: &str = "$__serde_spanned_private_value";
 #[cfg(feature = "serde")]
-pub(crate) fn is_spanned(name: &'static str, fields: &'static [&'static str]) -> bool {
-    name == NAME && fields == [START_FIELD, END_FIELD, VALUE_FIELD]
+pub(crate) fn is_spanned(name: &'static str) -> bool {
+    name == NAME
 }
 
 /// A spanned value, indicating the range at which it is defined in the source.
