@@ -20,7 +20,7 @@ pub struct Table {
     // Used for putting tables back in their original order when serialising.
     //
     // `None` for user created tables (can be overridden with `set_position`)
-    doc_position: Option<usize>,
+    doc_position: Option<isize>,
     pub(crate) span: Option<std::ops::Range<usize>>,
     pub(crate) items: KeyValuePairs,
 }
@@ -34,7 +34,7 @@ impl Table {
         Default::default()
     }
 
-    pub(crate) fn with_pos(doc_position: Option<usize>) -> Self {
+    pub(crate) fn with_pos(doc_position: Option<isize>) -> Self {
         Self {
             doc_position,
             ..Default::default()
@@ -237,7 +237,7 @@ impl Table {
     }
 
     /// Sets the position of the `Table` within the [`DocumentMut`][crate::DocumentMut].
-    pub fn set_position(&mut self, doc_position: usize) {
+    pub fn set_position(&mut self, doc_position: isize) {
         self.doc_position = Some(doc_position);
     }
 
@@ -246,7 +246,7 @@ impl Table {
     /// Returns `None` if the `Table` was created manually (i.e. not via parsing)
     /// in which case its position is set automatically.  This can be overridden with
     /// [`Table::set_position`].
-    pub fn position(&self) -> Option<usize> {
+    pub fn position(&self) -> Option<isize> {
         self.doc_position
     }
 

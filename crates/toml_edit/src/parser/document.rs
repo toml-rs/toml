@@ -264,7 +264,7 @@ struct State {
     current_table: Table,
     current_trailing: Option<toml_parse::Span>,
     current_header: Option<TableHeader>,
-    current_position: usize,
+    current_position: isize,
 }
 
 impl State {

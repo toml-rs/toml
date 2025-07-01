@@ -882,7 +882,7 @@ fn test_multiple_max_usize_positions() {
     )
     .running(|root| {
         for (_, table) in root.iter_mut() {
-            as_table!(table).set_position(usize::MAX);
+            as_table!(table).set_position(isize::MAX);
         }
     })
     .produces_display(str![[r#"
