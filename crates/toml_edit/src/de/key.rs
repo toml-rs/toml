@@ -48,13 +48,13 @@ impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
     fn deserialize_struct<V>(
         self,
         name: &'static str,
-        fields: &'static [&'static str],
+        _fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if serde_spanned::de::is_spanned(name, fields) {
+        if serde_spanned::de::is_spanned(name) {
             if let Some(span) = self.span.clone() {
                 return visitor.visit_map(
                     serde_spanned::de::SpannedDeserializer::<&str, Error>::new(
