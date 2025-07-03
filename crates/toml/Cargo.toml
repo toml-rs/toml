@@ -29,7 +29,7 @@ pre-release-replacements = [
 
 [features]
 default = ["std", "serde", "parse", "display"]
-std = ["indexmap?/std"]
+std = ["indexmap?/std", "serde?/std", "toml_parse?/std", "toml_write?/std", "toml_datetime/std", "serde_spanned/std"]
 serde = ["dep:serde", "toml_datetime/serde", "serde_spanned/serde"]
 parse = ["dep:toml_parse", "dep:winnow"]
 display = ["dep:toml_write"]
