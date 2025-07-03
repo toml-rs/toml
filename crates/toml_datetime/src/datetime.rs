@@ -94,12 +94,10 @@ pub struct Datetime {
 //
 // In general the TOML encoder/decoder will catch this and not literally emit
 // these strings but rather emit datetimes as they're intended.
-#[doc(hidden)]
 #[cfg(feature = "serde")]
-pub const FIELD: &str = "$__toml_private_datetime";
-#[doc(hidden)]
+pub(crate) const FIELD: &str = "$__toml_private_datetime";
 #[cfg(feature = "serde")]
-pub const NAME: &str = "$__toml_private_Datetime";
+pub(crate) const NAME: &str = "$__toml_private_Datetime";
 #[cfg(feature = "serde")]
 pub(crate) fn is_datetime(name: &'static str) -> bool {
     name == NAME
@@ -915,10 +913,9 @@ impl<'de> serde::de::Deserialize<'de> for DatetimeKey {
     }
 }
 
-#[doc(hidden)]
 #[cfg(feature = "serde")]
-pub struct DatetimeFromString {
-    pub value: Datetime,
+pub(crate) struct DatetimeFromString {
+    pub(crate) value: Datetime,
 }
 
 #[cfg(feature = "serde")]
