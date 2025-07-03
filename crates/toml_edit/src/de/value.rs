@@ -146,7 +146,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
             }
         }
 
-        if name == toml_datetime::__unstable::NAME && fields == [toml_datetime::__unstable::FIELD] {
+        if toml_datetime::de::is_datetime(name) {
             let span = self.input.span();
             if let crate::Item::Value(crate::Value::Datetime(d)) = self.input {
                 return visitor

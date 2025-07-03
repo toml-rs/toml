@@ -12,7 +12,6 @@ use std::collections::HashMap;
 use serde::de;
 use serde::de::IntoDeserializer;
 use serde::ser;
-use toml_datetime::__unstable as datetime;
 
 use crate::alloc_prelude::*;
 
@@ -490,18 +489,15 @@ impl<'de> de::Deserialize<'de> for Value {
             where
                 V: de::MapAccess<'de>,
             {
-                let mut key = String::new();
-                let datetime = visitor.next_key_seed(DatetimeOrTable { key: &mut key })?;
-                match datetime {
-                    Some(true) => {
-                        let date: datetime::DatetimeFromString = visitor.next_value()?;
-                        return Ok(Value::Datetime(date.value));
+                let key = match toml_datetime::de::VisitMap::next_key_seed(&mut visitor)? {
+                    Some(toml_datetime::de::VisitMap::Datetime(datetime)) => {
+                        return Ok(Value::Datetime(datetime));
                     }
                     None => return Ok(Value::Table(Table::new())),
-                    Some(false) => {}
-                }
+                    Some(toml_datetime::de::VisitMap::Key(key)) => key,
+                };
                 let mut map = Table::new();
-                map.insert(key, visitor.next_value()?);
+                map.insert(key.into_owned(), visitor.next_value()?);
                 while let Some(key) = visitor.next_key::<String>()? {
                     if let crate::map::Entry::Vacant(vacant) = map.entry(&key) {
                         vacant.insert(visitor.next_value()?);
@@ -1138,53 +1134,6 @@ impl ser::SerializeStruct for ValueSerializeMap {
 
     fn end(self) -> Result<Value, crate::ser::Error> {
         ser::SerializeMap::end(self)
-    }
-}
-
-pub(crate) struct DatetimeOrTable<'a> {
-    key: &'a mut String,
-}
-
-impl<'de> de::DeserializeSeed<'de> for DatetimeOrTable<'_> {
-    type Value = bool;
-
-    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        deserializer.deserialize_any(self)
-    }
-}
-
-impl de::Visitor<'_> for DatetimeOrTable<'_> {
-    type Value = bool;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("a string key")
-    }
-
-    fn visit_str<E>(self, s: &str) -> Result<bool, E>
-    where
-        E: de::Error,
-    {
-        if s == datetime::FIELD {
-            Ok(true)
-        } else {
-            self.key.push_str(s);
-            Ok(false)
-        }
-    }
-
-    fn visit_string<E>(self, s: String) -> Result<bool, E>
-    where
-        E: de::Error,
-    {
-        if s == datetime::FIELD {
-            Ok(true)
-        } else {
-            *self.key = s;
-            Ok(false)
-        }
     }
 }
 

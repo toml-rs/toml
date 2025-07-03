@@ -200,7 +200,7 @@ impl serde::ser::Serializer for WalkValue {
         name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
-        if name == toml_datetime::__unstable::NAME {
+        if toml_datetime::ser::is_datetime(name) {
             Ok(StructWalkValue)
         } else {
             Err(SerializationStrategy::Table)

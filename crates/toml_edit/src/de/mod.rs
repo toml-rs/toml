@@ -5,7 +5,6 @@
 use serde::de::DeserializeOwned;
 
 mod array;
-mod datetime;
 mod error;
 mod key;
 mod table;
@@ -13,10 +12,10 @@ mod table_enum;
 mod value;
 
 use array::ArrayDeserializer;
-use datetime::DatetimeDeserializer;
 use key::KeyDeserializer;
 use table::TableDeserializer;
 use table_enum::TableEnumDeserializer;
+use toml_datetime::de::DatetimeDeserializer;
 
 pub use error::Error;
 pub use value::ValueDeserializer;

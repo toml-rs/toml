@@ -25,8 +25,8 @@ pre-release-replacements = [
 
 [features]
 default = ["std"]
-alloc = []
-std = ["alloc"]
+alloc = ["serde/alloc"]
+std = ["alloc", "serde/std"]
 
 [dependencies]
 serde = { version = "1.0.145", optional = true, default-features = false }
