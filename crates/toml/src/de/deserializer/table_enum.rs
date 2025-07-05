@@ -6,11 +6,11 @@ use crate::de::Error;
 /// Deserializes table values into enum variants.
 pub(crate) struct TableEnumDeserializer<'i> {
     value: DeValue<'i>,
-    span: Option<core::ops::Range<usize>>,
+    span: core::ops::Range<usize>,
 }
 
 impl<'i> TableEnumDeserializer<'i> {
-    pub(crate) fn new(value: DeValue<'i>, span: Option<core::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(value: DeValue<'i>, span: core::ops::Range<usize>) -> Self {
         TableEnumDeserializer { value, span }
     }
 }
@@ -24,19 +24,19 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
                 if values.is_empty() {
                     Ok(())
                 } else {
-                    Err(Error::custom("expected empty array", self.span))
+                    Err(Error::custom("expected empty array", Some(self.span)))
                 }
             }
             DeValue::Table(values) => {
                 if values.is_empty() {
                     Ok(())
                 } else {
-                    Err(Error::custom("expected empty table", self.span))
+                    Err(Error::custom("expected empty table", Some(self.span)))
                 }
             }
             e => Err(Error::custom(
                 format!("expected table, found {}", e.type_str()),
-                self.span,
+                Some(self.span),
             )),
         }
     }
@@ -65,7 +65,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
                 } else {
                     Err(Error::custom(
                         format!("expected tuple with length {len}"),
-                        values_span,
+                        Some(values_span),
                     ))
                 }
             }
@@ -94,13 +94,13 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
                 } else {
                     Err(Error::custom(
                         format!("expected tuple with length {len}"),
-                        values_span,
+                        Some(values_span),
                     ))
                 }
             }
             e => Err(Error::custom(
                 format!("expected table, found {}", e.type_str()),
-                self.span,
+                Some(self.span),
             )),
         }
     }
