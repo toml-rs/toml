@@ -24,11 +24,15 @@ impl<'d> SerializeValueArray<'d> {
     }
 
     fn end(self) -> Result<&'d mut String, Error> {
-        if self.style.multiline_array && self.seen_value {
+        if self.multiline_array() && self.seen_value {
             self.dst.newline()?;
         }
         self.dst.close_array()?;
         Ok(self.dst)
+    }
+
+    fn multiline_array(&self) -> bool {
+        self.style.multiline_array
     }
 }
 
@@ -40,7 +44,7 @@ impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        if self.style.multiline_array {
+        if self.multiline_array() {
             self.dst.newline()?;
             write!(self.dst, "    ")?;
         } else {
@@ -51,7 +55,7 @@ impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
         }
         self.seen_value = true;
         value.serialize(super::ValueSerializer::with_style(self.dst, self.style))?;
-        if self.style.multiline_array {
+        if self.multiline_array() {
             self.dst.val_sep()?;
         }
         Ok(())
