@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+Breaking changes
+
+- Serde support has been broken out into the default `serde` feature
+- Std support has been broken out into the default `std` feature
+
+Other
+
+- Loosened requirements for identifying a `Spanned` during deserialization
+
+### Features
+
+- Added `de::SpannedDeserializer` / `de::is_spanned` for easier integration with `Deserializer`s
+- Added `impl Display for Spanned<impl Display>`
+- Added `impl Borrow for Spanned<Cow<B>>`
+
 ## [0.6.9] - 2025-06-06
 
 ## [0.6.8] - 2024-09-25

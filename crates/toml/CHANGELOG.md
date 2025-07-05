@@ -7,6 +7,46 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Migration
+
+1. If you set `default-features = false`, run `cargo add toml -F serde,std`
+2. Resolve errors as you come across them
+
+### Compatibility
+
+Breaking Changes
+
+- Serde support has been broken out into the default `serde` feature
+- Std support has been broken out into the default `std` feature
+- Fail quickly when deserializing a value without a `Spanned`
+- `impl FromStr for Value` now parses TOML values, not documents
+- `Deserializer::new` / `ValueDeserializer::new` now return errors
+- `Serializer::new` and `Serializer::pretty` now take a `&mut Buffer`, rather than a `&mut String`
+- `<Serializer<'d> as serde::ser::Serializer>::Ok` is now `&'d mut Buffer`
+- `<ValueSerializer<'d> as serde::ser::Serializer>::Ok` is now `&'d mut String`
+
+Other
+
+- New TOML parser and writer which carries a risk for regressions
+- Deprecated `Deserializer::new` / `ValueDeserializer::new` in favor of `Deserializer::parse` / `ValueDeserializer::parse`
+
+### Performance
+
+- Added `fast_hash` feature
+
+### Features
+
+- Add `Spanned<DeTable<'input>>` as a `serde`-less, zero-copy, span tracking format to parse to, with error recovery
+- Add `de::from_slice`
+- Add `Table::remove_entry`
+- `debug` feature for easier debugging
+- Added `From` and `IntoDeserializer` impls for `Deserializer` / `ValueDeserializer`
+- Added big-integer, big-float, u64, u128, and i128 support to `serde` and `DeValue` (but not `Value`)
+
+### Fixes
+
+- `impl FromStr for Value` now parses TOML values, not documents
+
 ## [0.8.23] - 2025-06-06
 
 ### Fixes

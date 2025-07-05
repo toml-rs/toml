@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Specify this is `no_std`
+
 ## [0.1.2] - 2025-06-06
 
 ## [0.1.1] - 2025-04-28
