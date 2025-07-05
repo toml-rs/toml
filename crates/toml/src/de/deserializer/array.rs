@@ -80,7 +80,7 @@ impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess<'de> {
             Some(v) => {
                 let span = v.span();
                 let v = v.into_inner();
-                seed.deserialize(crate::de::ValueDeserializer::new(v, span))
+                seed.deserialize(crate::de::ValueDeserializer::with_parts(v, span))
                     .map(Some)
             }
             None => Ok(None),

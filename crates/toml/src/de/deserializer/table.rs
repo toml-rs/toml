@@ -157,7 +157,7 @@ impl<'de> serde::de::MapAccess<'de> for TableMapAccess<'de> {
         match self.value.take() {
             Some((k, v)) => {
                 let span = v.span();
-                seed.deserialize(crate::de::ValueDeserializer::new(
+                seed.deserialize(crate::de::ValueDeserializer::with_parts(
                     v.into_inner(),
                     span.clone(),
                 ))

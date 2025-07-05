@@ -50,10 +50,16 @@ impl<'i> ValueDeserializer<'i> {
         let input = DeValue::parse(raw)?;
         let span = input.span();
         let input = input.into_inner();
-        Ok(Self::new(input, span))
+        Ok(Self::with_parts(input, span))
     }
 
-    pub(crate) fn new(input: DeValue<'i>, span: core::ops::Range<usize>) -> Self {
+    /// Deprecated, replaced with [`ValueDeserializer::parse`]
+    #[deprecated(since = "0.9.0", note = "replaced with `ValueDeserializer::parse`")]
+    pub fn new(raw: &'i str) -> Result<Self, Error> {
+        Self::parse(raw)
+    }
+
+    pub(crate) fn with_parts(input: DeValue<'i>, span: core::ops::Range<usize>) -> Self {
         Self {
             input,
             span,
@@ -71,7 +77,7 @@ impl<'i> From<Spanned<DeValue<'i>>> for ValueDeserializer<'i> {
     fn from(root: Spanned<DeValue<'i>>) -> Self {
         let span = root.span();
         let root = root.into_inner();
-        Self::new(root, span)
+        Self::with_parts(root, span)
     }
 }
 
