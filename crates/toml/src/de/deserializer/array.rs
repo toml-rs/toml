@@ -6,11 +6,11 @@ use crate::de::Error;
 
 pub(crate) struct ArrayDeserializer<'i> {
     input: DeArray<'i>,
-    span: Option<core::ops::Range<usize>>,
+    span: core::ops::Range<usize>,
 }
 
 impl<'i> ArrayDeserializer<'i> {
-    pub(crate) fn new(input: DeArray<'i>, span: Option<core::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(input: DeArray<'i>, span: core::ops::Range<usize>) -> Self {
         Self { input, span }
     }
 }
@@ -35,11 +35,8 @@ impl<'de> serde::Deserializer<'de> for ArrayDeserializer<'de> {
         V: serde::de::Visitor<'de>,
     {
         if serde_spanned::de::is_spanned(name) {
-            if let Some(span) = self.span.clone() {
-                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
-            } else {
-                return Err(Error::custom("value is missing a span", None));
-            }
+            let span = self.span.clone();
+            return visitor.visit_map(super::SpannedDeserializer::new(self, span));
         }
 
         self.deserialize_any(visitor)
@@ -83,7 +80,7 @@ impl<'de> serde::de::SeqAccess<'de> for ArraySeqAccess<'de> {
             Some(v) => {
                 let span = v.span();
                 let v = v.into_inner();
-                seed.deserialize(crate::de::ValueDeserializer::new(v, Some(span)))
+                seed.deserialize(crate::de::ValueDeserializer::new(v, span))
                     .map(Some)
             }
             None => Ok(None),

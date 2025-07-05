@@ -39,7 +39,7 @@ use crate::de::Error;
 /// # }
 /// ```
 pub struct ValueDeserializer<'i> {
-    span: Option<core::ops::Range<usize>>,
+    span: core::ops::Range<usize>,
     input: DeValue<'i>,
     validate_struct_keys: bool,
 }
@@ -50,10 +50,10 @@ impl<'i> ValueDeserializer<'i> {
         let input = DeValue::parse(raw)?;
         let span = input.span();
         let input = input.into_inner();
-        Ok(Self::new(input, Some(span)))
+        Ok(Self::new(input, span))
     }
 
-    pub(crate) fn new(input: DeValue<'i>, span: Option<core::ops::Range<usize>>) -> Self {
+    pub(crate) fn new(input: DeValue<'i>, span: core::ops::Range<usize>) -> Self {
         Self {
             input,
             span,
@@ -71,13 +71,7 @@ impl<'i> From<Spanned<DeValue<'i>>> for ValueDeserializer<'i> {
     fn from(root: Spanned<DeValue<'i>>) -> Self {
         let span = root.span();
         let root = root.into_inner();
-        Self::new(root, Some(span))
-    }
-}
-
-impl<'i> From<DeValue<'i>> for ValueDeserializer<'i> {
-    fn from(root: DeValue<'i>) -> Self {
-        Self::new(root, None)
+        Self::new(root, span)
     }
 }
 
@@ -119,7 +113,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         }
         .map_err(|mut e: Self::Error| {
             if e.span().is_none() {
-                e.set_span(span);
+                e.set_span(Some(span));
             }
             e
         })
@@ -148,7 +142,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         let span = self.span.clone();
         visitor.visit_some(self).map_err(|mut e: Self::Error| {
             if e.span().is_none() {
-                e.set_span(span);
+                e.set_span(Some(span));
             }
             e
         })
@@ -167,7 +161,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             .visit_newtype_struct(self)
             .map_err(|mut e: Self::Error| {
                 if e.span().is_none() {
-                    e.set_span(span);
+                    e.set_span(Some(span));
                 }
                 e
             })
@@ -183,11 +177,8 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         V: serde::de::Visitor<'de>,
     {
         if serde_spanned::de::is_spanned(name) {
-            if let Some(span) = self.span.clone() {
-                return visitor.visit_map(super::SpannedDeserializer::new(self, span));
-            } else {
-                return Err(Error::custom("value is missing a span", None));
-            }
+            let span = self.span.clone();
+            return visitor.visit_map(super::SpannedDeserializer::new(self, span));
         }
 
         if toml_datetime::de::is_datetime(name) {
@@ -196,7 +187,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
                 return visitor.visit_map(DatetimeDeserializer::new(d)).map_err(
                     |mut e: Self::Error| {
                         if e.span().is_none() {
-                            e.set_span(span);
+                            e.set_span(Some(span));
                         }
                         e
                     },
@@ -212,7 +203,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             }
             .map_err(|mut e: Self::Error| {
                 if e.span().is_none() {
-                    e.set_span(span);
+                    e.set_span(Some(span));
                 }
                 e
             })?;
@@ -237,11 +228,11 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
             DeValue::Table(v) => {
                 TableDeserializer::new(v, span.clone()).deserialize_enum(name, variants, visitor)
             }
-            _ => Err(Error::custom("wanted string or table", span.clone())),
+            _ => Err(Error::custom("wanted string or table", Some(span.clone()))),
         }
         .map_err(|mut e: Self::Error| {
             if e.span().is_none() {
-                e.set_span(span);
+                e.set_span(Some(span));
             }
             e
         })
@@ -259,14 +250,6 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for ValueDeserializer<'de> {
 
     fn into_deserializer(self) -> Self::Deserializer {
         self
-    }
-}
-
-impl<'de> serde::de::IntoDeserializer<'de, Error> for DeValue<'de> {
-    type Deserializer = ValueDeserializer<'de>;
-
-    fn into_deserializer(self) -> Self::Deserializer {
-        ValueDeserializer::from(self)
     }
 }
 

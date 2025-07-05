@@ -27,7 +27,7 @@ use toml_datetime::de::DatetimeDeserializer;
 ///
 /// To deserializes TOML values, instead of documents, see [`ValueDeserializer`].
 pub struct Deserializer<'i> {
-    span: Option<core::ops::Range<usize>>,
+    span: core::ops::Range<usize>,
     root: DeTable<'i>,
     raw: Option<&'i str>,
 }
@@ -36,7 +36,7 @@ impl<'i> Deserializer<'i> {
     /// Parse a TOML document
     pub fn parse(raw: &'i str) -> Result<Self, Error> {
         let root = DeTable::parse(raw)?;
-        let span = Some(root.span());
+        let span = root.span();
         let root = root.into_inner();
         Ok(Self {
             span,
@@ -52,20 +52,10 @@ impl<'i> Deserializer<'i> {
 
 impl<'i> From<Spanned<DeTable<'i>>> for Deserializer<'i> {
     fn from(root: Spanned<DeTable<'i>>) -> Self {
-        let span = Some(root.span());
+        let span = root.span();
         let root = root.into_inner();
         Self {
             span,
-            root,
-            raw: None,
-        }
-    }
-}
-
-impl<'i> From<DeTable<'i>> for Deserializer<'i> {
-    fn from(root: DeTable<'i>) -> Self {
-        Self {
-            span: None,
             root,
             raw: None,
         }
@@ -169,14 +159,6 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer<'de> {
 
     fn into_deserializer(self) -> Self::Deserializer {
         self
-    }
-}
-
-impl<'de> serde::de::IntoDeserializer<'de, Error> for DeTable<'de> {
-    type Deserializer = Deserializer<'de>;
-
-    fn into_deserializer(self) -> Self::Deserializer {
-        Deserializer::from(self)
     }
 }
 
