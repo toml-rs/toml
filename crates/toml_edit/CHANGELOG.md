@@ -7,6 +7,37 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+Breaking Changes
+
+- Remove deprecated APIs
+- Changed `ArrayOfTables::remove` to return the `Table`
+- Defer decor from `Array::push` and `Array::insert` to rendering
+- Fail quickly when deserializing a value without a `Spanned`
+- Replaced `InternalString` with `String`
+- Removed `perf` feature
+- Changed `Table::position` from a `usize` to an `isize`
+
+Other
+
+- New TOML parser and writer which carries a risk for regressions
+- Renamed `ImDocument` to `Document`, deprecating the old name
+
+### Features
+
+- `debug` feature for easier debugging
+- Added `de::Error::set_input`
+
+### Fixes
+
+- Defer decor from `Array::push` and `Array::insert` to rendering to when more information is available
+- Implicitly treat `Table`s inside of a `Value` as an `InlineTable`, rather than skipping them
+- Improved parse error messages
+- Include spans in more error messages
+- *(de)* Ensure span is included for implicit `InlineTable`s
+- Changed `Table::position` from a `usize` to an `isize` to make insertion before easier
+
 ## [0.22.27] - 2025-06-06
 
 ### Features

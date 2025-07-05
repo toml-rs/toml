@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+Breaking changes
+
+- Std support has been broken out into the default `std` feature
+
+### Features
+
+- Added `de::DatetimeDeserializer` / `de::is_datetime` for easier integration with `Deserializer`s
+- Added `ser::DatetimeSerializer` / `ser::is_datetime` for easier integration with `Serializer`s
+- Added `de::VisitMap` for easier manual impls of untagged enums
+
 ## [0.6.11] - 2025-06-06
 
 ### Fixes
