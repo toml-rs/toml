@@ -244,8 +244,8 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         Ok(self.dst)
     }
 
-    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        SerializeValueArray::seq(self.dst, self.style)
+    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        SerializeValueArray::seq(self.dst, self.style, len)
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {

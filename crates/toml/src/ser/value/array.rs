@@ -11,24 +11,34 @@ pub struct SerializeValueArray<'d> {
     dst: &'d mut String,
     seen_value: bool,
     style: Style,
+    len: Option<usize>,
 }
 
 impl<'d> SerializeValueArray<'d> {
-    pub(crate) fn seq(dst: &'d mut String, style: Style) -> Result<Self, Error> {
+    pub(crate) fn seq(
+        dst: &'d mut String,
+        style: Style,
+        len: Option<usize>,
+    ) -> Result<Self, Error> {
         dst.open_array()?;
         Ok(Self {
             dst,
             seen_value: false,
             style,
+            len,
         })
     }
 
     fn end(self) -> Result<&'d mut String, Error> {
-        if self.style.multiline_array && self.seen_value {
+        if self.multiline_array() && self.seen_value {
             self.dst.newline()?;
         }
         self.dst.close_array()?;
         Ok(self.dst)
+    }
+
+    fn multiline_array(&self) -> bool {
+        self.style.multiline_array && 2 <= self.len.unwrap_or(usize::MAX)
     }
 }
 
@@ -40,7 +50,7 @@ impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        if self.style.multiline_array {
+        if self.multiline_array() {
             self.dst.newline()?;
             write!(self.dst, "    ")?;
         } else {
@@ -51,7 +61,7 @@ impl<'d> serde::ser::SerializeSeq for SerializeValueArray<'d> {
         }
         self.seen_value = true;
         value.serialize(super::ValueSerializer::with_style(self.dst, self.style))?;
-        if self.style.multiline_array {
+        if self.multiline_array() {
             self.dst.val_sep()?;
         }
         Ok(())
@@ -102,7 +112,7 @@ impl<'d> SerializeTupleVariant<'d> {
     pub(crate) fn tuple(
         dst: &'d mut String,
         variant: &'static str,
-        _len: usize,
+        len: usize,
         style: Style,
     ) -> Result<Self, Error> {
         dst.open_inline_table()?;
@@ -112,7 +122,7 @@ impl<'d> SerializeTupleVariant<'d> {
         dst.keyval_sep()?;
         dst.space()?;
         Ok(Self {
-            inner: SerializeValueArray::seq(dst, style)?,
+            inner: SerializeValueArray::seq(dst, style, Some(len))?,
         })
     }
 }
