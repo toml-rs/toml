@@ -11,15 +11,21 @@ pub struct SerializeValueArray<'d> {
     dst: &'d mut String,
     seen_value: bool,
     style: Style,
+    len: Option<usize>,
 }
 
 impl<'d> SerializeValueArray<'d> {
-    pub(crate) fn seq(dst: &'d mut String, style: Style) -> Result<Self, Error> {
+    pub(crate) fn seq(
+        dst: &'d mut String,
+        style: Style,
+        len: Option<usize>,
+    ) -> Result<Self, Error> {
         dst.open_array()?;
         Ok(Self {
             dst,
             seen_value: false,
             style,
+            len,
         })
     }
 
@@ -32,7 +38,7 @@ impl<'d> SerializeValueArray<'d> {
     }
 
     fn multiline_array(&self) -> bool {
-        self.style.multiline_array
+        self.style.multiline_array && 2 <= self.len.unwrap_or(usize::MAX)
     }
 }
 
@@ -106,7 +112,7 @@ impl<'d> SerializeTupleVariant<'d> {
     pub(crate) fn tuple(
         dst: &'d mut String,
         variant: &'static str,
-        _len: usize,
+        len: usize,
         style: Style,
     ) -> Result<Self, Error> {
         dst.open_inline_table()?;
@@ -116,7 +122,7 @@ impl<'d> SerializeTupleVariant<'d> {
         dst.keyval_sep()?;
         dst.space()?;
         Ok(Self {
-            inner: SerializeValueArray::seq(dst, style)?,
+            inner: SerializeValueArray::seq(dst, style, Some(len))?,
         })
     }
 }
