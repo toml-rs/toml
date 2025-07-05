@@ -45,8 +45,14 @@ impl<'i> Deserializer<'i> {
         })
     }
 
+    /// Deprecated, replaced with [`Deserializer::parse`]
+    #[deprecated(since = "0.9.0", note = "replaced with `Deserializer::parse`")]
+    pub fn new(raw: &'i str) -> Result<Self, Error> {
+        Self::parse(raw)
+    }
+
     fn into_table_de(self) -> ValueDeserializer<'i> {
-        ValueDeserializer::new(DeValue::Table(self.root), self.span)
+        ValueDeserializer::with_parts(DeValue::Table(self.root), self.span)
     }
 }
 
