@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.0] - 2025-07-08
+
 ### Compatibility
 
 Breaking changes
@@ -65,7 +67,8 @@ MSRV is now 1.64.0
 ## [0.6.0] - 2023-01-20
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.9...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/serde_spanned-v1.0.0...HEAD
+[1.0.0]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.9...serde_spanned-v1.0.0
 [0.6.9]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.8...serde_spanned-v0.6.9
 [0.6.8]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.7...serde_spanned-v0.6.8
 [0.6.7]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.6...serde_spanned-v0.6.7

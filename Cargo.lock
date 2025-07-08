@@ -799,7 +799,7 @@ dependencies = [
 
 [[package]]
 name = "serde_spanned"
-version = "0.6.9"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde-untagged",
