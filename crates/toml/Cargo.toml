@@ -55,7 +55,7 @@ toml_parser = { version = "1.0.0", path = "../toml_parser", default-features = f
 winnow = { version = "0.7.10", default-features = false, optional = true }
 anstream = { version = "0.6.15", optional = true }
 anstyle = { version = "1.0.8", optional = true }
-toml_datetime = { version = "0.6.11", path = "../toml_datetime", default-features = false, features = ["alloc"] }
+toml_datetime = { version = "0.7.0", path = "../toml_datetime", default-features = false, features = ["alloc"] }
 toml_writer = { version = "1.0.0", path = "../toml_writer", optional = true }
 serde_spanned = { version = "0.6.9", path = "../serde_spanned", default-features = false, features = ["alloc"] }
 foldhash = { version = "0.1.5", default-features = false, optional = true }

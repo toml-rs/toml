@@ -990,7 +990,7 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "0.6.11"
+version = "0.7.0"
 dependencies = [
  "serde",
  "snapbox",
