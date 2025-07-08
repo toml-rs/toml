@@ -3,18 +3,18 @@ fn main() -> Result<(), lexopt::Error> {
 
     match args.parser {
         Parser::Tokens => {
-            let source = ::toml_parse::Source::new(args.data.content());
+            let source = ::toml_parser::Source::new(args.data.content());
             let _tokens = source.lex().into_vec();
             let _tokens = std::hint::black_box(_tokens);
             #[cfg(debug_assertions)] // Don't interefere with profiling
             println!("{_tokens:?}");
         }
         Parser::Events => {
-            let source = ::toml_parse::Source::new(args.data.content());
+            let source = ::toml_parser::Source::new(args.data.content());
             let tokens = source.lex().into_vec();
             let mut events = Vec::with_capacity(tokens.len());
             let mut _errors = Vec::with_capacity(tokens.len());
-            ::toml_parse::parser::parse_document(&tokens, &mut events, &mut _errors);
+            ::toml_parser::parser::parse_document(&tokens, &mut events, &mut _errors);
             let _events = std::hint::black_box(events);
             #[cfg(debug_assertions)] // Don't interefere with profiling
             println!("{_events:?}");
@@ -22,14 +22,14 @@ fn main() -> Result<(), lexopt::Error> {
             println!("{_errors:?}");
         }
         Parser::Decoded => {
-            let source = ::toml_parse::Source::new(args.data.content());
+            let source = ::toml_parser::Source::new(args.data.content());
             let tokens = source.lex().into_vec();
-            let mut events = Vec::<toml_parse::parser::Event>::with_capacity(tokens.len());
-            let mut receiver = toml_parse::parser::ValidateWhitespace::new(&mut events, source);
+            let mut events = Vec::<toml_parser::parser::Event>::with_capacity(tokens.len());
+            let mut receiver = toml_parser::parser::ValidateWhitespace::new(&mut events, source);
             let mut _errors = Vec::with_capacity(tokens.len());
-            ::toml_parse::parser::parse_document(&tokens, &mut receiver, &mut _errors);
+            ::toml_parser::parser::parse_document(&tokens, &mut receiver, &mut _errors);
             for event in &events {
-                if event.kind() == ::toml_parse::parser::EventKind::SimpleKey {
+                if event.kind() == ::toml_parser::parser::EventKind::SimpleKey {
                     #[cfg(feature = "unsafe")]
                     // SAFETY: `EventReceiver` should always receive valid
                     // spans
@@ -39,7 +39,7 @@ fn main() -> Result<(), lexopt::Error> {
                     let mut decoded = std::borrow::Cow::Borrowed("");
                     raw.decode_key(&mut decoded, &mut _errors);
                     std::hint::black_box(decoded);
-                } else if event.kind() == ::toml_parse::parser::EventKind::Scalar {
+                } else if event.kind() == ::toml_parser::parser::EventKind::Scalar {
                     #[cfg(feature = "unsafe")]
                     // SAFETY: `EventReceiver` should always receive valid
                     // spans

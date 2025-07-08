@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::str::FromStr;
 
 #[cfg(feature = "display")]
-use toml_write::ToTomlKey as _;
+use toml_writer::ToTomlKey as _;
 
 use crate::repr::{Decor, Repr};
 
@@ -91,7 +91,7 @@ impl Key {
     /// Returns the default raw representation.
     #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
-        let output = toml_write::TomlKeyBuilder::new(&self.key)
+        let output = toml_writer::TomlKeyBuilder::new(&self.key)
             .as_default()
             .to_toml_key();
         Repr::new_unchecked(output)
@@ -152,7 +152,7 @@ impl Key {
 
     #[cfg(feature = "parse")]
     fn try_parse_simple(s: &str) -> Result<Self, crate::TomlError> {
-        let source = toml_parse::Source::new(s);
+        let source = toml_parser::Source::new(s);
         let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
         let mut key = crate::parser::parse_key(source, &mut sink);
         if let Some(err) = sink.into_inner() {
@@ -165,7 +165,7 @@ impl Key {
 
     #[cfg(feature = "parse")]
     fn try_parse_path(s: &str) -> Result<Vec<Self>, crate::TomlError> {
-        let source = toml_parse::Source::new(s);
+        let source = toml_parser::Source::new(s);
         let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
         let mut keys = crate::parser::parse_key_path(source, &mut sink);
         if let Some(err) = sink.into_inner() {

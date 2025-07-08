@@ -2,8 +2,8 @@ use std::borrow::Cow;
 use std::fmt::{Display, Formatter, Result, Write};
 
 use toml_datetime::Datetime;
-use toml_write::ToTomlValue as _;
-use toml_write::TomlWrite as _;
+use toml_writer::ToTomlValue as _;
+use toml_writer::TomlWrite as _;
 
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
@@ -325,7 +325,7 @@ fn visit_table(
 
 impl ValueRepr for String {
     fn to_repr(&self) -> Repr {
-        let output = toml_write::TomlStringBuilder::new(self.as_str())
+        let output = toml_writer::TomlStringBuilder::new(self.as_str())
             .as_default()
             .to_toml_value();
         Repr::new_unchecked(output)

@@ -10,8 +10,8 @@ release = false
 
 [features]
 default = []
-simd = ["toml_parse/simd"]
-unsafe = ["toml_parse/unsafe"]
+simd = ["toml_parser/simd"]
+unsafe = ["toml_parser/unsafe"]
 preserve_order = ["serde_json/preserve_order", "toml_old/preserve_order", "toml/preserve_order"]
 fast_hash = ["toml/fast_hash"]
 
@@ -20,7 +20,7 @@ serde = { version = "1.0.197", features = ["derive"] }
 
 [dev-dependencies]
 toml = { path = "../toml" }
-toml_parse = { path = "../toml_parse" }
+toml_parser = { path = "../toml_parser" }
 toml_edit = { path = "../toml_edit", features = ["serde"] }
 toml_old = { version = "0.5.10", package = "toml" }
 serde_json = "1.0.116"

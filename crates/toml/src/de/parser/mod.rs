@@ -2,8 +2,8 @@
 
 use serde_spanned::Spanned;
 #[cfg(not(feature = "unbounded"))]
-use toml_parse::parser::RecursionGuard;
-use toml_parse::parser::ValidateWhitespace;
+use toml_parser::parser::RecursionGuard;
+use toml_parser::parser::ValidateWhitespace;
 
 pub use dearray::DeArray;
 pub use detable::DeTable;
@@ -26,7 +26,7 @@ pub(crate) mod key;
 pub(crate) mod value;
 
 pub(crate) fn parse_document<'i>(
-    source: toml_parse::Source<'i>,
+    source: toml_parser::Source<'i>,
     errors: &mut dyn prelude::ErrorSink,
 ) -> Spanned<DeTable<'i>> {
     let tokens = source.lex().into_vec();
@@ -39,7 +39,7 @@ pub(crate) fn parse_document<'i>(
     let receiver = &mut receiver;
     #[cfg(feature = "unbounded")]
     let receiver = &mut receiver;
-    toml_parse::parser::parse_document(&tokens, receiver, errors);
+    toml_parser::parser::parse_document(&tokens, receiver, errors);
 
     let mut input = prelude::Input::new(&events);
     let doc = document::document(&mut input, source, errors);
@@ -47,7 +47,7 @@ pub(crate) fn parse_document<'i>(
 }
 
 pub(crate) fn parse_value<'i>(
-    source: toml_parse::Source<'i>,
+    source: toml_parser::Source<'i>,
     errors: &mut dyn prelude::ErrorSink,
 ) -> Spanned<DeValue<'i>> {
     let tokens = source.lex().into_vec();
@@ -60,7 +60,7 @@ pub(crate) fn parse_value<'i>(
     let receiver = &mut receiver;
     #[cfg(feature = "unbounded")]
     let receiver = &mut receiver;
-    toml_parse::parser::parse_value(&tokens, receiver, errors);
+    toml_parser::parser::parse_value(&tokens, receiver, errors);
 
     let mut input = prelude::Input::new(&events);
     let value = value::value(&mut input, source, errors);
@@ -71,12 +71,12 @@ pub(crate) fn parse_value<'i>(
 const LIMIT: u32 = 80;
 
 pub(crate) mod prelude {
-    pub(crate) use toml_parse::parser::EventKind;
-    pub(crate) use toml_parse::ErrorSink;
-    pub(crate) use toml_parse::ParseError;
+    pub(crate) use toml_parser::parser::EventKind;
+    pub(crate) use toml_parser::ErrorSink;
+    pub(crate) use toml_parser::ParseError;
     pub(crate) use winnow::stream::Stream as _;
 
-    pub(crate) type Input<'i> = winnow::stream::TokenSlice<'i, toml_parse::parser::Event>;
+    pub(crate) type Input<'i> = winnow::stream::TokenSlice<'i, toml_parser::parser::Event>;
 
     #[cfg(feature = "debug")]
     pub(crate) use super::debug::trace;

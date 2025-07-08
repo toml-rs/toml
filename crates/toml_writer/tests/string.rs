@@ -5,10 +5,10 @@ use proptest::prelude::*;
 use snapbox::prelude::*;
 use snapbox::str;
 
-use toml_write::ToTomlKey;
-use toml_write::ToTomlValue;
-use toml_write::TomlKeyBuilder;
-use toml_write::TomlStringBuilder;
+use toml_writer::ToTomlKey;
+use toml_writer::ToTomlValue;
+use toml_writer::TomlKeyBuilder;
+use toml_writer::TomlStringBuilder;
 
 #[track_caller]
 fn t(decoded: &str, expected: impl IntoData) {

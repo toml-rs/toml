@@ -1,10 +1,8 @@
 [package]
-name = "toml_write"
-version = "0.1.2"
-description = """
-A low-level interface for writing out TOML
-"""
-categories = ["encoding"]
+name = "toml_parser"
+version = "0.1.0"
+description = "Yet another format-preserving TOML parser."
+categories = ["encoding", "parser-implementations", "parsing", "config"]
 keywords = ["encoding", "toml", "no_std"]
 repository.workspace = true
 license.workspace = true
@@ -13,8 +11,8 @@ rust-version.workspace = true
 include.workspace = true
 
 [package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
+features = []
+rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.release]
 pre-release-replacements = [
@@ -27,15 +25,22 @@ pre-release-replacements = [
 
 [features]
 default = ["std"]
-std = ["alloc"]
 alloc = []
+std = ["alloc"]
+simd = ["winnow/simd"]
+unsafe = []
+
+debug = ["std", "dep:anstream", "dep:anstyle"]
 
 [dependencies]
+anstream = { version = "0.6.15", optional = true }
+anstyle = { version = "1.0.8", optional = true }
+winnow = { version = "0.7.10", default-features = false }
 
 [dev-dependencies]
-proptest = "1.6.0"
+anstream = { version = "0.6.15", features = ["test"] }
 snapbox = "0.6.0"
-toml_old = { version = "0.5.10", package = "toml" }
+toml_datetime = { path = "../toml_datetime" }
 
 [lints]
 workspace = true

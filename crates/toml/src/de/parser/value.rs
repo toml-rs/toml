@@ -13,7 +13,7 @@ use crate::de::DeValue;
 /// ```
 pub(crate) fn value<'i>(
     input: &mut Input<'_>,
-    source: toml_parse::Source<'i>,
+    source: toml_parser::Source<'i>,
     errors: &mut dyn ErrorSink,
 ) -> Spanned<DeValue<'i>> {
     #[cfg(feature = "debug")]
@@ -62,8 +62,8 @@ pub(crate) fn value<'i>(
 }
 
 pub(crate) fn on_scalar<'i>(
-    event: &toml_parse::parser::Event,
-    source: toml_parse::Source<'i>,
+    event: &toml_parser::parser::Event,
+    source: toml_parser::Source<'i>,
     errors: &mut dyn ErrorSink,
 ) -> Spanned<DeValue<'i>> {
     #[cfg(feature = "debug")]
@@ -75,13 +75,13 @@ pub(crate) fn on_scalar<'i>(
     let mut decoded = alloc::borrow::Cow::Borrowed("");
     let kind = raw.decode_scalar(&mut decoded, errors);
     match kind {
-        toml_parse::decoder::ScalarKind::String => {
+        toml_parser::decoder::ScalarKind::String => {
             Spanned::new(value_span, DeValue::String(decoded))
         }
-        toml_parse::decoder::ScalarKind::Boolean(value) => {
+        toml_parser::decoder::ScalarKind::Boolean(value) => {
             Spanned::new(value_span, DeValue::Boolean(value))
         }
-        toml_parse::decoder::ScalarKind::DateTime => {
+        toml_parser::decoder::ScalarKind::DateTime => {
             let value = match decoded.parse::<toml_datetime::Datetime>() {
                 Ok(value) => value,
                 Err(err) => {
@@ -97,10 +97,10 @@ pub(crate) fn on_scalar<'i>(
             };
             Spanned::new(value_span, DeValue::Datetime(value))
         }
-        toml_parse::decoder::ScalarKind::Float => {
+        toml_parser::decoder::ScalarKind::Float => {
             Spanned::new(value_span, DeValue::Float(DeFloat { inner: decoded }))
         }
-        toml_parse::decoder::ScalarKind::Integer(radix) => Spanned::new(
+        toml_parser::decoder::ScalarKind::Integer(radix) => Spanned::new(
             value_span,
             DeValue::Integer(DeInteger {
                 inner: decoded,

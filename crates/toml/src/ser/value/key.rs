@@ -1,4 +1,4 @@
-use toml_write::TomlWrite as _;
+use toml_writer::TomlWrite as _;
 
 use super::Error;
 use crate::alloc_prelude::*;

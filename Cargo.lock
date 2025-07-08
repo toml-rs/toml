@@ -933,8 +933,8 @@ dependencies = [
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
- "toml_parse",
- "toml_write",
+ "toml_parser",
+ "toml_writer",
  "walkdir",
  "winnow",
 ]
@@ -985,7 +985,7 @@ dependencies = [
  "toml 0.5.11",
  "toml 0.8.23",
  "toml_edit",
- "toml_parse",
+ "toml_parser",
 ]
 
 [[package]]
@@ -1013,8 +1013,8 @@ dependencies = [
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
- "toml_parse",
- "toml_write",
+ "toml_parser",
+ "toml_writer",
  "walkdir",
  "winnow",
 ]
@@ -1028,7 +1028,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml_parse"
+name = "toml_parser"
 version = "0.1.0"
 dependencies = [
  "anstream 0.6.19",
@@ -1039,7 +1039,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml_write"
+name = "toml_writer"
 version = "0.1.2"
 dependencies = [
  "proptest",

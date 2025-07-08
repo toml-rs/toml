@@ -1,6 +1,6 @@
 use core::fmt::Write as _;
 
-use toml_write::TomlWrite as _;
+use toml_writer::TomlWrite as _;
 
 use super::array_of_tables::ArrayOfTablesSerializer;
 use super::style::Style;

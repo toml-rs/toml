@@ -1,10 +1,10 @@
-# toml_parse
+# toml_parser
 
 [![Build Status](https://github.com/toml-rs/toml/workflows/Continuous%20integration/badge.svg)](https://github.com/toml-rs/toml/actions)
 [![codecov](https://codecov.io/gh/toml-rs/toml/branch/master/graph/badge.svg)](https://codecov.io/gh/toml-rs/toml)
-[![crates.io](https://img.shields.io/crates/v/toml_parse.svg)](https://crates.io/crates/toml_parse)
-[![docs](https://docs.rs/toml_parse/badge.svg)](https://docs.rs/toml_parse)
-[![Join the chat at https://gitter.im/toml_parse/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_parse/Lobby)
+[![crates.io](https://img.shields.io/crates/v/toml_parser.svg)](https://crates.io/crates/toml_parser)
+[![docs](https://docs.rs/toml_parser/badge.svg)](https://docs.rs/toml_parser)
+[![Join the chat at https://gitter.im/toml_parser/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_parser/Lobby)
 
 
 Zero-copy parsing of TOML

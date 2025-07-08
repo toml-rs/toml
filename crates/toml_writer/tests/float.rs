@@ -4,7 +4,7 @@
 use snapbox::prelude::*;
 use snapbox::str;
 
-use toml_write::ToTomlValue;
+use toml_writer::ToTomlValue;
 
 #[track_caller]
 fn t(decoded: impl ToTomlValue, expected: impl IntoData) {

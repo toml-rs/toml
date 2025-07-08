@@ -9,9 +9,9 @@ use crate::RawString;
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 /// ```
 pub(crate) fn on_key(
-    key_event: &toml_parse::parser::Event,
+    key_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
-    source: toml_parse::Source<'_>,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> (Vec<Key>, Option<Key>) {
     #[cfg(feature = "debug")]
@@ -85,13 +85,13 @@ fn more_key(input: &Input<'_>) -> bool {
 }
 
 struct State {
-    current_prefix: Option<toml_parse::Span>,
-    current_key: Option<toml_parse::parser::Event>,
-    current_suffix: Option<toml_parse::Span>,
+    current_prefix: Option<toml_parser::Span>,
+    current_key: Option<toml_parser::parser::Event>,
+    current_suffix: Option<toml_parser::Span>,
 }
 
 impl State {
-    fn new(key_event: &toml_parse::parser::Event) -> Self {
+    fn new(key_event: &toml_parser::parser::Event) -> Self {
         Self {
             current_prefix: None,
             current_key: Some(*key_event),
@@ -99,7 +99,7 @@ impl State {
         }
     }
 
-    fn whitespace(&mut self, event: &toml_parse::parser::Event) {
+    fn whitespace(&mut self, event: &toml_parser::parser::Event) {
         if self.current_key.is_some() {
             self.current_suffix = Some(event.span());
         } else {
@@ -111,7 +111,7 @@ impl State {
         &mut self,
         result_path: &mut Vec<Key>,
         result_key: &mut Option<Key>,
-        source: toml_parse::Source<'_>,
+        source: toml_parser::Source<'_>,
         errors: &mut dyn ErrorSink,
     ) {
         let Some(key) = self.current_key.take() else {
@@ -150,8 +150,8 @@ impl State {
 /// quoted-key = basic-string / literal-string
 /// ```
 pub(crate) fn on_simple_key(
-    event: &toml_parse::parser::Event,
-    source: toml_parse::Source<'_>,
+    event: &toml_parser::parser::Event,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> (RawString, String) {
     #[cfg(feature = "debug")]

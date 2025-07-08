@@ -16,9 +16,9 @@ use crate::map::Entry;
 /// inline-table = inline-table-open inline-table-keyvals inline-table-close
 /// ```
 pub(crate) fn on_inline_table<'i>(
-    open_event: &toml_parse::parser::Event,
+    open_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
-    source: toml_parse::Source<'i>,
+    source: toml_parser::Source<'i>,
     errors: &mut dyn ErrorSink,
 ) -> Spanned<DeValue<'i>> {
     #[cfg(feature = "debug")]
@@ -98,11 +98,11 @@ struct State<'i> {
 }
 
 impl<'i> State<'i> {
-    fn whitespace(&mut self, _event: &toml_parse::parser::Event) {}
+    fn whitespace(&mut self, _event: &toml_parser::parser::Event) {}
 
     fn capture_key(
         &mut self,
-        _event: &toml_parse::parser::Event,
+        _event: &toml_parser::parser::Event,
         path: Vec<Spanned<DeString<'i>>>,
         key: Option<Spanned<DeString<'i>>>,
     ) {
@@ -111,17 +111,17 @@ impl<'i> State<'i> {
         }
     }
 
-    fn finish_key(&mut self, _event: &toml_parse::parser::Event) {
+    fn finish_key(&mut self, _event: &toml_parser::parser::Event) {
         self.seen_keyval_sep = true;
     }
 
-    fn capture_value(&mut self, _event: &toml_parse::parser::Event, value: Spanned<DeValue<'i>>) {
+    fn capture_value(&mut self, _event: &toml_parser::parser::Event, value: Spanned<DeValue<'i>>) {
         self.current_value = Some(value);
     }
 
     fn finish_value(
         &mut self,
-        _event: &toml_parse::parser::Event,
+        _event: &toml_parser::parser::Event,
         result: &mut DeTable<'i>,
         errors: &mut dyn ErrorSink,
     ) {
@@ -161,8 +161,8 @@ impl<'i> State<'i> {
 
     fn close(
         &mut self,
-        _open_event: &toml_parse::parser::Event,
-        _close_event: &toml_parse::parser::Event,
+        _open_event: &toml_parser::parser::Event,
+        _close_event: &toml_parser::parser::Event,
         _result: &mut DeTable<'i>,
     ) {
         #[cfg(feature = "debug")]
@@ -232,7 +232,7 @@ fn descend_path<'a, 'i>(
     Some(table)
 }
 
-fn get_key_span(key: &Spanned<DeString<'_>>) -> toml_parse::Span {
+fn get_key_span(key: &Spanned<DeString<'_>>) -> toml_parser::Span {
     let key_span = key.span();
-    toml_parse::Span::new_unchecked(key_span.start, key_span.end)
+    toml_parser::Span::new_unchecked(key_span.start, key_span.end)
 }

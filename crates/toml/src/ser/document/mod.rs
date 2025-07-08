@@ -10,7 +10,7 @@ mod buffer;
 mod map;
 mod strategy;
 
-use toml_write::TomlWrite as _;
+use toml_writer::TomlWrite as _;
 
 use super::style;
 use super::value;

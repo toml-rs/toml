@@ -10,7 +10,7 @@ use crate::Value;
 /// ```
 pub(crate) fn value(
     input: &mut Input<'_>,
-    source: toml_parse::Source<'_>,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Value {
     #[cfg(feature = "debug")]
@@ -59,8 +59,8 @@ pub(crate) fn value(
 }
 
 pub(crate) fn on_scalar(
-    event: &toml_parse::parser::Event,
-    source: toml_parse::Source<'_>,
+    event: &toml_parser::parser::Event,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Value {
     #[cfg(feature = "debug")]
@@ -72,17 +72,17 @@ pub(crate) fn on_scalar(
     let mut decoded = std::borrow::Cow::Borrowed("");
     let kind = raw.decode_scalar(&mut decoded, errors);
     match kind {
-        toml_parse::decoder::ScalarKind::String => {
+        toml_parser::decoder::ScalarKind::String => {
             let mut f = Formatted::new(decoded.into());
             f.set_repr_unchecked(Repr::new_unchecked(value_raw));
             Value::String(f)
         }
-        toml_parse::decoder::ScalarKind::Boolean(value) => {
+        toml_parser::decoder::ScalarKind::Boolean(value) => {
             let mut f = Formatted::new(value);
             f.set_repr_unchecked(Repr::new_unchecked(value_raw));
             Value::Boolean(f)
         }
-        toml_parse::decoder::ScalarKind::DateTime => {
+        toml_parser::decoder::ScalarKind::DateTime => {
             let value = match decoded.parse::<toml_datetime::Datetime>() {
                 Ok(value) => value,
                 Err(err) => {
@@ -100,7 +100,7 @@ pub(crate) fn on_scalar(
             f.set_repr_unchecked(Repr::new_unchecked(value_raw));
             Value::Datetime(f)
         }
-        toml_parse::decoder::ScalarKind::Float => {
+        toml_parser::decoder::ScalarKind::Float => {
             let value = match decoded.parse::<f64>() {
                 Ok(value) => {
                     if value.is_infinite()
@@ -128,7 +128,7 @@ pub(crate) fn on_scalar(
             f.set_repr_unchecked(Repr::new_unchecked(value_raw));
             Value::Float(f)
         }
-        toml_parse::decoder::ScalarKind::Integer(radix) => {
+        toml_parser::decoder::ScalarKind::Integer(radix) => {
             let value = match i64::from_str_radix(&decoded, radix.value()) {
                 Ok(value) => value,
                 Err(_) => {

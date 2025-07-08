@@ -1,20 +1,20 @@
 #![allow(elided_lifetimes_in_paths)]
 
-mod toml_parse {
+mod toml_parser {
     use toml_benchmarks::{Data, MANIFESTS};
 
     #[divan::bench(args=MANIFESTS)]
-    fn tokens(sample: &Data<'static>) -> Option<::toml_parse::lexer::Token> {
-        let source = ::toml_parse::Source::new(sample.content());
+    fn tokens(sample: &Data<'static>) -> Option<::toml_parser::lexer::Token> {
+        let source = ::toml_parser::Source::new(sample.content());
         source.lex().last()
     }
 
     #[divan::bench(args=MANIFESTS)]
     fn events(sample: &Data<'static>) {
-        let source = ::toml_parse::Source::new(sample.content());
+        let source = ::toml_parser::Source::new(sample.content());
         let tokens = source.lex().into_vec();
         let mut errors = Vec::new();
-        ::toml_parse::parser::parse_document(
+        ::toml_parser::parser::parse_document(
             &tokens,
             &mut |event| {
                 std::hint::black_box(event);
@@ -26,18 +26,18 @@ mod toml_parse {
     #[divan::bench(args=MANIFESTS)]
     fn decoded(sample: &Data<'static>) {
         struct Void<'s> {
-            source: &'s ::toml_parse::Source<'s>,
+            source: &'s ::toml_parser::Source<'s>,
         }
 
-        impl ::toml_parse::parser::EventReceiver for Void<'_> {
+        impl ::toml_parser::parser::EventReceiver for Void<'_> {
             fn simple_key(
                 &mut self,
-                span: ::toml_parse::Span,
-                encoding: Option<::toml_parse::decoder::Encoding>,
-                error: &mut dyn ::toml_parse::ErrorSink,
+                span: ::toml_parser::Span,
+                encoding: Option<::toml_parser::decoder::Encoding>,
+                error: &mut dyn ::toml_parser::ErrorSink,
             ) {
-                let event = ::toml_parse::parser::Event::new_unchecked(
-                    ::toml_parse::parser::EventKind::SimpleKey,
+                let event = ::toml_parser::parser::Event::new_unchecked(
+                    ::toml_parser::parser::EventKind::SimpleKey,
                     encoding,
                     span,
                 );
@@ -51,12 +51,12 @@ mod toml_parse {
             }
             fn scalar(
                 &mut self,
-                span: ::toml_parse::Span,
-                encoding: Option<::toml_parse::decoder::Encoding>,
-                error: &mut dyn ::toml_parse::ErrorSink,
+                span: ::toml_parser::Span,
+                encoding: Option<::toml_parser::decoder::Encoding>,
+                error: &mut dyn ::toml_parser::ErrorSink,
             ) {
-                let event = ::toml_parse::parser::Event::new_unchecked(
-                    ::toml_parse::parser::EventKind::SimpleKey,
+                let event = ::toml_parser::parser::Event::new_unchecked(
+                    ::toml_parser::parser::EventKind::SimpleKey,
                     encoding,
                     span,
                 );
@@ -71,12 +71,12 @@ mod toml_parse {
             }
         }
 
-        let source = ::toml_parse::Source::new(sample.content());
+        let source = ::toml_parser::Source::new(sample.content());
         let tokens = source.lex().into_vec();
         let mut errors = Vec::new();
         let mut events = Void { source: &source };
-        let mut receiver = toml_parse::parser::ValidateWhitespace::new(&mut events, source);
-        ::toml_parse::parser::parse_document(&tokens, &mut receiver, &mut errors);
+        let mut receiver = toml_parser::parser::ValidateWhitespace::new(&mut events, source);
+        ::toml_parser::parser::parse_document(&tokens, &mut receiver, &mut errors);
     }
 }
 

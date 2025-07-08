@@ -23,7 +23,7 @@
 //! # Example
 //!
 //! ```rust
-//! use toml_write::TomlWrite as _;
+//! use toml_writer::TomlWrite as _;
 //!
 //! # fn main() -> std::fmt::Result {
 //! let mut output = String::new();
