@@ -2,7 +2,7 @@ mod array;
 mod key;
 mod map;
 
-use toml_write::TomlWrite as _;
+use toml_writer::TomlWrite as _;
 
 use super::style::Style;
 use super::Error;

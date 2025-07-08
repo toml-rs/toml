@@ -1,4 +1,4 @@
-# toml_write
+# toml_writer
 
 [![Latest Version](https://img.shields.io/crates/v/toml.svg)](https://crates.io/crates/toml)
 [![Documentation](https://docs.rs/toml/badge.svg)](https://docs.rs/toml)

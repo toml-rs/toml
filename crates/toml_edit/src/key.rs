@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::str::FromStr;
 
 #[cfg(feature = "display")]
-use toml_write::ToTomlKey as _;
+use toml_writer::ToTomlKey as _;
 
 use crate::repr::{Decor, Repr};
 
@@ -91,7 +91,7 @@ impl Key {
     /// Returns the default raw representation.
     #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
-        let output = toml_write::TomlKeyBuilder::new(&self.key)
+        let output = toml_writer::TomlKeyBuilder::new(&self.key)
             .as_default()
             .to_toml_key();
         Repr::new_unchecked(output)

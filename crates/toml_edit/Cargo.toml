@@ -28,7 +28,7 @@ pre-release-replacements = [
 [features]
 default = ["parse", "display"]
 parse = ["dep:toml_parser", "dep:winnow"]
-display = ["dep:toml_write"]
+display = ["dep:toml_writer"]
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 debug = ["toml_parser?/debug", "dep:anstream", "dep:anstyle", "display"]
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
@@ -44,7 +44,7 @@ winnow = { version = "0.7.10", optional = true }
 serde = { version = "1.0.145", optional = true }
 toml_datetime = { version = "0.6.11", path = "../toml_datetime" }
 serde_spanned = { version = "0.6.9", path = "../serde_spanned", features = ["serde"], optional = true }
-toml_write = { version = "0.1.2", path = "../toml_write", optional = true }
+toml_writer = { version = "0.1.2", path = "../toml_writer", optional = true }
 toml_parser = { version = "0.1.0", path = "../toml_parser", optional = true }
 anstream = { version = "0.6.15", optional = true }
 anstyle = { version = "1.0.8", optional = true }

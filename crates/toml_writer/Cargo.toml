@@ -1,5 +1,5 @@
 [package]
-name = "toml_write"
+name = "toml_writer"
 version = "0.1.2"
 description = """
 A low-level interface for writing out TOML

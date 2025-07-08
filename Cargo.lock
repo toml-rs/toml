@@ -934,7 +934,7 @@ dependencies = [
  "toml-test-harness",
  "toml_datetime",
  "toml_parser",
- "toml_write",
+ "toml_writer",
  "walkdir",
  "winnow",
 ]
@@ -1014,7 +1014,7 @@ dependencies = [
  "toml-test-harness",
  "toml_datetime",
  "toml_parser",
- "toml_write",
+ "toml_writer",
  "walkdir",
  "winnow",
 ]
@@ -1039,7 +1039,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml_write"
+name = "toml_writer"
 version = "0.1.2"
 dependencies = [
  "proptest",
