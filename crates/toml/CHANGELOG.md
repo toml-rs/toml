@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.0] - 2025-07-08
+
 ### Migration
 
 1. If you set `default-features = false`, run `cargo add toml -F serde,std`
@@ -360,7 +362,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.8.23...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.0...HEAD
+[0.9.0]: https://github.com/toml-rs/toml/compare/toml-v0.8.23...toml-v0.9.0
 [0.8.23]: https://github.com/toml-rs/toml/compare/toml-v0.8.22...toml-v0.8.23
 [0.8.22]: https://github.com/toml-rs/toml/compare/toml-v0.8.21...toml-v0.8.22
 [0.8.21]: https://github.com/toml-rs/toml/compare/toml-v0.8.20...toml-v0.8.21
