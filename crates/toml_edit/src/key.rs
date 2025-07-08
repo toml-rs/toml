@@ -152,7 +152,7 @@ impl Key {
 
     #[cfg(feature = "parse")]
     fn try_parse_simple(s: &str) -> Result<Self, crate::TomlError> {
-        let source = toml_parse::Source::new(s);
+        let source = toml_parser::Source::new(s);
         let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
         let mut key = crate::parser::parse_key(source, &mut sink);
         if let Some(err) = sink.into_inner() {
@@ -165,7 +165,7 @@ impl Key {
 
     #[cfg(feature = "parse")]
     fn try_parse_path(s: &str) -> Result<Vec<Self>, crate::TomlError> {
-        let source = toml_parse::Source::new(s);
+        let source = toml_parser::Source::new(s);
         let mut sink = crate::error::TomlSink::<Option<_>>::new(source);
         let mut keys = crate::parser::parse_key_path(source, &mut sink);
         if let Some(err) = sink.into_inner() {

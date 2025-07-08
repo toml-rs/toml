@@ -14,9 +14,9 @@ use indexmap::map::Entry;
 /// inline-table = inline-table-open inline-table-keyvals inline-table-close
 /// ```
 pub(crate) fn on_inline_table(
-    open_event: &toml_parse::parser::Event,
+    open_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
-    source: toml_parse::Source<'_>,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Value {
     #[cfg(feature = "debug")]
@@ -85,15 +85,15 @@ pub(crate) fn on_inline_table(
 
 #[derive(Default)]
 struct State {
-    current_prefix: Option<toml_parse::Span>,
+    current_prefix: Option<toml_parser::Span>,
     current_key: Option<(Vec<Key>, Key)>,
     seen_keyval_sep: bool,
     current_value: Option<Value>,
-    current_suffix: Option<toml_parse::Span>,
+    current_suffix: Option<toml_parser::Span>,
 }
 
 impl State {
-    fn whitespace(&mut self, event: &toml_parse::parser::Event) {
+    fn whitespace(&mut self, event: &toml_parser::parser::Event) {
         let decor = if self.is_prefix() {
             self.current_prefix.get_or_insert(event.span())
         } else {
@@ -110,7 +110,12 @@ impl State {
         }
     }
 
-    fn capture_key(&mut self, event: &toml_parse::parser::Event, path: Vec<Key>, key: Option<Key>) {
+    fn capture_key(
+        &mut self,
+        event: &toml_parser::parser::Event,
+        path: Vec<Key>,
+        key: Option<Key>,
+    ) {
         self.current_prefix
             .get_or_insert_with(|| event.span().before());
         if let Some(key) = key {
@@ -118,7 +123,7 @@ impl State {
         }
     }
 
-    fn finish_key(&mut self, event: &toml_parse::parser::Event) {
+    fn finish_key(&mut self, event: &toml_parser::parser::Event) {
         self.seen_keyval_sep = true;
         if let Some(last_key) = self.current_key.as_mut().map(|(_, k)| k) {
             let prefix = self
@@ -136,7 +141,7 @@ impl State {
         }
     }
 
-    fn capture_value(&mut self, event: &toml_parse::parser::Event, value: Value) {
+    fn capture_value(&mut self, event: &toml_parser::parser::Event, value: Value) {
         self.current_prefix
             .get_or_insert_with(|| event.span().before());
         self.current_value = Some(value);
@@ -144,7 +149,7 @@ impl State {
 
     fn finish_value(
         &mut self,
-        event: &toml_parse::parser::Event,
+        event: &toml_parser::parser::Event,
         result: &mut InlineTable,
         errors: &mut dyn ErrorSink,
     ) {
@@ -196,8 +201,8 @@ impl State {
 
     fn close(
         &mut self,
-        open_event: &toml_parse::parser::Event,
-        close_event: &toml_parse::parser::Event,
+        open_event: &toml_parser::parser::Event,
+        close_event: &toml_parser::parser::Event,
         result: &mut InlineTable,
     ) {
         #[cfg(feature = "debug")]
@@ -273,8 +278,8 @@ fn descend_path<'a>(
     Some(table)
 }
 
-fn get_key_span(key: &Key) -> Option<toml_parse::Span> {
+fn get_key_span(key: &Key) -> Option<toml_parser::Span> {
     key.as_repr()
         .and_then(|r| r.span())
-        .map(|s| toml_parse::Span::new_unchecked(s.start, s.end))
+        .map(|s| toml_parser::Span::new_unchecked(s.start, s.end))
 }

@@ -11,7 +11,7 @@ pub struct Error {
 
 impl Error {
     #[cfg(feature = "parse")]
-    pub(crate) fn new(input: alloc::sync::Arc<str>, error: toml_parse::ParseError) -> Self {
+    pub(crate) fn new(input: alloc::sync::Arc<str>, error: toml_parser::ParseError) -> Self {
         let mut message = String::new();
         message.push_str(error.description());
         if let Some(expected) = error.expected() {
@@ -24,10 +24,10 @@ impl Error {
                         message.push_str(", ");
                     }
                     match expected {
-                        toml_parse::Expected::Literal(desc) => {
+                        toml_parser::Expected::Literal(desc) => {
                             message.push_str(&render_literal(desc));
                         }
-                        toml_parse::Expected::Description(desc) => message.push_str(desc),
+                        toml_parser::Expected::Description(desc) => message.push_str(desc),
                         _ => message.push_str("etc"),
                     }
                 }
@@ -201,14 +201,14 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
 
 #[cfg(feature = "parse")]
 pub(crate) struct TomlSink<'i, S> {
-    source: toml_parse::Source<'i>,
+    source: toml_parser::Source<'i>,
     input: Option<alloc::sync::Arc<str>>,
     sink: S,
 }
 
 #[cfg(feature = "parse")]
 impl<'i, S: Default> TomlSink<'i, S> {
-    pub(crate) fn new(source: toml_parse::Source<'i>) -> Self {
+    pub(crate) fn new(source: toml_parser::Source<'i>) -> Self {
         Self {
             source,
             input: None,
@@ -222,8 +222,8 @@ impl<'i, S: Default> TomlSink<'i, S> {
 }
 
 #[cfg(feature = "parse")]
-impl<'i> toml_parse::ErrorSink for TomlSink<'i, Option<Error>> {
-    fn report_error(&mut self, error: toml_parse::ParseError) {
+impl<'i> toml_parser::ErrorSink for TomlSink<'i, Option<Error>> {
+    fn report_error(&mut self, error: toml_parser::ParseError) {
         if self.sink.is_none() {
             let input = self
                 .input
@@ -235,8 +235,8 @@ impl<'i> toml_parse::ErrorSink for TomlSink<'i, Option<Error>> {
 }
 
 #[cfg(feature = "parse")]
-impl<'i> toml_parse::ErrorSink for TomlSink<'i, Vec<Error>> {
-    fn report_error(&mut self, error: toml_parse::ParseError) {
+impl<'i> toml_parser::ErrorSink for TomlSink<'i, Vec<Error>> {
+    fn report_error(&mut self, error: toml_parser::ParseError) {
         let input = self
             .input
             .get_or_insert_with(|| alloc::sync::Arc::from(self.source.input()));

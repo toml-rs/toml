@@ -20,7 +20,7 @@ use crate::{ArrayOfTables, Document, Table};
 /// ```
 pub(crate) fn document<'s>(
     input: &mut Input<'_>,
-    source: toml_parse::Source<'s>,
+    source: toml_parser::Source<'s>,
     errors: &mut dyn ErrorSink,
 ) -> Document<&'s str> {
     #[cfg(feature = "debug")]
@@ -136,9 +136,9 @@ pub(crate) fn document<'s>(
 /// array-table = array-table-open key *( table-key-sep key) array-table-close
 /// ```
 fn on_table(
-    open_event: &toml_parse::parser::Event,
+    open_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
-    source: toml_parse::Source<'_>,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> TableHeader {
     #[cfg(feature = "debug")]
@@ -217,11 +217,11 @@ fn on_table(
 struct TableHeader {
     path: Vec<Key>,
     key: Option<Key>,
-    span: toml_parse::Span,
+    span: toml_parser::Span,
     is_array: bool,
 }
 
-fn ws_comment_newline(input: &mut Input<'_>) -> Option<toml_parse::Span> {
+fn ws_comment_newline(input: &mut Input<'_>) -> Option<toml_parser::Span> {
     let mut current_span = None;
     while let Some(event) = input.next_token() {
         match event.kind() {
@@ -262,13 +262,13 @@ fn ws_comment_newline(input: &mut Input<'_>) -> Option<toml_parse::Span> {
 struct State {
     root: Table,
     current_table: Table,
-    current_trailing: Option<toml_parse::Span>,
+    current_trailing: Option<toml_parser::Span>,
     current_header: Option<TableHeader>,
     current_position: isize,
 }
 
 impl State {
-    fn capture_trailing(&mut self, event: &toml_parse::parser::Event) {
+    fn capture_trailing(&mut self, event: &toml_parser::parser::Event) {
         let decor = self.current_trailing.get_or_insert(event.span());
         *decor = decor.append(event.span());
     }
@@ -321,7 +321,7 @@ impl State {
             indexmap::map::Entry::Occupied(existing) => {
                 // "Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed"
                 let old_span = existing.key().span().expect("all items have spans");
-                let old_span = toml_parse::Span::new_unchecked(old_span.start, old_span.end);
+                let old_span = toml_parser::Span::new_unchecked(old_span.start, old_span.end);
                 errors.report_error(
                     ParseError::new("duplicate key")
                         .with_unexpected(key_span)
@@ -359,7 +359,7 @@ impl State {
                 let Some(array) = entry.as_array_of_tables_mut() else {
                     let key_span = get_key_span(key).expect("all keys have spans");
                     let old_span = entry.span().unwrap_or_default();
-                    let old_span = toml_parse::Span::new_unchecked(old_span.start, old_span.end);
+                    let old_span = toml_parser::Span::new_unchecked(old_span.start, old_span.end);
                     errors.report_error(
                         ParseError::new("duplicate key")
                             .with_unexpected(key_span)
@@ -404,7 +404,7 @@ impl State {
                         old_value => {
                             let old_span = old_key.span().expect("all items have spans");
                             let old_span =
-                                toml_parse::Span::new_unchecked(old_span.start, old_span.end);
+                                toml_parser::Span::new_unchecked(old_span.start, old_span.end);
                             let key_span = get_key_span(key).expect("all keys have spans");
                             errors.report_error(
                                 ParseError::new("duplicate key")
@@ -490,7 +490,7 @@ fn descend_path<'t>(
                     Item::Value(ref existing) => {
                         let old_span = existing.span().expect("all items have spans");
                         let old_span =
-                            toml_parse::Span::new_unchecked(old_span.start, old_span.end);
+                            toml_parser::Span::new_unchecked(old_span.start, old_span.end);
                         let key_span = get_key_span(key).expect("all keys have spans");
                         errors.report_error(
                             ParseError::new(format!(
@@ -510,8 +510,8 @@ fn descend_path<'t>(
     Some(table)
 }
 
-fn get_key_span(key: &Key) -> Option<toml_parse::Span> {
+fn get_key_span(key: &Key) -> Option<toml_parser::Span> {
     key.as_repr()
         .and_then(|r| r.span())
-        .map(|s| toml_parse::Span::new_unchecked(s.start, s.end))
+        .map(|s| toml_parser::Span::new_unchecked(s.start, s.end))
 }

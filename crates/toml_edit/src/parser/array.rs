@@ -12,9 +12,9 @@ use crate::parser::prelude::*;
 /// array-values =/ ws-comment-newline val ws-comment-newline [ array-sep ]
 /// ```
 pub(crate) fn on_array(
-    open_event: &toml_parse::parser::Event,
+    open_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
-    source: toml_parse::Source<'_>,
+    source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
 ) -> Value {
     #[cfg(feature = "debug")]
@@ -79,14 +79,14 @@ pub(crate) fn on_array(
 
 #[derive(Default)]
 struct State {
-    current_prefix: Option<toml_parse::Span>,
+    current_prefix: Option<toml_parser::Span>,
     current_value: Option<Value>,
     trailing_start: Option<usize>,
-    current_suffix: Option<toml_parse::Span>,
+    current_suffix: Option<toml_parser::Span>,
 }
 
 impl State {
-    fn whitespace(&mut self, event: &toml_parse::parser::Event) {
+    fn whitespace(&mut self, event: &toml_parser::parser::Event) {
         let decor = if self.is_prefix() {
             self.current_prefix.get_or_insert(event.span())
         } else {
@@ -99,14 +99,14 @@ impl State {
         self.current_value.is_none()
     }
 
-    fn capture_value(&mut self, event: &toml_parse::parser::Event, value: Value) {
+    fn capture_value(&mut self, event: &toml_parser::parser::Event, value: Value) {
         self.trailing_start = None;
         self.current_prefix
             .get_or_insert_with(|| event.span().before());
         self.current_value = Some(value);
     }
 
-    fn finish_value(&mut self, event: &toml_parse::parser::Event, result: &mut Array) {
+    fn finish_value(&mut self, event: &toml_parser::parser::Event, result: &mut Array) {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("array::finish_value");
         if let Some(mut value) = self.current_value.take() {
@@ -125,14 +125,14 @@ impl State {
         }
     }
 
-    fn sep_value(&mut self, event: &toml_parse::parser::Event) {
+    fn sep_value(&mut self, event: &toml_parser::parser::Event) {
         self.trailing_start = Some(event.span().end());
     }
 
     fn close(
         &mut self,
-        open_event: &toml_parse::parser::Event,
-        close_event: &toml_parse::parser::Event,
+        open_event: &toml_parser::parser::Event,
+        close_event: &toml_parser::parser::Event,
         result: &mut Array,
     ) {
         #[cfg(feature = "debug")]

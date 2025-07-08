@@ -2,7 +2,7 @@
 
 const NUM_ENTRIES: &[usize] = &[10, 100];
 
-mod toml_parse {
+mod toml_parser {
     use crate::gen;
     use crate::NUM_ENTRIES;
 
@@ -12,7 +12,7 @@ mod toml_parse {
             .with_inputs(|| gen(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
-                let source = ::toml_parse::Source::new(&sample);
+                let source = ::toml_parser::Source::new(&sample);
                 source.lex().last()
             });
     }
@@ -23,10 +23,10 @@ mod toml_parse {
             .with_inputs(|| gen(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
-                let source = ::toml_parse::Source::new(&sample);
+                let source = ::toml_parser::Source::new(&sample);
                 let tokens = source.lex().into_vec();
                 let mut errors = Vec::new();
-                ::toml_parse::parser::parse_document(
+                ::toml_parser::parser::parse_document(
                     &tokens,
                     &mut |event| {
                         std::hint::black_box(event);
@@ -43,18 +43,18 @@ mod toml_parse {
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
                 struct Void<'s> {
-                    source: &'s ::toml_parse::Source<'s>,
+                    source: &'s ::toml_parser::Source<'s>,
                 }
 
-                impl ::toml_parse::parser::EventReceiver for Void<'_> {
+                impl ::toml_parser::parser::EventReceiver for Void<'_> {
                     fn simple_key(
                         &mut self,
-                        span: ::toml_parse::Span,
-                        encoding: Option<::toml_parse::decoder::Encoding>,
-                        error: &mut dyn ::toml_parse::ErrorSink,
+                        span: ::toml_parser::Span,
+                        encoding: Option<::toml_parser::decoder::Encoding>,
+                        error: &mut dyn ::toml_parser::ErrorSink,
                     ) {
-                        let event = ::toml_parse::parser::Event::new_unchecked(
-                            ::toml_parse::parser::EventKind::SimpleKey,
+                        let event = ::toml_parser::parser::Event::new_unchecked(
+                            ::toml_parser::parser::EventKind::SimpleKey,
                             encoding,
                             span,
                         );
@@ -69,12 +69,12 @@ mod toml_parse {
                     }
                     fn scalar(
                         &mut self,
-                        span: ::toml_parse::Span,
-                        encoding: Option<::toml_parse::decoder::Encoding>,
-                        error: &mut dyn ::toml_parse::ErrorSink,
+                        span: ::toml_parser::Span,
+                        encoding: Option<::toml_parser::decoder::Encoding>,
+                        error: &mut dyn ::toml_parser::ErrorSink,
                     ) {
-                        let event = ::toml_parse::parser::Event::new_unchecked(
-                            ::toml_parse::parser::EventKind::SimpleKey,
+                        let event = ::toml_parser::parser::Event::new_unchecked(
+                            ::toml_parser::parser::EventKind::SimpleKey,
                             encoding,
                             span,
                         );
@@ -90,12 +90,13 @@ mod toml_parse {
                     }
                 }
 
-                let source = ::toml_parse::Source::new(&sample);
+                let source = ::toml_parser::Source::new(&sample);
                 let tokens = source.lex().into_vec();
                 let mut errors = Vec::new();
                 let mut events = Void { source: &source };
-                let mut receiver = toml_parse::parser::ValidateWhitespace::new(&mut events, source);
-                ::toml_parse::parser::parse_document(&tokens, &mut receiver, &mut errors);
+                let mut receiver =
+                    toml_parser::parser::ValidateWhitespace::new(&mut events, source);
+                ::toml_parser::parser::parse_document(&tokens, &mut receiver, &mut errors);
             });
     }
 }

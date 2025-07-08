@@ -29,12 +29,12 @@ pre-release-replacements = [
 
 [features]
 default = ["std", "serde", "parse", "display"]
-std = ["indexmap?/std", "serde?/std", "toml_parse?/std", "toml_write?/std", "toml_datetime/std", "serde_spanned/std"]
+std = ["indexmap?/std", "serde?/std", "toml_parser?/std", "toml_write?/std", "toml_datetime/std", "serde_spanned/std"]
 serde = ["dep:serde", "toml_datetime/serde", "serde_spanned/serde"]
-parse = ["dep:toml_parse", "dep:winnow"]
+parse = ["dep:toml_parser", "dep:winnow"]
 display = ["dep:toml_write"]
 fast_hash = ["preserve_order", "dep:foldhash"]
-debug = ["std", "toml_parse?/debug", "dep:anstream", "dep:anstyle"]
+debug = ["std", "toml_parser?/debug", "dep:anstream", "dep:anstyle"]
 
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
 # without any consideration for overflowing the stack. Additionally you will
@@ -51,7 +51,7 @@ preserve_order = ["dep:indexmap", "std"]
 [dependencies]
 serde = { version = "1.0.145", default-features = false, features = ["alloc"], optional = true }
 indexmap = { version = "2.0.0", default-features = false, optional = true }
-toml_parse = { version = "0.1.0", path = "../toml_parse", default-features = false, features = ["alloc"], optional = true }
+toml_parser = { version = "0.1.0", path = "../toml_parser", default-features = false, features = ["alloc"], optional = true }
 winnow = { version = "0.7.10", default-features = false, optional = true }
 anstream = { version = "0.6.15", optional = true }
 anstyle = { version = "1.0.8", optional = true }
