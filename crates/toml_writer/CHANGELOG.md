@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.0] - 2025-07-08
+
 ### Breaking Changes
 
 - Renamed from `toml_write` to `toml_writer`
@@ -24,7 +26,8 @@ The format is based on [Keep a Changelog].
 Initial release
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_writer-v0.1.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.0...HEAD
+[1.0.0]: https://github.com/toml-rs/toml/compare/toml_writer-v0.1.2...toml_writer-v1.0.0
 [0.1.2]: https://github.com/toml-rs/toml/compare/toml_writer-v0.1.1...toml_writer-v0.1.2
 [0.1.1]: https://github.com/toml-rs/toml/compare/toml_writer-v0.1.0...toml_writer-v0.1.1
 [0.1.0]: https://github.com/toml-rs/toml/compare/d00d2856...toml_writer-v0.1.0

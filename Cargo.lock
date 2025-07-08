@@ -1040,7 +1040,7 @@ dependencies = [
 
 [[package]]
 name = "toml_writer"
-version = "0.1.2"
+version = "1.0.0"
 dependencies = [
  "proptest",
  "snapbox",
