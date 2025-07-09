@@ -88,6 +88,7 @@ mod item;
 mod key;
 #[cfg(feature = "parse")]
 mod parser;
+mod pretty;
 mod raw_string;
 mod repr;
 mod table;

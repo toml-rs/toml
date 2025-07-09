@@ -190,6 +190,14 @@ impl DocumentMut {
     pub fn trailing(&self) -> &RawString {
         &self.trailing
     }
+
+    /// Apply a limited pretty formatting to this document.
+    ///
+    /// Use custom decors for advanced customization.
+    #[cfg(feature = "display")]
+    pub fn pretty(&mut self) {
+        crate::visit_mut::visit_document_mut(&mut crate::pretty::Pretty::new(), self);
+    }
 }
 
 impl Default for DocumentMut {

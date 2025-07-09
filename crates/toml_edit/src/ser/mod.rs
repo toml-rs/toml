@@ -6,7 +6,6 @@ mod array;
 mod error;
 mod key;
 mod map;
-mod pretty;
 mod value;
 
 use crate::visit_mut::VisitMut as _;
@@ -85,7 +84,7 @@ where
     T: serde::ser::Serialize + ?Sized,
 {
     let mut document = to_document(value)?;
-    pretty::Pretty::new().visit_document_mut(&mut document);
+    crate::pretty::Pretty::new().visit_document_mut(&mut document);
     Ok(document.to_string())
 }
 
