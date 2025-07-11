@@ -35,10 +35,19 @@ pub trait TomlWrite: core::fmt::Write {
         write!(self, "=")
     }
 
+    /// Write an encoded TOML key
+    ///
+    /// To customize the encoding, see [`TomlStringBuilder`][crate::TomlStringBuilder].
     fn key(&mut self, value: impl crate::WriteTomlKey) -> core::fmt::Result {
         value.write_toml_key(self)
     }
 
+    /// Write an encoded TOML scalar value
+    ///
+    /// To customize the encoding, see
+    /// - [`TomlStringBuilder`][crate::TomlStringBuilder]
+    /// - [`TomlIntegerFormat`][crate::TomlIntegerFormat]
+    ///
     /// <div class="warning">
     ///
     /// For floats, this preserves the sign bit for [`f32::NAN`] / [`f64::NAN`] for the sake of
