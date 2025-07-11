@@ -1,22 +1,26 @@
 use core::fmt::{self, Display};
 
+/// Describes how a TOML integer should be formatted.
 #[derive(Copy, Clone, Debug)]
 pub struct TomlIntegerFormat {
     radix: Radix,
 }
 
 impl TomlIntegerFormat {
+    /// Creates a new integer format (decimal).
     pub fn new() -> Self {
         Self {
             radix: Radix::Decimal,
         }
     }
 
+    /// Sets the format to decimal.
     pub fn as_decimal(mut self) -> Self {
         self.radix = Radix::Decimal;
         self
     }
 
+    /// Sets the format to hexadecimal with all characters in uppercase.
     pub fn as_hex_upper(mut self) -> Self {
         self.radix = Radix::Hexadecimal {
             case: HexCase::Upper,
@@ -24,6 +28,7 @@ impl TomlIntegerFormat {
         self
     }
 
+    /// Sets the format to hexadecimal with all characters in lowercase.
     pub fn as_hex_lower(mut self) -> Self {
         self.radix = Radix::Hexadecimal {
             case: HexCase::Lower,
@@ -31,17 +36,22 @@ impl TomlIntegerFormat {
         self
     }
 
+    /// Sets the format to octal.
     pub fn as_octal(mut self) -> Self {
         self.radix = Radix::Octal;
         self
     }
 
+    /// Sets the format to binary.
     pub fn as_binary(mut self) -> Self {
         self.radix = Radix::Binary;
         self
     }
 
-    /// Returns `None` if the value is negative and the radix is not decimal.
+    /// Formats `value` as a TOML integer.
+    ///
+    /// Returns `None` if the value cannot be formatted
+    /// (e.g. value is negative and the radix is not decimal).
     pub fn format<N: PartialOrd<i32>>(self, value: N) -> Option<TomlInteger<N>>
     where
         TomlInteger<N>: crate::WriteTomlValue,
@@ -68,7 +78,9 @@ impl Default for TomlIntegerFormat {
     }
 }
 
-/// N must be an integer type.
+/// Helper struct for formatting TOML integers.
+///
+/// This may be constructed by calling [`TomlIntegerFormat::format()`].
 #[derive(Copy, Clone, Debug)]
 pub struct TomlInteger<N> {
     value: N,
