@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `TomlInteger::new`
+
 ## [1.0.1] - 2025-07-11
 
 ### Features
