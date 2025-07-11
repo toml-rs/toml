@@ -1,84 +1,5 @@
 use core::fmt::{self, Display};
 
-/// N must be an integer type.
-#[derive(Copy, Clone, Debug)]
-pub struct TomlInteger<N> {
-    value: N,
-    radix: Radix,
-}
-
-impl crate::WriteTomlValue for TomlInteger<u8> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<i8> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<u16> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<i16> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<u32> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<i32> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<u64> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<i64> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<u128> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<i128> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<usize> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
-impl crate::WriteTomlValue for TomlInteger<isize> {
-    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
-    }
-}
-
 #[derive(Copy, Clone, Debug)]
 pub struct TomlIntegerFormat {
     radix: Radix,
@@ -156,6 +77,85 @@ impl TomlIntegerFormat {
 impl Default for TomlIntegerFormat {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// N must be an integer type.
+#[derive(Copy, Clone, Debug)]
+pub struct TomlInteger<N> {
+    value: N,
+    radix: Radix,
+}
+
+impl crate::WriteTomlValue for TomlInteger<u8> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<i8> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<u16> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<i16> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<u32> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<i32> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<u64> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<i64> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<u128> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<i128> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<usize> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
+    }
+}
+
+impl crate::WriteTomlValue for TomlInteger<isize> {
+    fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
+        write_toml_value(self.value, &self.radix, writer)
     }
 }
 
