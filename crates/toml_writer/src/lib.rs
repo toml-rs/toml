@@ -59,11 +59,14 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
+mod integer;
 mod key;
 mod string;
 mod value;
 mod write;
 
+pub use integer::TomlInteger;
+pub use integer::TomlIntegerFormat;
 #[cfg(feature = "alloc")]
 pub use key::ToTomlKey;
 pub use key::WriteTomlKey;
