@@ -1,3 +1,5 @@
+#![cfg(feature = "alloc")]
+
 use snapbox::prelude::*;
 use snapbox::str;
 
