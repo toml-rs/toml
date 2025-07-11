@@ -3,54 +3,42 @@ use core::fmt::{self, Display};
 #[derive(Copy, Clone, Debug)]
 pub struct TomlIntegerFormat {
     radix: Radix,
-    _separators: (), // Placeholder for future use
 }
 
 impl TomlIntegerFormat {
     pub fn new() -> Self {
         Self {
             radix: Radix::Decimal,
-            _separators: (),
         }
     }
 
-    pub fn as_decimal(self) -> Self {
-        Self {
-            radix: Radix::Decimal,
-            ..self
-        }
+    pub fn as_decimal(mut self) -> Self {
+        self.radix = Radix::Decimal;
+        self
     }
 
-    pub fn as_hex_upper(self) -> Self {
-        Self {
-            radix: Radix::Hexadecimal {
-                case: HexCase::Upper,
-            },
-            ..self
-        }
+    pub fn as_hex_upper(mut self) -> Self {
+        self.radix = Radix::Hexadecimal {
+            case: HexCase::Upper,
+        };
+        self
     }
 
-    pub fn as_hex_lower(self) -> Self {
-        Self {
-            radix: Radix::Hexadecimal {
-                case: HexCase::Lower,
-            },
-            ..self
-        }
+    pub fn as_hex_lower(mut self) -> Self {
+        self.radix = Radix::Hexadecimal {
+            case: HexCase::Lower,
+        };
+        self
     }
 
-    pub fn as_octal(self) -> Self {
-        Self {
-            radix: Radix::Octal,
-            ..self
-        }
+    pub fn as_octal(mut self) -> Self {
+        self.radix = Radix::Octal;
+        self
     }
 
-    pub fn as_binary(self) -> Self {
-        Self {
-            radix: Radix::Binary,
-            ..self
-        }
+    pub fn as_binary(mut self) -> Self {
+        self.radix = Radix::Binary;
+        self
     }
 
     /// Returns `None` if the value is negative and the radix is not decimal.
@@ -69,7 +57,7 @@ impl TomlIntegerFormat {
 
         Some(TomlInteger {
             value,
-            radix: self.radix,
+            format: self,
         })
     }
 }
@@ -84,78 +72,78 @@ impl Default for TomlIntegerFormat {
 #[derive(Copy, Clone, Debug)]
 pub struct TomlInteger<N> {
     value: N,
-    radix: Radix,
+    format: TomlIntegerFormat,
 }
 
 impl crate::WriteTomlValue for TomlInteger<u8> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<i8> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<u16> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<i16> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<u32> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<i32> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<u64> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<i64> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<u128> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<i128> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<usize> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
 impl crate::WriteTomlValue for TomlInteger<isize> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
-        write_toml_value(self.value, &self.radix, writer)
+        write_toml_value(self.value, &self.format, writer)
     }
 }
 
@@ -178,10 +166,10 @@ fn write_toml_value<
     W: crate::TomlWrite + ?Sized,
 >(
     value: N,
-    radix: &Radix,
+    format: &TomlIntegerFormat,
     writer: &mut W,
 ) -> fmt::Result {
-    match radix {
+    match format.radix {
         Radix::Decimal => write!(writer, "{value}")?,
         Radix::Hexadecimal { case } => match case {
             HexCase::Upper => write!(writer, "0x{value:X}")?,
