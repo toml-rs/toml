@@ -1,3 +1,21 @@
+/// Describes how a TOML string (key or value) should be formatted.
+///
+/// # Example
+///
+/// ```rust
+/// # #[cfg(feature = "alloc")] {
+/// # use toml_writer::ToTomlValue as _;
+/// let string = "Hello
+/// world!
+/// ";
+/// let string = toml_writer::TomlStringBuilder::new(string).as_default();
+/// let string = string.to_toml_value();
+/// assert_eq!(string, r#""""
+/// Hello
+/// world!
+/// """"#);
+/// # }
+/// ```
 #[derive(Copy, Clone, Debug)]
 pub struct TomlStringBuilder<'s> {
     decoded: &'s str,
