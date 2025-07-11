@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix infinite loop when `)` is present outside of quotes
+
 ## [0.9.1] - 2025-07-10
 
 ## [0.9.0] - 2025-07-08
