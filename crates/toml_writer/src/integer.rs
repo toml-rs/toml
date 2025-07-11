@@ -1,6 +1,19 @@
 use core::fmt::{self, Display};
 
 /// Describes how a TOML integer should be formatted.
+///
+/// # Example
+///
+/// ```rust
+/// # #[cfg(feature = "alloc")] {
+/// # use toml_writer::ToTomlValue as _;
+/// let format = toml_writer::TomlIntegerFormat::new().as_hex_lower();
+/// let number = 10;
+/// let number = format.format(number).unwrap_or(toml_writer::TomlInteger::new(number));
+/// let number = number.to_toml_value();
+/// assert_eq!(number, "0xa");
+/// # }
+/// ```
 #[derive(Copy, Clone, Debug)]
 pub struct TomlIntegerFormat {
     radix: Radix,
