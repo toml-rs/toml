@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `TomlIntegerFormat` for customizing the radix for numbers
+
 ## [1.0.0] - 2025-07-08
 
 ### Breaking Changes
