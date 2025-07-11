@@ -87,6 +87,19 @@ pub struct TomlInteger<N> {
     format: TomlIntegerFormat,
 }
 
+impl<N> TomlInteger<N>
+where
+    Self: crate::WriteTomlValue,
+{
+    /// Apply default formatting
+    pub fn new(value: N) -> Self {
+        Self {
+            value,
+            format: TomlIntegerFormat::new(),
+        }
+    }
+}
+
 impl crate::WriteTomlValue for TomlInteger<u8> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> fmt::Result {
         write_toml_value(self.value, &self.format, writer)
