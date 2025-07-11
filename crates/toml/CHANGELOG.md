@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.2] - 2025-07-11
+
 ### Fixes
 
 - Fix infinite loop when `)` is present outside of quotes
@@ -368,7 +370,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.1...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.2...HEAD
+[0.9.2]: https://github.com/toml-rs/toml/compare/toml-v0.9.1...toml-v0.9.2
 [0.9.1]: https://github.com/toml-rs/toml/compare/toml-v0.9.0...toml-v0.9.1
 [0.9.0]: https://github.com/toml-rs/toml/compare/toml-v0.8.23...toml-v0.9.0
 [0.8.23]: https://github.com/toml-rs/toml/compare/toml-v0.8.22...toml-v0.8.23

@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.23.1] - 2025-07-11
+
 ### Fixes
 
 - Fix infinite loop when `)` is present outside of quotes
@@ -840,7 +842,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.1...HEAD
+[0.23.1]: https://github.com/toml-rs/toml/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/toml-rs/toml/compare/v0.22.27...v0.23.0
 [0.22.27]: https://github.com/toml-rs/toml/compare/v0.22.26...v0.22.27
 [0.22.26]: https://github.com/toml-rs/toml/compare/v0.22.25...v0.22.26
