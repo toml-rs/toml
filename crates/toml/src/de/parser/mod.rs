@@ -25,11 +25,23 @@ pub(crate) mod inline_table;
 pub(crate) mod key;
 pub(crate) mod value;
 
+const MAX_TOKENS: usize = 10000;
+
 pub(crate) fn parse_document<'i>(
     source: toml_parser::Source<'i>,
     errors: &mut dyn prelude::ErrorSink,
 ) -> Spanned<DeTable<'i>> {
-    let tokens = source.lex().into_vec();
+    let mut lexer = source.lex();
+    let mut tokens = Vec::new();
+
+    // Add safety limit to lexer to avoid infinite loops
+    while let Some(token) = lexer.next() {
+        tokens.push(token);
+
+        if tokens.len() >= MAX_TOKENS {
+            break;
+        }
+    }
 
     let mut events = Vec::with_capacity(tokens.len());
     let mut receiver = ValidateWhitespace::new(&mut events, source);
