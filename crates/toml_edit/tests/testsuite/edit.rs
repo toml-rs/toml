@@ -65,6 +65,14 @@ fn assign_whitespace() {
  [ grandparent . parent ]  # table comment
  # table-value sep comment
  key . child = 'value' # key comment
+ key . inline-empty = { }  # empty inline-table comment
+ key . inline = { inline . child = 'inline-value' }  # inline-table comment
+ key . array-empty = [  # inside empty array comment
+ ] # after empty array comment
+ key . array = [ # start of array comment
+   'one' , # one comment
+   'two' , # two comment
+] # after array comment
  # table-table sep comment
  [ another . table ]  # table comment
  # final comment
@@ -180,6 +188,196 @@ DocumentMut {
                                                                     prefix: " ",
                                                                     suffix: " # key comment",
                                                                 },
+                                                            },
+                                                        ),
+                                                    ),
+                                                    Key {
+                                                        key: "inline-empty",
+                                                        repr: Some(
+                                                            "inline-empty",
+                                                        ),
+                                                        leaf_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: " ",
+                                                        },
+                                                        dotted_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: empty,
+                                                        },
+                                                    }: Value(
+                                                        InlineTable(
+                                                            InlineTable {
+                                                                preamble: " ",
+                                                                implicit: false,
+                                                                decor: Decor {
+                                                                    prefix: " ",
+                                                                    suffix: "  # empty inline-table comment",
+                                                                },
+                                                                span: None,
+                                                                dotted: false,
+                                                                items: {},
+                                                            },
+                                                        ),
+                                                    ),
+                                                    Key {
+                                                        key: "inline",
+                                                        repr: Some(
+                                                            "inline",
+                                                        ),
+                                                        leaf_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: " ",
+                                                        },
+                                                        dotted_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: empty,
+                                                        },
+                                                    }: Value(
+                                                        InlineTable(
+                                                            InlineTable {
+                                                                preamble: empty,
+                                                                implicit: false,
+                                                                decor: Decor {
+                                                                    prefix: " ",
+                                                                    suffix: "  # inline-table comment",
+                                                                },
+                                                                span: None,
+                                                                dotted: false,
+                                                                items: {
+                                                                    Key {
+                                                                        key: "inline",
+                                                                        repr: Some(
+                                                                            "inline",
+                                                                        ),
+                                                                        leaf_decor: Decor {
+                                                                            prefix: "default",
+                                                                            suffix: "default",
+                                                                        },
+                                                                        dotted_decor: Decor {
+                                                                            prefix: empty,
+                                                                            suffix: " ",
+                                                                        },
+                                                                    }: Value(
+                                                                        InlineTable(
+                                                                            InlineTable {
+                                                                                preamble: empty,
+                                                                                implicit: true,
+                                                                                decor: Decor {
+                                                                                    prefix: "default",
+                                                                                    suffix: "default",
+                                                                                },
+                                                                                span: None,
+                                                                                dotted: true,
+                                                                                items: {
+                                                                                    Key {
+                                                                                        key: "child",
+                                                                                        repr: Some(
+                                                                                            "child",
+                                                                                        ),
+                                                                                        leaf_decor: Decor {
+                                                                                            prefix: " ",
+                                                                                            suffix: " ",
+                                                                                        },
+                                                                                        dotted_decor: Decor {
+                                                                                            prefix: " ",
+                                                                                            suffix: empty,
+                                                                                        },
+                                                                                    }: Value(
+                                                                                        String(
+                                                                                            Formatted {
+                                                                                                value: "inline-value",
+                                                                                                repr: "'inline-value'",
+                                                                                                decor: Decor {
+                                                                                                    prefix: " ",
+                                                                                                    suffix: " ",
+                                                                                                },
+                                                                                            },
+                                                                                        ),
+                                                                                    ),
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                },
+                                                            },
+                                                        ),
+                                                    ),
+                                                    Key {
+                                                        key: "array-empty",
+                                                        repr: Some(
+                                                            "array-empty",
+                                                        ),
+                                                        leaf_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: " ",
+                                                        },
+                                                        dotted_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: empty,
+                                                        },
+                                                    }: Value(
+                                                        Array(
+                                                            Array {
+                                                                trailing: "  # inside empty array comment\n ",
+                                                                trailing_comma: false,
+                                                                decor: Decor {
+                                                                    prefix: " ",
+                                                                    suffix: " # after empty array comment",
+                                                                },
+                                                                span: None,
+                                                                values: [],
+                                                            },
+                                                        ),
+                                                    ),
+                                                    Key {
+                                                        key: "array",
+                                                        repr: Some(
+                                                            "array",
+                                                        ),
+                                                        leaf_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: " ",
+                                                        },
+                                                        dotted_decor: Decor {
+                                                            prefix: " ",
+                                                            suffix: empty,
+                                                        },
+                                                    }: Value(
+                                                        Array(
+                                                            Array {
+                                                                trailing: " # two comment\n",
+                                                                trailing_comma: true,
+                                                                decor: Decor {
+                                                                    prefix: " ",
+                                                                    suffix: " # after array comment",
+                                                                },
+                                                                span: None,
+                                                                values: [
+                                                                    Value(
+                                                                        String(
+                                                                            Formatted {
+                                                                                value: "one",
+                                                                                repr: "'one'",
+                                                                                decor: Decor {
+                                                                                    prefix: " # start of array comment\n   ",
+                                                                                    suffix: " ",
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    Value(
+                                                                        String(
+                                                                            Formatted {
+                                                                                value: "two",
+                                                                                repr: "'two'",
+                                                                                decor: Decor {
+                                                                                    prefix: " # one comment\n   ",
+                                                                                    suffix: " ",
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ],
                                                             },
                                                         ),
                                                     ),

@@ -25,6 +25,7 @@ pub(crate) fn on_array<'i>(
     let mut close_span = open_event.span();
 
     let mut state = State::default();
+    state.open(open_event);
     while let Some(event) = input.next_token() {
         close_span = event.span();
         match event.kind() {
@@ -90,6 +91,8 @@ struct State<'i> {
 }
 
 impl<'i> State<'i> {
+    fn open(&mut self, _open_event: &toml_parser::parser::Event) {}
+
     fn whitespace(&mut self, _event: &toml_parser::parser::Event) {}
 
     fn capture_value(&mut self, _event: &toml_parser::parser::Event, value: Spanned<DeValue<'i>>) {

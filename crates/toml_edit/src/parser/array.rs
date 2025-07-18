@@ -22,6 +22,7 @@ pub(crate) fn on_array(
     let mut result = Array::new();
 
     let mut state = State::default();
+    state.open(open_event);
     while let Some(event) = input.next_token() {
         match event.kind() {
             EventKind::StdTableOpen
@@ -86,6 +87,10 @@ struct State {
 }
 
 impl State {
+    fn open(&mut self, open_event: &toml_parser::parser::Event) {
+        self.trailing_start = Some(open_event.span().end());
+    }
+
     fn whitespace(&mut self, event: &toml_parser::parser::Event) {
         let decor = if self.is_prefix() {
             self.current_prefix.get_or_insert(event.span())
