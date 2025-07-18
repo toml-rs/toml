@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Don't lose whitespace/comments inside of an empty array
+
 ## [0.23.1] - 2025-07-11
 
 ### Fixes
