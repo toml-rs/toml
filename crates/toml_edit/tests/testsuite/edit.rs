@@ -318,7 +318,7 @@ DocumentMut {
                                                     }: Value(
                                                         Array(
                                                             Array {
-                                                                trailing: empty,
+                                                                trailing: "  # inside empty array comment\n ",
                                                                 trailing_comma: false,
                                                                 decor: Decor {
                                                                     prefix: " ",
