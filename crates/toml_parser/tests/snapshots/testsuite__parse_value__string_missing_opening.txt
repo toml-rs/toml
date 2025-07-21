@@ -1,0 +1,95 @@
+EventResults {
+    input: "invalid url to tqdm-4.66.0-py3-none-any.whl\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..11,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 12..14,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 15..21,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 21..22,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 22..24,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 24..25,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 25..39,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 39..40,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 40..43,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 43..44,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                11..12,
+            ),
+            description: "unexpected content",
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                11..11,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..11,
+            ),
+            description: "invalid float",
+            expected: Some(
+                [
+                    Literal(
+                        "inf",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                0..11,
+            ),
+        },
+    ],
+}
