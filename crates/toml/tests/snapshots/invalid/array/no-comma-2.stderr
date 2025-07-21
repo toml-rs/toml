@@ -1,12 +1,5 @@
-TOML parse error at line 1, column 20
-  |
-1 | no-comma-2 = [ 1 2 3 ]
-  |                    ^
-missing comma between array elements, expected `,`
-
----
 TOML parse error at line 1, column 16
   |
 1 | no-comma-2 = [ 1 2 3 ]
-  |                ^^^
+  |                ^^^^^
 string values must be quoted, expected literal string
