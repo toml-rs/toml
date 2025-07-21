@@ -79,11 +79,11 @@ EventResults {
             context: Some(
                 0..11,
             ),
-            description: "invalid float",
+            description: "string values must be quoted",
             expected: Some(
                 [
-                    Literal(
-                        "inf",
+                    Description(
+                        "literal string",
                     ),
                 ],
             ),
