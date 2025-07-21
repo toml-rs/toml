@@ -1,26 +1,5 @@
-TOML parse error at line 3, column 8
-  |
-3 |   I don't belong,
-  |        ^
-missing comma between array elements, expected `,`
-
----
-TOML parse error at line 4, column 3
-  |
-4 |   "Entry 2",
-  |   ^
-missing comma between array elements, expected `,`
-
----
 TOML parse error at line 3, column 3
   |
 3 |   I don't belong,
-  |   ^^^^^
+  |   ^^^^^^^^^^^^^^
 string values must be quoted, expected literal string
-
----
-TOML parse error at line 3, column 18
-  |
-3 |   I don't belong,
-  |                  ^
-invalid literal string, expected `'`

@@ -4,30 +4,13 @@ EventResults {
         Event {
             kind: Scalar,
             encoding: None,
-            span: 0..43,
-        },
-        Event {
-            kind: Error,
-            encoding: None,
-            span: 43..44,
+            span: 0..44,
         },
     ],
     errors: [
         ParseError {
             context: Some(
-                43..44,
-            ),
-            description: "unexpected content",
-            expected: Some(
-                [],
-            ),
-            unexpected: Some(
-                43..43,
-            ),
-        },
-        ParseError {
-            context: Some(
-                0..43,
+                0..44,
             ),
             description: "string values must be quoted",
             expected: Some(
@@ -38,7 +21,7 @@ EventResults {
                 ],
             ),
             unexpected: Some(
-                0..43,
+                0..44,
             ),
         },
     ],
