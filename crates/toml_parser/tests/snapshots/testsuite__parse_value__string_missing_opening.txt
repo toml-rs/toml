@@ -12,16 +12,16 @@ EventResults {
             context: Some(
                 0..44,
             ),
-            description: "string values must be quoted",
+            description: "missing opening quote",
             expected: Some(
                 [
-                    Description(
-                        "literal string",
+                    Literal(
+                        "\"",
                     ),
                 ],
             ),
             unexpected: Some(
-                0..44,
+                0..0,
             ),
         },
     ],

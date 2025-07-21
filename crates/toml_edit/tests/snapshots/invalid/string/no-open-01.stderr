@@ -1,5 +1,5 @@
 TOML parse error at line 1, column 5
   |
 1 | s = a"
-  |     ^^
-string values must be quoted, expected literal string
+  |     ^
+missing opening quote, expected `"`
