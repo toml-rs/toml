@@ -360,6 +360,8 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
 
     if rest.starts_with("-") || rest.starts_with(":") {
         decode_as_is(raw, ScalarKind::DateTime, output, error)
+    } else if rest.contains(" ") {
+        decode_invalid(raw, output, error)
     } else if is_float(rest) {
         let kind = ScalarKind::Float;
         let stream = raw.as_str();
