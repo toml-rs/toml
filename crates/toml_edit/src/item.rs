@@ -323,7 +323,7 @@ impl Item {
 
     /// The location within the original document
     ///
-    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    /// This generally requires a [`Document`][crate::Document].
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         match self {
             Self::None => None,
