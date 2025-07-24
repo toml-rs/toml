@@ -1,0 +1,28 @@
+EventResults {
+    input: "invalid url to tqdm-4.66.0-py3-none-any.whl\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..44,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..44,
+            ),
+            description: "missing opening quote",
+            expected: Some(
+                [
+                    Literal(
+                        "\"",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                0..0,
+            ),
+        },
+    ],
+}

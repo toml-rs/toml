@@ -729,16 +729,37 @@ fn on_scalar(
         TokenKind::MlLiteralString => Some(Encoding::MlLiteralString),
         TokenKind::MlBasicString => Some(Encoding::MlBasicString),
         TokenKind::Dot | TokenKind::Atom => {
-            while let Some(extra_token) =
-                next_token_if(tokens, |k| matches!(k, TokenKind::Dot | TokenKind::Atom))
-            {
-                span = span.append(extra_token.span());
-            }
-            #[allow(clippy::get_first)]
-            if let (Some(first), Some(second)) = (tokens.get(0), tokens.get(1)) {
-                if first.kind() == TokenKind::Whitespace && second.kind() == TokenKind::Atom {
-                    span = span.append(second.span());
-                    let _ = tokens.next_slice(2);
+            while let Some(next_token) = tokens.first() {
+                match next_token.kind() {
+                    TokenKind::Comment
+                    | TokenKind::Comma
+                    | TokenKind::Newline
+                    | TokenKind::Eof
+                    | TokenKind::Equals
+                    | TokenKind::LeftCurlyBracket
+                    | TokenKind::RightCurlyBracket
+                    | TokenKind::LeftSquareBracket
+                    | TokenKind::RightSquareBracket
+                    | TokenKind::LiteralString
+                    | TokenKind::BasicString
+                    | TokenKind::MlLiteralString
+                    | TokenKind::MlBasicString => {
+                        break;
+                    }
+                    TokenKind::Whitespace => {
+                        if let Some(second) = tokens.get(1) {
+                            if second.kind() == TokenKind::Atom {
+                                span = span.append(second.span());
+                                let _ = tokens.next_slice(2);
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+                    TokenKind::Dot | TokenKind::Atom => {
+                        span = span.append(next_token.span());
+                        let _ = tokens.next_token();
+                    }
                 }
             }
             None

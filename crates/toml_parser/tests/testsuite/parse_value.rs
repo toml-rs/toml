@@ -621,3 +621,11 @@ trimmed in raw strings.
         file![_].raw(),
     );
 }
+
+#[test]
+fn string_missing_opening() {
+    t(
+        r#"invalid url to tqdm-4.66.0-py3-none-any.whl""#,
+        file![_].raw(),
+    );
+}
