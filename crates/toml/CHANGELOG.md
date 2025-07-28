@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(display)* Only enable `toml_writer/std` if `std` is enabled
+
 ## [0.9.2] - 2025-07-11
 
 ### Fixes
