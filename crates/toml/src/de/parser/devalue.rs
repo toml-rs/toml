@@ -35,8 +35,18 @@ impl DeInteger<'_> {
         i128::from_str_radix(self.inner.as_ref(), self.radix).ok()
     }
 
-    pub(crate) fn as_str(&self) -> &str {
+    /// [`from_str_radix`][i64::from_str_radix]-compatible representation of an integer
+    ///
+    /// Requires [`DeInteger::radix`] to interpret
+    ///
+    /// See [`Display`][std::fmt::Display] for a representation that includes the radix
+    pub fn as_str(&self) -> &str {
         self.inner.as_ref()
+    }
+
+    /// Numeric base of [`DeInteger::as_str`]
+    pub fn radix(&self) -> u32 {
+        self.radix
     }
 }
 
