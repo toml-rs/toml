@@ -1,6 +1,6 @@
 [package]
 name = "toml"
-version = "0.9.3"
+version = "0.9.4"
 description = """
 A native Rust encoder and decoder of TOML-formatted files and streams. Provides
 implementations of the standard Serialize/Deserialize traits for TOML data to
