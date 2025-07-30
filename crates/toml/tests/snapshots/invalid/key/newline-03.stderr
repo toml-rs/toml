@@ -5,13 +5,6 @@ TOML parse error at line 1, column 8
 key with no value, expected `=`
 
 ---
-TOML parse error at line 2, column 4
-  |
-2 | key' = 1
-  |    ^
-key with no value, expected `=`
-
----
 TOML parse error at line 1, column 8
   |
 1 | 'quoted

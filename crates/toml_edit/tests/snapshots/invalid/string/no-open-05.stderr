@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 6
+TOML parse error at line 1, column 5
   |
 1 | a = a"""
-  |      ^
-unexpected key or value, expected newline, `#`
+  |     ^
+missing opening quote, expected `"""`
