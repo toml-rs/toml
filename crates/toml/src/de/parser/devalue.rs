@@ -94,7 +94,8 @@ impl DeFloat<'_> {
         }
     }
 
-    pub(crate) fn as_str(&self) -> &str {
+    /// [`FromStr`][std::str::FromStr]-compatible representation of a float
+    pub fn as_str(&self) -> &str {
         self.inner.as_ref()
     }
 }
