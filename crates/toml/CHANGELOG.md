@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `DeInteger::as_str` and `DeInteger::radix` for converting to desired integer types
+- Add `DeFloat::as_str` for converting to desired floating-point types
+
 ## [0.9.3] - 2025-07-28
 
 ### Fixes
