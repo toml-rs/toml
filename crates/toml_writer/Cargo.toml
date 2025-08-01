@@ -35,7 +35,7 @@ alloc = []
 [dev-dependencies]
 proptest = "1.6.0"
 snapbox = "0.6.0"
-toml_old = { version = "0.5.10", package = "toml" }
+toml_old = { version = "0.9.0", package = "toml" }
 
 [lints]
 workspace = true
