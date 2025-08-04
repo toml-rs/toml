@@ -23,4 +23,4 @@ TOML parse error at line 1, column 26
   |
 1 | arrr = { comma-missing = true valid-toml = false }
   |                          ^^^^^^^^^^^^^^^
-invalid boolean, expected `true`
+string values must be quoted, expected literal string

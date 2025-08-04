@@ -608,7 +608,8 @@ pub(crate) const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
 fn lex_atom(stream: &mut Stream<'_>) -> Token {
     let start = stream.current_token_start();
 
-    const TOKEN_START: &[u8] = b".=,[]{} \t#\r\n'\"";
+    // Intentionally leaves off quotes in case the opening quote was missing
+    const TOKEN_START: &[u8] = b".=,[]{} \t#\r\n";
     let offset = stream
         .as_bstr()
         .offset_for(|b| TOKEN_START.contains_token(b))
