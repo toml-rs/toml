@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Improve missing-open-quote errors
+- Don't treat trailing quotes as separate items
+- Conjoin more values in unquoted string errors
+- Reduce float false positives
+- Reduce float/bool false positives
+
 ## [1.0.1] - 2025-07-11
 
 ### Fixes
