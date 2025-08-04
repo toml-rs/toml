@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.23.3] - 2025-08-04
+
 ### Fixes
 
 - Improve missing-open-quote errors
@@ -856,7 +858,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.3...HEAD
+[0.23.3]: https://github.com/toml-rs/toml/compare/v0.23.2...v0.23.3
 [0.23.2]: https://github.com/toml-rs/toml/compare/v0.23.1...v0.23.2
 [0.23.1]: https://github.com/toml-rs/toml/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/toml-rs/toml/compare/v0.22.27...v0.23.0

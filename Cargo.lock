@@ -804,7 +804,7 @@ dependencies = [
  "serde",
  "serde-untagged",
  "serde_derive",
- "toml 0.9.4",
+ "toml 0.9.5",
 ]
 
 [[package]]
@@ -918,7 +918,7 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.9.4"
+version = "0.9.5"
 dependencies = [
  "anstream 0.6.19",
  "anstyle",
@@ -983,7 +983,7 @@ dependencies = [
  "serde_json",
  "serde_spanned",
  "toml 0.5.11",
- "toml 0.9.4",
+ "toml 0.9.5",
  "toml_edit",
  "toml_parser",
 ]
@@ -998,7 +998,7 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.23.2"
+version = "0.23.3"
 dependencies = [
  "anstream 0.6.19",
  "anstyle",
@@ -1009,7 +1009,7 @@ dependencies = [
  "serde_json",
  "serde_spanned",
  "snapbox",
- "toml 0.9.4",
+ "toml 0.9.5",
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
@@ -1029,7 +1029,7 @@ dependencies = [
 
 [[package]]
 name = "toml_parser"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anstream 0.6.19",
  "anstyle",

@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.5] - 2025-08-04
+
 ### Fixes
 
 - Improve missing-open-quote errors
@@ -391,7 +393,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.4...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.5...HEAD
+[0.9.5]: https://github.com/toml-rs/toml/compare/toml-v0.9.4...toml-v0.9.5
 [0.9.4]: https://github.com/toml-rs/toml/compare/toml-v0.9.3...toml-v0.9.4
 [0.9.3]: https://github.com/toml-rs/toml/compare/toml-v0.9.2...toml-v0.9.3
 [0.9.2]: https://github.com/toml-rs/toml/compare/toml-v0.9.1...toml-v0.9.2
