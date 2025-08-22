@@ -273,8 +273,10 @@ impl Table {
             .map(|(_, key, _)| key.as_mut())
     }
 
-    /// Returns the location within the original document
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires a [`Document`][crate::Document].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
     }
 
