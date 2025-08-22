@@ -998,7 +998,7 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.23.3"
+version = "0.23.4"
 dependencies = [
  "anstream 0.6.19",
  "anstyle",

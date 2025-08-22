@@ -1,6 +1,6 @@
 [package]
 name = "toml_edit"
-version = "0.23.3"
+version = "0.23.4"
 description = "Yet another format-preserving TOML parser."
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 keywords = ["encoding", "toml"]
