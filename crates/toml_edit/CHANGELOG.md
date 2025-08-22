@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Re-expose `Table::span`
+
 ## [0.23.3] - 2025-08-04
 
 ### Fixes
