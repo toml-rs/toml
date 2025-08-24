@@ -1,28 +1,46 @@
 #[derive(Copy, Clone, Debug)]
-pub struct Data<'s>(pub &'s str, pub &'s str);
+/// Represents a named piece of data, e.g., a manifest file.
+pub struct Data<'s> {
+    /// Name of the data entry
+    pub name: &'s str,
+    /// Content associated with the data entry
+    pub content: &'s str,
+}
 
 impl<'s> Data<'s> {
+    /// Returns the name of the data
     pub const fn name(&self) -> &'s str {
-        self.0
+        self.name
     }
 
+    /// Returns the content of the data
     pub const fn content(&self) -> &'s str {
-        self.1
+        self.content
     }
 }
 
 impl std::fmt::Display for Data<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.name().fmt(f)
+        self.name.fmt(f)
     }
 }
 
 pub const MANIFESTS: &[Data<'static>] = &[
-    Data("0-new", NEW),
-    Data("1-medium", MEDIUM),
-    Data("2-features", FEATURES),
+    Data {
+        name: "0-new",
+        content: NEW,
+    },
+    Data {
+        name: "1-medium",
+        content: MEDIUM,
+    },
+    Data {
+        name: "2-features",
+        content: FEATURES,
+    },
 ];
 
+/// New minimal Cargo manifest
 const NEW: &str = r#"
 [package]
 name = "bar"
@@ -32,7 +50,10 @@ edition = "2018"
 [dependencies]
 "#;
 
+/// Medium manifest included from external file
 const MEDIUM: &str = include_str!("Cargo.cargo.toml");
+
+/// Features manifest included from external file
 const FEATURES: &str = include_str!("Cargo.web-sys.toml");
 
 pub mod manifest {
