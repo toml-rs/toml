@@ -1,4 +1,4 @@
-pub use serde::de::{Deserialize, IntoDeserializer};
+pub use serde_core::de::{Deserialize, IntoDeserializer};
 
 use crate::alloc_prelude::*;
 use crate::value::{Array, Table, Value};

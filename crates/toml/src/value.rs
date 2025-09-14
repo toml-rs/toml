@@ -9,9 +9,9 @@ use core::ops;
 #[cfg(feature = "std")]
 use std::collections::HashMap;
 
-use serde::de;
-use serde::de::IntoDeserializer;
-use serde::ser;
+use serde_core::de;
+use serde_core::de::IntoDeserializer;
+use serde_core::ser;
 
 use crate::alloc_prelude::*;
 
@@ -382,7 +382,7 @@ where
 #[cfg(feature = "display")]
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use serde::Serialize as _;
+        use serde_core::Serialize as _;
 
         let mut output = String::new();
         let serializer = crate::ser::ValueSerializer::new(&mut output);
@@ -395,7 +395,7 @@ impl fmt::Display for Value {
 impl core::str::FromStr for Value {
     type Err = crate::de::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use serde::Deserialize as _;
+        use serde_core::Deserialize as _;
         Self::deserialize(crate::de::ValueDeserializer::parse(s)?)
     }
 }
@@ -608,7 +608,7 @@ impl<'de> de::Deserializer<'de> for Value {
         visitor.visit_newtype_struct(self)
     }
 
-    serde::forward_to_deserialize_any! {
+    serde_core::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit seq
         bytes byte_buf map unit_struct tuple_struct struct
         tuple ignored_any identifier

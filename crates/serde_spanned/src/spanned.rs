@@ -175,19 +175,19 @@ impl<T: Ord> Ord for Spanned<T> {
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T> serde::de::Deserialize<'de> for Spanned<T>
+impl<'de, T> serde_core::de::Deserialize<'de> for Spanned<T>
 where
-    T: serde::de::Deserialize<'de>,
+    T: serde_core::de::Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         struct SpannedVisitor<T>(::core::marker::PhantomData<T>);
 
-        impl<'de, T> serde::de::Visitor<'de> for SpannedVisitor<T>
+        impl<'de, T> serde_core::de::Visitor<'de> for SpannedVisitor<T>
         where
-            T: serde::de::Deserialize<'de>,
+            T: serde_core::de::Deserialize<'de>,
         {
             type Value = Spanned<T>;
 
@@ -197,7 +197,7 @@ where
 
             fn visit_map<V>(self, mut visitor: V) -> Result<Spanned<T>, V::Error>
             where
-                V: serde::de::MapAccess<'de>,
+                V: serde_core::de::MapAccess<'de>,
             {
                 let mut start: Option<usize> = None;
                 let mut end: Option<usize> = None;
@@ -206,24 +206,24 @@ where
                     match key {
                         START_FIELD => {
                             if start.is_some() {
-                                return Err(serde::de::Error::duplicate_field(START_FIELD));
+                                return Err(serde_core::de::Error::duplicate_field(START_FIELD));
                             }
                             start = Some(visitor.next_value()?);
                         }
                         END_FIELD => {
                             if end.is_some() {
-                                return Err(serde::de::Error::duplicate_field(END_FIELD));
+                                return Err(serde_core::de::Error::duplicate_field(END_FIELD));
                             }
                             end = Some(visitor.next_value()?);
                         }
                         VALUE_FIELD => {
                             if value.is_some() {
-                                return Err(serde::de::Error::duplicate_field(VALUE_FIELD));
+                                return Err(serde_core::de::Error::duplicate_field(VALUE_FIELD));
                             }
                             value = Some(visitor.next_value()?);
                         }
                         field => {
-                            return Err(serde::de::Error::unknown_field(
+                            return Err(serde_core::de::Error::unknown_field(
                                 field,
                                 &[START_FIELD, END_FIELD, VALUE_FIELD],
                             ));
@@ -235,9 +235,9 @@ where
                         span: start..end,
                         value,
                     }),
-                    (None, _, _) => Err(serde::de::Error::missing_field(START_FIELD)),
-                    (_, None, _) => Err(serde::de::Error::missing_field(END_FIELD)),
-                    (_, _, None) => Err(serde::de::Error::missing_field(VALUE_FIELD)),
+                    (None, _, _) => Err(serde_core::de::Error::missing_field(START_FIELD)),
+                    (_, None, _) => Err(serde_core::de::Error::missing_field(END_FIELD)),
+                    (_, _, None) => Err(serde_core::de::Error::missing_field(VALUE_FIELD)),
                 }
             }
         }
@@ -251,10 +251,10 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<T: serde::ser::Serialize> serde::ser::Serialize for Spanned<T> {
+impl<T: serde_core::ser::Serialize> serde_core::ser::Serialize for Spanned<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
+        S: serde_core::ser::Serializer,
     {
         self.value.serialize(serializer)
     }

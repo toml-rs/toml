@@ -80,7 +80,7 @@ impl<'d> ValueSerializer<'d> {
     }
 }
 
-impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
+impl<'d> serde_core::ser::Serializer for ValueSerializer<'d> {
     type Ok = &'d mut String;
     type Error = Error;
     type SerializeSeq = SerializeValueArray<'d>;
@@ -179,7 +179,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
     }
 
     fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
-        use serde::ser::Serialize;
+        use serde_core::ser::Serialize;
         value.serialize(self)
     }
 
@@ -189,7 +189,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 
     fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
@@ -217,7 +217,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
@@ -230,7 +230,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.dst.open_inline_table()?;
         self.dst.space()?;

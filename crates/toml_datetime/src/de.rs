@@ -2,8 +2,8 @@
 
 use alloc::string::ToString;
 
-use serde::de::value::BorrowedStrDeserializer;
-use serde::de::IntoDeserializer;
+use serde_core::de::value::BorrowedStrDeserializer;
+use serde_core::de::IntoDeserializer;
 
 /// Check if deserializing a [`Datetime`][crate::Datetime]
 pub fn is_datetime(name: &'static str) -> bool {
@@ -26,15 +26,15 @@ impl<E> DatetimeDeserializer<E> {
     }
 }
 
-impl<'de, E> serde::de::MapAccess<'de> for DatetimeDeserializer<E>
+impl<'de, E> serde_core::de::MapAccess<'de> for DatetimeDeserializer<E>
 where
-    E: serde::de::Error,
+    E: serde_core::de::Error,
 {
     type Error = E;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
     where
-        K: serde::de::DeserializeSeed<'de>,
+        K: serde_core::de::DeserializeSeed<'de>,
     {
         if self.date.is_some() {
             seed.deserialize(BorrowedStrDeserializer::new(crate::datetime::FIELD))
@@ -46,7 +46,7 @@ where
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::DeserializeSeed<'de>,
+        V: serde_core::de::DeserializeSeed<'de>,
     {
         if let Some(date) = self.date.take() {
             seed.deserialize(date.to_string().into_deserializer())
@@ -67,7 +67,7 @@ pub enum VisitMap<'de> {
 
 impl<'de> VisitMap<'de> {
     /// Determine the type of the map by deserializing it
-    pub fn next_key_seed<V: serde::de::MapAccess<'de>>(
+    pub fn next_key_seed<V: serde_core::de::MapAccess<'de>>(
         visitor: &mut V,
     ) -> Result<Option<Self>, V::Error> {
         let mut key = None;
@@ -95,18 +95,18 @@ impl<'m, 'de> DatetimeOrTable<'m, 'de> {
     }
 }
 
-impl<'de> serde::de::DeserializeSeed<'de> for DatetimeOrTable<'_, 'de> {
+impl<'de> serde_core::de::DeserializeSeed<'de> for DatetimeOrTable<'_, 'de> {
     type Value = ();
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         deserializer.deserialize_any(self)
     }
 }
 
-impl<'de> serde::de::Visitor<'de> for DatetimeOrTable<'_, 'de> {
+impl<'de> serde_core::de::Visitor<'de> for DatetimeOrTable<'_, 'de> {
     type Value = ();
 
     fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -115,7 +115,7 @@ impl<'de> serde::de::Visitor<'de> for DatetimeOrTable<'_, 'de> {
 
     fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: serde_core::de::Error,
     {
         if s == crate::datetime::FIELD {
             *self.key = None;
@@ -129,7 +129,7 @@ impl<'de> serde::de::Visitor<'de> for DatetimeOrTable<'_, 'de> {
 
     fn visit_borrowed_str<E>(self, s: &'de str) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: serde_core::de::Error,
     {
         if s == crate::datetime::FIELD {
             *self.key = None;
@@ -143,7 +143,7 @@ impl<'de> serde::de::Visitor<'de> for DatetimeOrTable<'_, 'de> {
     #[allow(unused_qualifications)]
     fn visit_string<E>(self, s: alloc::string::String) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: serde_core::de::Error,
     {
         if s == crate::datetime::FIELD {
             *self.key = None;

@@ -15,13 +15,13 @@ impl SerializeValueArray {
     }
 }
 
-impl serde::ser::SerializeSeq for SerializeValueArray {
+impl serde_core::ser::SerializeSeq for SerializeValueArray {
     type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let value = value.serialize(super::ValueSerializer {})?;
         self.values.push(crate::Item::Value(value));
@@ -33,35 +33,35 @@ impl serde::ser::SerializeSeq for SerializeValueArray {
     }
 }
 
-impl serde::ser::SerializeTuple for SerializeValueArray {
+impl serde_core::ser::SerializeTuple for SerializeValueArray {
     type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeSeq::serialize_element(self, value)
+        serde_core::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        serde::ser::SerializeSeq::end(self)
+        serde_core::ser::SerializeSeq::end(self)
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeValueArray {
+impl serde_core::ser::SerializeTupleStruct for SerializeValueArray {
     type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeSeq::serialize_element(self, value)
+        serde_core::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        serde::ser::SerializeSeq::end(self)
+        serde_core::ser::SerializeSeq::end(self)
     }
 }
 
@@ -79,19 +79,19 @@ impl SerializeTupleVariant {
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeTupleVariant {
+impl serde_core::ser::SerializeTupleVariant for SerializeTupleVariant {
     type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeSeq::serialize_element(&mut self.inner, value)
+        serde_core::ser::SerializeSeq::serialize_element(&mut self.inner, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let inner = serde::ser::SerializeSeq::end(self.inner)?;
+        let inner = serde_core::ser::SerializeSeq::end(self.inner)?;
         let mut items = crate::table::KeyValuePairs::new();
         let value = crate::Item::Value(inner);
         items.insert(crate::Key::new(self.variant), value);

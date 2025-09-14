@@ -2,7 +2,7 @@
 //!
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
-use serde::de::DeserializeOwned;
+use serde_core::de::DeserializeOwned;
 
 mod array;
 mod error;
@@ -128,12 +128,12 @@ impl std::str::FromStr for Deserializer {
     }
 }
 
-impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
+impl<'de, S: AsRef<str>> serde_core::Deserializer<'de> for Deserializer<S> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         ValueDeserializer::new(self.root)
@@ -149,7 +149,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         ValueDeserializer::new(self.root)
@@ -167,7 +167,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         ValueDeserializer::new(self.root)
@@ -186,7 +186,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         ValueDeserializer::new(self.root)
@@ -206,7 +206,7 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         ValueDeserializer::new(self.root)
@@ -218,14 +218,14 @@ impl<'de, S: AsRef<str>> serde::Deserializer<'de> for Deserializer<S> {
             })
     }
 
-    serde::forward_to_deserialize_any! {
+    serde_core::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
+impl serde_core::de::IntoDeserializer<'_, Error> for Deserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -233,7 +233,7 @@ impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
+impl serde_core::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -241,7 +241,7 @@ impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::Document<String> {
+impl serde_core::de::IntoDeserializer<'_, Error> for crate::Document<String> {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

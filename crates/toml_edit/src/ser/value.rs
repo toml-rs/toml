@@ -62,7 +62,7 @@ impl ValueSerializer {
     }
 }
 
-impl serde::ser::Serializer for ValueSerializer {
+impl serde_core::ser::Serializer for ValueSerializer {
     type Ok = crate::Value;
     type Error = Error;
     type SerializeSeq = SerializeValueArray;
@@ -140,7 +140,7 @@ impl serde::ser::Serializer for ValueSerializer {
     }
 
     fn serialize_bytes(self, value: &[u8]) -> Result<Self::Ok, Self::Error> {
-        use serde::ser::Serialize;
+        use serde_core::ser::Serialize;
         value.serialize(self)
     }
 
@@ -150,7 +150,7 @@ impl serde::ser::Serializer for ValueSerializer {
 
     fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
@@ -178,7 +178,7 @@ impl serde::ser::Serializer for ValueSerializer {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
@@ -191,7 +191,7 @@ impl serde::ser::Serializer for ValueSerializer {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let value = value.serialize(self)?;
         let mut table = crate::InlineTable::new();

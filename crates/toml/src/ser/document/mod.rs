@@ -73,12 +73,12 @@ impl<'d> Serializer<'d> {
     }
 }
 
-impl<'d> serde::ser::Serializer for Serializer<'d> {
+impl<'d> serde_core::ser::Serializer for Serializer<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
-    type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeSeq = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = serde_core::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeTupleVariant = array::SerializeDocumentTupleVariant<'d>;
     type SerializeMap = map::SerializeDocumentTable<'d>;
     type SerializeStruct = map::SerializeDocumentTable<'d>;
@@ -146,7 +146,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         v.serialize(self)
     }
@@ -174,7 +174,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         v: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         v.serialize(self)
     }
@@ -187,7 +187,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         match SerializationStrategy::from(value) {
             SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {

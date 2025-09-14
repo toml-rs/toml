@@ -64,7 +64,7 @@ pub use value::ValueSerializer;
 #[cfg(feature = "display")]
 pub fn to_string<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: serde_core::ser::Serialize + ?Sized,
 {
     let mut output = Buffer::new();
     let serializer = Serializer::new(&mut output);
@@ -84,7 +84,7 @@ where
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: serde_core::ser::Serialize + ?Sized,
 {
     let mut output = Buffer::new();
     let serializer = Serializer::pretty(&mut output);

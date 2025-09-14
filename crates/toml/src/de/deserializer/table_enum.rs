@@ -15,7 +15,7 @@ impl<'i> TableEnumDeserializer<'i> {
     }
 }
 
-impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
+impl<'de> serde_core::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
     type Error = Error;
 
     fn unit_variant(self) -> Result<(), Self::Error> {
@@ -43,14 +43,14 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
 
     fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
     where
-        T: serde::de::DeserializeSeed<'de>,
+        T: serde_core::de::DeserializeSeed<'de>,
     {
         seed.deserialize(super::ValueDeserializer::with_parts(self.value, self.span))
     }
 
     fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         match self.value {
             DeValue::Array(values) => {
@@ -58,7 +58,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
                 let tuple_values = values;
 
                 if tuple_values.len() == len {
-                    serde::de::Deserializer::deserialize_seq(
+                    serde_core::de::Deserializer::deserialize_seq(
                         super::ArrayDeserializer::new(tuple_values, values_span),
                         visitor,
                     )
@@ -87,7 +87,7 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
                 let tuple_values = tuple_values?;
 
                 if tuple_values.len() == len {
-                    serde::de::Deserializer::deserialize_seq(
+                    serde_core::de::Deserializer::deserialize_seq(
                         super::ArrayDeserializer::new(tuple_values, values_span),
                         visitor,
                     )
@@ -111,9 +111,9 @@ impl<'de> serde::de::VariantAccess<'de> for TableEnumDeserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
-        serde::de::Deserializer::deserialize_struct(
+        serde_core::de::Deserializer::deserialize_struct(
             super::ValueDeserializer::with_parts(self.value, self.span)
                 .with_struct_key_validation(),
             "", // TODO: this should be the variant name

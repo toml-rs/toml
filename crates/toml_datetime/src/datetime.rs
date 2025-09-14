@@ -765,17 +765,17 @@ impl fmt::Display for DatetimeParseError {
 #[cfg(feature = "std")]
 impl std::error::Error for DatetimeParseError {}
 #[cfg(all(not(feature = "std"), feature = "serde"))]
-impl serde::de::StdError for DatetimeParseError {}
+impl serde_core::de::StdError for DatetimeParseError {}
 
 #[cfg(feature = "serde")]
 #[cfg(feature = "alloc")]
-impl serde::ser::Serialize for Datetime {
+impl serde_core::ser::Serialize for Datetime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
+        S: serde_core::ser::Serializer,
     {
         use crate::alloc::string::ToString as _;
-        use serde::ser::SerializeStruct;
+        use serde_core::ser::SerializeStruct;
 
         let mut s = serializer.serialize_struct(NAME, 1)?;
         s.serialize_field(FIELD, &self.to_string())?;
@@ -785,10 +785,10 @@ impl serde::ser::Serialize for Datetime {
 
 #[cfg(feature = "serde")]
 #[cfg(feature = "alloc")]
-impl serde::ser::Serialize for Date {
+impl serde_core::ser::Serialize for Date {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
+        S: serde_core::ser::Serializer,
     {
         Datetime::from(*self).serialize(serializer)
     }
@@ -796,24 +796,24 @@ impl serde::ser::Serialize for Date {
 
 #[cfg(feature = "serde")]
 #[cfg(feature = "alloc")]
-impl serde::ser::Serialize for Time {
+impl serde_core::ser::Serialize for Time {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
+        S: serde_core::ser::Serializer,
     {
         Datetime::from(*self).serialize(serializer)
     }
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Deserialize<'de> for Datetime {
+impl<'de> serde_core::de::Deserialize<'de> for Datetime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         struct DatetimeVisitor;
 
-        impl<'de> serde::de::Visitor<'de> for DatetimeVisitor {
+        impl<'de> serde_core::de::Visitor<'de> for DatetimeVisitor {
             type Value = Datetime;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -822,11 +822,11 @@ impl<'de> serde::de::Deserialize<'de> for Datetime {
 
             fn visit_map<V>(self, mut visitor: V) -> Result<Datetime, V::Error>
             where
-                V: serde::de::MapAccess<'de>,
+                V: serde_core::de::MapAccess<'de>,
             {
                 let value = visitor.next_key::<DatetimeKey>()?;
                 if value.is_none() {
-                    return Err(serde::de::Error::custom("datetime key not found"));
+                    return Err(serde_core::de::Error::custom("datetime key not found"));
                 }
                 let v: DatetimeFromString = visitor.next_value()?;
                 Ok(v.value)
@@ -839,10 +839,10 @@ impl<'de> serde::de::Deserialize<'de> for Datetime {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Deserialize<'de> for Date {
+impl<'de> serde_core::de::Deserialize<'de> for Date {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         match Datetime::deserialize(deserializer)? {
             Datetime {
@@ -850,8 +850,8 @@ impl<'de> serde::de::Deserialize<'de> for Date {
                 time: None,
                 offset: None,
             } => Ok(date),
-            datetime => Err(serde::de::Error::invalid_type(
-                serde::de::Unexpected::Other(datetime.type_name()),
+            datetime => Err(serde_core::de::Error::invalid_type(
+                serde_core::de::Unexpected::Other(datetime.type_name()),
                 &Self::type_name(),
             )),
         }
@@ -859,10 +859,10 @@ impl<'de> serde::de::Deserialize<'de> for Date {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Deserialize<'de> for Time {
+impl<'de> serde_core::de::Deserialize<'de> for Time {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         match Datetime::deserialize(deserializer)? {
             Datetime {
@@ -870,8 +870,8 @@ impl<'de> serde::de::Deserialize<'de> for Time {
                 time: Some(time),
                 offset: None,
             } => Ok(time),
-            datetime => Err(serde::de::Error::invalid_type(
-                serde::de::Unexpected::Other(datetime.type_name()),
+            datetime => Err(serde_core::de::Error::invalid_type(
+                serde_core::de::Unexpected::Other(datetime.type_name()),
                 &Self::type_name(),
             )),
         }
@@ -882,14 +882,14 @@ impl<'de> serde::de::Deserialize<'de> for Time {
 struct DatetimeKey;
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Deserialize<'de> for DatetimeKey {
+impl<'de> serde_core::de::Deserialize<'de> for DatetimeKey {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         struct FieldVisitor;
 
-        impl serde::de::Visitor<'_> for FieldVisitor {
+        impl serde_core::de::Visitor<'_> for FieldVisitor {
             type Value = ();
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -898,12 +898,14 @@ impl<'de> serde::de::Deserialize<'de> for DatetimeKey {
 
             fn visit_str<E>(self, s: &str) -> Result<(), E>
             where
-                E: serde::de::Error,
+                E: serde_core::de::Error,
             {
                 if s == FIELD {
                     Ok(())
                 } else {
-                    Err(serde::de::Error::custom("expected field with custom name"))
+                    Err(serde_core::de::Error::custom(
+                        "expected field with custom name",
+                    ))
                 }
             }
         }
@@ -919,14 +921,14 @@ pub(crate) struct DatetimeFromString {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Deserialize<'de> for DatetimeFromString {
+impl<'de> serde_core::de::Deserialize<'de> for DatetimeFromString {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'de>,
+        D: serde_core::de::Deserializer<'de>,
     {
         struct Visitor;
 
-        impl serde::de::Visitor<'_> for Visitor {
+        impl serde_core::de::Visitor<'_> for Visitor {
             type Value = DatetimeFromString;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -935,11 +937,11 @@ impl<'de> serde::de::Deserialize<'de> for DatetimeFromString {
 
             fn visit_str<E>(self, s: &str) -> Result<DatetimeFromString, E>
             where
-                E: serde::de::Error,
+                E: serde_core::de::Error,
             {
                 match s.parse() {
                     Ok(date) => Ok(DatetimeFromString { value: date }),
-                    Err(e) => Err(serde::de::Error::custom(e)),
+                    Err(e) => Err(serde_core::de::Error::custom(e)),
                 }
             }
         }

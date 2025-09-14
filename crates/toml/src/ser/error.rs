@@ -51,7 +51,7 @@ impl From<core::fmt::Error> for Error {
     }
 }
 
-impl serde::ser::Error for Error {
+impl serde_core::ser::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: core::fmt::Display,
@@ -75,7 +75,7 @@ impl core::fmt::Debug for Error {
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 #[cfg(not(feature = "std"))]
-impl serde::de::StdError for Error {}
+impl serde_core::de::StdError for Error {}
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

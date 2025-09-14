@@ -15,7 +15,7 @@ pub enum SerializerError {
     InvalidProtocol,
 }
 
-impl serde::ser::Error for SerializerError {
+impl serde_core::ser::Error for SerializerError {
     fn custom<T>(_msg: T) -> Self
     where
         T: core::fmt::Display,
@@ -36,7 +36,7 @@ impl core::fmt::Display for SerializerError {
 #[cfg(feature = "std")]
 impl std::error::Error for SerializerError {}
 #[cfg(all(not(feature = "std"), feature = "serde"))]
-impl serde::de::StdError for SerializerError {}
+impl serde_core::de::StdError for SerializerError {}
 
 /// Serializer / format support for emitting [`Datetime`][crate::Datetime]
 #[derive(Default)]
@@ -50,14 +50,14 @@ impl DatetimeSerializer {
         Self { value: None }
     }
 
-    /// See [`serde::ser::SerializeStruct::serialize_field`]
+    /// See [`serde_core::ser::SerializeStruct::serialize_field`]
     pub fn serialize_field<T>(
         &mut self,
         key: &'static str,
         value: &T,
     ) -> Result<(), SerializerError>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         if key == crate::datetime::FIELD {
             self.value = Some(value.serialize(DatetimeFieldSerializer::default())?);
@@ -66,7 +66,7 @@ impl DatetimeSerializer {
         Ok(())
     }
 
-    /// See [`serde::ser::SerializeStruct::end`]
+    /// See [`serde_core::ser::SerializeStruct::end`]
     pub fn end(self) -> Result<crate::Datetime, SerializerError> {
         self.value.ok_or(SerializerError::InvalidProtocol)
     }
@@ -75,16 +75,16 @@ impl DatetimeSerializer {
 #[derive(Default)]
 struct DatetimeFieldSerializer {}
 
-impl serde::ser::Serializer for DatetimeFieldSerializer {
+impl serde_core::ser::Serializer for DatetimeFieldSerializer {
     type Ok = crate::Datetime;
     type Error = SerializerError;
-    type SerializeSeq = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTuple = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeTupleVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeMap = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeSeq = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeMap = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStruct = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = serde_core::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, _value: bool) -> Result<Self::Ok, Self::Error> {
         Err(SerializerError::InvalidProtocol)
@@ -149,7 +149,7 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
 
     fn serialize_some<T>(self, _value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Err(SerializerError::InvalidProtocol)
     }
@@ -177,7 +177,7 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
         _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Err(SerializerError::InvalidProtocol)
     }
@@ -190,7 +190,7 @@ impl serde::ser::Serializer for DatetimeFieldSerializer {
         _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Err(SerializerError::InvalidProtocol)
     }

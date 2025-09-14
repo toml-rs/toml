@@ -37,13 +37,13 @@ impl<'d> SerializeDocumentTable<'d> {
     }
 }
 
-impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
+impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let mut encoded_key = String::new();
         input.serialize(KeySerializer {
@@ -55,7 +55,7 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let encoded_key = self
             .key
@@ -100,13 +100,13 @@ impl<'d> serde::ser::SerializeMap for SerializeDocumentTable<'d> {
     }
 }
 
-impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
+impl<'d> serde_core::ser::SerializeStruct for SerializeDocumentTable<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         match SerializationStrategy::from(value) {
             SerializationStrategy::Value => {
@@ -148,16 +148,16 @@ impl<'d> serde::ser::SerializeStruct for SerializeDocumentTable<'d> {
     }
 }
 
-impl<'d> serde::ser::SerializeStructVariant for SerializeDocumentTable<'d> {
+impl<'d> serde_core::ser::SerializeStructVariant for SerializeDocumentTable<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     #[inline]
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeStruct::serialize_field(self, key, value)
+        serde_core::ser::SerializeStruct::serialize_field(self, key, value)
     }
 
     #[inline]
