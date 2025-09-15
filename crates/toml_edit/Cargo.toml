@@ -1,6 +1,6 @@
 [package]
 name = "toml_edit"
-version = "0.23.4"
+version = "0.23.5"
 description = "Yet another format-preserving TOML parser."
 categories = ["encoding", "parser-implementations", "parsing", "config"]
 keywords = ["encoding", "toml"]
@@ -42,8 +42,8 @@ unbounded = []
 indexmap = { version = "2.3.0", features = ["std"] }
 winnow = { version = "0.7.10", optional = true }
 serde_core = { version = "1.0.221", optional = true }
-toml_datetime = { version = "0.7.0", path = "../toml_datetime" }
-serde_spanned = { version = "1.0.0", path = "../serde_spanned", features = ["serde"], optional = true }
+toml_datetime = { version = "0.7.1", path = "../toml_datetime" }
+serde_spanned = { version = "1.0.1", path = "../serde_spanned", features = ["serde"], optional = true }
 toml_writer = { version = "1.0.2", path = "../toml_writer", optional = true }
 toml_parser = { version = "1.0.2", path = "../toml_parser", optional = true }
 anstream = { version = "0.6.15", optional = true }

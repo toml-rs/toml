@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.23.5] - 2025-09-15
+
 ### Performance
 
 - Allow more build parallelism by depending on [`serde_core`](https://crates.io/crates/serde_core)
@@ -868,7 +870,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.4...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.5...HEAD
+[0.23.5]: https://github.com/toml-rs/toml/compare/v0.23.4...v0.23.5
 [0.23.4]: https://github.com/toml-rs/toml/compare/v0.23.3...v0.23.4
 [0.23.3]: https://github.com/toml-rs/toml/compare/v0.23.2...v0.23.3
 [0.23.2]: https://github.com/toml-rs/toml/compare/v0.23.1...v0.23.2

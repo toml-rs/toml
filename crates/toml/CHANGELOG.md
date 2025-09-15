@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.6] - 2025-09-15
+
 ### Performance
 
 - Allow more build parallelism by depending on [`serde_core`](https://crates.io/crates/serde_core)
@@ -397,7 +399,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.5...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.6...HEAD
+[0.9.6]: https://github.com/toml-rs/toml/compare/toml-v0.9.5...toml-v0.9.6
 [0.9.5]: https://github.com/toml-rs/toml/compare/toml-v0.9.4...toml-v0.9.5
 [0.9.4]: https://github.com/toml-rs/toml/compare/toml-v0.9.3...toml-v0.9.4
 [0.9.3]: https://github.com/toml-rs/toml/compare/toml-v0.9.2...toml-v0.9.3

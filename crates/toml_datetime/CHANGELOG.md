@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.1] - 2025-09-15
+
 ### Performance
 
 - Allow more build parallelism by depending on [`serde_core`](https://crates.io/crates/serde_core)
@@ -90,7 +92,8 @@ MSRV is now 1.64.0
 ## [0.5.0] - 2022-10-21
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.7.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.7.1...HEAD
+[0.7.1]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.7.0...toml_datetime-v0.7.1
 [0.7.0]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.11...toml_datetime-v0.7.0
 [0.6.11]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.10...toml_datetime-v0.6.11
 [0.6.10]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.6.9...toml_datetime-v0.6.10
