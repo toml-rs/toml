@@ -1,7 +1,7 @@
 //! Deserialzation support for [`Spanned`]
 
-use serde::de::value::BorrowedStrDeserializer;
-use serde::de::IntoDeserializer as _;
+use serde_core::de::value::BorrowedStrDeserializer;
+use serde_core::de::IntoDeserializer as _;
 
 use crate::Spanned;
 
@@ -13,8 +13,8 @@ pub fn is_spanned(name: &'static str) -> bool {
 /// Deserializer / format support for emitting [`Spanned`]
 pub struct SpannedDeserializer<'de, T, E>
 where
-    T: serde::de::IntoDeserializer<'de, E>,
-    E: serde::de::Error,
+    T: serde_core::de::IntoDeserializer<'de, E>,
+    E: serde_core::de::Error,
 {
     start: Option<usize>,
     end: Option<usize>,
@@ -25,8 +25,8 @@ where
 
 impl<'de, T, E> SpannedDeserializer<'de, T, E>
 where
-    T: serde::de::IntoDeserializer<'de, E>,
-    E: serde::de::Error,
+    T: serde_core::de::IntoDeserializer<'de, E>,
+    E: serde_core::de::Error,
 {
     /// Create a deserializer to emit [`Spanned`]
     pub fn new(value: T, span: core::ops::Range<usize>) -> Self {
@@ -40,15 +40,15 @@ where
     }
 }
 
-impl<'de, T, E> serde::de::MapAccess<'de> for SpannedDeserializer<'de, T, E>
+impl<'de, T, E> serde_core::de::MapAccess<'de> for SpannedDeserializer<'de, T, E>
 where
-    T: serde::de::IntoDeserializer<'de, E>,
-    E: serde::de::Error,
+    T: serde_core::de::IntoDeserializer<'de, E>,
+    E: serde_core::de::Error,
 {
     type Error = E;
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
     where
-        K: serde::de::DeserializeSeed<'de>,
+        K: serde_core::de::DeserializeSeed<'de>,
     {
         if self.start.is_some() {
             seed.deserialize(BorrowedStrDeserializer::new(Spanned::<T>::START_FIELD))
@@ -66,7 +66,7 @@ where
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::DeserializeSeed<'de>,
+        V: serde_core::de::DeserializeSeed<'de>,
     {
         if let Some(start) = self.start.take() {
             seed.deserialize(start.into_deserializer())

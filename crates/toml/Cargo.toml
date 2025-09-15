@@ -29,8 +29,8 @@ pre-release-replacements = [
 
 [features]
 default = ["std", "serde", "parse", "display"]
-std = ["indexmap?/std", "serde?/std", "toml_parser?/std", "toml_writer?/std", "toml_datetime/std", "serde_spanned/std"]
-serde = ["dep:serde", "toml_datetime/serde", "serde_spanned/serde"]
+std = ["indexmap?/std", "serde_core?/std", "toml_parser?/std", "toml_writer?/std", "toml_datetime/std", "serde_spanned/std"]
+serde = ["dep:serde_core", "toml_datetime/serde", "serde_spanned/serde"]
 parse = ["dep:toml_parser", "dep:winnow"]
 display = ["dep:toml_writer"]
 fast_hash = ["preserve_order", "dep:foldhash"]
@@ -49,7 +49,7 @@ unbounded = []
 preserve_order = ["dep:indexmap", "std"]
 
 [dependencies]
-serde = { version = "1.0.145", default-features = false, features = ["alloc"], optional = true }
+serde_core = { version = "1.0.221", default-features = false, features = ["alloc"], optional = true }
 indexmap = { version = "2.3.0", default-features = false, optional = true }
 toml_parser = { version = "1.0.2", path = "../toml_parser", default-features = false, features = ["alloc"], optional = true }
 winnow = { version = "0.7.10", default-features = false, optional = true }

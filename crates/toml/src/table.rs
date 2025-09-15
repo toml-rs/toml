@@ -1,5 +1,5 @@
-use serde::de;
-use serde::ser;
+use serde_core::de;
+use serde_core::ser;
 
 use crate::alloc_prelude::*;
 use crate::map::Map;
@@ -62,7 +62,7 @@ impl ser::Serialize for Table {
     where
         S: ser::Serializer,
     {
-        use serde::ser::SerializeMap;
+        use serde_core::ser::SerializeMap;
         let mut map = serializer.serialize_map(Some(self.len()))?;
         for (k, v) in self {
             map.serialize_key(k)?;
@@ -157,7 +157,7 @@ impl<'de> de::Deserializer<'de> for Table {
         Value::Table(self).deserialize_newtype_struct(name, visitor)
     }
 
-    serde::forward_to_deserialize_any! {
+    serde_core::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit seq
         bytes byte_buf map unit_struct tuple_struct struct
         tuple ignored_any identifier

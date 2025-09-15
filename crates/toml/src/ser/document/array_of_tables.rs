@@ -27,16 +27,16 @@ impl<'d> ArrayOfTablesSerializer<'d> {
     }
 }
 
-impl<'d> serde::ser::Serializer for ArrayOfTablesSerializer<'d> {
+impl<'d> serde_core::ser::Serializer for ArrayOfTablesSerializer<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
     type SerializeSeq = SerializeArrayOfTablesSerializer<'d>;
     type SerializeTuple = SerializeArrayOfTablesSerializer<'d>;
     type SerializeTupleStruct = SerializeArrayOfTablesSerializer<'d>;
-    type SerializeTupleVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeMap = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeStruct = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeMap = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStruct = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = serde_core::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
         Err(Error::unsupported_type(Some("bool")))
@@ -100,7 +100,7 @@ impl<'d> serde::ser::Serializer for ArrayOfTablesSerializer<'d> {
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         v.serialize(self)
     }
@@ -128,7 +128,7 @@ impl<'d> serde::ser::Serializer for ArrayOfTablesSerializer<'d> {
         v: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         v.serialize(self)
     }
@@ -141,7 +141,7 @@ impl<'d> serde::ser::Serializer for ArrayOfTablesSerializer<'d> {
         _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Err(Error::unsupported_type(Some(variant)))
     }
@@ -223,13 +223,13 @@ impl<'d> SerializeArrayOfTablesSerializer<'d> {
     }
 }
 
-impl<'d> serde::ser::SerializeSeq for SerializeArrayOfTablesSerializer<'d> {
+impl<'d> serde_core::ser::SerializeSeq for SerializeArrayOfTablesSerializer<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let child = self.buf.element_table(&mut self.parent, self.key.clone());
         let value_serializer = Serializer::with_table(self.buf, child, self.style);
@@ -242,34 +242,34 @@ impl<'d> serde::ser::SerializeSeq for SerializeArrayOfTablesSerializer<'d> {
     }
 }
 
-impl<'d> serde::ser::SerializeTuple for SerializeArrayOfTablesSerializer<'d> {
+impl<'d> serde_core::ser::SerializeTuple for SerializeArrayOfTablesSerializer<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeSeq::serialize_element(self, value)
+        serde_core::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        serde::ser::SerializeSeq::end(self)
+        serde_core::ser::SerializeSeq::end(self)
     }
 }
 
-impl<'d> serde::ser::SerializeTupleStruct for SerializeArrayOfTablesSerializer<'d> {
+impl<'d> serde_core::ser::SerializeTupleStruct for SerializeArrayOfTablesSerializer<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeSeq::serialize_element(self, value)
+        serde_core::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        serde::ser::SerializeSeq::end(self)
+        serde_core::ser::SerializeSeq::end(self)
     }
 }

@@ -81,7 +81,7 @@ impl Error {
 }
 
 #[cfg(feature = "serde")]
-impl serde::de::Error for Error {
+impl serde_core::de::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: core::fmt::Display,
@@ -168,7 +168,7 @@ impl core::fmt::Display for Error {
 impl std::error::Error for Error {}
 #[cfg(not(feature = "std"))]
 #[cfg(feature = "serde")]
-impl serde::de::StdError for Error {}
+impl serde_core::de::StdError for Error {}
 
 fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     if input.is_empty() {

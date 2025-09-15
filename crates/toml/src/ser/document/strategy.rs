@@ -9,14 +9,14 @@ pub(crate) enum SerializationStrategy {
 
 impl<T> From<&T> for SerializationStrategy
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: serde_core::ser::Serialize + ?Sized,
 {
     fn from(value: &T) -> Self {
         value.serialize(WalkValue).unwrap_err()
     }
 }
 
-impl serde::ser::Error for SerializationStrategy {
+impl serde_core::ser::Error for SerializationStrategy {
     fn custom<T>(_msg: T) -> Self
     where
         T: core::fmt::Display,
@@ -34,20 +34,20 @@ impl core::fmt::Display for SerializationStrategy {
 #[cfg(feature = "std")]
 impl std::error::Error for SerializationStrategy {}
 #[cfg(not(feature = "std"))]
-impl serde::de::StdError for SerializationStrategy {}
+impl serde_core::de::StdError for SerializationStrategy {}
 
 struct WalkValue;
 
-impl serde::ser::Serializer for WalkValue {
+impl serde_core::ser::Serializer for WalkValue {
     type Ok = core::convert::Infallible;
     type Error = SerializationStrategy;
     type SerializeSeq = ArrayWalkValue;
     type SerializeTuple = ArrayWalkValue;
     type SerializeTupleStruct = ArrayWalkValue;
-    type SerializeTupleVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
-    type SerializeMap = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = serde_core::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeMap = serde_core::ser::Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = StructWalkValue;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = serde_core::ser::Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
         Err(SerializationStrategy::Value)
@@ -119,7 +119,7 @@ impl serde::ser::Serializer for WalkValue {
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         v.serialize(self)
     }
@@ -147,7 +147,7 @@ impl serde::ser::Serializer for WalkValue {
         v: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         v.serialize(self)
     }
@@ -160,7 +160,7 @@ impl serde::ser::Serializer for WalkValue {
         _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Err(SerializationStrategy::Table)
     }
@@ -230,7 +230,7 @@ impl ArrayWalkValue {
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), SerializationStrategy>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.is_empty = false;
         match SerializationStrategy::from(value) {
@@ -251,13 +251,13 @@ impl ArrayWalkValue {
     }
 }
 
-impl serde::ser::SerializeSeq for ArrayWalkValue {
+impl serde_core::ser::SerializeSeq for ArrayWalkValue {
     type Ok = core::convert::Infallible;
     type Error = SerializationStrategy;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.serialize_element(value)
     }
@@ -267,13 +267,13 @@ impl serde::ser::SerializeSeq for ArrayWalkValue {
     }
 }
 
-impl serde::ser::SerializeTuple for ArrayWalkValue {
+impl serde_core::ser::SerializeTuple for ArrayWalkValue {
     type Ok = core::convert::Infallible;
     type Error = SerializationStrategy;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.serialize_element(value)
     }
@@ -283,13 +283,13 @@ impl serde::ser::SerializeTuple for ArrayWalkValue {
     }
 }
 
-impl serde::ser::SerializeTupleStruct for ArrayWalkValue {
+impl serde_core::ser::SerializeTupleStruct for ArrayWalkValue {
     type Ok = core::convert::Infallible;
     type Error = SerializationStrategy;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.serialize_element(value)
     }
@@ -301,20 +301,20 @@ impl serde::ser::SerializeTupleStruct for ArrayWalkValue {
 
 pub(crate) struct StructWalkValue;
 
-impl serde::ser::SerializeMap for StructWalkValue {
+impl serde_core::ser::SerializeMap for StructWalkValue {
     type Ok = core::convert::Infallible;
     type Error = SerializationStrategy;
 
     fn serialize_key<T>(&mut self, _input: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Ok(())
     }
 
     fn serialize_value<T>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Ok(())
     }
@@ -325,13 +325,13 @@ impl serde::ser::SerializeMap for StructWalkValue {
     }
 }
 
-impl serde::ser::SerializeStruct for StructWalkValue {
+impl serde_core::ser::SerializeStruct for StructWalkValue {
     type Ok = core::convert::Infallible;
     type Error = SerializationStrategy;
 
     fn serialize_field<T>(&mut self, _key: &'static str, _value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         Ok(())
     }

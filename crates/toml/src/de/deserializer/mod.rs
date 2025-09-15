@@ -68,12 +68,12 @@ impl<'i> From<Spanned<DeTable<'i>>> for Deserializer<'i> {
     }
 }
 
-impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
+impl<'de> serde_core::Deserializer<'de> for Deserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.into_table_de()
@@ -88,7 +88,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.into_table_de()
@@ -105,7 +105,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.into_table_de()
@@ -123,7 +123,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.into_table_de()
@@ -142,7 +142,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.into_table_de()
@@ -153,14 +153,14 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'de> {
             })
     }
 
-    serde::forward_to_deserialize_any! {
+    serde_core::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer<'de> {
+impl<'de> serde_core::de::IntoDeserializer<'de, Error> for Deserializer<'de> {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -168,7 +168,7 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for Deserializer<'de> {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for Spanned<DeTable<'de>> {
+impl<'de> serde_core::de::IntoDeserializer<'de, Error> for Spanned<DeTable<'de>> {
     type Deserializer = Deserializer<'de>;
 
     fn into_deserializer(self) -> Self::Deserializer {

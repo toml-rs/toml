@@ -71,7 +71,7 @@ use crate::alloc_prelude::*;
 #[cfg(feature = "serde")]
 pub fn from_str<'de, T>(s: &'de str) -> Result<T, Error>
 where
-    T: serde::de::Deserialize<'de>,
+    T: serde_core::de::Deserialize<'de>,
 {
     T::deserialize(Deserializer::parse(s)?)
 }
@@ -86,7 +86,7 @@ where
 #[cfg(feature = "serde")]
 pub fn from_slice<'de, T>(s: &'de [u8]) -> Result<T, Error>
 where
-    T: serde::de::Deserialize<'de>,
+    T: serde_core::de::Deserialize<'de>,
 {
     let s = core::str::from_utf8(s).map_err(|e| Error::custom(e.to_string(), None))?;
     from_str(s)

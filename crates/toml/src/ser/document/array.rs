@@ -39,13 +39,13 @@ impl<'d> SerializeDocumentTupleVariant<'d> {
     }
 }
 
-impl<'d> serde::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'d> {
+impl<'d> serde_core::ser::SerializeTupleVariant for SerializeDocumentTupleVariant<'d> {
     type Ok = &'d mut Buffer;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let dst = self.table.body_mut();
 

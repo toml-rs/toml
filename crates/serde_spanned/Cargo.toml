@@ -25,12 +25,12 @@ pre-release-replacements = [
 
 [features]
 default = ["std", "serde"]
-alloc = ["serde?/alloc"]
-std = ["alloc", "serde?/std"]
-serde = ["dep:serde"]
+alloc = ["serde_core?/alloc"]
+std = ["alloc", "serde_core?/std"]
+serde = ["dep:serde_core"]
 
 [dependencies]
-serde = { version = "1.0.145", optional = true, default-features = false }
+serde_core = { version = "1.0.221", optional = true, default-features = false }
 
 [dev-dependencies]
 serde = "1"

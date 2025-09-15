@@ -25,13 +25,13 @@ impl SerializeMap {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeMap {
+impl serde_core::ser::SerializeMap for SerializeMap {
     type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         match self {
             Self::Datetime(s) => s.serialize_key(input),
@@ -41,7 +41,7 @@ impl serde::ser::SerializeMap for SerializeMap {
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         match self {
             Self::Datetime(s) => s.serialize_value(value),
@@ -57,13 +57,13 @@ impl serde::ser::SerializeMap for SerializeMap {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeMap {
+impl serde_core::ser::SerializeStruct for SerializeMap {
     type Ok = crate::Value;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         match self {
             Self::Datetime(s) => s.serialize_field(key, value),
@@ -92,20 +92,20 @@ impl SerializeDatetime {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeDatetime {
+impl serde_core::ser::SerializeMap for SerializeDatetime {
     type Ok = crate::Datetime;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, _input: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         unreachable!("datetimes should only be serialized as structs, not maps")
     }
 
     fn serialize_value<T>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         unreachable!("datetimes should only be serialized as structs, not maps")
     }
@@ -115,13 +115,13 @@ impl serde::ser::SerializeMap for SerializeDatetime {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeDatetime {
+impl serde_core::ser::SerializeStruct for SerializeDatetime {
     type Ok = crate::Datetime;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.inner.serialize_field(key, value).map_err(dt_err)?;
 
@@ -158,13 +158,13 @@ impl SerializeInlineTable {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeInlineTable {
+impl serde_core::ser::SerializeMap for SerializeInlineTable {
     type Ok = crate::InlineTable;
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         self.key = Some(input.serialize(KeySerializer)?);
         Ok(())
@@ -172,7 +172,7 @@ impl serde::ser::SerializeMap for SerializeInlineTable {
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let mut is_none = false;
         let value_serializer = MapValueSerializer::new(&mut is_none);
@@ -197,13 +197,13 @@ impl serde::ser::SerializeMap for SerializeInlineTable {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeInlineTable {
+impl serde_core::ser::SerializeStruct for SerializeInlineTable {
     type Ok = crate::InlineTable;
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         let mut is_none = false;
         let value_serializer = MapValueSerializer::new(&mut is_none);
@@ -237,7 +237,7 @@ impl<'d> MapValueSerializer<'d> {
     }
 }
 
-impl serde::ser::Serializer for MapValueSerializer<'_> {
+impl serde_core::ser::Serializer for MapValueSerializer<'_> {
     type Ok = crate::Value;
     type Error = Error;
     type SerializeSeq = SerializeValueArray;
@@ -311,7 +311,7 @@ impl serde::ser::Serializer for MapValueSerializer<'_> {
 
     fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         ValueSerializer::new().serialize_some(value)
     }
@@ -339,7 +339,7 @@ impl serde::ser::Serializer for MapValueSerializer<'_> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
@@ -352,7 +352,7 @@ impl serde::ser::Serializer for MapValueSerializer<'_> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
         ValueSerializer::new().serialize_newtype_variant(name, variant_index, variant, value)
     }
@@ -420,21 +420,21 @@ impl SerializeStructVariant {
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeStructVariant {
+impl serde_core::ser::SerializeStructVariant for SerializeStructVariant {
     type Ok = crate::Value;
     type Error = Error;
 
     #[inline]
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: serde_core::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeStruct::serialize_field(&mut self.inner, key, value)
+        serde_core::ser::SerializeStruct::serialize_field(&mut self.inner, key, value)
     }
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let inner = serde::ser::SerializeStruct::end(self.inner)?.into();
+        let inner = serde_core::ser::SerializeStruct::end(self.inner)?.into();
         let mut items = crate::table::KeyValuePairs::new();
         let value = crate::Item::Value(inner);
         items.insert(crate::Key::new(self.variant), value);

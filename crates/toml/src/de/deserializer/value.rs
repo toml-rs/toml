@@ -1,4 +1,4 @@
-use serde::de::IntoDeserializer as _;
+use serde_core::de::IntoDeserializer as _;
 use serde_spanned::Spanned;
 
 use super::ArrayDeserializer;
@@ -81,12 +81,12 @@ impl<'i> From<Spanned<DeValue<'i>>> for ValueDeserializer<'i> {
     }
 }
 
-impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
+impl<'de> serde_core::Deserializer<'de> for ValueDeserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let span = self.span.clone();
         match self.input {
@@ -127,14 +127,14 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
 
     fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         self.deserialize_any(visitor)
     }
 
     fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         self.deserialize_any(visitor)
     }
@@ -143,7 +143,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let span = self.span.clone();
         visitor.visit_some(self).map_err(|mut e: Self::Error| {
@@ -160,7 +160,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let span = self.span.clone();
         visitor
@@ -180,7 +180,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         if serde_spanned::de::is_spanned(name) {
             let span = self.span.clone();
@@ -226,7 +226,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: serde_core::de::Visitor<'de>,
     {
         let span = self.span.clone();
         match self.input {
@@ -244,14 +244,14 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'de> {
         })
     }
 
-    serde::forward_to_deserialize_any! {
+    serde_core::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for ValueDeserializer<'de> {
+impl<'de> serde_core::de::IntoDeserializer<'de, Error> for ValueDeserializer<'de> {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -259,7 +259,7 @@ impl<'de> serde::de::IntoDeserializer<'de, Error> for ValueDeserializer<'de> {
     }
 }
 
-impl<'de> serde::de::IntoDeserializer<'de, Error> for Spanned<DeValue<'de>> {
+impl<'de> serde_core::de::IntoDeserializer<'de, Error> for Spanned<DeValue<'de>> {
     type Deserializer = ValueDeserializer<'de>;
 
     fn into_deserializer(self) -> Self::Deserializer {
