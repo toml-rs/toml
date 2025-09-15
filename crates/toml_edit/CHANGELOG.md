@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Allow more build parallelism by depending on [`serde_core`](https://crates.io/crates/serde_core)
+
 ## [0.23.4] - 2025-08-22
 
 ### Features
