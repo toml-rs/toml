@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.3] - 2025-09-18
+
 ### Compatibility
 
 - Update MSRV to 1.76
@@ -46,7 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Initial release
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.3...HEAD
+[1.0.3]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.2...toml_writer-v1.0.3
 [1.0.2]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.1...toml_writer-v1.0.2
 [1.0.1]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.0...toml_writer-v1.0.1
 [1.0.0]: https://github.com/toml-rs/toml/compare/toml_writer-v0.1.2...toml_writer-v1.0.0

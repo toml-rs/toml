@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.7] - 2025-09-18
+
 ### Compatibility
 
 - Update MSRV to 1.76
@@ -407,7 +409,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.7...HEAD
+[0.9.7]: https://github.com/toml-rs/toml/compare/toml-v0.9.6...toml-v0.9.7
 [0.9.6]: https://github.com/toml-rs/toml/compare/toml-v0.9.5...toml-v0.9.6
 [0.9.5]: https://github.com/toml-rs/toml/compare/toml-v0.9.4...toml-v0.9.5
 [0.9.4]: https://github.com/toml-rs/toml/compare/toml-v0.9.3...toml-v0.9.4
