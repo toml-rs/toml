@@ -58,7 +58,7 @@ anstyle = { version = "1.0.11", optional = true }
 toml_datetime = { version = "0.7.1", path = "../toml_datetime", default-features = false, features = ["alloc"] }
 toml_writer = { version = "1.0.2", path = "../toml_writer", default-features = false, features = ["alloc"], optional = true }
 serde_spanned = { version = "1.0.1", path = "../serde_spanned", default-features = false, features = ["alloc"] }
-foldhash = { version = "0.1.5", default-features = false, optional = true }
+foldhash = { version = "0.2.0", default-features = false, optional = true }
 
 [dev-dependencies]
 serde = { version = "1.0.225", features = ["derive"] }
