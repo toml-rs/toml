@@ -1403,6 +1403,266 @@ name = "test.swf"
 }
 
 #[test]
+fn comments_on_tables_made_implicit() {
+    given(
+        r#"
+# before `package`
+    [package]
+
+# before `package.metadata`
+    [package.metadata]
+
+# before `package.metadata.release`
+    [package.metadata.release]
+    release = false
+"#,
+    )
+    .running_on_doc(|document| {
+        use toml_edit::visit_mut::*;
+        struct ToExplicit;
+        impl VisitMut for ToExplicit {
+            fn visit_table_mut(&mut self, node: &mut Table) {
+                node.set_implicit(true);
+                visit_table_mut(self, node);
+            }
+        }
+        ToExplicit.visit_document_mut(document);
+    })
+    .produces_display(str![[r#"
+
+# before `package.metadata.release`
+    [package.metadata.release]
+    release = false
+
+"#]]);
+}
+
+#[test]
+fn comments_on_dotted_inline_to_std() {
+    given(
+        r#"
+# before `package.badges.maintenance`
+    package.badges = { maintenance = "deprecated" }
+
+# before `package.metadata.release.release`
+    package.metadata.release = { release = false }
+
+# before `hints.mostly-unused`
+    hints = { mostly-unused = false }
+"#,
+    )
+    .running_on_doc(|document| {
+        use toml_edit::visit_mut::*;
+        struct ToStd;
+        impl VisitMut for ToStd {
+            fn visit_item_mut(&mut self, node: &mut Item) {
+                let other = std::mem::take(node);
+                let other = match other.into_table().map(Item::Table) {
+                    Ok(i) => i,
+                    Err(i) => i,
+                };
+                let other = match other.into_array_of_tables().map(Item::ArrayOfTables) {
+                    Ok(i) => i,
+                    Err(i) => i,
+                };
+                *node = other;
+                visit_item_mut(self, node);
+            }
+            fn visit_table_mut(&mut self, node: &mut Table) {
+                node.set_dotted(false);
+                visit_table_mut(self, node);
+            }
+        }
+        ToStd.visit_document_mut(document);
+    })
+    .produces_display(str![[r#"
+[
+# before `package.badges.maintenance`
+    package.badges ]
+maintenance = "deprecated"
+
+[
+# before `package.metadata.release.release`
+    package.metadata.release ]
+release = false
+
+[
+# before `hints.mostly-unused`
+    hints ]
+mostly-unused = false
+
+"#]]);
+}
+
+#[test]
+fn insert_comments_in_decor() {
+    const DECOR: &str = "\n# Hello \n    ";
+    given(
+        r#"
+[table]
+key = "value"
+array = [1, 2, 3]
+inline = { key = "value" }
+"#,
+    )
+    .running_on_doc(|document| {
+        use toml_edit::visit_mut::*;
+        struct Corrupt;
+        impl VisitMut for Corrupt {
+            fn visit_table_mut(&mut self, node: &mut Table) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                visit_table_mut(self, node);
+            }
+
+            fn visit_inline_table_mut(&mut self, node: &mut toml_edit::InlineTable) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                node.set_preamble(DECOR);
+                visit_inline_table_mut(self, node);
+            }
+
+            fn visit_table_like_kv_mut(&mut self, mut key: toml_edit::KeyMut<'_>, node: &mut Item) {
+                *key.dotted_decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                *key.leaf_decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                visit_table_like_kv_mut(self, key, node);
+            }
+
+            fn visit_array_mut(&mut self, node: &mut toml_edit::Array) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                node.set_trailing(DECOR);
+                visit_array_mut(self, node);
+            }
+
+            fn visit_value_mut(&mut self, node: &mut Value) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                visit_value_mut(self, node);
+            }
+        }
+        Corrupt.visit_document_mut(document);
+    })
+    .produces_display(str![[r#"
+
+# Hello 
+    
+# Hello 
+    [
+# Hello 
+    table
+# Hello 
+    ]
+# Hello 
+    
+
+# Hello 
+    key
+# Hello 
+    =
+# Hello 
+    "value"
+# Hello 
+    
+
+# Hello 
+    array
+# Hello 
+    =
+# Hello 
+    [
+# Hello 
+    1
+# Hello 
+    ,
+# Hello 
+    2
+# Hello 
+    ,
+# Hello 
+    3
+# Hello 
+    
+# Hello 
+    ]
+# Hello 
+    
+
+# Hello 
+    inline
+# Hello 
+    =
+# Hello 
+    {
+# Hello 
+    
+# Hello 
+    key
+# Hello 
+    =
+# Hello 
+    "value"
+# Hello 
+    }
+# Hello 
+    
+
+# Hello 
+    
+"#]]);
+}
+
+#[test]
+fn insert_garbage_in_decor() {
+    const DECOR: &str = "garbage";
+    given(
+        r#"
+[table]
+key = "value"
+array = [1, 2, 3]
+inline = { key = "value" }
+"#,
+    )
+    .running_on_doc(|document| {
+        use toml_edit::visit_mut::*;
+        struct Corrupt;
+        impl VisitMut for Corrupt {
+            fn visit_table_mut(&mut self, node: &mut Table) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                visit_table_mut(self, node);
+            }
+
+            fn visit_inline_table_mut(&mut self, node: &mut toml_edit::InlineTable) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                node.set_preamble(DECOR);
+                visit_inline_table_mut(self, node);
+            }
+
+            fn visit_table_like_kv_mut(&mut self, mut key: toml_edit::KeyMut<'_>, node: &mut Item) {
+                *key.dotted_decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                *key.leaf_decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                visit_table_like_kv_mut(self, key, node);
+            }
+
+            fn visit_array_mut(&mut self, node: &mut toml_edit::Array) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                node.set_trailing(DECOR);
+                visit_array_mut(self, node);
+            }
+
+            fn visit_value_mut(&mut self, node: &mut Value) {
+                *node.decor_mut() = toml_edit::Decor::new(DECOR, DECOR);
+                visit_value_mut(self, node);
+            }
+        }
+        Corrupt.visit_document_mut(document);
+    })
+    .produces_display(str![[r#"
+garbagegarbage[garbagetablegarbage]garbage
+garbagekeygarbage=garbage"value"garbage
+garbagearraygarbage=garbage[garbage1garbage,garbage2garbage,garbage3garbagegarbage]garbage
+garbageinlinegarbage=garbage{garbagegarbagekeygarbage=garbage"value"garbage}garbage
+garbage
+"#]]);
+}
+
+#[test]
 fn table_key_decor_whitespace() {
     let mut document = "bookmark = 1010".parse::<DocumentMut>().unwrap();
 
