@@ -36,7 +36,7 @@ impl RawString {
         }
     }
 
-    pub(crate) fn to_str<'s>(&'s self, input: &'s str) -> &'s str {
+    pub(crate) fn to_str_or_panic<'s>(&'s self, input: &'s str) -> &'s str {
         match &self.0 {
             RawStringInner::Empty => "",
             RawStringInner::Explicit(s) => s.as_str(),
@@ -84,7 +84,7 @@ impl RawString {
 
     #[cfg(feature = "display")]
     pub(crate) fn encode(&self, buf: &mut dyn std::fmt::Write, input: &str) -> std::fmt::Result {
-        let raw = self.to_str(input);
+        let raw = self.to_str_or_panic(input);
         for part in raw.split('\r') {
             write!(buf, "{part}")?;
         }
