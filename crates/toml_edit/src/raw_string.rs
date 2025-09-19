@@ -46,7 +46,7 @@ impl RawString {
         }
     }
 
-    pub(crate) fn to_str_with_default<'s>(
+    pub(crate) fn to_str_or_default<'s>(
         &'s self,
         input: Option<&'s str>,
         default: &'s str,
@@ -98,7 +98,7 @@ impl RawString {
         input: Option<&str>,
         default: &str,
     ) -> std::fmt::Result {
-        let raw = self.to_str_with_default(input, default);
+        let raw = self.to_str_or_default(input, default);
         for part in raw.split('\r') {
             write!(buf, "{part}")?;
         }
