@@ -46,22 +46,16 @@ impl RawString {
         }
     }
 
-    pub(crate) fn to_str_or_default<'s>(
-        &'s self,
-        input: Option<&'s str>,
-        default: &'s str,
-    ) -> &'s str {
+    pub(crate) fn to_str<'s>(&'s self, input: Option<&'s str>) -> Option<&'s str> {
         match &self.0 {
-            RawStringInner::Empty => "",
-            RawStringInner::Explicit(s) => s.as_str(),
+            RawStringInner::Empty => Some(""),
+            RawStringInner::Explicit(s) => Some(s.as_str()),
             RawStringInner::Spanned(span) => {
-                if let Some(input) = input {
-                    input.get(span.clone()).unwrap_or_else(|| {
-                        panic!("span {span:?} should be in input:\n```\n{input}\n```")
-                    })
-                } else {
-                    default
-                }
+                let input = input?;
+                let s = input.get(span.clone()).unwrap_or_else(|| {
+                    panic!("span {span:?} should be in input:\n```\n{input}\n```")
+                });
+                Some(s)
             }
         }
     }
@@ -98,7 +92,7 @@ impl RawString {
         input: Option<&str>,
         default: &str,
     ) -> std::fmt::Result {
-        let raw = self.to_str_or_default(input, default);
+        let raw = self.to_str(input).unwrap_or(default);
         for part in raw.split('\r') {
             write!(buf, "{part}")?;
         }
