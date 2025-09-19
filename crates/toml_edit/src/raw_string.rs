@@ -60,6 +60,23 @@ impl RawString {
         }
     }
 
+    pub(crate) fn to_str<'s>(&'s self, input: Option<&'s str>) -> Option<&'s str> {
+        match &self.0 {
+            RawStringInner::Empty => Some(""),
+            RawStringInner::Explicit(s) => Some(s.as_str()),
+            RawStringInner::Spanned(span) => {
+                if let Some(input) = input {
+                    let s = input.get(span.clone()).unwrap_or_else(|| {
+                        panic!("span {span:?} should be in input:\n```\n{input}\n```")
+                    });
+                    Some(s)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
     pub(crate) fn despan(&mut self, input: &str) {
         match &self.0 {
             RawStringInner::Empty => {}
@@ -91,8 +108,13 @@ impl RawString {
         buf: &mut dyn std::fmt::Write,
         input: Option<&str>,
         default: &str,
+        validator: &dyn Fn(&str) -> Result<&str, &str>,
     ) -> std::fmt::Result {
-        let raw = self.to_str(input).unwrap_or(default);
+        let raw = self
+            .to_str(input)
+            .and_then(|s| validator(s).ok())
+            .unwrap_or(default);
+
         for part in raw.split('\r') {
             write!(buf, "{part}")?;
         }

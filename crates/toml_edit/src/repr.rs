@@ -212,9 +212,10 @@ impl Decor {
         buf: &mut dyn std::fmt::Write,
         input: Option<&str>,
         default: &str,
+        validator: &dyn Fn(&str) -> Result<&str, &str>,
     ) -> std::fmt::Result {
         if let Some(prefix) = self.prefix() {
-            prefix.encode_with_default(buf, input, default)
+            prefix.encode_with_default(buf, input, default, validator)
         } else {
             write!(buf, "{default}")
         }
@@ -236,9 +237,10 @@ impl Decor {
         buf: &mut dyn std::fmt::Write,
         input: Option<&str>,
         default: &str,
+        validator: &dyn Fn(&str) -> Result<&str, &str>,
     ) -> std::fmt::Result {
         if let Some(suffix) = self.suffix() {
-            suffix.encode_with_default(buf, input, default)
+            suffix.encode_with_default(buf, input, default, validator)
         } else {
             write!(buf, "{default}")
         }

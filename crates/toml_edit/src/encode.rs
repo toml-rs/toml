@@ -46,18 +46,18 @@ fn encode_key_path(
         let last = i + 1 == this.len();
 
         if first {
-            leaf_decor.prefix_encode(buf, input, default_decor.0)?;
+            leaf_decor.prefix_encode(buf, input, default_decor.0, &inline_decor)?;
         } else {
             buf.key_sep()?;
-            dotted_decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0)?;
+            dotted_decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0, &inline_decor)?;
         }
 
         encode_key(key, buf, input)?;
 
         if last {
-            leaf_decor.suffix_encode(buf, input, default_decor.1)?;
+            leaf_decor.suffix_encode(buf, input, default_decor.1, &inline_decor)?;
         } else {
-            dotted_decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1)?;
+            dotted_decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1, &inline_decor)?;
         }
     }
     Ok(())
@@ -77,18 +77,18 @@ pub(crate) fn encode_key_path_ref(
         let last = i + 1 == this.len();
 
         if first {
-            leaf_decor.prefix_encode(buf, input, default_decor.0)?;
+            leaf_decor.prefix_encode(buf, input, default_decor.0, &line_decor)?;
         } else {
             buf.key_sep()?;
-            dotted_decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0)?;
+            dotted_decor.prefix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.0, &inline_decor)?;
         }
 
         encode_key(key, buf, input)?;
 
         if last {
-            leaf_decor.suffix_encode(buf, input, default_decor.1)?;
+            leaf_decor.suffix_encode(buf, input, default_decor.1, &inline_decor)?;
         } else {
-            dotted_decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1)?;
+            dotted_decor.suffix_encode(buf, input, DEFAULT_KEY_PATH_DECOR.1, &inline_decor)?;
         }
     }
     Ok(())
@@ -101,7 +101,7 @@ pub(crate) fn encode_formatted<T: ValueRepr>(
     default_decor: (&str, &str),
 ) -> Result {
     let decor = this.decor();
-    decor.prefix_encode(buf, input, default_decor.0)?;
+    decor.prefix_encode(buf, input, default_decor.0, &inline_decor)?;
 
     if let Some(input) = input {
         let repr = this
@@ -114,7 +114,7 @@ pub(crate) fn encode_formatted<T: ValueRepr>(
         write!(buf, "{repr}")?;
     };
 
-    decor.suffix_encode(buf, input, default_decor.1)?;
+    decor.suffix_encode(buf, input, default_decor.1, &line_decor)?;
     Ok(())
 }
 
@@ -125,7 +125,7 @@ pub(crate) fn encode_array(
     default_decor: (&str, &str),
 ) -> Result {
     let decor = this.decor();
-    decor.prefix_encode(buf, input, default_decor.0)?;
+    decor.prefix_encode(buf, input, default_decor.0, &inline_decor)?;
     buf.open_array()?;
 
     for (i, elem) in this.iter().enumerate() {
@@ -142,9 +142,10 @@ pub(crate) fn encode_array(
         buf.val_sep()?;
     }
 
-    this.trailing().encode_with_default(buf, input, "")?;
+    this.trailing()
+        .encode_with_default(buf, input, "", &line_decor)?;
     buf.close_array()?;
-    decor.suffix_encode(buf, input, default_decor.1)?;
+    decor.suffix_encode(buf, input, default_decor.1, &line_decor)?;
 
     Ok(())
 }
@@ -357,6 +358,23 @@ impl ValueRepr for Datetime {
     fn to_repr(&self) -> Repr {
         Repr::new_unchecked(self.to_string())
     }
+}
+
+fn inline_decor(decor: &str) -> std::result::Result<&str, &str> {
+    if decor
+        .as_bytes()
+        .iter()
+        .copied()
+        .all(|b| b == b' ' || b == b'\t')
+    {
+        Ok(decor)
+    } else {
+        Err(decor)
+    }
+}
+
+fn line_decor(decor: &str) -> std::result::Result<&str, &str> {
+    Ok(decor)
 }
 
 #[cfg(test)]
