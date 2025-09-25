@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Breaking Changes
 
+- `from_str`, `Deserializer`, etc no longer preserve order, requiring the `preserve_order` feature like `Table`
 - Serde support has been broken out into the default `serde` feature
 - Std support has been broken out into the default `std` feature
 - Fail quickly when deserializing a value without a `Spanned`
