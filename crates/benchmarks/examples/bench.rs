@@ -6,7 +6,7 @@ fn main() -> Result<(), lexopt::Error> {
             let source = ::toml_parser::Source::new(args.data.content());
             let _tokens = source.lex().into_vec();
             let _tokens = std::hint::black_box(_tokens);
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             println!("{_tokens:?}");
         }
         Parser::Events => {
@@ -16,9 +16,9 @@ fn main() -> Result<(), lexopt::Error> {
             let mut _errors = Vec::with_capacity(tokens.len());
             ::toml_parser::parser::parse_document(&tokens, &mut events, &mut _errors);
             let _events = std::hint::black_box(events);
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             println!("{_events:?}");
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             println!("{_errors:?}");
         }
         Parser::Decoded => {
@@ -54,9 +54,9 @@ fn main() -> Result<(), lexopt::Error> {
             }
 
             let _events = std::hint::black_box(events);
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             println!("{_events:?}");
-            #[cfg(debug_assertions)] // Don't interefere with profiling
+            #[cfg(debug_assertions)] // Don't interfere with profiling
             println!("{_errors:?}");
         }
         Parser::Document => {

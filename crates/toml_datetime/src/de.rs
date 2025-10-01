@@ -1,4 +1,4 @@
-//! Deserialzation support for [`Datetime`][crate::Datetime]
+//! Deserialization support for [`Datetime`][crate::Datetime]
 
 use alloc::string::ToString;
 
