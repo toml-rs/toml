@@ -22,36 +22,54 @@ impl serde_core::ser::Serializer for KeySerializer<'_> {
         Err(Error::key_not_string())
     }
 
-    fn serialize_i8(self, _v: i8) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_i16(self, _v: i16) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_i32(self, _v: i32) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_i64(self, _v: i64) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_u8(self, _v: u8) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_i128(self, v: i128) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_u16(self, _v: u16) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_u32(self, _v: u32) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
-    fn serialize_u64(self, _v: u64) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
+    }
+
+    fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
+    }
+
+    fn serialize_u128(self, v: u128) -> Result<Self::Ok, Self::Error> {
+        self.dst.key(v.to_string())?;
+        Ok(())
     }
 
     fn serialize_f32(self, _v: f32) -> Result<Self::Ok, Self::Error> {
