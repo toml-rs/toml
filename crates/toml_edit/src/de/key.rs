@@ -31,6 +31,17 @@ impl<'de> serde_core::de::Deserializer<'de> for KeyDeserializer {
         self.key.into_deserializer().deserialize_any(visitor)
     }
 
+    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde_core::de::Visitor<'de>,
+    {
+        let key: bool = self
+            .key
+            .parse()
+            .map_err(<Error as serde_core::de::Error>::custom)?;
+        key.into_deserializer().deserialize_bool(visitor)
+    }
+
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde_core::de::Visitor<'de>,
@@ -191,7 +202,7 @@ impl<'de> serde_core::de::Deserializer<'de> for KeyDeserializer {
     }
 
     serde_core::forward_to_deserialize_any! {
-        bool f32 f64 char str string seq
+        f32 f64 char str string seq
         bytes byte_buf map option unit
         ignored_any unit_struct tuple_struct tuple identifier
     }

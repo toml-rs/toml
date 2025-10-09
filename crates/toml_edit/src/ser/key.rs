@@ -15,8 +15,8 @@ impl serde_core::ser::Serializer for KeySerializer {
     type SerializeStruct = serde_core::ser::Impossible<Self::Ok, Error>;
     type SerializeStructVariant = serde_core::ser::Impossible<Self::Ok, Error>;
 
-    fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
+        Ok(Key::new(v.to_string()))
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
