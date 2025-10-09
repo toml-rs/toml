@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- *(serde)* Support `char`, `bool`, and integers as keys
+
 ## [0.9.7] - 2025-09-18
 
 ### Compatibility
