@@ -12,8 +12,10 @@ macro_rules! t {
 
 mod de_enum;
 mod de_errors;
+mod de_key;
 mod general;
 mod ser_enum;
+mod ser_key;
 mod ser_tables_last;
 mod ser_to_string;
 mod ser_to_string_pretty;
