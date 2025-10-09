@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.8] - 2025-10-09
+
 ### Features
 
 - *(serde)* Support `char`, `bool`, and integers as keys
@@ -414,7 +416,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.8...HEAD
+[0.9.8]: https://github.com/toml-rs/toml/compare/toml-v0.9.7...toml-v0.9.8
 [0.9.7]: https://github.com/toml-rs/toml/compare/toml-v0.9.6...toml-v0.9.7
 [0.9.6]: https://github.com/toml-rs/toml/compare/toml-v0.9.5...toml-v0.9.6
 [0.9.5]: https://github.com/toml-rs/toml/compare/toml-v0.9.4...toml-v0.9.5

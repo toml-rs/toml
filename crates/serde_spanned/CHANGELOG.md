@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.3] - 2025-10-09
+
 ## [1.0.2] - 2025-09-18
 
 ### Compatibility
@@ -83,7 +85,8 @@ MSRV is now 1.64.0
 ## [0.6.0] - 2023-01-20
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/serde_spanned-v1.0.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/serde_spanned-v1.0.3...HEAD
+[1.0.3]: https://github.com/toml-rs/toml/compare/serde_spanned-v1.0.2...serde_spanned-v1.0.3
 [1.0.2]: https://github.com/toml-rs/toml/compare/serde_spanned-v1.0.1...serde_spanned-v1.0.2
 [1.0.1]: https://github.com/toml-rs/toml/compare/serde_spanned-v1.0.0...serde_spanned-v1.0.1
 [1.0.0]: https://github.com/toml-rs/toml/compare/serde_spanned-v0.6.9...serde_spanned-v1.0.0

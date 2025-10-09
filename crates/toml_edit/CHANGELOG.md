@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.23.7] - 2025-10-09
+
 ### Features
 
 - *(serde)* Support `char`, `bool`, and integers as keys
@@ -884,7 +886,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.7...HEAD
+[0.23.7]: https://github.com/toml-rs/toml/compare/v0.23.6...v0.23.7
 [0.23.6]: https://github.com/toml-rs/toml/compare/v0.23.5...v0.23.6
 [0.23.5]: https://github.com/toml-rs/toml/compare/v0.23.4...v0.23.5
 [0.23.4]: https://github.com/toml-rs/toml/compare/v0.23.3...v0.23.4

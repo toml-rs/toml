@@ -1,6 +1,6 @@
 [package]
 name = "toml"
-version = "0.9.7"
+version = "0.9.8"
 description = """
 A native Rust encoder and decoder of TOML-formatted files and streams. Provides
 implementations of the standard Serialize/Deserialize traits for TOML data to
@@ -51,13 +51,13 @@ preserve_order = ["dep:indexmap", "std"]
 [dependencies]
 serde_core = { version = "1.0.225", default-features = false, features = ["alloc"], optional = true }
 indexmap = { version = "2.11.4", default-features = false, optional = true }
-toml_parser = { version = "1.0.3", path = "../toml_parser", default-features = false, features = ["alloc"], optional = true }
+toml_parser = { version = "1.0.4", path = "../toml_parser", default-features = false, features = ["alloc"], optional = true }
 winnow = { version = "0.7.13", default-features = false, optional = true }
 anstream = { version = "0.6.20", optional = true }
 anstyle = { version = "1.0.11", optional = true }
-toml_datetime = { version = "0.7.2", path = "../toml_datetime", default-features = false, features = ["alloc"] }
-toml_writer = { version = "1.0.3", path = "../toml_writer", default-features = false, features = ["alloc"], optional = true }
-serde_spanned = { version = "1.0.2", path = "../serde_spanned", default-features = false, features = ["alloc"] }
+toml_datetime = { version = "0.7.3", path = "../toml_datetime", default-features = false, features = ["alloc"] }
+toml_writer = { version = "1.0.4", path = "../toml_writer", default-features = false, features = ["alloc"], optional = true }
+serde_spanned = { version = "1.0.3", path = "../serde_spanned", default-features = false, features = ["alloc"] }
 foldhash = { version = "0.2.0", default-features = false, optional = true }
 
 [dev-dependencies]
