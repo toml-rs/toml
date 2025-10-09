@@ -67,8 +67,8 @@ impl serde_core::ser::Serializer for KeySerializer {
         Err(Error::key_not_string())
     }
 
-    fn serialize_char(self, _v: char) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
+        Ok(Key::new(v.to_string()))
     }
 
     fn serialize_str(self, value: &str) -> Result<Self::Ok, Self::Error> {

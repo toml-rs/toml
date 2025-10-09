@@ -81,8 +81,11 @@ impl serde_core::ser::Serializer for KeySerializer<'_> {
         Err(Error::key_not_string())
     }
 
-    fn serialize_char(self, _v: char) -> Result<Self::Ok, Self::Error> {
-        Err(Error::key_not_string())
+    fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
+        let mut b = [0; 4];
+        let result = v.encode_utf8(&mut b);
+        self.dst.key(&*result)?;
+        Ok(())
     }
 
     fn serialize_str(self, value: &str) -> Result<Self::Ok, Self::Error> {

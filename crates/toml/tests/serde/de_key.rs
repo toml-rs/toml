@@ -273,3 +273,67 @@ Document {
         assert_data_eq!(result.unwrap().to_debug(), expected);
     }
 }
+
+mod char_key {
+    use super::*;
+
+    type Map = super::Map<char>;
+    type Document = super::Document<char>;
+
+    #[test]
+    fn from_str() {
+        let input = "k = 'value'";
+        let expected = str![[r#"
+{
+    'k': "value",
+}
+
+"#]];
+        let result = crate::from_str::<Map>(input);
+        assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
+
+    #[test]
+    fn value_from_inline_table() {
+        let input = "{ k = 'value' }";
+        let expected = str![[r#"
+{
+    'k': "value",
+}
+
+"#]];
+        let result = crate::value_from_str::<Map>(input);
+        assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
+
+    #[test]
+    fn from_inline_table() {
+        let input = "map = { k = 'value' }";
+        let expected = str![[r#"
+Document {
+    map: {
+        'k': "value",
+    },
+}
+
+"#]];
+        let result = crate::from_str::<Document>(input);
+        assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
+
+    #[test]
+    fn from_std_table() {
+        let input = "[map]
+k = 'value'";
+        let expected = str![[r#"
+Document {
+    map: {
+        'k': "value",
+    },
+}
+
+"#]];
+        let result = crate::from_str::<Document>(input);
+        assert_data_eq!(result.unwrap().to_debug(), expected);
+    }
+}

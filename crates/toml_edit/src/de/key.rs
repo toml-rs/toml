@@ -152,6 +152,17 @@ impl<'de> serde_core::de::Deserializer<'de> for KeyDeserializer {
         key.into_deserializer().deserialize_u128(visitor)
     }
 
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde_core::de::Visitor<'de>,
+    {
+        let key: char = self
+            .key
+            .parse()
+            .map_err(<Error as serde_core::de::Error>::custom)?;
+        key.into_deserializer().deserialize_char(visitor)
+    }
+
     fn deserialize_enum<V>(
         self,
         name: &str,
@@ -202,7 +213,7 @@ impl<'de> serde_core::de::Deserializer<'de> for KeyDeserializer {
     }
 
     serde_core::forward_to_deserialize_any! {
-        f32 f64 char str string seq
+        f32 f64 str string seq
         bytes byte_buf map option unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
