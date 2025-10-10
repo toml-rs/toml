@@ -1,6 +1,6 @@
 # toml_edit
 
-[![Build Status](https://github.com/toml-rs/toml/workflows/Continuous%20integration/badge.svg)](https://github.com/toml-rs/toml/actions)
+[![Build Status](https://github.com/toml-rs/toml/actions/workflows/ci.yml/badge.svg)](https://github.com/toml-rs/toml/actions)
 [![codecov](https://codecov.io/gh/toml-rs/toml/branch/master/graph/badge.svg)](https://codecov.io/gh/toml-rs/toml)
 [![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 [![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit)
