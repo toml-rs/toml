@@ -1,10 +1,8 @@
 # toml_edit
 
-[![Build Status](https://github.com/toml-rs/toml/workflows/Continuous%20integration/badge.svg)](https://github.com/toml-rs/toml/actions)
-[![codecov](https://codecov.io/gh/toml-rs/toml/branch/master/graph/badge.svg)](https://codecov.io/gh/toml-rs/toml)
-[![crates.io](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
-[![docs](https://docs.rs/toml_edit/badge.svg)](https://docs.rs/toml_edit)
-[![Join the chat at https://gitter.im/toml_edit/Lobby](https://badges.gitter.im/a.svg)](https://gitter.im/toml_edit/Lobby)
+[![Documentation](https://img.shields.io/badge/docs-master-blue.svg)](https://docs.rs/toml_edit)
+![License](https://img.shields.io/crates/l/toml_edit.svg)
+[![Crates Status](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 
 
 This crate allows you to parse and modify toml

@@ -1,7 +1,8 @@
 # toml_writer
 
-[![Latest Version](https://img.shields.io/crates/v/toml.svg)](https://crates.io/crates/toml)
-[![Documentation](https://docs.rs/toml/badge.svg)](https://docs.rs/toml)
+[![Documentation](https://img.shields.io/badge/docs-master-blue.svg)](https://docs.rs/toml_writer)
+![License](https://img.shields.io/crates/l/toml_writer.svg)
+[![Crates Status](https://img.shields.io/crates/v/toml_writer.svg)](https://crates.io/crates/toml_writer)
 
 A low-level interface for writing out TOML
 

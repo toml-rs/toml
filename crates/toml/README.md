@@ -1,7 +1,8 @@
 # toml
 
-[![Latest Version](https://img.shields.io/crates/v/toml.svg)](https://crates.io/crates/toml)
-[![Documentation](https://docs.rs/toml/badge.svg)](https://docs.rs/toml)
+[![Documentation](https://img.shields.io/badge/docs-master-blue.svg)](https://docs.rs/toml)
+![License](https://img.shields.io/crates/l/toml.svg)
+[![Crates Status](https://img.shields.io/crates/v/toml.svg)](https://crates.io/crates/toml)
 
 A [serde]-compatible [TOML][toml] decoder and encoder for Rust.
 

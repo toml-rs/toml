@@ -1,7 +1,8 @@
 # serde_spanned
 
-[![Latest Version](https://img.shields.io/crates/v/serde_spanned.svg)](https://crates.io/crates/serde_spanned)
-[![Documentation](https://docs.rs/serde_spanned/badge.svg)](https://docs.rs/serde_spanned)
+[![Documentation](https://img.shields.io/badge/docs-master-blue.svg)](https://docs.rs/serde_spanned)
+![License](https://img.shields.io/crates/l/serde_spanned.svg)
+[![Crates Status](https://img.shields.io/crates/v/serde_spanned.svg)](https://crates.io/crates/serde_spanned)
 
 A [serde]-compatible spanned Value
 
