@@ -348,39 +348,47 @@ impl Table {
 
     /// Returns an optional reference to an item given the key.
     pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
-        self.items
-            .get(key)
-            .and_then(|value| if !value.is_none() { Some(value) } else { None })
+        let Some(value) = self.items.get(key) else {
+            return None;
+        };
+        if value.is_none() {
+            return None;
+        }
+        Some(value)
     }
 
     /// Returns an optional mutable reference to an item given the key.
     pub fn get_mut<'a>(&'a mut self, key: &str) -> Option<&'a mut Item> {
-        self.items
-            .get_mut(key)
-            .and_then(|value| if !value.is_none() { Some(value) } else { None })
+        let Some(value) = self.items.get_mut(key) else {
+            return None;
+        };
+        if value.is_none() {
+            return None;
+        }
+        Some(value)
     }
 
     /// Return references to the key-value pair stored for key, if it is present, else None.
     pub fn get_key_value<'a>(&'a self, key: &str) -> Option<(&'a Key, &'a Item)> {
-        self.items.get_full(key).and_then(|(_, key, value)| {
-            if !value.is_none() {
-                Some((key, value))
-            } else {
-                None
-            }
-        })
+        let Some((_, key, value)) = self.items.get_full(key) else {
+            return None;
+        };
+        if value.is_none() {
+            return None;
+        }
+        Some((key, value))
     }
 
     /// Return mutable references to the key-value pair stored for key, if it is present, else None.
     pub fn get_key_value_mut<'a>(&'a mut self, key: &str) -> Option<(KeyMut<'a>, &'a mut Item)> {
         use indexmap::map::MutableKeys;
-        self.items.get_full_mut2(key).and_then(|(_, key, value)| {
-            if !value.is_none() {
-                Some((key.as_mut(), value))
-            } else {
-                None
-            }
-        })
+        let Some((_, key, value)) = self.items.get_full_mut2(key) else {
+            return None;
+        };
+        if value.is_none() {
+            return None;
+        }
+        Some((key.as_mut(), value))
     }
 
     /// Returns true if the table contains an item with the given key.

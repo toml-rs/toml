@@ -319,37 +319,41 @@ impl InlineTable {
     }
     /// Return an optional reference to the value at the given the key.
     pub fn get(&self, key: &str) -> Option<&Value> {
-        self.items.get(key).and_then(|value| value.as_value())
+        let Some(value) = self.items.get(key) else {
+            return None;
+        };
+        value.as_value()
     }
 
     /// Return an optional mutable reference to the value at the given the key.
     pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
-        self.items
-            .get_mut(key)
-            .and_then(|value| value.as_value_mut())
+        let Some(value) = self.items.get_mut(key) else {
+            return None;
+        };
+        value.as_value_mut()
     }
 
     /// Return references to the key-value pair stored for key, if it is present, else None.
     pub fn get_key_value<'a>(&'a self, key: &str) -> Option<(&'a Key, &'a Item)> {
-        self.items.get_full(key).and_then(|(_, key, value)| {
-            if !value.is_none() {
-                Some((key, value))
-            } else {
-                None
-            }
-        })
+        let Some((_, key, value)) = self.items.get_full(key) else {
+            return None;
+        };
+        if value.is_none() {
+            return None;
+        }
+        Some((key, value))
     }
 
     /// Return mutable references to the key-value pair stored for key, if it is present, else None.
     pub fn get_key_value_mut<'a>(&'a mut self, key: &str) -> Option<(KeyMut<'a>, &'a mut Item)> {
         use indexmap::map::MutableKeys;
-        self.items.get_full_mut2(key).and_then(|(_, key, value)| {
-            if !value.is_none() {
-                Some((key.as_mut(), value))
-            } else {
-                None
-            }
-        })
+        let Some((_, key, value)) = self.items.get_full_mut2(key) else {
+            return None;
+        };
+        if value.is_none() {
+            return None;
+        }
+        Some((key.as_mut(), value))
     }
 
     /// Returns true if the table contains given key.
@@ -413,16 +417,24 @@ impl InlineTable {
 
     /// Removes an item given the key.
     pub fn remove(&mut self, key: &str) -> Option<Value> {
-        self.items
-            .shift_remove(key)
-            .and_then(|value| value.into_value().ok())
+        let Some(value) = self.items.shift_remove(key) else {
+            return None;
+        };
+        let Ok(value) = value.into_value() else {
+            return None;
+        };
+        Some(value)
     }
 
     /// Removes a key from the map, returning the stored key and value if the key was previously in the map.
     pub fn remove_entry(&mut self, key: &str) -> Option<(Key, Value)> {
-        self.items
-            .shift_remove_entry(key)
-            .and_then(|(key, value)| Some((key, value.into_value().ok()?)))
+        let Some((key, value)) = self.items.shift_remove_entry(key) else {
+            return None;
+        };
+        let Ok(value) = value.into_value() else {
+            return None;
+        };
+        Some((key, value))
     }
 
     /// Retains only the elements specified by the `keep` predicate.
