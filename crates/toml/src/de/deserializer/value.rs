@@ -5,6 +5,7 @@ use super::ArrayDeserializer;
 use super::DatetimeDeserializer;
 use super::TableDeserializer;
 use crate::alloc_prelude::*;
+use crate::de::error::DisplayJoined;
 use crate::de::DeString;
 use crate::de::DeTable;
 use crate::de::DeValue;
@@ -271,30 +272,23 @@ pub(crate) fn validate_struct_keys(
     table: &DeTable<'_>,
     fields: &'static [&'static str],
 ) -> Result<(), Error> {
-    let extra_fields = table
-        .keys()
-        .filter_map(|key| {
+    let extra_fields = {
+        let mut v = Vec::new();
+        for key in table.keys() {
             if !fields.contains(&key.get_ref().as_ref()) {
-                Some(key.clone())
-            } else {
-                None
+                v.push(key.clone());
             }
-        })
-        .collect::<Vec<_>>();
+        }
+        v
+    };
 
     if extra_fields.is_empty() {
         Ok(())
     } else {
+        let available = DisplayJoined(", ", fields);
+        let unexpected = DisplayJoined(", ", extra_fields.as_slice());
         Err(Error::custom(
-            format!(
-                "unexpected keys in table: {}, available keys: {}",
-                extra_fields
-                    .iter()
-                    .map(|k| k.get_ref().as_ref())
-                    .collect::<Vec<_>>()
-                    .join(", "),
-                fields.join(", "),
-            ),
+            format!("unexpected keys in table: {unexpected}, available keys: {available}"),
             Some(extra_fields[0].span()),
         ))
     }
