@@ -241,12 +241,10 @@ impl InlineTable {
 impl InlineTable {
     /// Returns an iterator over key/value pairs.
     pub fn iter(&self) -> InlineTableIter<'_> {
-        Box::new(
-            self.items
-                .iter()
-                .filter(|(_, value)| !value.is_none())
-                .map(|(key, value)| (key.get(), value.as_value().unwrap())),
-        )
+        Box::new(self.items.iter().filter_map(|(key, value)| match value {
+            Item::Value(value) => Some((key.get(), value)),
+            _ => None,
+        }))
     }
 
     /// Returns an iterator over key/value pairs.
@@ -255,8 +253,10 @@ impl InlineTable {
         Box::new(
             self.items
                 .iter_mut2()
-                .filter(|(_, value)| value.is_value())
-                .map(|(key, value)| (key.as_mut(), value.as_value_mut().unwrap())),
+                .filter_map(|(key, value)| match value {
+                    Item::Value(value) => Some((key.as_mut(), value)),
+                    _ => None,
+                }),
         )
     }
 
@@ -479,8 +479,10 @@ impl IntoIterator for InlineTable {
         Box::new(
             self.items
                 .into_iter()
-                .filter(|(_, value)| value.is_value())
-                .map(|(key, value)| (key.into(), value.into_value().unwrap())),
+                .filter_map(|(key, value)| match value {
+                    Item::Value(value) => Some((key.into(), value)),
+                    _ => None,
+                }),
         )
     }
 }
@@ -496,15 +498,14 @@ impl<'s> IntoIterator for &'s InlineTable {
 
 fn decorate_inline_table(table: &mut InlineTable) {
     use indexmap::map::MutableKeys;
-    for (mut key, value) in table
-        .items
-        .iter_mut2()
-        .filter(|(_, value)| value.is_value())
-        .map(|(key, value)| (key.as_mut(), value.as_value_mut().unwrap()))
-    {
-        key.leaf_decor_mut().clear();
-        key.dotted_decor_mut().clear();
-        value.decor_mut().clear();
+
+    for (key, value) in table.items.iter_mut2() {
+        if let Item::Value(value) = value {
+            let mut key = key.as_mut();
+            key.leaf_decor_mut().clear();
+            key.dotted_decor_mut().clear();
+            value.decor_mut().clear();
+        }
     }
 }
 
