@@ -404,12 +404,10 @@ impl IntoIterator for Array {
     type IntoIter = ArrayIntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        Box::new(
-            self.values
-                .into_iter()
-                .filter(|v| v.is_value())
-                .map(|v| v.into_value().unwrap()),
-        )
+        Box::new(self.values.into_iter().filter_map(|v| match v {
+            Item::Value(value) => Some(value),
+            _ => None,
+        }))
     }
 }
 
@@ -423,17 +421,16 @@ impl<'s> IntoIterator for &'s Array {
 }
 
 fn decorate_array(array: &mut Array) {
-    for (i, value) in array
-        .values
-        .iter_mut()
-        .filter_map(Item::as_value_mut)
-        .enumerate()
-    {
-        // [value1, value2, value3]
-        if i == 0 {
-            value.decorate(DEFAULT_LEADING_VALUE_DECOR.0, DEFAULT_LEADING_VALUE_DECOR.1);
-        } else {
-            value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
+    let mut first = true;
+    for value in array.values.iter_mut() {
+        if let Some(value) = Item::as_value_mut(value) {
+            // [value1, value2, value3]
+            if first {
+                value.decorate(DEFAULT_LEADING_VALUE_DECOR.0, DEFAULT_LEADING_VALUE_DECOR.1);
+            } else {
+                value.decorate(DEFAULT_VALUE_DECOR.0, DEFAULT_VALUE_DECOR.1);
+            }
+            first = false;
         }
     }
     // Since everything is now on the same line, remove trailing commas and whitespace.

@@ -65,7 +65,7 @@ impl<'de> serde_core::de::VariantAccess<'de> for TableEnumDeserializer {
         match self.value {
             crate::Item::ArrayOfTables(values) => {
                 let values_span = values.span();
-                let tuple_values = values.values.into_iter().collect::<Vec<_>>();
+                let tuple_values = values.values.clone();
 
                 if tuple_values.len() == len {
                     serde_core::de::Deserializer::deserialize_seq(
@@ -81,7 +81,7 @@ impl<'de> serde_core::de::VariantAccess<'de> for TableEnumDeserializer {
             }
             crate::Item::Value(crate::Value::Array(values)) => {
                 let values_span = values.span();
-                let tuple_values = values.values.into_iter().collect::<Vec<_>>();
+                let tuple_values = values.values.clone();
 
                 if tuple_values.len() == len {
                     serde_core::de::Deserializer::deserialize_seq(
