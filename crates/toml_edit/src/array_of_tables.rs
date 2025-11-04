@@ -145,12 +145,10 @@ impl IntoIterator for ArrayOfTables {
     type IntoIter = ArrayOfTablesIntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        Box::new(
-            self.values
-                .into_iter()
-                .filter(|v| v.is_table())
-                .map(|v| v.into_table().unwrap()),
-        )
+        Box::new(self.values.into_iter().filter_map(|v| match v {
+            Item::Table(table) => Some(table),
+            _ => None,
+        }))
     }
 }
 
