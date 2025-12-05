@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+- Change `InlineTable::insert` to take a `impl Into<Value>`
+
 ## [0.23.7] - 2025-10-09
 
 ### Features
