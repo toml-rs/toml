@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.23.8] - 2025-12-05
+
 - Change `InlineTable::insert` to take a `impl Into<Value>`
 
 ## [0.23.7] - 2025-10-09
@@ -888,7 +890,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.8...HEAD
+[0.23.8]: https://github.com/toml-rs/toml/compare/v0.23.7...v0.23.8
 [0.23.7]: https://github.com/toml-rs/toml/compare/v0.23.6...v0.23.7
 [0.23.6]: https://github.com/toml-rs/toml/compare/v0.23.5...v0.23.6
 [0.23.5]: https://github.com/toml-rs/toml/compare/v0.23.4...v0.23.5
