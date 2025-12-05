@@ -377,10 +377,10 @@ impl InlineTable {
     }
 
     /// Inserts a key-value pair into the map.
-    pub fn insert(&mut self, key: impl Into<String>, value: Value) -> Option<Value> {
+    pub fn insert<V: Into<Value>>(&mut self, key: impl Into<String>, value: V) -> Option<Value> {
         use indexmap::map::MutableEntryKey;
         let key = Key::new(key);
-        let value = Item::Value(value);
+        let value = Item::Value(value.into());
         match self.items.entry(key.clone()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 entry.key_mut().fmt();
