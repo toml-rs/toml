@@ -311,7 +311,7 @@ fn implicit_tables() {
     #[allow(dead_code)]
     enum SpannedValue {
         String(String),
-        Map(Vec<(String, Spanned<SpannedValue>)>),
+        Map(Vec<(String, Spanned<Self>)>),
     }
 
     impl<'de> Deserialize<'de> for SpannedValue {
