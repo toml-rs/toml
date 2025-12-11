@@ -1837,7 +1837,7 @@ fn serialize_struct_with_none_vec() {
 fn serialize_struct_with_none_struct() {
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
     struct Foo {
-        a: Option<Box<Foo>>,
+        a: Option<Box<Self>>,
         b: Bar,
     }
     #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
