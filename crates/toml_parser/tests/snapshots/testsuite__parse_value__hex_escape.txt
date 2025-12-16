@@ -1,0 +1,214 @@
+EventResults {
+    input: "\"\\x20 \\x09 \\x1b \\x0d\\x0a\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..25,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..25,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "e",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                2..2,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..25,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "e",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                7..7,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..25,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "e",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                12..12,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..25,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "e",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                17..17,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..25,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "e",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                21..21,
+            ),
+        },
+    ],
+}
