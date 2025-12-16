@@ -60,3 +60,63 @@ Err(
 "#]],
     );
 }
+
+#[test]
+fn time_without_seconds() {
+    t(
+        "13:37",
+        str![[r#"
+Err(
+    DatetimeParseError {
+        what: Some(
+            "time",
+        ),
+        expected: Some(
+            "`:` (MM:SS)",
+        ),
+    },
+)
+
+"#]],
+    );
+}
+
+#[test]
+fn time_without_seconds_with_nanoseconds() {
+    t(
+        "13:37.0",
+        str![[r#"
+Err(
+    DatetimeParseError {
+        what: Some(
+            "time",
+        ),
+        expected: Some(
+            "`:` (MM:SS)",
+        ),
+    },
+)
+
+"#]],
+    );
+}
+
+#[test]
+fn datetime_without_seconds() {
+    t(
+        "1979-05-27 07:32Z",
+        str![[r#"
+Err(
+    DatetimeParseError {
+        what: Some(
+            "time",
+        ),
+        expected: Some(
+            "`:` (MM:SS)",
+        ),
+    },
+)
+
+"#]],
+    );
+}
