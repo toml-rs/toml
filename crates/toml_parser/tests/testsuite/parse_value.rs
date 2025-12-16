@@ -505,6 +505,11 @@ fn string_escaped() {
 }
 
 #[test]
+fn string_escaped_escape() {
+    t(r#""\e There is no escape! \e""#, file![_].raw());
+}
+
+#[test]
 fn string_ml_string_multiple_lines() {
     t(
         r#""""

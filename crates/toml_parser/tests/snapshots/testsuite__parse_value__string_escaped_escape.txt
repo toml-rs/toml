@@ -1,0 +1,88 @@
+EventResults {
+    input: "\"\\e There is no escape! \\e\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..27,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..27,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                2..2,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..27,
+            ),
+            description: "missing escaped value",
+            expected: Some(
+                [
+                    Literal(
+                        "b",
+                    ),
+                    Literal(
+                        "f",
+                    ),
+                    Literal(
+                        "n",
+                    ),
+                    Literal(
+                        "r",
+                    ),
+                    Literal(
+                        "\\",
+                    ),
+                    Literal(
+                        "\"",
+                    ),
+                    Literal(
+                        "u",
+                    ),
+                    Literal(
+                        "U",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                25..25,
+            ),
+        },
+    ],
+}
