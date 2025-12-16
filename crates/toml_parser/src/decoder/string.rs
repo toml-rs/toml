@@ -109,7 +109,7 @@ const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 /// ml-literal-string-delim = 3apostrophe
 /// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
 ///
-/// mll-content = mll-char / newline
+/// mll-content = literal-char / newline
 /// mll-quotes = 1*2apostrophe
 /// ```
 pub(crate) fn decode_ml_literal_string<'i>(
@@ -157,7 +157,7 @@ pub(crate) fn decode_ml_literal_string<'i>(
                         .with_unexpected(Span::new_unchecked(offset, offset)),
                 );
             }
-        } else if !MLL_CHAR.contains_token(b) {
+        } else if !LITERAL_CHAR.contains_token(b) {
             let offset = (&s.as_bytes()[i..]).offset_from(&raw.as_bytes());
             error.report_error(
                 ParseError::new(INVALID_STRING)
@@ -174,16 +174,6 @@ pub(crate) fn decode_ml_literal_string<'i>(
         );
     }
 }
-
-/// ```abnf
-/// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
-/// ```
-const MLL_CHAR: (
-    u8,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-) = (0x9, 0x20..=0x26, 0x28..=0x7E, NON_ASCII);
 
 /// Parse basic string
 ///
@@ -448,11 +438,9 @@ fn strip_start_newline(s: &str) -> &str {
 /// ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 ///                   ml-basic-string-delim
 /// ml-basic-string-delim = 3quotation-mark
-///
 /// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 ///
-/// mlb-content = mlb-char / newline / mlb-escaped-nl
-/// mlb-char = mlb-unescaped / escaped
+/// mlb-content = basic-char / newline / mlb-escaped-nl
 /// mlb-quotes = 1*2quotation-mark
 /// ```
 pub(crate) fn decode_ml_basic_string<'i>(
@@ -652,20 +640,20 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
 
 /// `mlb-unescaped` extended with `mlb-quotes` and `LF`
 ///
+/// This is a specialization of [`basic_unescaped`] to help with multi-line basic strings
+///
 /// **warning:** `newline` is not validated
 ///
 /// ```abnf
 /// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 ///
-/// mlb-content = mlb-char / newline / mlb-escaped-nl
-/// mlb-char = mlb-unescaped / escaped
+/// mlb-content = basic-cha / newline / mlb-escaped-nl
 /// mlb-quotes = 1*2quotation-mark
-/// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
 /// ```
 fn mlb_unescaped<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
-        .offset_for(|b| !(MLB_UNESCAPED, b'"', b'\n').contains_token(b))
+        .offset_for(|b| !(BASIC_UNESCAPED, b'"', b'\n').contains_token(b))
         .unwrap_or(stream.len());
     #[cfg(feature = "unsafe")] // SAFETY: BASIC_UNESCAPED ensure `offset` is along UTF-8 boundary
     unsafe {
@@ -678,7 +666,7 @@ fn mlb_unescaped<'i>(stream: &mut &'i str) -> &'i str {
 fn mlb_invalid<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
-        .offset_for(|b| (MLB_UNESCAPED, b'"', b'\n', ESCAPE, '\r').contains_token(b))
+        .offset_for(|b| (BASIC_UNESCAPED, b'"', b'\n', ESCAPE, '\r').contains_token(b))
         .unwrap_or(stream.len());
     #[cfg(feature = "unsafe")] // SAFETY: BASIC_UNESCAPED ensure `offset` is along UTF-8 boundary
     unsafe {
@@ -687,18 +675,6 @@ fn mlb_invalid<'i>(stream: &mut &'i str) -> &'i str {
     #[cfg(not(feature = "unsafe"))]
     stream.next_slice(offset)
 }
-
-/// ```abnf
-/// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
-/// ```
-#[allow(clippy::type_complexity)]
-const MLB_UNESCAPED: (
-    (u8, u8),
-    u8,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
 /// Parse unquoted key
 ///

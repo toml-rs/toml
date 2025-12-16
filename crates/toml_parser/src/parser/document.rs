@@ -99,17 +99,18 @@ type Stream<'i> = TokenSlice<'i, Token>;
 /// ;; Key-Value pairs
 ///
 /// keyval = key keyval-sep val
-///
 /// key = simple-key / dotted-key
+/// val = string / boolean / array / inline-table / date-time / float / integer
+///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 ///
 /// dot-sep   = ws %x2E ws  ; . Period
 /// keyval-sep = ws %x3D ws ; =
-///
-/// val = string / boolean / array / inline-table / date-time / float / integer
 ///
 /// ;; Array
 ///
@@ -299,7 +300,10 @@ fn on_table(
 /// ;; Key-Value pairs
 ///
 /// key = simple-key / dotted-key
+///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// dotted-key = simple-key 1*( dot-sep simple-key )
@@ -458,6 +462,8 @@ fn on_expression_key_val_sep<'i>(
 ///
 /// simple-key = quoted-key / unquoted-key
 ///
+/// ;; Quoted and dotted key
+///
 /// quoted-key = basic-string / literal-string
 /// ```
 fn simple_key(
@@ -543,7 +549,10 @@ fn simple_key(
 ///
 /// ```abnf
 /// key = simple-key / dotted-key
+///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// dotted-key = simple-key 1*( dot-sep simple-key )

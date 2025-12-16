@@ -378,6 +378,8 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
 }
 
 /// ```abnf
+/// ;; Float
+///
 /// float = float-int-part ( exp / frac [ exp ] )
 ///
 /// float-int-part = dec-int
