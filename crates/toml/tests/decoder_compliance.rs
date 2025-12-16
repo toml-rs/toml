@@ -23,7 +23,12 @@ fn main() {
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness.version("1.0.0");
     harness
-        .ignore(["invalid/string/basic-byte-escapes.toml"])
+        .ignore([
+            "invalid/string/basic-byte-escapes.toml",
+            "invalid/datetime/no-secs.toml",
+            "invalid/local-datetime/no-secs.toml",
+            "invalid/local-time/no-secs.toml",
+        ])
         .unwrap();
     harness.snapshot_root("tests/snapshots");
     harness.extend_invalid(invalid_ext);
