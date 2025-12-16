@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 20
+TOML parse error at line 1, column 21
   |
 1 | bad-hex-esc-02 = "\xG0"
-  |                    ^
-missing escaped value, expected `b`, `e`, `f`, `n`, `r`, `\`, `"`, `u`, `U`
+  |                     ^
+too few unicode value digits, expected unicode hexadecimal value

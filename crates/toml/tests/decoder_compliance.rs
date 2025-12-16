@@ -22,7 +22,9 @@ fn main() {
     let decoder = decoder::Decoder;
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness.version("1.0.0");
-    harness.ignore([]).unwrap();
+    harness
+        .ignore(["invalid/string/basic-byte-escapes.toml"])
+        .unwrap();
     harness.snapshot_root("tests/snapshots");
     harness.extend_invalid(invalid_ext);
     harness.test();

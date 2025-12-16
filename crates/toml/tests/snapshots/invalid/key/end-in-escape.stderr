@@ -16,4 +16,4 @@ TOML parse error at line 1, column 29
   |
 1 | "backslash is the last char\
   |                             ^
-missing escaped value, expected `b`, `e`, `f`, `n`, `r`, `\`, `"`, `u`, `U`
+missing escaped value, expected `b`, `e`, `f`, `n`, `r`, `\`, `"`, `x`, `u`, `U`

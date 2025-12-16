@@ -315,8 +315,9 @@ const ESCAPE: u8 = b'\\';
 /// escape-seq-char =/ %x6E         ; n    line feed       U+000A
 /// escape-seq-char =/ %x72         ; r    carriage return U+000D
 /// escape-seq-char =/ %x74         ; t    tab             U+0009
-/// escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
-/// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
+/// escape-seq-char =/ %x78 2HEXDIG ; xHH                  U+00HH
+/// escape-seq-char =/ %x75 4HEXDIG ; uHHHH                U+HHHH
+/// escape-seq-char =/ %x55 8HEXDIG ; UHHHHHHHH            U+HHHHHHHH
 /// ```
 fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -> char {
     const EXPECTED_ESCAPES: &[Expected] = &[
@@ -327,6 +328,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
         Expected::Literal("r"),
         Expected::Literal("\\"),
         Expected::Literal("\""),
+        Expected::Literal("x"),
         Expected::Literal("u"),
         Expected::Literal("U"),
     ];
@@ -349,6 +351,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
         'n' => '\n',
         'r' => '\r',
         't' => '\t',
+        'x' => hexescape(stream, 2, raw, error),
         'u' => hexescape(stream, 4, raw, error),
         'U' => hexescape(stream, 8, raw, error),
         '\\' => '\\',
@@ -913,6 +916,9 @@ trimmed in raw strings.
                     "\"",
                 ),
                 Literal(
+                    "x",
+                ),
+                Literal(
                     "u",
                 ),
                 Literal(
@@ -1133,6 +1139,9 @@ The quick brown \
                 ),
                 Literal(
                     "\"",
+                ),
+                Literal(
+                    "x",
                 ),
                 Literal(
                     "u",

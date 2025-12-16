@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 19
+TOML parse error at line 1, column 20
   |
 1 | bad-hex-esc-5 = "\x 50"
-  |                   ^
-missing escaped value, expected `b`, `e`, `f`, `n`, `r`, `\`, `"`, `u`, `U`
+  |                    ^
+too few unicode value digits, expected unicode hexadecimal value
