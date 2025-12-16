@@ -54,18 +54,5 @@ EventResults {
             span: 16..17,
         },
     ],
-    errors: [
-        ParseError {
-            context: Some(
-                0..1,
-            ),
-            description: "trailing commas are not supported in inline tables",
-            expected: Some(
-                [],
-            ),
-            unexpected: Some(
-                14..15,
-            ),
-        },
-    ],
+    errors: [],
 }

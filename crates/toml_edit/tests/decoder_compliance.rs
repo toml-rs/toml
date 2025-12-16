@@ -27,6 +27,11 @@ fn main() {
             "invalid/datetime/no-secs.toml",
             "invalid/local-datetime/no-secs.toml",
             "invalid/local-time/no-secs.toml",
+            "invalid/inline-table/linebreak-01.toml",
+            "invalid/inline-table/linebreak-02.toml",
+            "invalid/inline-table/linebreak-03.toml",
+            "invalid/inline-table/linebreak-04.toml",
+            "invalid/inline-table/trailing-comma.toml",
         ])
         .unwrap();
     harness.snapshot_root("tests/snapshots");
