@@ -310,6 +310,7 @@ const ESCAPE: u8 = b'\\';
 /// escape-seq-char =  %x22         ; "    quotation mark  U+0022
 /// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
 /// escape-seq-char =/ %x62         ; b    backspace       U+0008
+/// escape-seq-char =/ %x65         ; e    escape          U+001B
 /// escape-seq-char =/ %x66         ; f    form feed       U+000C
 /// escape-seq-char =/ %x6E         ; n    line feed       U+000A
 /// escape-seq-char =/ %x72         ; r    carriage return U+000D
@@ -320,6 +321,7 @@ const ESCAPE: u8 = b'\\';
 fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -> char {
     const EXPECTED_ESCAPES: &[Expected] = &[
         Expected::Literal("b"),
+        Expected::Literal("e"),
         Expected::Literal("f"),
         Expected::Literal("n"),
         Expected::Literal("r"),
@@ -342,6 +344,7 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
     };
     match id {
         'b' => '\u{8}',
+        'e' => '\u{1b}',
         'f' => '\u{c}',
         'n' => '\n',
         'r' => '\r',
@@ -892,6 +895,9 @@ trimmed in raw strings.
                     "b",
                 ),
                 Literal(
+                    "e",
+                ),
+                Literal(
                     "f",
                 ),
                 Literal(
@@ -1109,6 +1115,9 @@ The quick brown \
             [
                 Literal(
                     "b",
+                ),
+                Literal(
+                    "e",
                 ),
                 Literal(
                     "f",

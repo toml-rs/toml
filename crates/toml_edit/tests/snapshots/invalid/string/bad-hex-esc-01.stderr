@@ -2,4 +2,4 @@ TOML parse error at line 1, column 20
   |
 1 | bad-hex-esc-01 = "\x0g"
   |                    ^
-missing escaped value, expected `b`, `f`, `n`, `r`, `\`, `"`, `u`, `U`
+missing escaped value, expected `b`, `e`, `f`, `n`, `r`, `\`, `"`, `u`, `U`
