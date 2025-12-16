@@ -212,7 +212,9 @@ fn lex_comment(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::Comment, span)
 }
 
-/// `comment-start-symbol = %x23 ; #`
+/// ```abnf
+/// comment-start-symbol = %x23 ; #
+/// ```
 pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 /// Process Newline
@@ -299,7 +301,9 @@ fn lex_literal_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::LiteralString, span)
 }
 
-/// `apostrophe = %x27 ; ' apostrophe`
+/// ```abnf
+/// apostrophe = %x27 ; ' apostrophe
+/// ```
 pub(crate) const APOSTROPHE: u8 = b'\'';
 
 /// Process multi-line literal string
@@ -370,7 +374,9 @@ fn lex_ml_literal_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::MlLiteralString, span)
 }
 
-/// `ml-literal-string-delim = 3apostrophe`
+/// ```abnf
+/// ml-literal-string-delim = 3apostrophe
+/// ```
 pub(crate) const ML_LITERAL_STRING_DELIM: &str = "'''";
 
 /// Process basic string
@@ -480,10 +486,14 @@ fn lex_basic_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::BasicString, span)
 }
 
-/// `quotation-mark = %x22            ; "`
+/// ```abnf
+/// quotation-mark = %x22            ; "
+/// ```
 pub(crate) const QUOTATION_MARK: u8 = b'"';
 
-/// `escape = %x5C                   ; \`
+/// ```abnf
+/// escape = %x5C                   ; \
+/// ```
 pub(crate) const ESCAPE: u8 = b'\\';
 
 /// Process multi-line basic string
@@ -594,7 +604,9 @@ fn lex_ml_basic_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::MlBasicString, span)
 }
 
-/// `ml-basic-string-delim = 3quotation-mark`
+/// ```abnf
+/// ml-basic-string-delim = 3quotation-mark
+/// ```
 pub(crate) const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
 
 /// Process Atom

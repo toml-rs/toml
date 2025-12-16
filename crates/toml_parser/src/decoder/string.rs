@@ -81,7 +81,9 @@ pub(crate) fn decode_literal_string<'i>(
     }
 }
 
-/// `literal-char = %x09 / %x20-26 / %x28-7E / non-ascii`
+/// ```abnf
+/// literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
+/// ```
 const LITERAL_CHAR: (
     u8,
     RangeInclusive<u8>,
@@ -89,7 +91,9 @@ const LITERAL_CHAR: (
     RangeInclusive<u8>,
 ) = (0x9, 0x20..=0x26, 0x28..=0x7E, NON_ASCII);
 
-/// `non-ascii = %x80-D7FF / %xE000-10FFFF`
+/// ```abnf
+/// non-ascii = %x80-D7FF / %xE000-10FFFF
+/// ```
 /// - ASCII is 0xxxxxxx
 /// - First byte for UTF-8 is 11xxxxxx
 /// - Subsequent UTF-8 bytes are 10xxxxxx
@@ -171,7 +175,9 @@ pub(crate) fn decode_ml_literal_string<'i>(
     }
 }
 
-/// `mll-char = %x09 / %x20-26 / %x28-7E / non-ascii`
+/// ```abnf
+/// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
+/// ```
 const MLL_CHAR: (
     u8,
     RangeInclusive<u8>,
@@ -266,7 +272,9 @@ pub(crate) fn decode_basic_string<'i>(
     }
 }
 
-/// `basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii`
+/// ```abnf
+/// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// ```
 fn basic_unescaped<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
@@ -293,7 +301,9 @@ fn basic_invalid<'i>(stream: &mut &'i str) -> &'i str {
     stream.next_slice(offset)
 }
 
-/// `basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii`
+/// ```abnf
+/// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// ```
 #[allow(clippy::type_complexity)]
 const BASIC_UNESCAPED: (
     (u8, u8),
@@ -303,7 +313,9 @@ const BASIC_UNESCAPED: (
     RangeInclusive<u8>,
 ) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
-/// `escape = %x5C                    ; \`
+/// ```abnf
+/// escape = %x5C                    ; \
+/// ```
 const ESCAPE: u8 = b'\\';
 
 /// ```abnf
@@ -411,11 +423,15 @@ fn hexescape(
     value
 }
 
-/// `HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"`
+/// ```abnf
+/// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+/// ```
 const HEXDIG: (RangeInclusive<u8>, RangeInclusive<u8>, RangeInclusive<u8>) =
     (DIGIT, b'A'..=b'F', b'a'..=b'f');
 
-/// `DIGIT = %x30-39 ; 0-9`
+/// ```abnf
+/// DIGIT = %x30-39 ; 0-9
+/// ```
 const DIGIT: RangeInclusive<u8> = b'0'..=b'9';
 
 fn strip_start_newline(s: &str) -> &str {
@@ -672,7 +688,9 @@ fn mlb_invalid<'i>(stream: &mut &'i str) -> &'i str {
     stream.next_slice(offset)
 }
 
-/// `mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii`
+/// ```abnf
+/// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// ```
 #[allow(clippy::type_complexity)]
 const MLB_UNESCAPED: (
     (u8, u8),
@@ -731,7 +749,9 @@ pub(crate) fn decode_unquoted_key<'i>(
     }
 }
 
-/// `unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _`
+/// ```abnf
+/// unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
+/// ```
 const UNQUOTED_CHAR: (
     RangeInclusive<u8>,
     RangeInclusive<u8>,
