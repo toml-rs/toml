@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 17
+TOML parse error at line 1, column 16
   |
-1 | exp-point-2 = 1.e2
-  |                 ^
+1 | exp-dot-02 = 1.e2
+  |                ^
 invalid fraction, expected digits

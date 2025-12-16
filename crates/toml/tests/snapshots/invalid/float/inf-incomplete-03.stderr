@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 21
+TOML parse error at line 1, column 22
   |
-1 | inf-incomplete-3 = -in
-  |                     ^^
+1 | inf-incomplete-03 = -in
+  |                      ^^
 invalid float, expected `inf`

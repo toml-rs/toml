@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 16
+TOML parse error at line 1, column 17
   |
-1 | no-comma-2 = [ 1 2 3 ]
-  |                ^^^^^
+1 | no-comma-02 = [ 1 2 3 ]
+  |                 ^^^^^
 string values must be quoted, expected literal string

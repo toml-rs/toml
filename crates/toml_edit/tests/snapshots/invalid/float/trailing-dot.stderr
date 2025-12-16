@@ -1,0 +1,5 @@
+TOML parse error at line 1, column 18
+  |
+1 | trailing-dot = 1.
+  |                  ^
+invalid fraction, expected digits

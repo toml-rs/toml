@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 26
+TOML parse error at line 1, column 24
   |
-1 | trailing-point-plus = +1.
-  |                          ^
+1 | trailing-dot-plus = +1.
+  |                        ^
 invalid fraction, expected digits
