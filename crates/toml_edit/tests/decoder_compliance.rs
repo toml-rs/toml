@@ -20,20 +20,8 @@ fn main() {
 
     let decoder = decoder::Decoder;
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
-    harness.version("1.0.0");
-    harness
-        .ignore([
-            "invalid/string/basic-byte-escapes.toml",
-            "invalid/datetime/no-secs.toml",
-            "invalid/local-datetime/no-secs.toml",
-            "invalid/local-time/no-secs.toml",
-            "invalid/inline-table/linebreak-01.toml",
-            "invalid/inline-table/linebreak-02.toml",
-            "invalid/inline-table/linebreak-03.toml",
-            "invalid/inline-table/linebreak-04.toml",
-            "invalid/inline-table/trailing-comma.toml",
-        ])
-        .unwrap();
+    harness.version("1.1.0");
+    harness.ignore([]).unwrap();
     harness.snapshot_root("tests/snapshots");
     harness.extend_invalid(invalid_ext);
     harness.test();
