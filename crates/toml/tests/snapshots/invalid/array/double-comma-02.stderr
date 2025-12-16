@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 23
+TOML parse error at line 1, column 24
   |
-1 | double-comma-2 = [1,2,,]
-  |                       ^
+1 | double-comma-02 = [1,2,,]
+  |                        ^
 extra comma in array, expected value

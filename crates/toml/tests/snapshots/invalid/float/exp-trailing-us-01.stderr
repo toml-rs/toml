@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 22
+TOML parse error at line 1, column 23
   |
-1 | exp-trailing-us-1 = 1_e2
-  |                      ^
+1 | exp-trailing-us-01 = 1_e2
+  |                       ^
 `_` may only go between digits

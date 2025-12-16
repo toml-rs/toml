@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 18
+TOML parse error at line 1, column 17
   |
-1 | exp-point-1 = 1e2.3
-  |                  ^^
+1 | exp-dot-01 = 1e2.3
+  |                 ^^
 invalid float, expected nothing

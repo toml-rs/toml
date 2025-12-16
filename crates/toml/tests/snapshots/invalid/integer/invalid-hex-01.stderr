@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 22
+TOML parse error at line 1, column 23
   |
-1 | invalid-hex-1 = 0xaafz
-  |                      ^
+1 | invalid-hex-01 = 0xaafz
+  |                       ^
 invalid hexadecimal number

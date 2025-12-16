@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 21
+TOML parse error at line 1, column 19
   |
-1 | leading-point-neg = -.12345
-  |                     ^
+1 | leading-dot-neg = -.12345
+  |                   ^
 invalid mantissa, expected digits

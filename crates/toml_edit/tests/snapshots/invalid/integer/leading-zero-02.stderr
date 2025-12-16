@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 18
+TOML parse error at line 1, column 19
   |
-1 | leading-zero-2 = 00
-  |                  ^
+1 | leading-zero-02 = 00
+  |                   ^
 unexpected leading zero, expected nothing
