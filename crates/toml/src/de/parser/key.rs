@@ -4,7 +4,7 @@ use crate::alloc_prelude::*;
 use crate::de::parser::prelude::*;
 use crate::de::DeString;
 
-/// ```bnf
+/// ```abnf
 /// key = simple-key / dotted-key
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 /// ```

@@ -4,7 +4,7 @@ use crate::repr::Decor;
 use crate::repr::Repr;
 use crate::RawString;
 
-/// ```bnf
+/// ```abnf
 /// key = simple-key / dotted-key
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 /// ```
@@ -145,7 +145,7 @@ impl State {
     }
 }
 
-/// ```bnf
+/// ```abnf
 /// simple-key = quoted-key / unquoted-key
 /// quoted-key = basic-string / literal-string
 /// ```

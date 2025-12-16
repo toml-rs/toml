@@ -8,7 +8,7 @@ use crate::RawString;
 use crate::Value;
 use crate::{ArrayOfTables, Document, Table};
 
-/// ```bnf
+/// ```abnf
 /// ;; TOML
 ///
 /// toml = expression *( newline expression )
@@ -126,7 +126,7 @@ pub(crate) fn document<'s>(
     }
 }
 
-/// ```bnf
+/// ```abnf
 /// ;; Standard Table
 ///
 /// std-table = std-table-open key *( table-key-sep key) std-table-close

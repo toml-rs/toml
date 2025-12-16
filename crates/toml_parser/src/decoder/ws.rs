@@ -11,7 +11,7 @@ use crate::Span;
 
 /// Parse comment
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Comment
 ///
 /// comment-start-symbol = %x23 ; #
@@ -56,7 +56,7 @@ pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
 
 /// Parse newline
 ///
-/// ```bnf
+/// ```abnf
 ///;; Newline
 ///
 /// newline =  %x0A     ; LF

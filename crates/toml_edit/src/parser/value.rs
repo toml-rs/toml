@@ -5,7 +5,7 @@ use crate::repr::{Formatted, Repr};
 use crate::RawString;
 use crate::Value;
 
-/// ```bnf
+/// ```abnf
 /// val = string / boolean / array / inline-table / date-time / float / integer
 /// ```
 pub(crate) fn value(

@@ -8,7 +8,7 @@ use crate::de::DeFloat;
 use crate::de::DeInteger;
 use crate::de::DeValue;
 
-/// ```bnf
+/// ```abnf
 /// val = string / boolean / array / inline-table / date-time / float / integer
 /// ```
 pub(crate) fn value<'i>(

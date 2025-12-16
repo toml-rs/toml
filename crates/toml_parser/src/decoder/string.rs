@@ -20,7 +20,7 @@ const ALLOCATION_ERROR: &str = "could not allocate for string";
 
 /// Parse literal string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Literal String
 ///
 /// literal-string = apostrophe *literal-char apostrophe
@@ -97,7 +97,7 @@ const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 
 /// Parse multi-line literal string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Multiline Literal String
 ///
 /// ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
@@ -181,7 +181,7 @@ const MLL_CHAR: (
 
 /// Parse basic string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Basic String
 ///
 /// basic-string = quotation-mark *basic-char quotation-mark
@@ -306,7 +306,7 @@ const BASIC_UNESCAPED: (
 /// `escape = %x5C                    ; \`
 const ESCAPE: u8 = b'\\';
 
-/// ```bnf
+/// ```abnf
 /// escape-seq-char =  %x22         ; "    quotation mark  U+0022
 /// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
 /// escape-seq-char =/ %x62         ; b    backspace       U+0008
@@ -426,7 +426,7 @@ fn strip_start_newline(s: &str) -> &str {
 
 /// Parse multi-line basic string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Multiline Basic String
 ///
 /// ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
@@ -546,7 +546,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
     }
 }
 
-/// ```bnf
+/// ```abnf
 /// mlb-escaped-nl = escape ws newline *( wschar / newline )
 /// ```
 fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
@@ -638,7 +638,7 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
 ///
 /// **warning:** `newline` is not validated
 ///
-/// ```bnf
+/// ```abnf
 /// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 ///
 /// mlb-content = mlb-char / newline / mlb-escaped-nl
@@ -684,7 +684,7 @@ const MLB_UNESCAPED: (
 
 /// Parse unquoted key
 ///
-/// ```bnf
+/// ```abnf
 /// unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 /// ```
 pub(crate) fn decode_unquoted_key<'i>(

@@ -10,7 +10,7 @@ use crate::de::DeTable;
 use crate::de::DeValue;
 use crate::map::Entry;
 
-/// ```bnf
+/// ```abnf
 /// ;; Inline Table
 ///
 /// inline-table = inline-table-open inline-table-keyvals inline-table-close

@@ -89,7 +89,7 @@ type Stream<'i> = TokenSlice<'i, Token>;
 /// Only the order of [`Event`][super::Event]s is validated and not [`Event`][super::Event] content nor semantics like duplicate
 /// keys.
 ///
-/// ```bnf
+/// ```abnf
 /// toml = expression *( newline expression )
 ///
 /// expression =  ws [ comment ]
@@ -203,7 +203,7 @@ fn document(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &m
 ///
 /// This eats to EOL
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Table
 ///
 /// table = std-table / array-table
@@ -295,7 +295,7 @@ fn on_table(
 
 /// Parse a TOML key
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Key-Value pairs
 ///
 /// key = simple-key / dotted-key
@@ -453,7 +453,7 @@ fn on_expression_key_val_sep<'i>(
 
 /// Parse a TOML simple key
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Key-Value pairs
 ///
 /// simple-key = quoted-key / unquoted-key
@@ -1268,7 +1268,7 @@ fn on_inline_table_open(
 
 /// Parse whitespace, if present
 ///
-/// ```bnf
+/// ```abnf
 /// ws = *wschar
 /// ```
 fn opt_whitespace(
@@ -1283,7 +1283,7 @@ fn opt_whitespace(
 
 /// Parse EOL decor, if present
 ///
-/// ```bnf
+/// ```abnf
 /// toml = expression *( newline expression )
 ///
 /// expression =  ws [ on_comment ]
