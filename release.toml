@@ -1,2 +1,3 @@
 owners = ["github:toml-rs:maintainers"]
 allow-branch = ["main"]
+metadata = "persistent"
