@@ -8,8 +8,10 @@ use crate::{Item, KeyMut, RawString, Table, Value};
 /// A TOML [`Value`] that contains a collection of [`Key`]/[`Value`] pairs
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
-    // `preamble` represents whitespaces in an empty table
-    preamble: RawString,
+    // `trailing` represents whitespaces, newlines
+    // and comments in an empty array or after the trailing comma
+    trailing: RawString,
+    trailing_comma: bool,
     // Whether to hide an empty table
     pub(crate) implicit: bool,
     // prefix before `{` and suffix after `}`
@@ -82,6 +84,26 @@ impl InlineTable {
     /// Auto formats the table.
     pub fn fmt(&mut self) {
         decorate_inline_table(self);
+    }
+
+    /// Set whether the array will use a trailing comma
+    pub fn set_trailing_comma(&mut self, yes: bool) {
+        self.trailing_comma = yes;
+    }
+
+    /// Whether the array will use a trailing comma
+    pub fn trailing_comma(&self) -> bool {
+        self.trailing_comma
+    }
+
+    /// Set whitespace after last element
+    pub fn set_trailing(&mut self, trailing: impl Into<RawString>) {
+        self.trailing = trailing.into();
+    }
+
+    /// Whitespace after last element
+    pub fn trailing(&self) -> &RawString {
+        &self.trailing
     }
 
     /// Sorts [Key]/[Value]-pairs of the table
@@ -209,16 +231,6 @@ impl InlineTable {
             .map(|(_, key, _)| key.as_mut())
     }
 
-    /// Set whitespace after before element
-    pub fn set_preamble(&mut self, preamble: impl Into<RawString>) {
-        self.preamble = preamble.into();
-    }
-
-    /// Whitespace after before element
-    pub fn preamble(&self) -> &RawString {
-        &self.preamble
-    }
-
     /// The location within the original document
     ///
     /// This generally requires a [`Document`][crate::Document].
@@ -230,7 +242,7 @@ impl InlineTable {
         use indexmap::map::MutableKeys;
         self.span = None;
         self.decor.despan(input);
-        self.preamble.despan(input);
+        self.trailing.despan(input);
         for (key, value) in self.items.iter_mut2() {
             key.despan(input);
             value.despan(input);

@@ -207,7 +207,8 @@ DocumentMut {
                                                     }: Value(
                                                         InlineTable(
                                                             InlineTable {
-                                                                preamble: " ",
+                                                                trailing: " ",
+                                                                trailing_comma: false,
                                                                 implicit: false,
                                                                 decor: Decor {
                                                                     prefix: " ",
@@ -235,7 +236,8 @@ DocumentMut {
                                                     }: Value(
                                                         InlineTable(
                                                             InlineTable {
-                                                                preamble: empty,
+                                                                trailing: empty,
+                                                                trailing_comma: false,
                                                                 implicit: false,
                                                                 decor: Decor {
                                                                     prefix: " ",
@@ -260,7 +262,8 @@ DocumentMut {
                                                                     }: Value(
                                                                         InlineTable(
                                                                             InlineTable {
-                                                                                preamble: empty,
+                                                                                trailing: empty,
+                                                                                trailing_comma: false,
                                                                                 implicit: true,
                                                                                 decor: Decor {
                                                                                     prefix: "default",
