@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.6] - 2025-12-18
+
 ### Features
 
 - Mark compatibility with TOML 1.1 spec (no changes needed)
@@ -56,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 Initial release
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.5...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.6...HEAD
+[1.0.6]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.5...toml_writer-v1.0.6
 [1.0.5]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.4...toml_writer-v1.0.5
 [1.0.4]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.3...toml_writer-v1.0.4
 [1.0.3]: https://github.com/toml-rs/toml/compare/toml_writer-v1.0.2...toml_writer-v1.0.3

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.10] - 2025-12-18
+
 ### Features
 
 - TOML 1.1 parse support
@@ -427,7 +429,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.9...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.10...HEAD
+[0.9.10]: https://github.com/toml-rs/toml/compare/toml-v0.9.9...toml-v0.9.10
 [0.9.9]: https://github.com/toml-rs/toml/compare/toml-v0.9.8...toml-v0.9.9
 [0.9.8]: https://github.com/toml-rs/toml/compare/toml-v0.9.7...toml-v0.9.8
 [0.9.7]: https://github.com/toml-rs/toml/compare/toml-v0.9.6...toml-v0.9.7
