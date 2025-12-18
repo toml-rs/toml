@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Replaced `InlineTable::preamble`, `InlineTable::set_preamble` with `InlineTable::trailing`, `InlineTable::set_trailing`
+- Changed `Table::set_position` from accepting `isize` to `Option<isize>`
+
+### Features
+
+- TOML 1.1 parse support
+  - multi-line inline tables
+  - trailing commas on inline tables
+  - `\e` string escape character
+  - `\xHH` string escape character
+  - Optional seconds in times (sets to `0`)
+- Added `InlineTable::trailing_comma`, `InlineTable::set_trailing_comma`
+
 ## [0.23.10] - 2025-12-17
 
 ## [0.23.9] - 2025-12-06

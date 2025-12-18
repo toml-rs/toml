@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- TOML 1.1 parse support
+  - multi-line inline tables
+  - trailing commas on inline tables
+  - `\e` string escape character
+  - `\xHH` string escape character
+  - Optional seconds in times (sets to `0`)
+
 ## [0.9.9] - 2025-12-17
 
 ## [0.9.8] - 2025-10-09

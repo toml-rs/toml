@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Mark compatibility with TOML 1.1 spec (no changes needed)
+
 ## [1.0.5] - 2025-12-17
 
 ## [1.0.4] - 2025-10-09

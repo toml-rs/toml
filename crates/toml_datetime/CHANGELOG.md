@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- TOML 1.1 support
+  - Make seconds optional when parsing (sets to `0`)
+
 ## [0.7.4] - 2025-12-17
 
 ## [0.7.3] - 2025-10-09
