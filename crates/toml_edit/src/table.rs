@@ -237,8 +237,10 @@ impl Table {
     }
 
     /// Sets the position of the `Table` within the [`DocumentMut`][crate::DocumentMut].
-    pub fn set_position(&mut self, doc_position: isize) {
-        self.doc_position = Some(doc_position);
+    ///
+    /// Use `None` for having an unspecified location
+    pub fn set_position(&mut self, doc_position: Option<isize>) {
+        self.doc_position = doc_position;
     }
 
     /// The position of the `Table` within the [`DocumentMut`][crate::DocumentMut].

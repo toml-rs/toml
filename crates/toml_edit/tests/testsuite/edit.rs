@@ -1029,9 +1029,9 @@ fn test_set_position() {
         for (header, table) in root.iter_mut() {
             if header == "dependencies" {
                 let tab = as_table!(table);
-                tab.set_position(0);
+                tab.set_position(Some(0));
                 let (_, segmented) = tab.iter_mut().next().unwrap();
-                as_table!(segmented).set_position(5);
+                as_table!(segmented).set_position(Some(5));
             }
         }
     })
@@ -1057,7 +1057,7 @@ fn test_multiple_zero_positions() {
     )
     .running(|root| {
         for (_, table) in root.iter_mut() {
-            as_table!(table).set_position(0);
+            as_table!(table).set_position(Some(0));
         }
     })
     .produces_display(str![[r#"
@@ -1083,7 +1083,7 @@ fn test_multiple_max_usize_positions() {
     )
     .running(|root| {
         for (_, table) in root.iter_mut() {
-            as_table!(table).set_position(isize::MAX);
+            as_table!(table).set_position(Some(isize::MAX));
         }
     })
     .produces_display(str![[r#"
