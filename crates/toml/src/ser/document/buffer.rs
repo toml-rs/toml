@@ -57,17 +57,18 @@ impl Buffer {
 
 impl core::fmt::Display for Buffer {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut tables = self
-            .tables
-            .iter()
-            .filter_map(|t| t.as_ref())
-            .filter(|t| required_table(t));
-        if let Some(table) = tables.next() {
-            table.fmt(f)?;
-        }
-        for table in tables {
-            f.newline()?;
-            table.fmt(f)?;
+        let mut newline = false;
+        for table in &self.tables {
+            let Some(table) = table else {
+                continue;
+            };
+            if required_table(table) {
+                if newline {
+                    f.newline()?;
+                }
+                newline = true;
+                table.fmt(f)?;
+            }
         }
         Ok(())
     }

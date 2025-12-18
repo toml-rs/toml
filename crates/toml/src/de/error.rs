@@ -1,3 +1,5 @@
+use core::borrow::Borrow;
+
 use crate::alloc_prelude::*;
 
 /// Errors that can occur when deserializing a type.
@@ -157,9 +159,25 @@ impl core::fmt::Display for Error {
         }
         writeln!(f, "{}", self.message)?;
         if !context && !self.keys.is_empty() {
-            writeln!(f, "in `{}`", self.keys.join("."))?;
+            writeln!(f, "in `{}`", DisplayJoined(".", self.keys.as_slice()))?;
         }
 
+        Ok(())
+    }
+}
+
+pub(crate) struct DisplayJoined<'a, S: Borrow<str>>(pub &'static str, pub &'a [S]);
+
+impl<'a, S: Borrow<str>> alloc::fmt::Display for DisplayJoined<'a, S> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut first = true;
+        for s in self.1 {
+            if !first {
+                f.write_str(self.0)?;
+            }
+            first = false;
+            f.write_str(s.borrow())?;
+        }
         Ok(())
     }
 }
