@@ -425,7 +425,7 @@ impl State {
         self.current_table.decor = decor;
         self.current_table.set_implicit(false);
         self.current_table.set_dotted(false);
-        self.current_table.set_position(self.current_position);
+        self.current_table.set_position(Some(self.current_position));
         self.current_table.span = Some(header.span.start()..header.span.end());
         self.current_header = Some(header);
     }
