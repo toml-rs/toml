@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.24.0] - 2025-12-18
+
 ### Compatibility
 
 - Replaced `InlineTable::preamble`, `InlineTable::set_preamble` with `InlineTable::trailing`, `InlineTable::set_trailing`
@@ -913,7 +915,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.23.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.24.0...HEAD
+[0.24.0]: https://github.com/toml-rs/toml/compare/v0.23.10...v0.24.0
 [0.23.10]: https://github.com/toml-rs/toml/compare/v0.23.9...v0.23.10
 [0.23.9]: https://github.com/toml-rs/toml/compare/v0.23.8...v0.23.9
 [0.23.8]: https://github.com/toml-rs/toml/compare/v0.23.7...v0.23.8
