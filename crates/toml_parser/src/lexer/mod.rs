@@ -138,7 +138,7 @@ fn lex_ascii_char(stream: &mut Stream<'_>, kind: TokenKind) -> Token {
 
 /// Process Whitespace
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Whitespace
 ///
 /// ws = *wschar
@@ -170,7 +170,7 @@ fn lex_whitespace(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::Whitespace, span)
 }
 
-/// ```bnf
+/// ```abnf
 /// wschar =  %x20  ; Space
 /// wschar =/ %x09  ; Horizontal tab
 /// ```
@@ -178,12 +178,12 @@ pub(crate) const WSCHAR: (u8, u8) = (b' ', b'\t');
 
 /// Process Comment
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Comment
 ///
 /// comment-start-symbol = %x23 ; #
 /// non-ascii = %x80-D7FF / %xE000-10FFFF
-/// non-eol = %x09 / %x20-7F / non-ascii
+/// non-eol = %x09 / %x20-7E / non-ascii
 ///
 /// comment = comment-start-symbol *non-eol
 /// ```
@@ -212,12 +212,14 @@ fn lex_comment(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::Comment, span)
 }
 
-/// `comment-start-symbol = %x23 ; #`
+/// ```abnf
+/// comment-start-symbol = %x23 ; #
+/// ```
 pub(crate) const COMMENT_START_SYMBOL: u8 = b'#';
 
 /// Process Newline
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Newline
 ///
 /// newline =  %x0A     ; LF
@@ -251,7 +253,7 @@ fn lex_crlf(stream: &mut Stream<'_>) -> Token {
 
 /// Process literal string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Literal String
 ///
 /// literal-string = apostrophe *literal-char apostrophe
@@ -299,12 +301,14 @@ fn lex_literal_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::LiteralString, span)
 }
 
-/// `apostrophe = %x27 ; ' apostrophe`
+/// ```abnf
+/// apostrophe = %x27 ; ' apostrophe
+/// ```
 pub(crate) const APOSTROPHE: u8 = b'\'';
 
 /// Process multi-line literal string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Multiline Literal String
 ///
 /// ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
@@ -312,8 +316,7 @@ pub(crate) const APOSTROPHE: u8 = b'\'';
 /// ml-literal-string-delim = 3apostrophe
 /// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
 ///
-/// mll-content = mll-char / newline
-/// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
+/// mll-content = literal-char / newline
 /// mll-quotes = 1*2apostrophe
 /// ```
 ///
@@ -370,12 +373,14 @@ fn lex_ml_literal_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::MlLiteralString, span)
 }
 
-/// `ml-literal-string-delim = 3apostrophe`
+/// ```abnf
+/// ml-literal-string-delim = 3apostrophe
+/// ```
 pub(crate) const ML_LITERAL_STRING_DELIM: &str = "'''";
 
 /// Process basic string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Basic String
 ///
 /// basic-string = quotation-mark *basic-char quotation-mark
@@ -390,12 +395,14 @@ pub(crate) const ML_LITERAL_STRING_DELIM: &str = "'''";
 /// escape-seq-char =  %x22         ; "    quotation mark  U+0022
 /// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
 /// escape-seq-char =/ %x62         ; b    backspace       U+0008
+/// escape-seq-char =/ %x65         ; e    escape          U+001B
 /// escape-seq-char =/ %x66         ; f    form feed       U+000C
 /// escape-seq-char =/ %x6E         ; n    line feed       U+000A
 /// escape-seq-char =/ %x72         ; r    carriage return U+000D
 /// escape-seq-char =/ %x74         ; t    tab             U+0009
-/// escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
-/// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
+/// escape-seq-char =/ %x78 2HEXDIG ; xHH                  U+00HH
+/// escape-seq-char =/ %x75 4HEXDIG ; uHHHH                U+HHHH
+/// escape-seq-char =/ %x55 8HEXDIG ; UHHHHHHHH            U+HHHHHHHH
 /// ```
 ///
 /// # Safety
@@ -480,15 +487,19 @@ fn lex_basic_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::BasicString, span)
 }
 
-/// `quotation-mark = %x22            ; "`
+/// ```abnf
+/// quotation-mark = %x22            ; "
+/// ```
 pub(crate) const QUOTATION_MARK: u8 = b'"';
 
-/// `escape = %x5C                   ; \`
+/// ```abnf
+/// escape = %x5C                   ; \
+/// ```
 pub(crate) const ESCAPE: u8 = b'\\';
 
 /// Process multi-line basic string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Multiline Basic String
 ///
 /// ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
@@ -496,10 +507,8 @@ pub(crate) const ESCAPE: u8 = b'\\';
 /// ml-basic-string-delim = 3quotation-mark
 /// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 ///
-/// mlb-content = mlb-char / newline / mlb-escaped-nl
-/// mlb-char = mlb-unescaped / escaped
+/// mlb-content = basic-char / newline / mlb-escaped-nl
 /// mlb-quotes = 1*2quotation-mark
-/// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
 /// mlb-escaped-nl = escape ws newline *( wschar / newline )
 /// ```
 ///
@@ -594,7 +603,9 @@ fn lex_ml_basic_string(stream: &mut Stream<'_>) -> Token {
     Token::new(TokenKind::MlBasicString, span)
 }
 
-/// `ml-basic-string-delim = 3quotation-mark`
+/// ```abnf
+/// ml-basic-string-delim = 3quotation-mark
+/// ```
 pub(crate) const ML_BASIC_STRING_DELIM: &str = "\"\"\"";
 
 /// Process Atom

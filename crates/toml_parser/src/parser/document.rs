@@ -89,7 +89,7 @@ type Stream<'i> = TokenSlice<'i, Token>;
 /// Only the order of [`Event`][super::Event]s is validated and not [`Event`][super::Event] content nor semantics like duplicate
 /// keys.
 ///
-/// ```bnf
+/// ```abnf
 /// toml = expression *( newline expression )
 ///
 /// expression =  ws [ comment ]
@@ -99,17 +99,18 @@ type Stream<'i> = TokenSlice<'i, Token>;
 /// ;; Key-Value pairs
 ///
 /// keyval = key keyval-sep val
-///
 /// key = simple-key / dotted-key
+/// val = string / boolean / array / inline-table / date-time / float / integer
+///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 ///
 /// dot-sep   = ws %x2E ws  ; . Period
 /// keyval-sep = ws %x3D ws ; =
-///
-/// val = string / boolean / array / inline-table / date-time / float / integer
 ///
 /// ;; Array
 ///
@@ -133,9 +134,10 @@ type Stream<'i> = TokenSlice<'i, Token>;
 ///
 /// ;; Inline Table
 ///
-/// inline-table = inline-table-open [ inline-table-keyvals ] inline-table-close
+/// inline-table = inline-table-open [ inline-table-keyvals ] ws-comment-newline inline-table-close
 ///
-/// inline-table-keyvals = keyval [ inline-table-sep inline-table-keyvals ]
+/// inline-table-keyvals =  ws-comment-newline keyval ws-comment-newline inline-table-sep inline-table-keyvals
+/// inline-table-keyvals =/ ws-comment-newline keyval ws-comment-newline [ inline-table-sep ]
 ///
 /// ;; Array Table
 ///
@@ -203,7 +205,7 @@ fn document(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &m
 ///
 /// This eats to EOL
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Table
 ///
 /// table = std-table / array-table
@@ -295,11 +297,14 @@ fn on_table(
 
 /// Parse a TOML key
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Key-Value pairs
 ///
 /// key = simple-key / dotted-key
+///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// dotted-key = simple-key 1*( dot-sep simple-key )
@@ -453,10 +458,12 @@ fn on_expression_key_val_sep<'i>(
 
 /// Parse a TOML simple key
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Key-Value pairs
 ///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// ```
@@ -543,7 +550,10 @@ fn simple_key(
 ///
 /// ```abnf
 /// key = simple-key / dotted-key
+///
 /// simple-key = quoted-key / unquoted-key
+///
+/// ;; Quoted and dotted key
 ///
 /// quoted-key = basic-string / literal-string
 /// dotted-key = simple-key 1*( dot-sep simple-key )
@@ -946,9 +956,10 @@ fn on_array_open(
 /// ```abnf
 /// ;; Inline Table
 ///
-/// inline-table = inline-table-open [ inline-table-keyvals ] inline-table-close
+/// inline-table = inline-table-open [ inline-table-keyvals ] ws-comment-newline inline-table-close
 ///
-/// inline-table-keyvals = keyval [ inline-table-sep inline-table-keyvals ]
+/// inline-table-keyvals =  ws-comment-newline keyval ws-comment-newline inline-table-sep inline-table-keyvals
+/// inline-table-keyvals =/ ws-comment-newline keyval ws-comment-newline [ inline-table-sep ]
 /// ```
 fn on_inline_table_open(
     tokens: &mut Stream<'_>,
@@ -981,31 +992,16 @@ fn on_inline_table_open(
         }
     }
 
-    let mut empty = true;
     let mut state = State::NeedsKey;
     while let Some(current_token) = tokens.next_token() {
         match current_token.kind() {
             TokenKind::Comment => {
-                error.report_error(
-                    ParseError::new("comments are unsupported in inline tables")
-                        .with_context(inline_table_open.span())
-                        .with_expected(&[])
-                        .with_unexpected(current_token.span()),
-                );
-
                 on_comment(tokens, current_token, receiver, error);
             }
             TokenKind::Whitespace => {
                 receiver.whitespace(current_token.span(), error);
             }
             TokenKind::Newline => {
-                error.report_error(
-                    ParseError::new("newlines are unsupported in inline tables")
-                        .with_context(inline_table_open.span())
-                        .with_expected(&[])
-                        .with_unexpected(current_token.span()),
-                );
-
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
@@ -1043,13 +1039,11 @@ fn on_inline_table_open(
 
                     receiver.key_val_sep(current_token.span(), error);
 
-                    empty = false;
                     state = State::NeedsValue;
                 }
                 State::NeedsEquals => {
                     receiver.key_val_sep(current_token.span(), error);
 
-                    empty = false;
                     state = State::NeedsValue;
                 }
                 State::NeedsValue | State::NeedsComma => {
@@ -1083,30 +1077,15 @@ fn on_inline_table_open(
 
                     on_inline_table_open(tokens, current_token, receiver, error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_inline_table_open(tokens, current_token, receiver, error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
             },
             TokenKind::RightCurlyBracket => {
-                if !empty && !matches!(state, State::NeedsComma) {
-                    let unexpected = tokens
-                        .previous_tokens()
-                        .find(|t| t.kind() == TokenKind::Comma)
-                        .map(|t| t.span())
-                        .unwrap_or_else(|| current_token.span().before());
-                    error.report_error(
-                        ParseError::new("trailing commas are not supported in inline tables")
-                            .with_context(inline_table_open.span())
-                            .with_expected(&[])
-                            .with_unexpected(unexpected),
-                    );
-                }
                 receiver.inline_table_close(current_token.span(), error);
 
                 return;
@@ -1132,13 +1111,11 @@ fn on_inline_table_open(
 
                     on_array_open(tokens, current_token, receiver, error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_array_open(tokens, current_token, receiver, error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
             },
@@ -1163,7 +1140,6 @@ fn on_inline_table_open(
                     let _ = receiver.array_open(current_token.span().before(), error);
                     receiver.array_close(current_token.span(), error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
             },
@@ -1182,7 +1158,6 @@ fn on_inline_table_open(
                         );
                         seek(tokens, -1);
                         opt_dot_keys(tokens, receiver, error);
-                        empty = false;
                         state = State::NeedsEquals;
                     } else {
                         receiver.simple_key(
@@ -1191,7 +1166,6 @@ fn on_inline_table_open(
                             error,
                         );
                         opt_dot_keys(tokens, receiver, error);
-                        empty = false;
                         state = State::NeedsEquals;
                     }
                 }
@@ -1205,13 +1179,11 @@ fn on_inline_table_open(
 
                     on_scalar(tokens, current_token, receiver, error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsValue => {
                     on_scalar(tokens, current_token, receiver, error);
 
-                    empty = false;
                     state = State::NeedsComma;
                 }
                 State::NeedsComma => {
@@ -1230,7 +1202,6 @@ fn on_inline_table_open(
                         );
                         seek(tokens, -1);
                         opt_dot_keys(tokens, receiver, error);
-                        empty = false;
                         state = State::NeedsEquals;
                     } else {
                         receiver.simple_key(
@@ -1239,7 +1210,6 @@ fn on_inline_table_open(
                             error,
                         );
                         opt_dot_keys(tokens, receiver, error);
-                        empty = false;
                         state = State::NeedsEquals;
                     }
                 }
@@ -1268,7 +1238,7 @@ fn on_inline_table_open(
 
 /// Parse whitespace, if present
 ///
-/// ```bnf
+/// ```abnf
 /// ws = *wschar
 /// ```
 fn opt_whitespace(
@@ -1283,7 +1253,7 @@ fn opt_whitespace(
 
 /// Parse EOL decor, if present
 ///
-/// ```bnf
+/// ```abnf
 /// toml = expression *( newline expression )
 ///
 /// expression =  ws [ on_comment ]

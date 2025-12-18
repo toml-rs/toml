@@ -20,7 +20,7 @@ const ALLOCATION_ERROR: &str = "could not allocate for string";
 
 /// Parse literal string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Literal String
 ///
 /// literal-string = apostrophe *literal-char apostrophe
@@ -81,7 +81,9 @@ pub(crate) fn decode_literal_string<'i>(
     }
 }
 
-/// `literal-char = %x09 / %x20-26 / %x28-7E / non-ascii`
+/// ```abnf
+/// literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
+/// ```
 const LITERAL_CHAR: (
     u8,
     RangeInclusive<u8>,
@@ -89,7 +91,9 @@ const LITERAL_CHAR: (
     RangeInclusive<u8>,
 ) = (0x9, 0x20..=0x26, 0x28..=0x7E, NON_ASCII);
 
-/// `non-ascii = %x80-D7FF / %xE000-10FFFF`
+/// ```abnf
+/// non-ascii = %x80-D7FF / %xE000-10FFFF
+/// ```
 /// - ASCII is 0xxxxxxx
 /// - First byte for UTF-8 is 11xxxxxx
 /// - Subsequent UTF-8 bytes are 10xxxxxx
@@ -97,7 +101,7 @@ const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 
 /// Parse multi-line literal string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Multiline Literal String
 ///
 /// ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
@@ -105,7 +109,7 @@ const NON_ASCII: RangeInclusive<u8> = 0x80..=0xff;
 /// ml-literal-string-delim = 3apostrophe
 /// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
 ///
-/// mll-content = mll-char / newline
+/// mll-content = literal-char / newline
 /// mll-quotes = 1*2apostrophe
 /// ```
 pub(crate) fn decode_ml_literal_string<'i>(
@@ -153,7 +157,7 @@ pub(crate) fn decode_ml_literal_string<'i>(
                         .with_unexpected(Span::new_unchecked(offset, offset)),
                 );
             }
-        } else if !MLL_CHAR.contains_token(b) {
+        } else if !LITERAL_CHAR.contains_token(b) {
             let offset = (&s.as_bytes()[i..]).offset_from(&raw.as_bytes());
             error.report_error(
                 ParseError::new(INVALID_STRING)
@@ -171,17 +175,9 @@ pub(crate) fn decode_ml_literal_string<'i>(
     }
 }
 
-/// `mll-char = %x09 / %x20-26 / %x28-7E / non-ascii`
-const MLL_CHAR: (
-    u8,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-) = (0x9, 0x20..=0x26, 0x28..=0x7E, NON_ASCII);
-
 /// Parse basic string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Basic String
 ///
 /// basic-string = quotation-mark *basic-char quotation-mark
@@ -266,7 +262,9 @@ pub(crate) fn decode_basic_string<'i>(
     }
 }
 
-/// `basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii`
+/// ```abnf
+/// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// ```
 fn basic_unescaped<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
@@ -293,7 +291,9 @@ fn basic_invalid<'i>(stream: &mut &'i str) -> &'i str {
     stream.next_slice(offset)
 }
 
-/// `basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii`
+/// ```abnf
+/// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+/// ```
 #[allow(clippy::type_complexity)]
 const BASIC_UNESCAPED: (
     (u8, u8),
@@ -303,28 +303,34 @@ const BASIC_UNESCAPED: (
     RangeInclusive<u8>,
 ) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
-/// `escape = %x5C                    ; \`
+/// ```abnf
+/// escape = %x5C                    ; \
+/// ```
 const ESCAPE: u8 = b'\\';
 
-/// ```bnf
+/// ```abnf
 /// escape-seq-char =  %x22         ; "    quotation mark  U+0022
 /// escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
 /// escape-seq-char =/ %x62         ; b    backspace       U+0008
+/// escape-seq-char =/ %x65         ; e    escape          U+001B
 /// escape-seq-char =/ %x66         ; f    form feed       U+000C
 /// escape-seq-char =/ %x6E         ; n    line feed       U+000A
 /// escape-seq-char =/ %x72         ; r    carriage return U+000D
 /// escape-seq-char =/ %x74         ; t    tab             U+0009
-/// escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
-/// escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
+/// escape-seq-char =/ %x78 2HEXDIG ; xHH                  U+00HH
+/// escape-seq-char =/ %x75 4HEXDIG ; uHHHH                U+HHHH
+/// escape-seq-char =/ %x55 8HEXDIG ; UHHHHHHHH            U+HHHHHHHH
 /// ```
 fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -> char {
     const EXPECTED_ESCAPES: &[Expected] = &[
         Expected::Literal("b"),
+        Expected::Literal("e"),
         Expected::Literal("f"),
         Expected::Literal("n"),
         Expected::Literal("r"),
         Expected::Literal("\\"),
         Expected::Literal("\""),
+        Expected::Literal("x"),
         Expected::Literal("u"),
         Expected::Literal("U"),
     ];
@@ -342,10 +348,12 @@ fn escape_seq_char(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) -
     };
     match id {
         'b' => '\u{8}',
+        'e' => '\u{1b}',
         'f' => '\u{c}',
         'n' => '\n',
         'r' => '\r',
         't' => '\t',
+        'x' => hexescape(stream, 2, raw, error),
         'u' => hexescape(stream, 4, raw, error),
         'U' => hexescape(stream, 8, raw, error),
         '\\' => '\\',
@@ -405,11 +413,15 @@ fn hexescape(
     value
 }
 
-/// `HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"`
+/// ```abnf
+/// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+/// ```
 const HEXDIG: (RangeInclusive<u8>, RangeInclusive<u8>, RangeInclusive<u8>) =
     (DIGIT, b'A'..=b'F', b'a'..=b'f');
 
-/// `DIGIT = %x30-39 ; 0-9`
+/// ```abnf
+/// DIGIT = %x30-39 ; 0-9
+/// ```
 const DIGIT: RangeInclusive<u8> = b'0'..=b'9';
 
 fn strip_start_newline(s: &str) -> &str {
@@ -420,17 +432,15 @@ fn strip_start_newline(s: &str) -> &str {
 
 /// Parse multi-line basic string
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Multiline Basic String
 ///
 /// ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 ///                   ml-basic-string-delim
 /// ml-basic-string-delim = 3quotation-mark
-///
 /// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 ///
-/// mlb-content = mlb-char / newline / mlb-escaped-nl
-/// mlb-char = mlb-unescaped / escaped
+/// mlb-content = basic-char / newline / mlb-escaped-nl
 /// mlb-quotes = 1*2quotation-mark
 /// ```
 pub(crate) fn decode_ml_basic_string<'i>(
@@ -540,7 +550,7 @@ pub(crate) fn decode_ml_basic_string<'i>(
     }
 }
 
-/// ```bnf
+/// ```abnf
 /// mlb-escaped-nl = escape ws newline *( wschar / newline )
 /// ```
 fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
@@ -630,20 +640,20 @@ fn mlb_escaped_nl(stream: &mut &str, raw: Raw<'_>, error: &mut dyn ErrorSink) {
 
 /// `mlb-unescaped` extended with `mlb-quotes` and `LF`
 ///
+/// This is a specialization of [`basic_unescaped`] to help with multi-line basic strings
+///
 /// **warning:** `newline` is not validated
 ///
-/// ```bnf
+/// ```abnf
 /// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
 ///
-/// mlb-content = mlb-char / newline / mlb-escaped-nl
-/// mlb-char = mlb-unescaped / escaped
+/// mlb-content = basic-cha / newline / mlb-escaped-nl
 /// mlb-quotes = 1*2quotation-mark
-/// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
 /// ```
 fn mlb_unescaped<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
-        .offset_for(|b| !(MLB_UNESCAPED, b'"', b'\n').contains_token(b))
+        .offset_for(|b| !(BASIC_UNESCAPED, b'"', b'\n').contains_token(b))
         .unwrap_or(stream.len());
     #[cfg(feature = "unsafe")] // SAFETY: BASIC_UNESCAPED ensure `offset` is along UTF-8 boundary
     unsafe {
@@ -656,7 +666,7 @@ fn mlb_unescaped<'i>(stream: &mut &'i str) -> &'i str {
 fn mlb_invalid<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
-        .offset_for(|b| (MLB_UNESCAPED, b'"', b'\n', ESCAPE, '\r').contains_token(b))
+        .offset_for(|b| (BASIC_UNESCAPED, b'"', b'\n', ESCAPE, '\r').contains_token(b))
         .unwrap_or(stream.len());
     #[cfg(feature = "unsafe")] // SAFETY: BASIC_UNESCAPED ensure `offset` is along UTF-8 boundary
     unsafe {
@@ -666,19 +676,9 @@ fn mlb_invalid<'i>(stream: &mut &'i str) -> &'i str {
     stream.next_slice(offset)
 }
 
-/// `mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii`
-#[allow(clippy::type_complexity)]
-const MLB_UNESCAPED: (
-    (u8, u8),
-    u8,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
-
 /// Parse unquoted key
 ///
-/// ```bnf
+/// ```abnf
 /// unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 /// ```
 pub(crate) fn decode_unquoted_key<'i>(
@@ -725,7 +725,9 @@ pub(crate) fn decode_unquoted_key<'i>(
     }
 }
 
-/// `unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _`
+/// ```abnf
+/// unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
+/// ```
 const UNQUOTED_CHAR: (
     RangeInclusive<u8>,
     RangeInclusive<u8>,
@@ -892,6 +894,9 @@ trimmed in raw strings.
                     "b",
                 ),
                 Literal(
+                    "e",
+                ),
+                Literal(
                     "f",
                 ),
                 Literal(
@@ -905,6 +910,9 @@ trimmed in raw strings.
                 ),
                 Literal(
                     "\"",
+                ),
+                Literal(
+                    "x",
                 ),
                 Literal(
                     "u",
@@ -1111,6 +1119,9 @@ The quick brown \
                     "b",
                 ),
                 Literal(
+                    "e",
+                ),
+                Literal(
                     "f",
                 ),
                 Literal(
@@ -1124,6 +1135,9 @@ The quick brown \
                 ),
                 Literal(
                     "\"",
+                ),
+                Literal(
+                    "x",
                 ),
                 Literal(
                     "u",

@@ -158,7 +158,6 @@ pub(crate) fn encode_table(
     let decor = this.decor();
     decor.prefix_encode(buf, input, default_decor.0)?;
     buf.open_inline_table()?;
-    this.preamble().encode_with_default(buf, input, "")?;
 
     let children = this.get_values();
     let len = children.len();
@@ -175,7 +174,11 @@ pub(crate) fn encode_table(
         buf.keyval_sep()?;
         encode_value(value, buf, input, inner_decor)?;
     }
+    if this.trailing_comma() && !this.is_empty() {
+        buf.val_sep()?;
+    }
 
+    this.trailing().encode_with_default(buf, input, "")?;
     buf.close_inline_table()?;
     decor.suffix_encode(buf, input, default_decor.1)?;
 

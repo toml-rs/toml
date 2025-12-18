@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"\\x20 \\x09 \\x1b \\x0d\\x0a\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..25,
+        },
+    ],
+    errors: [],
+}

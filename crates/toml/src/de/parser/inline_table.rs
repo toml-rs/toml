@@ -10,10 +10,10 @@ use crate::de::DeTable;
 use crate::de::DeValue;
 use crate::map::Entry;
 
-/// ```bnf
+/// ```abnf
 /// ;; Inline Table
 ///
-/// inline-table = inline-table-open inline-table-keyvals inline-table-close
+/// inline-table = inline-table-open [ inline-table-keyvals ] ws-comment-newline inline-table-close
 /// ```
 pub(crate) fn on_inline_table<'i>(
     open_event: &toml_parser::parser::Event,

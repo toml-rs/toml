@@ -11,12 +11,12 @@ use crate::Span;
 
 /// Parse comment
 ///
-/// ```bnf
+/// ```abnf
 /// ;; Comment
 ///
 /// comment-start-symbol = %x23 ; #
 /// non-ascii = %x80-D7FF / %xE000-10FFFF
-/// non-eol = %x09 / %x20-7F / non-ascii
+/// non-eol = %x09 / %x20-7E / non-ascii
 ///
 /// comment = comment-start-symbol *non-eol
 /// ```
@@ -56,7 +56,7 @@ pub(crate) const NON_EOL: (u8, RangeInclusive<u8>, RangeInclusive<u8>) =
 
 /// Parse newline
 ///
-/// ```bnf
+/// ```abnf
 ///;; Newline
 ///
 /// newline =  %x0A     ; LF

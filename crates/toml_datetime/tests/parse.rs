@@ -60,3 +60,75 @@ Err(
 "#]],
     );
 }
+
+#[test]
+fn time_without_seconds() {
+    t(
+        "13:37",
+        str![[r#"
+Ok(
+    Datetime {
+        date: None,
+        time: Some(
+            Time {
+                hour: 13,
+                minute: 37,
+                second: 0,
+                nanosecond: 0,
+            },
+        ),
+        offset: None,
+    },
+)
+
+"#]],
+    );
+}
+
+#[test]
+fn time_without_seconds_with_nanoseconds() {
+    t(
+        "13:37.0",
+        str![[r#"
+Err(
+    DatetimeParseError {
+        what: None,
+        expected: None,
+    },
+)
+
+"#]],
+    );
+}
+
+#[test]
+fn datetime_without_seconds() {
+    t(
+        "1979-05-27 07:32Z",
+        str![[r#"
+Ok(
+    Datetime {
+        date: Some(
+            Date {
+                year: 1979,
+                month: 5,
+                day: 27,
+            },
+        ),
+        time: Some(
+            Time {
+                hour: 7,
+                minute: 32,
+                second: 0,
+                nanosecond: 0,
+            },
+        ),
+        offset: Some(
+            Z,
+        ),
+    },
+)
+
+"#]],
+    );
+}

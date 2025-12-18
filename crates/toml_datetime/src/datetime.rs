@@ -310,7 +310,7 @@ impl FromStr for Datetime {
         // time-numoffset = ( "+" / "-" ) time-hour ":" time-minute
         // time-offset    = "Z" / time-numoffset
         //
-        // partial-time   = time-hour ":" time-minute ":" time-second [ time-secfrac ]
+        // partial-time = time-hour ":" time-minute [ ":" time-second [ time-secfrac ] ]
         // full-date      = date-fullyear "-" date-month "-" date-mday
         // full-time      = partial-time time-offset
         //
@@ -454,21 +454,23 @@ impl FromStr for Datetime {
             minute
                 .is(TokenKind::Digits)
                 .map_err(|err| err.what("time").expected("minute"))?;
-            let sep = lexer.next().ok_or(
-                DatetimeParseError::new()
-                    .what("time")
-                    .expected("`:` (MM:SS)"),
-            )?;
-            sep.is(TokenKind::Colon)
-                .map_err(|err| err.what("time").expected("`:` (MM:SS)"))?;
-            let second = lexer
-                .next()
-                .ok_or(DatetimeParseError::new().what("time").expected("second"))?;
-            second
-                .is(TokenKind::Digits)
-                .map_err(|err| err.what("time").expected("second"))?;
+            let second = if lexer.clone().next().map(|t| t.kind) == Some(TokenKind::Colon) {
+                let sep = lexer.next().ok_or(DatetimeParseError::new())?;
+                sep.is(TokenKind::Colon)?;
+                let second = lexer
+                    .next()
+                    .ok_or(DatetimeParseError::new().what("time").expected("second"))?;
+                second
+                    .is(TokenKind::Digits)
+                    .map_err(|err| err.what("time").expected("second"))?;
+                Some(second)
+            } else {
+                None
+            };
 
-            let nanosecond = if lexer.clone().next().map(|t| t.kind) == Some(TokenKind::Dot) {
+            let nanosecond = if second.is_some()
+                && lexer.clone().next().map(|t| t.kind) == Some(TokenKind::Dot)
+            {
                 let sep = lexer.next().ok_or(DatetimeParseError::new())?;
                 sep.is(TokenKind::Dot)?;
                 let nanosecond = lexer.next().ok_or(
@@ -494,10 +496,12 @@ impl FromStr for Datetime {
                     .what("time")
                     .expected("a two-digit minute (MM)"));
             }
-            if second.raw.len() != 2 {
-                return Err(DatetimeParseError::new()
-                    .what("time")
-                    .expected("a two-digit second (SS)"));
+            if let Some(second) = second {
+                if second.raw.len() != 2 {
+                    return Err(DatetimeParseError::new()
+                        .what("time")
+                        .expected("a two-digit second (SS)"));
+                }
             }
 
             let time = Time {
@@ -507,9 +511,8 @@ impl FromStr for Datetime {
                     .parse()
                     .map_err(|_err| DatetimeParseError::new())?,
                 second: second
-                    .raw
-                    .parse()
-                    .map_err(|_err| DatetimeParseError::new())?,
+                    .map(|t| t.raw.parse().map_err(|_err| DatetimeParseError::new()))
+                    .unwrap_or(Ok(0))?,
                 nanosecond: nanosecond.map(|t| s_to_nanoseconds(t.raw)).unwrap_or(0),
             };
 

@@ -505,6 +505,16 @@ fn string_escaped() {
 }
 
 #[test]
+fn string_escaped_escape() {
+    t(r#""\e There is no escape! \e""#, file![_].raw());
+}
+
+#[test]
+fn hex_escape() {
+    t(r#""\x20 \x09 \x1b \x0d\x0a""#, file![_].raw());
+}
+
+#[test]
 fn string_ml_string_multiple_lines() {
     t(
         r#""""

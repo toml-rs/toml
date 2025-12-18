@@ -21,6 +21,9 @@ EventResults {
                         "b",
                     ),
                     Literal(
+                        "e",
+                    ),
+                    Literal(
                         "f",
                     ),
                     Literal(
@@ -34,6 +37,9 @@ EventResults {
                     ),
                     Literal(
                         "\"",
+                    ),
+                    Literal(
+                        "x",
                     ),
                     Literal(
                         "u",

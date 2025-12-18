@@ -1,0 +1,13 @@
+EventResults {
+    input: "\"\\e There is no escape! \\e\"",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 0..27,
+        },
+    ],
+    errors: [],
+}

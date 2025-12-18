@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 4
+TOML parse error at line 1, column 5
   |
 1 | a={
-  |    ^
-newlines are unsupported in inline tables, expected nothing
+  |     ^
+unclosed inline table, expected `}`

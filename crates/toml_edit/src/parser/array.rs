@@ -4,7 +4,7 @@ use crate::{Array, RawString, Value};
 
 use crate::parser::prelude::*;
 
-/// ```bnf
+/// ```abnf
 /// ;; Array
 ///
 /// array = array-open array-values array-close

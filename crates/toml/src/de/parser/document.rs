@@ -9,7 +9,7 @@ use crate::de::DeValue;
 use crate::de::{DeArray, DeTable};
 use crate::map::Entry;
 
-/// ```bnf
+/// ```abnf
 /// ;; TOML
 ///
 /// toml = expression *( newline expression )
@@ -97,7 +97,7 @@ pub(crate) fn document<'i>(
     Spanned::new(span, state.root)
 }
 
-/// ```bnf
+/// ```abnf
 /// ;; Standard Table
 ///
 /// std-table = std-table-open key *( table-key-sep key) std-table-close
