@@ -1,0 +1,54 @@
+TOML parse error at line 11, column 30
+   |
+11 | crate3."path = "../somewhere"
+   |                              ^
+key with no value, expected `=`
+
+---
+TOML parse error at line 12, column 17
+   |
+12 | crate4."path = "/somewhere"
+   |                 ^
+key with no value, expected `=`
+
+---
+TOML parse error at line 14, column 21
+   |
+14 | crate6 = { "path = "/somewhere" }
+   |                     ^
+missing assignment between key-value pairs, expected `=`
+
+---
+TOML parse error at line 17, column 23
+   |
+17 | "path = "../somewhere"
+   |                       ^
+key with no value, expected `=`
+
+---
+TOML parse error at line 20, column 10
+   |
+20 | "path = "/somewhere"
+   |          ^
+key with no value, expected `=`
+
+---
+TOML parse error at line 11, column 18
+   |
+11 | crate3."path = "../somewhere"
+   |                  ^
+unquoted keys cannot be empty, expected letters, numbers, `-`, `_`
+
+---
+TOML parse error at line 11, column 19
+   |
+11 | crate3."path = "../somewhere"
+   |                   ^
+invalid unquoted key, expected letters, numbers, `-`, `_`
+
+---
+TOML parse error at line 11, column 29
+   |
+11 | crate3."path = "../somewhere"
+   |                             ^
+invalid unquoted key, expected letters, numbers, `-`, `_`
