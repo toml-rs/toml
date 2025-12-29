@@ -44,11 +44,4 @@ TOML parse error at line 11, column 19
    |
 11 | crate3."path = "../somewhere"
    |                   ^
-invalid unquoted key, expected letters, numbers, `-`, `_`
-
----
-TOML parse error at line 11, column 29
-   |
-11 | crate3."path = "../somewhere"
-   |                             ^
-invalid unquoted key, expected letters, numbers, `-`, `_`
+invalid basic string, expected `"`

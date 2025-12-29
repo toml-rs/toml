@@ -445,50 +445,16 @@ EventResults {
             context: Some(
                 190..201,
             ),
-            description: "invalid unquoted key",
+            description: "invalid basic string",
             expected: Some(
                 [
-                    Description(
-                        "letters",
-                    ),
-                    Description(
-                        "numbers",
-                    ),
                     Literal(
-                        "-",
-                    ),
-                    Literal(
-                        "_",
+                        "\"",
                     ),
                 ],
             ),
             unexpected: Some(
                 190..190,
-            ),
-        },
-        ParseError {
-            context: Some(
-                190..201,
-            ),
-            description: "invalid unquoted key",
-            expected: Some(
-                [
-                    Description(
-                        "letters",
-                    ),
-                    Description(
-                        "numbers",
-                    ),
-                    Literal(
-                        "-",
-                    ),
-                    Literal(
-                        "_",
-                    ),
-                ],
-            ),
-            unexpected: Some(
-                200..200,
             ),
         },
     ],
