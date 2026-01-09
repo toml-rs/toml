@@ -1183,13 +1183,21 @@ a_b = {value}
     // Through a string equivalent
     println!("to_string");
     assert_data_eq!(
-        crate::to_string(&literal).unwrap_err().to_string(),
-        str!["out-of-range value for u64 type"].raw()
+        crate::to_string(&literal).unwrap(),
+        str![[r#"
+a_b = 18446744073709551615
+
+"#]]
+        .raw()
     );
     println!("to_string_pretty");
     assert_data_eq!(
-        crate::to_string_pretty(&literal).unwrap_err().to_string(),
-        str!["out-of-range value for u64 type"].raw()
+        crate::to_string_pretty(&literal).unwrap(),
+        str![[r#"
+a_b = 18446744073709551615
+
+"#]]
+        .raw()
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(

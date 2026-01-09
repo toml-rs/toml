@@ -132,10 +132,8 @@ impl<'d> serde_core::ser::Serializer for ValueSerializer<'d> {
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        let v: i64 = v
-            .try_into()
-            .map_err(|_err| Error::out_of_range(Some("u64")))?;
-        self.serialize_i64(v)
+        self.dst.value(v)?;
+        Ok(self.dst)
     }
 
     fn serialize_f32(self, mut v: f32) -> Result<Self::Ok, Self::Error> {
