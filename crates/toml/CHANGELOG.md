@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.11] - 2026-01-09
+
 ### Features
 
 - *(serde)* Support serialiazing `i128`, `u128`
@@ -439,7 +441,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.11...HEAD
+[0.9.11]: https://github.com/toml-rs/toml/compare/toml-v0.9.10...toml-v0.9.11
 [0.9.10]: https://github.com/toml-rs/toml/compare/toml-v0.9.9...toml-v0.9.10
 [0.9.9]: https://github.com/toml-rs/toml/compare/toml-v0.9.8...toml-v0.9.9
 [0.9.8]: https://github.com/toml-rs/toml/compare/toml-v0.9.7...toml-v0.9.8
