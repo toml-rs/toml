@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- *(serde)* Support serialiazing `i128`, `u128`
+
+### Fixes
+
+- *(serde)* Support serializing the full range of `u64`
+
+### Fixes
+
 ## [0.9.10] - 2025-12-18
 
 ### Features
