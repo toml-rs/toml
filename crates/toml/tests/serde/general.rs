@@ -1246,13 +1246,21 @@ a_b = {value}
     // Through a string equivalent
     println!("to_string");
     assert_data_eq!(
-        crate::to_string(&literal).unwrap_err().to_string(),
-        str!["i128 is not supported"].raw()
+        crate::to_string(&literal).unwrap(),
+        str![[r#"
+a_b = -170141183460469231731687303715884105728
+
+"#]]
+        .raw()
     );
     println!("to_string_pretty");
     assert_data_eq!(
-        crate::to_string_pretty(&literal).unwrap_err().to_string(),
-        str!["i128 is not supported"].raw()
+        crate::to_string_pretty(&literal).unwrap(),
+        str![[r#"
+a_b = -170141183460469231731687303715884105728
+
+"#]]
+        .raw()
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(
@@ -1301,13 +1309,21 @@ a_b = {value}
     // Through a string equivalent
     println!("to_string");
     assert_data_eq!(
-        crate::to_string(&literal).unwrap_err().to_string(),
-        str!["i128 is not supported"].raw()
+        crate::to_string(&literal).unwrap(),
+        str![[r#"
+a_b = 170141183460469231731687303715884105727
+
+"#]]
+        .raw()
     );
     println!("to_string_pretty");
     assert_data_eq!(
-        crate::to_string_pretty(&literal).unwrap_err().to_string(),
-        str!["i128 is not supported"].raw()
+        crate::to_string_pretty(&literal).unwrap(),
+        str![[r#"
+a_b = 170141183460469231731687303715884105727
+
+"#]]
+        .raw()
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(
@@ -1356,13 +1372,21 @@ a_b = {value}
     // Through a string equivalent
     println!("to_string");
     assert_data_eq!(
-        crate::to_string(&literal).unwrap_err().to_string(),
-        str!["u128 is not supported"].raw()
+        crate::to_string(&literal).unwrap(),
+        str![[r#"
+a_b = 340282366920938463463374607431768211455
+
+"#]]
+        .raw()
     );
     println!("to_string_pretty");
     assert_data_eq!(
-        crate::to_string_pretty(&literal).unwrap_err().to_string(),
-        str!["u128 is not supported"].raw()
+        crate::to_string_pretty(&literal).unwrap(),
+        str![[r#"
+a_b = 340282366920938463463374607431768211455
+
+"#]]
+        .raw()
     );
     println!("literal, from_str(toml)");
     assert_data_eq!(

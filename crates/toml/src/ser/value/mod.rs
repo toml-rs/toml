@@ -116,6 +116,11 @@ impl<'d> serde_core::ser::Serializer for ValueSerializer<'d> {
         Ok(self.dst)
     }
 
+    fn serialize_i128(self, v: i128) -> Result<Self::Ok, Self::Error> {
+        self.dst.value(v)?;
+        Ok(self.dst)
+    }
+
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
         self.dst.value(v)?;
         Ok(self.dst)
@@ -132,6 +137,11 @@ impl<'d> serde_core::ser::Serializer for ValueSerializer<'d> {
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
+        self.dst.value(v)?;
+        Ok(self.dst)
+    }
+
+    fn serialize_u128(self, v: u128) -> Result<Self::Ok, Self::Error> {
         self.dst.value(v)?;
         Ok(self.dst)
     }
