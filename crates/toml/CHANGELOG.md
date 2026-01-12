@@ -17,8 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - *(serde)* Support serializing the full range of `u64`
 
-### Fixes
-
 ## [0.9.10] - 2025-12-18
 
 ### Features
