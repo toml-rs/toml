@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Features
 
-- *(serde)* Support serialiazing `i128`, `u128`
+- *(serde)* Support serializing `i128`, `u128`
 
 ### Fixes
 
