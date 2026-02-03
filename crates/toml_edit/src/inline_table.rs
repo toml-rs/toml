@@ -609,6 +609,10 @@ impl TableLike for InlineTable {
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
         self.key_mut(key)
     }
+
+    fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span()
+    }
 }
 
 // `{ key1 = value1, ... }`

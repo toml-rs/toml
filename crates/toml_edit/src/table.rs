@@ -623,6 +623,10 @@ pub trait TableLike: crate::private::Sealed {
     fn key(&self, key: &str) -> Option<&'_ Key>;
     /// Returns an accessor to a key's formatting
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>>;
+    ////// The location within the original document
+    ///
+    /// This generally requires a [`Document`][crate::Document].
+    fn span(&self) -> Option<std::ops::Range<usize>>;
 }
 
 impl TableLike for Table {
@@ -684,6 +688,10 @@ impl TableLike for Table {
     }
     fn key_mut(&mut self, key: &str) -> Option<KeyMut<'_>> {
         self.key_mut(key)
+    }
+
+    fn span(&self) -> Option<std::ops::Range<usize>> {
+        self.span()
     }
 }
 
