@@ -542,7 +542,7 @@ fn decode_float_or_integer<'i>(
             if 0 < part_start {
                 let first = part.as_bytes().first().copied().unwrap_or(b'0');
                 if !is_any_digit(first, kind) {
-                    let start = part_start - 1;
+                    let start = part_start - underscore.len();
                     let end = part_start;
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
                     error.report_error(
