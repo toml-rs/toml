@@ -51,7 +51,7 @@ preserve_order = ["dep:indexmap", "std"]
 [dependencies]
 serde_core = { version = "1.0.225", default-features = false, features = ["alloc"], optional = true }
 indexmap = { version = "2.11.4", default-features = false, optional = true }
-toml_parser = { version = "1.0.6", path = "../toml_parser", default-features = false, features = ["alloc"], optional = true }
+toml_parser = { version = "1.0.7", path = "../toml_parser", default-features = false, features = ["alloc"], optional = true }
 winnow = { version = "0.7.13", default-features = false, optional = true }
 anstream = { version = "0.6.20", optional = true }
 anstyle = { version = "1.0.11", optional = true }

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.7] - 2026-02-10
+
 ### Fixes
 
 - Don't panic on integers with a radix, an underscore, and a non-digit character
@@ -54,7 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.7...HEAD
+[1.0.7]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.6...toml_parser-v1.0.7
 [1.0.6]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.5...toml_parser-v1.0.6
 [1.0.5]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.4...toml_parser-v1.0.5
 [1.0.4]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.3...toml_parser-v1.0.4

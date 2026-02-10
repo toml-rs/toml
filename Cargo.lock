@@ -1012,7 +1012,7 @@ dependencies = [
 
 [[package]]
 name = "toml_parser"
-version = "1.0.6+spec-1.1.0"
+version = "1.0.7+spec-1.1.0"
 dependencies = [
  "anstream",
  "anstyle",
