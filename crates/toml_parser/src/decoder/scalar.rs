@@ -99,6 +99,10 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     let Some(first) = s.as_bytes().first() else {
         return decode_invalid(raw, output, error);
     };
+    if !first.is_ascii_digit() && s.contains(" ") {
+        // Only datetimes can have a space
+        return decode_invalid(raw, output, error);
+    }
     match first {
         // number starts
         b'+' | b'-' => {
@@ -114,8 +118,11 @@ pub(crate) fn decode_unquoted_scalar<'i>(
         b'.' => {
             let kind = ScalarKind::Float;
             let stream = raw.as_str();
-            ensure_float(stream, raw, error);
-            decode_float_or_integer(stream, raw, kind, output, error)
+            if ensure_float(stream, raw, error) {
+                decode_float_or_integer(stream, raw, kind, output, error)
+            } else {
+                kind
+            }
         }
         b't' | b'T' => {
             const SYMBOL: &str = "true";
@@ -145,7 +152,7 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     }
 }
 
-pub(crate) fn decode_sign_prefix<'i>(
+fn decode_sign_prefix<'i>(
     raw: Raw<'i>,
     value: &'i str,
     output: &mut dyn StringBuilder<'i>,
@@ -178,8 +185,11 @@ pub(crate) fn decode_sign_prefix<'i>(
         b'.' => {
             let kind = ScalarKind::Float;
             let stream = raw.as_str();
-            ensure_float(stream, raw, error);
-            decode_float_or_integer(stream, raw, kind, output, error)
+            if ensure_float(stream, raw, error) {
+                decode_float_or_integer(stream, raw, kind, output, error)
+            } else {
+                kind
+            }
         }
         b'i' | b'I' => {
             const SYMBOL: &str = "inf";
@@ -221,7 +231,7 @@ pub(crate) fn decode_sign_prefix<'i>(
     }
 }
 
-pub(crate) fn decode_zero_prefix<'i>(
+fn decode_zero_prefix<'i>(
     value: &'i str,
     signed: bool,
     raw: Raw<'i>,
@@ -237,6 +247,10 @@ pub(crate) fn decode_zero_prefix<'i>(
         let radix = value.as_bytes()[1];
         match radix {
             b'x' | b'X' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -258,10 +272,17 @@ pub(crate) fn decode_zero_prefix<'i>(
                 let radix = IntegerRadix::Hex;
                 let kind = ScalarKind::Integer(radix);
                 let stream = &value[2..];
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
+                if ensure_radixed_value(stream, raw, radix, error) {
+                    decode_float_or_integer(stream, raw, kind, output, error)
+                } else {
+                    kind
+                }
             }
             b'o' | b'O' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -283,10 +304,17 @@ pub(crate) fn decode_zero_prefix<'i>(
                 let radix = IntegerRadix::Oct;
                 let kind = ScalarKind::Integer(radix);
                 let stream = &value[2..];
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
+                if ensure_radixed_value(stream, raw, radix, error) {
+                    decode_float_or_integer(stream, raw, kind, output, error)
+                } else {
+                    kind
+                }
             }
             b'b' | b'B' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -308,10 +336,17 @@ pub(crate) fn decode_zero_prefix<'i>(
                 let radix = IntegerRadix::Bin;
                 let kind = ScalarKind::Integer(radix);
                 let stream = &value[2..];
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
+                if ensure_radixed_value(stream, raw, radix, error) {
+                    decode_float_or_integer(stream, raw, kind, output, error)
+                } else {
+                    kind
+                }
             }
             b'd' | b'D' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -329,15 +364,18 @@ pub(crate) fn decode_zero_prefix<'i>(
                         .with_expected(&[])
                         .with_unexpected(Span::new_unchecked(0, 2)),
                 );
-                ensure_radixed_value(stream, raw, radix, error);
-                decode_float_or_integer(stream, raw, kind, output, error)
+                if ensure_radixed_value(stream, raw, radix, error) {
+                    decode_float_or_integer(stream, raw, kind, output, error)
+                } else {
+                    kind
+                }
             }
             _ => decode_datetime_or_float_or_integer(value, raw, output, error),
         }
     }
 }
 
-pub(crate) fn decode_datetime_or_float_or_integer<'i>(
+fn decode_datetime_or_float_or_integer<'i>(
     value: &'i str,
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
@@ -349,8 +387,11 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
     else {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         let stream = raw.as_str();
-        ensure_no_leading_zero(value, raw, error);
-        return decode_float_or_integer(stream, raw, kind, output, error);
+        if ensure_no_leading_zero(value, raw, error) {
+            return decode_float_or_integer(stream, raw, kind, output, error);
+        } else {
+            return kind;
+        }
     };
 
     #[cfg(feature = "unsafe")] // SAFETY: ascii digits ensures UTF-8 boundary
@@ -365,13 +406,19 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
     } else if is_float(rest) {
         let kind = ScalarKind::Float;
         let stream = raw.as_str();
-        ensure_float(value, raw, error);
-        decode_float_or_integer(stream, raw, kind, output, error)
+        if ensure_float(value, raw, error) {
+            decode_float_or_integer(stream, raw, kind, output, error)
+        } else {
+            kind
+        }
     } else if rest.starts_with("_") {
         let kind = ScalarKind::Integer(IntegerRadix::Dec);
         let stream = raw.as_str();
-        ensure_no_leading_zero(value, raw, error);
-        decode_float_or_integer(stream, raw, kind, output, error)
+        if ensure_no_leading_zero(value, raw, error) {
+            decode_float_or_integer(stream, raw, kind, output, error)
+        } else {
+            kind
+        }
     } else {
         decode_invalid(raw, output, error)
     }
@@ -390,12 +437,15 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
 /// exp = "e" float-exp-part
 /// float-exp-part = [ minus / plus ] zero-prefixable-int
 /// ```
-pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
-    ensure_dec_uint(&mut value, raw, false, "invalid mantissa", error);
+#[must_use]
+fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) -> bool {
+    let mut is_valid = true;
+
+    is_valid &= ensure_dec_uint(&mut value, raw, false, "invalid mantissa", error);
 
     if value.starts_with(".") {
         let _ = value.next_token();
-        ensure_dec_uint(&mut value, raw, true, "invalid fraction", error);
+        is_valid &= ensure_dec_uint(&mut value, raw, true, "invalid fraction", error);
     }
 
     if value.starts_with(['e', 'E']) {
@@ -403,7 +453,7 @@ pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn
         if value.starts_with(['+', '-']) {
             let _ = value.next_token();
         }
-        ensure_dec_uint(&mut value, raw, true, "invalid exponent", error);
+        is_valid &= ensure_dec_uint(&mut value, raw, true, "invalid exponent", error);
     }
 
     if !value.is_empty() {
@@ -415,16 +465,22 @@ pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn
                 .with_expected(&[])
                 .with_unexpected(Span::new_unchecked(start, end)),
         );
+        is_valid = false;
     }
+
+    is_valid
 }
 
-pub(crate) fn ensure_dec_uint<'i>(
+#[must_use]
+fn ensure_dec_uint<'i>(
     value: &mut &'i str,
     raw: Raw<'i>,
     zero_prefix: bool,
     invalid_description: &'static str,
     error: &mut dyn ErrorSink,
-) {
+) -> bool {
+    let mut is_valid = true;
+
     let start = *value;
     let mut digit_count = 0;
     while let Some(current) = value.chars().next() {
@@ -447,6 +503,7 @@ pub(crate) fn ensure_dec_uint<'i>(
                     .with_expected(&[Expected::Description("digits")])
                     .with_unexpected(Span::new_unchecked(start, end)),
             );
+            is_valid = false;
         }
         1 => {}
         _ if start.starts_with("0") && !zero_prefix => {
@@ -458,12 +515,18 @@ pub(crate) fn ensure_dec_uint<'i>(
                     .with_expected(&[])
                     .with_unexpected(Span::new_unchecked(start, end)),
             );
+            is_valid = false;
         }
         _ => {}
     }
+
+    is_valid
 }
 
-pub(crate) fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
+#[must_use]
+fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) -> bool {
+    let mut is_valid = true;
+
     if value.starts_with("0") {
         let start = value.offset_from(&raw.as_str());
         let end = start + 1;
@@ -473,15 +536,21 @@ pub(crate) fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &m
                 .with_expected(&[])
                 .with_unexpected(Span::new_unchecked(start, end)),
         );
+        is_valid = false;
     }
+
+    is_valid
 }
 
-pub(crate) fn ensure_radixed_value(
+#[must_use]
+fn ensure_radixed_value(
     value: &str,
     raw: Raw<'_>,
     radix: IntegerRadix,
     error: &mut dyn ErrorSink,
-) {
+) -> bool {
+    let mut is_valid = true;
+
     let invalid = ['+', '-'];
     let value = if let Some(value) = value.strip_prefix(invalid) {
         let pos = raw.as_str().find(invalid).unwrap();
@@ -491,6 +560,7 @@ pub(crate) fn ensure_radixed_value(
                 .with_expected(&[])
                 .with_unexpected(Span::new_unchecked(pos, pos + 1)),
         );
+        is_valid = false;
         value
     } else {
         value
@@ -505,11 +575,14 @@ pub(crate) fn ensure_radixed_value(
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_unexpected(Span::new_unchecked(pos, pos)),
             );
+            is_valid = false;
         }
     }
+
+    is_valid
 }
 
-pub(crate) fn decode_float_or_integer<'i>(
+fn decode_float_or_integer<'i>(
     stream: &'i str,
     raw: Raw<'i>,
     kind: ScalarKind,
@@ -547,7 +620,7 @@ pub(crate) fn decode_float_or_integer<'i>(
             if 0 < part_start {
                 let first = part.as_bytes().first().copied().unwrap_or(b'0');
                 if !is_any_digit(first, kind) {
-                    let start = part_start - 1;
+                    let start = part_start - underscore.len();
                     let end = part_start;
                     debug_assert_eq!(&raw.as_str()[start..end], underscore);
                     error.report_error(
@@ -624,7 +697,7 @@ fn is_float(raw: &str) -> bool {
     raw.as_bytes().find_slice((b'.', b'e', b'E')).is_some()
 }
 
-pub(crate) fn decode_as_is<'i>(
+fn decode_as_is<'i>(
     raw: Raw<'i>,
     kind: ScalarKind,
     output: &mut dyn StringBuilder<'i>,
@@ -634,7 +707,7 @@ pub(crate) fn decode_as_is<'i>(
     kind
 }
 
-pub(crate) fn decode_as<'i>(
+fn decode_as<'i>(
     raw: Raw<'i>,
     symbol: &'i str,
     kind: ScalarKind,
@@ -650,7 +723,7 @@ pub(crate) fn decode_as<'i>(
     kind
 }
 
-pub(crate) fn decode_symbol<'i>(
+fn decode_symbol<'i>(
     raw: Raw<'i>,
     symbol: &'static str,
     kind: ScalarKind,
@@ -674,7 +747,7 @@ pub(crate) fn decode_symbol<'i>(
     decode_as(raw, symbol, kind, output, error)
 }
 
-pub(crate) fn decode_invalid<'i>(
+fn decode_invalid<'i>(
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
