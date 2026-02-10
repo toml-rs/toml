@@ -494,7 +494,6 @@ v=0x _
 }
 
 #[test]
-#[should_panic]
 fn hex_with_bad_chars() {
     t(
         "
