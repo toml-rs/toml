@@ -492,3 +492,24 @@ v=0x _
         file![_].raw(),
     );
 }
+
+#[test]
+#[should_panic]
+fn hex_with_bad_chars() {
+    t(
+        "
+v=0xz_
+",
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn float_with_bad_underscore() {
+    t(
+        "
+v=1_.2
+",
+        file![_].raw(),
+    );
+}

@@ -1,0 +1,42 @@
+EventResults {
+    input: "\nv=1_.2\n",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 3..7,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 7..8,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                3..7,
+            ),
+            description: "`_` may only go between digits",
+            expected: None,
+            unexpected: Some(
+                4..5,
+            ),
+        },
+    ],
+}
