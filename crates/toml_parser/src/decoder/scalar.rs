@@ -99,6 +99,10 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     let Some(first) = s.as_bytes().first() else {
         return decode_invalid(raw, output, error);
     };
+    if !first.is_ascii_digit() && s.contains(" ") {
+        // Only datetimes can have a space
+        return decode_invalid(raw, output, error);
+    }
     match first {
         // number starts
         b'+' | b'-' => {
@@ -237,6 +241,10 @@ fn decode_zero_prefix<'i>(
         let radix = value.as_bytes()[1];
         match radix {
             b'x' | b'X' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -262,6 +270,10 @@ fn decode_zero_prefix<'i>(
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'o' | b'O' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -287,6 +299,10 @@ fn decode_zero_prefix<'i>(
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'b' | b'B' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")
@@ -312,6 +328,10 @@ fn decode_zero_prefix<'i>(
                 decode_float_or_integer(stream, raw, kind, output, error)
             }
             b'd' | b'D' => {
+                if value.contains(" ") {
+                    // Only datetimes can have a space
+                    return decode_invalid(raw, output, error);
+                }
                 if signed {
                     error.report_error(
                         ParseError::new("integers with a radix cannot be signed")

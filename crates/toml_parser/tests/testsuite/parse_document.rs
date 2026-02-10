@@ -484,7 +484,6 @@ after = [10]
 }
 
 #[test]
-#[should_panic]
 fn hex_with_spaces() {
     t(
         "
