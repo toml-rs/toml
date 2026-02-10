@@ -482,3 +482,14 @@ after = [10]
         file![_].raw(),
     );
 }
+
+#[test]
+#[should_panic]
+fn hex_with_spaces() {
+    t(
+        "
+v=0x _
+",
+        file![_].raw(),
+    );
+}
