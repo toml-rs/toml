@@ -40,18 +40,6 @@ EventResults {
         },
         ParseError {
             context: Some(
-                3..7,
-            ),
-            description: "`_` may only go between digits",
-            expected: Some(
-                [],
-            ),
-            unexpected: Some(
-                6..7,
-            ),
-        },
-        ParseError {
-            context: Some(
                 0..4,
             ),
             description: "failed to parse i64",
