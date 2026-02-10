@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Don't panic on parsing integers with a radix, an underscore, and a non-digit character
+
 ## [0.24.0] - 2025-12-18
 
 ### Compatibility
