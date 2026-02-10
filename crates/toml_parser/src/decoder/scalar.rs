@@ -145,7 +145,7 @@ pub(crate) fn decode_unquoted_scalar<'i>(
     }
 }
 
-pub(crate) fn decode_sign_prefix<'i>(
+fn decode_sign_prefix<'i>(
     raw: Raw<'i>,
     value: &'i str,
     output: &mut dyn StringBuilder<'i>,
@@ -221,7 +221,7 @@ pub(crate) fn decode_sign_prefix<'i>(
     }
 }
 
-pub(crate) fn decode_zero_prefix<'i>(
+fn decode_zero_prefix<'i>(
     value: &'i str,
     signed: bool,
     raw: Raw<'i>,
@@ -337,7 +337,7 @@ pub(crate) fn decode_zero_prefix<'i>(
     }
 }
 
-pub(crate) fn decode_datetime_or_float_or_integer<'i>(
+fn decode_datetime_or_float_or_integer<'i>(
     value: &'i str,
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
@@ -390,7 +390,7 @@ pub(crate) fn decode_datetime_or_float_or_integer<'i>(
 /// exp = "e" float-exp-part
 /// float-exp-part = [ minus / plus ] zero-prefixable-int
 /// ```
-pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
+fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
     ensure_dec_uint(&mut value, raw, false, "invalid mantissa", error);
 
     if value.starts_with(".") {
@@ -418,7 +418,7 @@ pub(crate) fn ensure_float<'i>(mut value: &'i str, raw: Raw<'i>, error: &mut dyn
     }
 }
 
-pub(crate) fn ensure_dec_uint<'i>(
+fn ensure_dec_uint<'i>(
     value: &mut &'i str,
     raw: Raw<'i>,
     zero_prefix: bool,
@@ -463,7 +463,7 @@ pub(crate) fn ensure_dec_uint<'i>(
     }
 }
 
-pub(crate) fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
+fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &mut dyn ErrorSink) {
     if value.starts_with("0") {
         let start = value.offset_from(&raw.as_str());
         let end = start + 1;
@@ -476,12 +476,7 @@ pub(crate) fn ensure_no_leading_zero<'i>(value: &'i str, raw: Raw<'i>, error: &m
     }
 }
 
-pub(crate) fn ensure_radixed_value(
-    value: &str,
-    raw: Raw<'_>,
-    radix: IntegerRadix,
-    error: &mut dyn ErrorSink,
-) {
+fn ensure_radixed_value(value: &str, raw: Raw<'_>, radix: IntegerRadix, error: &mut dyn ErrorSink) {
     let invalid = ['+', '-'];
     let value = if let Some(value) = value.strip_prefix(invalid) {
         let pos = raw.as_str().find(invalid).unwrap();
@@ -509,7 +504,7 @@ pub(crate) fn ensure_radixed_value(
     }
 }
 
-pub(crate) fn decode_float_or_integer<'i>(
+fn decode_float_or_integer<'i>(
     stream: &'i str,
     raw: Raw<'i>,
     kind: ScalarKind,
@@ -624,7 +619,7 @@ fn is_float(raw: &str) -> bool {
     raw.as_bytes().find_slice((b'.', b'e', b'E')).is_some()
 }
 
-pub(crate) fn decode_as_is<'i>(
+fn decode_as_is<'i>(
     raw: Raw<'i>,
     kind: ScalarKind,
     output: &mut dyn StringBuilder<'i>,
@@ -634,7 +629,7 @@ pub(crate) fn decode_as_is<'i>(
     kind
 }
 
-pub(crate) fn decode_as<'i>(
+fn decode_as<'i>(
     raw: Raw<'i>,
     symbol: &'i str,
     kind: ScalarKind,
@@ -650,7 +645,7 @@ pub(crate) fn decode_as<'i>(
     kind
 }
 
-pub(crate) fn decode_symbol<'i>(
+fn decode_symbol<'i>(
     raw: Raw<'i>,
     symbol: &'static str,
     kind: ScalarKind,
@@ -674,7 +669,7 @@ pub(crate) fn decode_symbol<'i>(
     decode_as(raw, symbol, kind, output, error)
 }
 
-pub(crate) fn decode_invalid<'i>(
+fn decode_invalid<'i>(
     raw: Raw<'i>,
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
