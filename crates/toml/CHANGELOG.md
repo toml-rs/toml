@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.9.12] - 2026-02-10
+
 ### Fixes
 
 - Don't panic on parsing integers with a radix, an underscore, and a non-digit character
@@ -443,7 +445,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.11...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.12...HEAD
+[0.9.12]: https://github.com/toml-rs/toml/compare/toml-v0.9.11...toml-v0.9.12
 [0.9.11]: https://github.com/toml-rs/toml/compare/toml-v0.9.10...toml-v0.9.11
 [0.9.10]: https://github.com/toml-rs/toml/compare/toml-v0.9.9...toml-v0.9.10
 [0.9.9]: https://github.com/toml-rs/toml/compare/toml-v0.9.8...toml-v0.9.9
