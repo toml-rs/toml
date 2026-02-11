@@ -2150,3 +2150,32 @@ Some(
 "#]]
     );
 }
+
+#[test]
+fn borrow() {
+    type Table<'s> = BTreeMap<&'s str, &'s str>;
+
+    let input = r#"
+key = "value"
+"#;
+    let err = match crate::from_str::<Table<'_>>(input) {
+        Ok(_) => panic!("should fail"),
+        Err(err) => err,
+    };
+    assert_data_eq!(
+        err.to_debug(),
+        str![[r#"
+Error {
+    message: "invalid type: string /"key/", expected a borrowed string",
+    input: Some(
+        "/nkey = /"value/"/n",
+    ),
+    keys: [],
+    span: Some(
+        1..4,
+    ),
+}
+
+"#]]
+    );
+}
