@@ -2158,24 +2158,12 @@ fn borrow() {
     let input = r#"
 key = "value"
 "#;
-    let err = match crate::from_str::<Table<'_>>(input) {
-        Ok(_) => panic!("should fail"),
-        Err(err) => err,
-    };
+    let table = crate::from_str::<Table<'_>>(input).unwrap();
     assert_data_eq!(
-        err.to_debug(),
+        table.to_debug(),
         str![[r#"
-Error {
-    message: "invalid type: string /"value/", expected a borrowed string",
-    input: Some(
-        "/nkey = /"value/"/n",
-    ),
-    keys: [
-        "key",
-    ],
-    span: Some(
-        7..14,
-    ),
+{
+    "key": "value",
 }
 
 "#]]
