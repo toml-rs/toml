@@ -2166,13 +2166,15 @@ key = "value"
         err.to_debug(),
         str![[r#"
 Error {
-    message: "invalid type: string /"key/", expected a borrowed string",
+    message: "invalid type: string /"value/", expected a borrowed string",
     input: Some(
         "/nkey = /"value/"/n",
     ),
-    keys: [],
+    keys: [
+        "key",
+    ],
     span: Some(
-        1..4,
+        7..14,
     ),
 }
 
