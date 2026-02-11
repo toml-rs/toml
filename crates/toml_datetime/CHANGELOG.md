@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Wrap `Time::second` and `Time::nanosecond` in `Option`, preserving whether they are present or not
+
 ## [0.7.5] - 2025-12-18
 
 ### Features
