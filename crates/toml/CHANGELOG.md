@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.0] - 2026-02-11
+
 ### Fixes
 
 - Wrap `Time::second` and `Time::nanosecond` in `Option`, preserving whether they are present or not
@@ -450,7 +452,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v0.9.12...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.0...HEAD
+[1.0.0]: https://github.com/toml-rs/toml/compare/toml-v0.9.12...toml-v1.0.0
 [0.9.12]: https://github.com/toml-rs/toml/compare/toml-v0.9.11...toml-v0.9.12
 [0.9.11]: https://github.com/toml-rs/toml/compare/toml-v0.9.10...toml-v0.9.11
 [0.9.10]: https://github.com/toml-rs/toml/compare/toml-v0.9.9...toml-v0.9.10

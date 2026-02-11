@@ -42,7 +42,7 @@ unbounded = []
 indexmap = { version = "2.11.4", features = ["std"] }
 winnow = { version = "0.7.13", optional = true }
 serde_core = { version = "1.0.225", optional = true }
-toml_datetime = { version = "0.7.5", path = "../toml_datetime" }
+toml_datetime = { version = "1.0.0", path = "../toml_datetime" }
 serde_spanned = { version = "1.0.4", path = "../serde_spanned", features = ["serde"], optional = true }
 toml_writer = { version = "1.0.6", path = "../toml_writer", optional = true }
 toml_parser = { version = "1.0.7", path = "../toml_parser", optional = true }
