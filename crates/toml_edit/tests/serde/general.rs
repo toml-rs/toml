@@ -1456,15 +1456,15 @@ fn serialize_time() {
         date: crate::Time {
             hour: 5,
             minute: 0,
-            second: 0,
-            nanosecond: 0,
+            second: None,
+            nanosecond: None,
         },
     };
     let raw = crate::to_string(&input).unwrap();
     assert_data_eq!(
         raw,
         str![[r#"
-date = 05:00:00
+date = 05:00
 
 "#]]
         .raw()
@@ -1473,14 +1473,14 @@ date = 05:00:00
     assert_data_eq!(
         raw,
         str![[r#"
-date = 05:00:00
+date = 05:00
 
 "#]]
         .raw()
     );
 
     let toml = crate::to_string_value(&input.date).unwrap();
-    assert_data_eq!(toml, str!["05:00:00"]);
+    assert_data_eq!(toml, str!["05:00"]);
 }
 
 #[test]
@@ -1524,8 +1524,10 @@ fn deserialize_time() {
 Time {
     hour: 5,
     minute: 0,
-    second: 0,
-    nanosecond: 0,
+    second: Some(
+        0,
+    ),
+    nanosecond: None,
 }
 
 "#]],
