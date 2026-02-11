@@ -52,7 +52,15 @@ fn value_to_decoded(
             toml_test_harness::DecodedScalar::from(*v.value()),
         )),
         toml_edit::Value::Datetime(v) => {
-            let v = v.value();
+            let mut v = *v.value();
+            if let Some(time) = &mut v.time {
+                if time.second.is_none() {
+                    time.second = Some(0);
+                }
+                if time.nanosecond.is_none() {
+                    time.nanosecond = Some(0);
+                }
+            }
             let value = v.to_string();
             let value = match (v.date.is_some(), v.time.is_some(), v.offset.is_some()) {
                 (true, true, true) => toml_test_harness::DecodedScalar::Datetime(value),

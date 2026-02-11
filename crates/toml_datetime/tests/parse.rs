@@ -73,8 +73,8 @@ Ok(
             Time {
                 hour: 13,
                 minute: 37,
-                second: 0,
-                nanosecond: 0,
+                second: None,
+                nanosecond: None,
             },
         ),
         offset: None,
@@ -119,8 +119,8 @@ Ok(
             Time {
                 hour: 7,
                 minute: 32,
-                second: 0,
-                nanosecond: 0,
+                second: None,
+                nanosecond: None,
             },
         ),
         offset: Some(

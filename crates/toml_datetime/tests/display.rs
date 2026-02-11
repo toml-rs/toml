@@ -24,13 +24,13 @@ fn time_without_seconds() {
             time: Some(Time {
                 hour: 13,
                 minute: 37,
-                second: 0,
-                nanosecond: 0,
+                second: None,
+                nanosecond: None,
             }),
             offset: None,
         },
         str![[r#"
-"13:37:00"
+"13:37"
 
 "#]],
     );
@@ -44,13 +44,33 @@ fn time_without_seconds_with_nanoseconds() {
             time: Some(Time {
                 hour: 13,
                 minute: 37,
-                second: 0,
-                nanosecond: 5,
+                second: None,
+                nanosecond: Some(5),
             }),
             offset: None,
         },
         str![[r#"
 "13:37:00.000000005"
+
+"#]],
+    );
+}
+
+#[test]
+fn time_with_zero_seconds_and_nanoseconds() {
+    t(
+        Datetime {
+            date: None,
+            time: Some(Time {
+                hour: 13,
+                minute: 37,
+                second: Some(0),
+                nanosecond: Some(0),
+            }),
+            offset: None,
+        },
+        str![[r#"
+"13:37:00.0"
 
 "#]],
     );
@@ -68,13 +88,13 @@ fn datetime_without_seconds() {
             time: Some(Time {
                 hour: 7,
                 minute: 32,
-                second: 0,
-                nanosecond: 0,
+                second: None,
+                nanosecond: None,
             }),
             offset: Some(Offset::Z),
         },
         str![[r#"
-"1979-05-27T07:32:00Z"
+"1979-05-27T07:32Z"
 
 "#]],
     );
