@@ -91,7 +91,7 @@ impl<'de> serde_core::Deserializer<'de> for ValueDeserializer<'de> {
         let span = self.span.clone();
         match self.input {
             DeValue::String(DeString::Owned(v)) => visitor.visit_string(v),
-            DeValue::String(DeString::Borrowed(v)) => visitor.visit_str(v),
+            DeValue::String(DeString::Borrowed(v)) => visitor.visit_borrowed_str(v),
             DeValue::Integer(v) => {
                 if let Some(v) = v.to_i64() {
                     visitor.visit_i64(v)

@@ -2150,3 +2150,22 @@ Some(
 "#]]
     );
 }
+
+#[test]
+fn borrow() {
+    type Table<'s> = BTreeMap<&'s str, &'s str>;
+
+    let input = r#"
+key = "value"
+"#;
+    let table = crate::from_str::<Table<'_>>(input).unwrap();
+    assert_data_eq!(
+        table.to_debug(),
+        str![[r#"
+{
+    "key": "value",
+}
+
+"#]]
+    );
+}
