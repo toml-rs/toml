@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.0] - 2026-02-11
+
 ### Fixes
 
 - Wrap `Time::second` and `Time::nanosecond` in `Option`, preserving whether they are present or not
@@ -925,7 +927,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.24.1...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.0...HEAD
+[0.25.0]: https://github.com/toml-rs/toml/compare/v0.24.1...v0.25.0
 [0.24.1]: https://github.com/toml-rs/toml/compare/v0.24.0...v0.24.1
 [0.24.0]: https://github.com/toml-rs/toml/compare/v0.23.10...v0.24.0
 [0.23.10]: https://github.com/toml-rs/toml/compare/v0.23.9...v0.23.10
