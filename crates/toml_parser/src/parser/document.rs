@@ -1212,6 +1212,17 @@ fn on_inline_table_open(
         })
         .map(|t| t.span())
         .unwrap_or_default();
+    match state {
+        State::NeedsKey => {}
+        State::NeedsEquals => {
+            receiver.key_val_sep(previous_span.after(), error);
+            receiver.scalar(previous_span.after(), Some(Encoding::LiteralString), error);
+        }
+        State::NeedsValue => {
+            receiver.scalar(previous_span.after(), Some(Encoding::LiteralString), error);
+        }
+        State::NeedsComma => {}
+    }
     error.report_error(
         ParseError::new("unclosed inline table")
             .with_context(inline_table_open.span())

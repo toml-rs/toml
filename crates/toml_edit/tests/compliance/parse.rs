@@ -642,10 +642,19 @@ fn inline_dotted_key_recursion_limit() {
 }
 
 #[test]
-#[should_panic = "setting a value should set a prefix"]
 fn garbage1() {
     let err = "={=<=u==".parse::<crate::RustDocument>().unwrap_err();
-    assert_data_eq!(err.to_string(), str![]);
+    assert_data_eq!(
+        err.to_string(),
+        str![[r#"
+TOML parse error at line 1, column 5
+  |
+1 | ={=<=u==
+  |     ^
+extra assignment between key-value pairs, expected `,`
+
+"#]]
+    );
 }
 
 #[test]
