@@ -658,7 +658,14 @@ extra assignment between key-value pairs, expected `,`
 }
 
 #[test]
+#[should_panic = "setting a value should set a prefix"]
 fn garbage2() {
+    let err = "={=<=u==}".parse::<crate::RustDocument>().unwrap_err();
+    assert_data_eq!(err.to_string(), str![]);
+}
+
+#[test]
+fn garbage3() {
     let err = "==\n[._[._".parse::<crate::RustDocument>().unwrap_err();
     assert_data_eq!(
         err.to_string(),
