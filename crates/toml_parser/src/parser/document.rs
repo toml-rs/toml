@@ -1005,15 +1005,7 @@ fn on_inline_table_open(
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
-                error.report_error(
-                    ParseError::new("unclosed inline table")
-                        .with_context(inline_table_open.span())
-                        .with_expected(&[Expected::Literal("}")])
-                        .with_unexpected(current_token.span()),
-                );
-
-                receiver.inline_table_close(current_token.span().before(), error);
-                return;
+                break;
             }
             TokenKind::Comma => match state {
                 State::NeedsKey | State::NeedsEquals | State::NeedsValue => {
