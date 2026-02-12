@@ -1071,6 +1071,25 @@ fn on_inline_table_open(
                 }
             },
             TokenKind::RightCurlyBracket => {
+                match state {
+                    State::NeedsKey => {}
+                    State::NeedsEquals => {
+                        receiver.key_val_sep(current_token.span().before(), error);
+                        receiver.scalar(
+                            current_token.span().before(),
+                            Some(Encoding::LiteralString),
+                            error,
+                        );
+                    }
+                    State::NeedsValue => {
+                        receiver.scalar(
+                            current_token.span().before(),
+                            Some(Encoding::LiteralString),
+                            error,
+                        );
+                    }
+                    State::NeedsComma => {}
+                }
                 receiver.inline_table_close(current_token.span(), error);
 
                 return;

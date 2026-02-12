@@ -659,6 +659,22 @@ extra assignment between key-value pairs, expected `,`
 
 #[test]
 fn garbage2() {
+    let err = "={=<=u==}".parse::<crate::RustDocument>().unwrap_err();
+    assert_data_eq!(
+        err.to_string(),
+        str![[r#"
+TOML parse error at line 1, column 5
+  |
+1 | ={=<=u==}
+  |     ^
+extra assignment between key-value pairs, expected `,`
+
+"#]]
+    );
+}
+
+#[test]
+fn garbage3() {
     let err = "==\n[._[._".parse::<crate::RustDocument>().unwrap_err();
     assert_data_eq!(
         err.to_string(),
