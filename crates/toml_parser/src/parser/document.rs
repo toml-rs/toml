@@ -1233,7 +1233,7 @@ fn on_inline_table_open(
             .with_expected(&[Expected::Literal("}")])
             .with_unexpected(previous_span.after()),
     );
-    receiver.array_close(previous_span.after(), error);
+    receiver.inline_table_close(previous_span.after(), error);
 }
 
 /// Parse whitespace, if present
