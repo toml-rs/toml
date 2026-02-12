@@ -658,8 +658,17 @@ extra assignment between key-value pairs, expected `,`
 }
 
 #[test]
-#[should_panic = "all items have spans"]
 fn garbage2() {
     let err = "==\n[._[._".parse::<crate::RustDocument>().unwrap_err();
-    assert_data_eq!(err.to_string(), str![]);
+    assert_data_eq!(
+        err.to_string(),
+        str![[r#"
+TOML parse error at line 1, column 2
+  |
+1 | ==
+  |  ^
+extra `=`, expected nothing
+
+"#]]
+    );
 }
