@@ -101,6 +101,8 @@ impl State {
     }
 
     fn whitespace(&mut self, event: &toml_parser::parser::Event) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::whitespace");
         let decor = if self.is_prefix() {
             self.current_prefix.get_or_insert(event.span())
         } else {
@@ -123,6 +125,8 @@ impl State {
         path: Vec<Key>,
         key: Option<Key>,
     ) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::capture_key");
         self.trailing_start = None;
         self.current_prefix
             .get_or_insert_with(|| event.span().before());
@@ -132,6 +136,8 @@ impl State {
     }
 
     fn finish_key(&mut self, event: &toml_parser::parser::Event) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::finish_key");
         self.seen_keyval_sep = true;
         if let Some(last_key) = self.current_key.as_mut().map(|(_, k)| k) {
             let prefix = self
@@ -150,6 +156,8 @@ impl State {
     }
 
     fn capture_value(&mut self, event: &toml_parser::parser::Event, value: Value) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::capture_value");
         self.current_prefix
             .get_or_insert_with(|| event.span().before());
         self.current_value = Some(value);
