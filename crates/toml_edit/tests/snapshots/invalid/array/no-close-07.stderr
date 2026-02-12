@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 31
+TOML parse error at line 1, column 27
   |
 1 | no-close-07 = [{ key = 42} #]
-  |                               ^
+  |                           ^
 unclosed array, expected `]`

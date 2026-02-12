@@ -817,14 +817,7 @@ fn on_array_open(
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
-                error.report_error(
-                    ParseError::new("unclosed array")
-                        .with_context(array_open.span())
-                        .with_expected(&[Expected::Literal("]")])
-                        .with_unexpected(current_token.span()),
-                );
-                receiver.array_close(current_token.span().before(), error);
-                return;
+                break;
             }
             TokenKind::Comma => match state {
                 State::NeedsValue => {
