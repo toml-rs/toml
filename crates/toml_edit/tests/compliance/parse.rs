@@ -640,3 +640,17 @@ fn inline_dotted_key_recursion_limit() {
         assert_eq!(document.is_ok(), is_ok, "depth: {depth}");
     }
 }
+
+#[test]
+#[should_panic = "setting a value should set a prefix"]
+fn garbage1() {
+    let err = "={=<=u==".parse::<crate::RustDocument>().unwrap_err();
+    assert_data_eq!(err.to_string(), str![]);
+}
+
+#[test]
+#[should_panic = "all items have spans"]
+fn garbage2() {
+    let err = "==\n[._[._".parse::<crate::RustDocument>().unwrap_err();
+    assert_data_eq!(err.to_string(), str![]);
+}
