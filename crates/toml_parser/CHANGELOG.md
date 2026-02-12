@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Generate synthetic events when closing an inline table without a value
+
 ## [1.0.7] - 2026-02-10
 
 ### Fixes

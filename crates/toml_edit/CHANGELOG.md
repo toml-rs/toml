@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Address panic when a key-value pair has a missing value and then a table is inserted at the key
+- Address panic when an inline table is closes without a value
+
 ## [0.25.0] - 2026-02-11
 
 ### Fixes
