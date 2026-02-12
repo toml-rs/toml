@@ -817,14 +817,7 @@ fn on_array_open(
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
-                error.report_error(
-                    ParseError::new("unclosed array")
-                        .with_context(array_open.span())
-                        .with_expected(&[Expected::Literal("]")])
-                        .with_unexpected(current_token.span()),
-                );
-                receiver.array_close(current_token.span().before(), error);
-                return;
+                break;
             }
             TokenKind::Comma => match state {
                 State::NeedsValue => {
@@ -1005,15 +998,7 @@ fn on_inline_table_open(
                 receiver.newline(current_token.span(), error);
             }
             TokenKind::Eof => {
-                error.report_error(
-                    ParseError::new("unclosed inline table")
-                        .with_context(inline_table_open.span())
-                        .with_expected(&[Expected::Literal("}")])
-                        .with_unexpected(current_token.span()),
-                );
-
-                receiver.inline_table_close(current_token.span().before(), error);
-                return;
+                break;
             }
             TokenKind::Comma => match state {
                 State::NeedsKey | State::NeedsEquals | State::NeedsValue => {
@@ -1227,13 +1212,24 @@ fn on_inline_table_open(
         })
         .map(|t| t.span())
         .unwrap_or_default();
+    match state {
+        State::NeedsKey => {}
+        State::NeedsEquals => {
+            receiver.key_val_sep(previous_span.after(), error);
+            receiver.scalar(previous_span.after(), Some(Encoding::LiteralString), error);
+        }
+        State::NeedsValue => {
+            receiver.scalar(previous_span.after(), Some(Encoding::LiteralString), error);
+        }
+        State::NeedsComma => {}
+    }
     error.report_error(
         ParseError::new("unclosed inline table")
             .with_context(inline_table_open.span())
             .with_expected(&[Expected::Literal("}")])
             .with_unexpected(previous_span.after()),
     );
-    receiver.array_close(previous_span.after(), error);
+    receiver.inline_table_close(previous_span.after(), error);
 }
 
 /// Parse whitespace, if present

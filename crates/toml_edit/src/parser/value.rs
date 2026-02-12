@@ -55,7 +55,10 @@ pub(crate) fn value(
         }
     }
 
-    Value::from(0)
+    let value_raw = RawString::with_span(0..0);
+    let mut f = Formatted::new(0);
+    f.set_repr_unchecked(Repr::new_unchecked(value_raw));
+    Value::Integer(f)
 }
 
 pub(crate) fn on_scalar(

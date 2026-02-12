@@ -106,16 +106,22 @@ impl<'i> State<'i> {
         path: Vec<Spanned<DeString<'i>>>,
         key: Option<Spanned<DeString<'i>>>,
     ) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::capture_key");
         if let Some(key) = key {
             self.current_key = Some((path, key));
         }
     }
 
     fn finish_key(&mut self, _event: &toml_parser::parser::Event) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::finish_key");
         self.seen_keyval_sep = true;
     }
 
     fn capture_value(&mut self, _event: &toml_parser::parser::Event, value: Spanned<DeValue<'i>>) {
+        #[cfg(feature = "debug")]
+        let _scope = TraceScope::new("inline_table::capture_value");
         self.current_value = Some(value);
     }
 

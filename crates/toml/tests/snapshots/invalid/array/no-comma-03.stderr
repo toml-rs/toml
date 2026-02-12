@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 23
+TOML parse error at line 1, column 18
   |
 1 | no-comma-03 = [ 1 #,]
-  |                       ^
+  |                  ^
 unclosed array, expected `]`

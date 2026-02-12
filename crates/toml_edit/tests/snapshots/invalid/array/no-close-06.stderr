@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 31
+TOML parse error at line 1, column 26
   |
 1 | no-close-06 = [{ key = 42 #}]
-  |                               ^
+  |                          ^
 unclosed inline table, expected `}`
