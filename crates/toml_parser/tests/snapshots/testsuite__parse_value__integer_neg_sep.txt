@@ -7,5 +7,18 @@ EventResults {
             span: 0..3,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: Some(
+                0..3,
+            ),
+            description: "`_` may only go between digits",
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                1..2,
+            ),
+        },
+    ],
 }

@@ -583,7 +583,7 @@ fn ensure_radixed_value(
 }
 
 fn decode_float_or_integer<'i>(
-    stream: &'i str,
+    mut stream: &'i str,
     raw: Raw<'i>,
     kind: ScalarKind,
     output: &mut dyn StringBuilder<'i>,
@@ -593,84 +593,55 @@ fn decode_float_or_integer<'i>(
 
     let underscore = "_";
 
-    if has_underscore(stream) {
-        if stream.starts_with(underscore) {
-            let start = stream.offset_from(&raw.as_str());
-            let end = start + underscore.len();
-            error.report_error(
-                ParseError::new("`_` may only go between digits")
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(start, end)),
-            );
-        }
-        if 1 < stream.len() && stream.ends_with(underscore) {
-            let end = raw.len();
-            let start = end - underscore.len();
-            error.report_error(
-                ParseError::new("`_` may only go between digits")
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(start, end)),
-            );
-        }
+    let stream_start = stream.offset_from(&raw.as_str());
+    while !stream.is_empty() {
+        let sep_pos = stream.find_slice(underscore);
+        let sep_start = sep_pos
+            .clone()
+            .map(|r| r.start)
+            .unwrap_or_else(|| stream.len());
 
-        for part in stream.split(underscore) {
-            let part_start = part.offset_from(&raw.as_str());
-            let part_end = part_start + part.len();
+        let part_start = stream.offset_from(&raw.as_str());
+        let part_end = part_start + sep_start;
+        let part = stream.next_slice(sep_start);
 
-            if 0 < part_start {
-                let first = part.as_bytes().first().copied().unwrap_or(b'0');
-                if !is_any_digit(first, kind) {
-                    let start = part_start - underscore.len();
-                    let end = part_start;
-                    debug_assert_eq!(&raw.as_str()[start..end], underscore);
-                    error.report_error(
-                        ParseError::new("`_` may only go between digits")
-                            .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(&[])
-                            .with_unexpected(Span::new_unchecked(start, end)),
-                    );
+        if sep_pos.is_some() {
+            let _ = stream.next_slice(underscore.len());
+
+            let mut is_invalid_sep = false;
+            if let Some(last_pos) = sep_start.checked_sub(1) {
+                let last_byte = raw.as_bytes()[part_start + last_pos];
+                if !is_any_digit(last_byte, kind) {
+                    is_invalid_sep = true;
                 }
-            }
-            if 1 < part.len() && part_end < raw.len() {
-                let last = part.as_bytes().last().copied().unwrap_or(b'0');
-                if !is_any_digit(last, kind) {
-                    let start = part_end;
-                    let end = start + underscore.len();
-                    debug_assert_eq!(&raw.as_str()[start..end], underscore);
-                    error.report_error(
-                        ParseError::new("`_` may only go between digits")
-                            .with_context(Span::new_unchecked(0, raw.len()))
-                            .with_expected(&[])
-                            .with_unexpected(Span::new_unchecked(start, end)),
-                    );
-                }
+            } else if part_start == stream_start {
+                is_invalid_sep = true;
             }
 
-            if part.is_empty() && part_start != 0 && part_end != raw.len() {
-                let start = part_start;
-                let end = start + 1;
+            if let Some(next_byte) = stream.as_bytes().first() {
+                if !is_any_digit(*next_byte, kind) {
+                    is_invalid_sep = true;
+                }
+            } else if stream.is_empty() {
+                is_invalid_sep = true;
+            }
+
+            if is_invalid_sep {
+                let start = part_end;
+                let end = start + underscore.len();
                 error.report_error(
                     ParseError::new("`_` may only go between digits")
                         .with_context(Span::new_unchecked(0, raw.len()))
                         .with_expected(&[])
-                        .with_unexpected(Span::new_unchecked(start, end)),
-                );
-            }
-
-            if !part.is_empty() && !output.push_str(part) {
-                error.report_error(
-                    ParseError::new(ALLOCATION_ERROR)
-                        .with_unexpected(Span::new_unchecked(part_start, part_end)),
+                        .with_unexpected(Span::new_unchecked(end - underscore.len(), end)),
                 );
             }
         }
-    } else {
-        if !output.push_str(stream) {
+
+        if !part.is_empty() && !output.push_str(part) {
             error.report_error(
                 ParseError::new(ALLOCATION_ERROR)
-                    .with_unexpected(Span::new_unchecked(0, raw.len())),
+                    .with_unexpected(Span::new_unchecked(part_start, part_end)),
             );
         }
     }
@@ -692,10 +663,6 @@ fn is_any_integer_digit(b: u8) -> bool {
 
 fn is_dec_integer_digit(b: u8) -> bool {
     (b'0'..=b'9').contains_token(b)
-}
-
-fn has_underscore(raw: &str) -> bool {
-    raw.as_bytes().find_slice(b'_').is_some()
 }
 
 fn is_float(raw: &str) -> bool {
