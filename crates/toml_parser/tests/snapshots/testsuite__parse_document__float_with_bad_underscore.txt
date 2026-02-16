@@ -33,7 +33,9 @@ EventResults {
                 3..7,
             ),
             description: "`_` may only go between digits",
-            expected: None,
+            expected: Some(
+                [],
+            ),
             unexpected: Some(
                 4..5,
             ),

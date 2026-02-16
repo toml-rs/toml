@@ -1,0 +1,24 @@
+EventResults {
+    input: "-_1",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..3,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..3,
+            ),
+            description: "`_` may only go between digits",
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                1..2,
+            ),
+        },
+    ],
+}
