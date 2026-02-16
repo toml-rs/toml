@@ -2,4 +2,4 @@ TOML parse error at line 1, column 23
   |
 1 | exp-trailing-us-01 = 1_e2
   |                       ^
-`_` may only go between digits
+`_` may only go between digits, expected nothing

@@ -2,4 +2,4 @@ TOML parse error at line 1, column 19
   |
 1 | exp-double-us = 1e__23
   |                   ^
-`_` may only go between digits
+`_` may only go between digits, expected nothing

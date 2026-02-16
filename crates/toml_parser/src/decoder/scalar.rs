@@ -626,6 +626,7 @@ fn decode_float_or_integer<'i>(
                     error.report_error(
                         ParseError::new("`_` may only go between digits")
                             .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
@@ -639,6 +640,7 @@ fn decode_float_or_integer<'i>(
                     error.report_error(
                         ParseError::new("`_` may only go between digits")
                             .with_context(Span::new_unchecked(0, raw.len()))
+                            .with_expected(&[])
                             .with_unexpected(Span::new_unchecked(start, end)),
                     );
                 }
@@ -650,6 +652,7 @@ fn decode_float_or_integer<'i>(
                 error.report_error(
                     ParseError::new("`_` may only go between digits")
                         .with_context(Span::new_unchecked(0, raw.len()))
+                        .with_expected(&[])
                         .with_unexpected(Span::new_unchecked(start, end)),
                 );
             }
