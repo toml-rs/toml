@@ -595,7 +595,7 @@ fn decode_float_or_integer<'i>(
 
     if has_underscore(stream) {
         if stream.starts_with(underscore) {
-            let start = 0;
+            let start = stream.offset_from(&raw.as_str());
             let end = start + underscore.len();
             error.report_error(
                 ParseError::new("`_` may only go between digits")
