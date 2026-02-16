@@ -595,21 +595,23 @@ fn decode_float_or_integer<'i>(
 
     if has_underscore(stream) {
         if stream.starts_with(underscore) {
+            let start = 0;
+            let end = start + underscore.len();
             error.report_error(
                 ParseError::new("`_` may only go between digits")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(0, underscore.len())),
+                    .with_unexpected(Span::new_unchecked(start, end)),
             );
         }
         if 1 < stream.len() && stream.ends_with(underscore) {
-            let start = stream.offset_from(&raw.as_str());
-            let end = start + stream.len();
+            let end = raw.len();
+            let start = end - underscore.len();
             error.report_error(
                 ParseError::new("`_` may only go between digits")
                     .with_context(Span::new_unchecked(0, raw.len()))
                     .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(end - underscore.len(), end)),
+                    .with_unexpected(Span::new_unchecked(start, end)),
             );
         }
 
