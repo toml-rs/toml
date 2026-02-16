@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Error on `-_1`
+- Report correct error location for `0b_1`
+- Report expected value for all digit separator errors
+- Don't double-report on some `1__2` cases
+
 ## [1.0.1] - 2026-02-12
 
 Internal only
