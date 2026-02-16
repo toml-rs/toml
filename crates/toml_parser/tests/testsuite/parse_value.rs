@@ -372,6 +372,26 @@ fn integer_every_other_sep() {
 }
 
 #[test]
+fn integer_neg_sep() {
+    t("-_1", file![_].raw());
+}
+
+#[test]
+fn integer_pos_sep() {
+    t("+_1", file![_].raw());
+}
+
+#[test]
+fn integer_leading_sep() {
+    t("_1", file![_].raw());
+}
+
+#[test]
+fn integer_trailing_sep() {
+    t("1_", file![_].raw());
+}
+
+#[test]
 fn integer_hex() {
     t("0xF", file![_].raw());
 }
@@ -448,7 +468,12 @@ fn float_negative_exp_negative() {
 
 #[test]
 fn float_sep() {
-    t("9_224_617.445_991_228_313", file![_].raw());
+    t("9_224_617.445_991_228_313e1_000", file![_].raw());
+}
+
+#[test]
+fn float_sep_bad() {
+    t("-_1_._0_e_-_1_", file![_].raw());
 }
 
 #[test]

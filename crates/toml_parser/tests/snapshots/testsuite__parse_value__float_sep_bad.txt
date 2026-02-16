@@ -1,0 +1,50 @@
+EventResults {
+    input: "-_1_._0_e_-_1_",
+    events: [
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 0..14,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                0..14,
+            ),
+            description: "invalid exponent",
+            expected: Some(
+                [
+                    Description(
+                        "digits",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                9..9,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..14,
+            ),
+            description: "invalid float",
+            expected: Some(
+                [],
+            ),
+            unexpected: Some(
+                10..14,
+            ),
+        },
+        ParseError {
+            context: Some(
+                0..14,
+            ),
+            description: "failed to parse f64",
+            expected: None,
+            unexpected: Some(
+                0..2,
+            ),
+        },
+    ],
+}

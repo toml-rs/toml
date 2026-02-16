@@ -1,10 +1,10 @@
 EventResults {
-    input: "9_224_617.445_991_228_313e1_000",
+    input: "-_1",
     events: [
         Event {
             kind: Scalar,
             encoding: None,
-            span: 0..31,
+            span: 0..3,
         },
     ],
     errors: [],
