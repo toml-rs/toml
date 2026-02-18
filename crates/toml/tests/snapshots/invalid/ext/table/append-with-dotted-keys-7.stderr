@@ -1,0 +1,5 @@
+TOML parse error at line 5, column 7
+  |
+5 | apple.color = "red"
+  |       ^^^^^
+duplicate key
