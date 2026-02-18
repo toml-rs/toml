@@ -307,7 +307,7 @@ impl State {
             return;
         };
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
-        let mixed_table_types = parent_table.is_dotted() == !dotted;
+        let mixed_table_types = !dotted == parent_table.is_dotted();
         if mixed_table_types {
             let key_span = get_key_span(&key).expect("all keys have spans");
             errors.report_error(ParseError::new("duplicate key").with_unexpected(key_span));
