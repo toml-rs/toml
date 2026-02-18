@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.3] - 2026-02-18
+
 ### Fixes
 
 - Allow dotted keys to extend implicit tables
@@ -469,7 +471,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.3...HEAD
+[1.0.3]: https://github.com/toml-rs/toml/compare/toml-v1.0.2...toml-v1.0.3
 [1.0.2]: https://github.com/toml-rs/toml/compare/toml-v1.0.1...toml-v1.0.2
 [1.0.1]: https://github.com/toml-rs/toml/compare/toml-v1.0.0...toml-v1.0.1
 [1.0.0]: https://github.com/toml-rs/toml/compare/toml-v0.9.12...toml-v1.0.0
