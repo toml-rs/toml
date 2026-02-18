@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Allow dotted keys to extend implicit tables
+
 ## [1.0.2] - 2026-02-16
 
 ### Fixes
