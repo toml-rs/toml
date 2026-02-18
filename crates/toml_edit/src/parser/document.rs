@@ -301,13 +301,13 @@ impl State {
             anstyle::AnsiColor::Blue.on_default(),
         );
 
-        let dotted = true;
+        let dotted = !path.is_empty();
         let Some(parent_table) = descend_path(&mut self.current_table, &path, dotted, errors)
         else {
             return;
         };
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
-        let mixed_table_types = parent_table.is_dotted() == path.is_empty();
+        let mixed_table_types = parent_table.is_dotted() == !dotted;
         if mixed_table_types {
             let key_span = get_key_span(&key).expect("all keys have spans");
             errors.report_error(ParseError::new("duplicate key").with_unexpected(key_span));
