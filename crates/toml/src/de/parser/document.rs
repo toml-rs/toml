@@ -423,7 +423,8 @@ fn descend_path<'t, 'i>(
                         // Since tables cannot be defined more than once, redefining such tables using a
                         // [table] header is not allowed. Likewise, using dotted keys to redefine tables
                         // already defined in [table] form is not allowed.
-                        if dotted && !sweet_child_of_mine.is_implicit() {
+                        let mixed_table_types = dotted && !sweet_child_of_mine.is_implicit();
+                        if mixed_table_types {
                             let key_span = get_key_span(key);
                             errors.report_error(
                                 ParseError::new("duplicate key").with_unexpected(key_span),
