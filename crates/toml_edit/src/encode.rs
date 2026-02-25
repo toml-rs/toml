@@ -12,7 +12,7 @@ use crate::table::{
     DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_ROOT_DECOR, DEFAULT_TABLE_DECOR,
 };
 use crate::value::{
-    DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
+    BigIntValue, DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
 };
 use crate::DocumentMut;
 use crate::{Array, InlineTable, Item, Table, Value};
@@ -193,6 +193,7 @@ pub(crate) fn encode_value(
 ) -> Result {
     match this {
         Value::String(repr) => encode_formatted(repr, buf, input, default_decor),
+        Value::BigInteger(repr) => encode_formatted(repr, buf, input, default_decor),
         Value::Integer(repr) => encode_formatted(repr, buf, input, default_decor),
         Value::Float(repr) => encode_formatted(repr, buf, input, default_decor),
         Value::Boolean(repr) => encode_formatted(repr, buf, input, default_decor),
@@ -332,6 +333,17 @@ impl ValueRepr for String {
             .as_default()
             .to_toml_value();
         Repr::new_unchecked(output)
+    }
+}
+
+impl ValueRepr for BigIntValue {
+    fn to_repr(&self) -> Repr {
+        let repr = match self {
+            Self::Unsigned64(v) => v.to_toml_value(),
+            Self::Unsigned128(v) => v.to_toml_value(),
+            Self::Signed128(v) => v.to_toml_value(),
+        };
+        Repr::new_unchecked(repr)
     }
 }
 

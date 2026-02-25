@@ -4,6 +4,7 @@ use crate::de::ArrayDeserializer;
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
 use crate::de::TableDeserializer;
+use crate::value::BigIntValue;
 
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
@@ -67,6 +68,11 @@ impl<'de> serde_core::Deserializer<'de> for ValueDeserializer {
         match self.input {
             crate::Item::None => visitor.visit_none(),
             crate::Item::Value(crate::Value::String(v)) => visitor.visit_string(v.into_value()),
+            crate::Item::Value(crate::Value::BigInteger(v)) => match v.into_value() {
+                BigIntValue::Unsigned64(v) => visitor.visit_u64(v),
+                BigIntValue::Unsigned128(v) => visitor.visit_u128(v),
+                BigIntValue::Signed128(v) => visitor.visit_i128(v),
+            },
             crate::Item::Value(crate::Value::Integer(v)) => visitor.visit_i64(v.into_value()),
             crate::Item::Value(crate::Value::Float(v)) => visitor.visit_f64(v.into_value()),
             crate::Item::Value(crate::Value::Boolean(v)) => visitor.visit_bool(v.into_value()),

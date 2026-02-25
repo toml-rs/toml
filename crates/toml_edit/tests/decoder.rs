@@ -45,6 +45,9 @@ fn value_to_decoded(
         toml_edit::Value::Integer(v) => Ok(toml_test_harness::DecodedValue::Scalar(
             toml_test_harness::DecodedScalar::from(*v.value()),
         )),
+        toml_edit::Value::BigInteger(v) => Ok(toml_test_harness::DecodedValue::Scalar(
+            toml_test_harness::DecodedScalar::from(v.value().to_string()),
+        )),
         toml_edit::Value::String(v) => Ok(toml_test_harness::DecodedValue::Scalar(
             toml_test_harness::DecodedScalar::from(v.value()),
         )),

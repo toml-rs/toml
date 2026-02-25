@@ -127,8 +127,10 @@ pub trait ValueRepr: crate::private::Sealed {
 #[cfg(not(feature = "display"))]
 mod inner {
     use super::ValueRepr;
+    use crate::value::BigIntValue;
 
     impl ValueRepr for String {}
+    impl ValueRepr for NumberValue {}
     impl ValueRepr for i64 {}
     impl ValueRepr for f64 {}
     impl ValueRepr for bool {}

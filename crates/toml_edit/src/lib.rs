@@ -138,6 +138,7 @@ pub(crate) mod private {
     impl<T: ?Sized> Sealed for &T where T: Sealed {}
     impl Sealed for crate::Table {}
     impl Sealed for crate::InlineTable {}
+    impl Sealed for crate::value::BigIntValue {}
 }
 
 #[doc = include_str!("../README.md")]

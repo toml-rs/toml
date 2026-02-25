@@ -135,6 +135,21 @@ pub(crate) fn on_scalar(
             let value = match i64::from_str_radix(&decoded, radix.value()) {
                 Ok(value) => value,
                 Err(_) => {
+                    if let Ok(v) = u64::from_str_radix(&decoded, radix.value()) {
+                        let mut f = Formatted::new(crate::value::BigIntValue::Unsigned64(v));
+                        f.set_repr_unchecked(Repr::new_unchecked(value_raw));
+                        return Value::BigInteger(f);
+                    }
+                    if let Ok(v) = i128::from_str_radix(&decoded, radix.value()) {
+                        let mut f = Formatted::new(crate::value::BigIntValue::Signed128(v));
+                        f.set_repr_unchecked(Repr::new_unchecked(value_raw));
+                        return Value::BigInteger(f);
+                    }
+                    if let Ok(v) = u128::from_str_radix(&decoded, radix.value()) {
+                        let mut f = Formatted::new(crate::value::BigIntValue::Unsigned128(v));
+                        f.set_repr_unchecked(Repr::new_unchecked(value_raw));
+                        return Value::BigInteger(f);
+                    }
                     // Assuming the decoder fully validated it, leaving only overflow errors
                     errors.report_error(
                         ParseError::new("integer number overflowed").with_unexpected(event.span()),

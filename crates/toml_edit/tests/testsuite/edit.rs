@@ -689,12 +689,14 @@ fn test_insert_values() {
         root["tbl"]["key1"] = value("value1");
         root["tbl"]["key2"] = value(42);
         root["tbl"]["key3"] = value(8.1415926);
+        root["tbl"]["big"] = u64::MAX.into();
     })
     .produces_display(str![[r#"
 [tbl]
 key1 = "value1"
 key2 = 42
 key3 = 8.1415926
+big = 18446744073709551615
 
         [tbl.son]
 
@@ -1680,4 +1682,11 @@ tool = { typst-test.tests = "tests" }
 
 "#]]
     );
+}
+
+#[test]
+fn big_integers() {
+    let _doc = "number = 18446744073709551615"
+        .parse::<DocumentMut>()
+        .unwrap();
 }

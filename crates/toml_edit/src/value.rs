@@ -7,12 +7,33 @@ use crate::key::Key;
 use crate::repr::{Decor, Formatted};
 use crate::{Array, InlineTable, RawString};
 
+/// For allowing `u64`, `i128` and `u128` like the `toml` crate does
+#[derive(Debug, Clone)]
+pub enum BigIntValue {
+    Unsigned64(u64),
+    Signed128(i128),
+    Unsigned128(u128),
+}
+
+#[cfg(feature = "display")]
+impl std::fmt::Display for BigIntValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Unsigned64(v) => write!(f, "{v}"),
+            Self::Unsigned128(v) => write!(f, "{v}"),
+            Self::Signed128(v) => write!(f, "{v}"),
+        }
+    }
+}
+
 /// For [`Key`]/Value pairs under a [`Table`][crate::Table] header or inside another
 /// Value
 #[derive(Debug, Clone)]
 pub enum Value {
     /// A string value.
     String(Formatted<String>),
+    /// An up to 128-bit number
+    BigInteger(Formatted<BigIntValue>),
     /// A 64-bit integer value.
     Integer(Formatted<i64>),
     /// A 64-bit float value.
@@ -33,6 +54,7 @@ impl Value {
     pub fn type_name(&self) -> &'static str {
         match self {
             Self::String(..) => "string",
+            Self::BigInteger(..) => "biginteger",
             Self::Integer(..) => "integer",
             Self::Float(..) => "float",
             Self::Boolean(..) => "boolean",
@@ -160,6 +182,7 @@ impl Value {
     pub fn decor_mut(&mut self) -> &mut Decor {
         match self {
             Self::String(f) => f.decor_mut(),
+            Self::BigInteger(f) => f.decor_mut(),
             Self::Integer(f) => f.decor_mut(),
             Self::Float(f) => f.decor_mut(),
             Self::Boolean(f) => f.decor_mut(),
@@ -178,6 +201,7 @@ impl Value {
     pub fn decor(&self) -> &Decor {
         match *self {
             Self::String(ref f) => f.decor(),
+            Self::BigInteger(ref f) => f.decor(),
             Self::Integer(ref f) => f.decor(),
             Self::Float(ref f) => f.decor(),
             Self::Boolean(ref f) => f.decor(),
@@ -213,6 +237,7 @@ impl Value {
     pub fn span(&self) -> Option<std::ops::Range<usize>> {
         match self {
             Self::String(f) => f.span(),
+            Self::BigInteger(f) => f.span(),
             Self::Integer(f) => f.span(),
             Self::Float(f) => f.span(),
             Self::Boolean(f) => f.span(),
@@ -225,6 +250,7 @@ impl Value {
     pub(crate) fn despan(&mut self, input: &str) {
         match self {
             Self::String(f) => f.despan(input),
+            Self::BigInteger(f) => f.despan(input),
             Self::Integer(f) => f.despan(input),
             Self::Float(f) => f.despan(input),
             Self::Boolean(f) => f.despan(input),
@@ -279,9 +305,63 @@ impl From<String> for Value {
     }
 }
 
+impl From<i8> for Value {
+    fn from(i: i8) -> Self {
+        Self::Integer(Formatted::new(i.into()))
+    }
+}
+
+impl From<u8> for Value {
+    fn from(i: u8) -> Self {
+        Self::Integer(Formatted::new(i.into()))
+    }
+}
+
+impl From<i16> for Value {
+    fn from(i: i16) -> Self {
+        Self::Integer(Formatted::new(i.into()))
+    }
+}
+
+impl From<u16> for Value {
+    fn from(i: u16) -> Self {
+        Self::Integer(Formatted::new(i.into()))
+    }
+}
+
+impl From<i32> for Value {
+    fn from(i: i32) -> Self {
+        Self::Integer(Formatted::new(i.into()))
+    }
+}
+
+impl From<u32> for Value {
+    fn from(i: u32) -> Self {
+        Self::Integer(Formatted::new(i.into()))
+    }
+}
+
 impl From<i64> for Value {
     fn from(i: i64) -> Self {
         Self::Integer(Formatted::new(i))
+    }
+}
+
+impl From<u64> for Value {
+    fn from(i: u64) -> Self {
+        Self::BigInteger(Formatted::new(BigIntValue::Unsigned64(i)))
+    }
+}
+
+impl From<u128> for Value {
+    fn from(i: u128) -> Self {
+        Self::BigInteger(Formatted::new(BigIntValue::Unsigned128(i)))
+    }
+}
+
+impl From<i128> for Value {
+    fn from(i: i128) -> Self {
+        Self::BigInteger(Formatted::new(BigIntValue::Signed128(i)))
     }
 }
 
