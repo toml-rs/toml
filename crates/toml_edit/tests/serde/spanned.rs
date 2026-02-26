@@ -268,7 +268,7 @@ fn test_inner_spanned_table() {
 
 #[test]
 fn test_outer_spanned_table() {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Foo {
         foo: BTreeMap<Spanned<String>, Spanned<String>>,
     }
@@ -288,18 +288,94 @@ fn test_outer_spanned_table() {
         e = \"f\"
     ";
     let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 23..24,
+            value: "a",
+        }: Spanned {
+            span: 27..30,
+            value: "b",
+        },
+        Spanned {
+            span: 39..42,
+            value: "bar",
+        }: Spanned {
+            span: 45..50,
+            value: "baz",
+        },
+        Spanned {
+            span: 59..60,
+            value: "c",
+        }: Spanned {
+            span: 63..66,
+            value: "d",
+        },
+        Spanned {
+            span: 75..76,
+            value: "e",
+        }: Spanned {
+            span: 79..82,
+            value: "f",
+        },
+    },
+}
+
+"#]]
+    );
     good(input, &foo);
 
     let input = "
         foo = { a = 'b', bar = 'baz', c = 'd', e = \"f\" }
     ";
     let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 17..18,
+            value: "a",
+        }: Spanned {
+            span: 21..24,
+            value: "b",
+        },
+        Spanned {
+            span: 26..29,
+            value: "bar",
+        }: Spanned {
+            span: 32..37,
+            value: "baz",
+        },
+        Spanned {
+            span: 39..40,
+            value: "c",
+        }: Spanned {
+            span: 43..46,
+            value: "d",
+        },
+        Spanned {
+            span: 48..49,
+            value: "e",
+        }: Spanned {
+            span: 52..55,
+            value: "f",
+        },
+    },
+}
+
+"#]]
+    );
     good(input, &foo);
 }
 
 #[test]
 fn test_spanned_nested() {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Foo {
         foo: BTreeMap<Spanned<String>, BTreeMap<Spanned<String>, Spanned<String>>>,
     }
@@ -326,6 +402,54 @@ fn test_spanned_nested() {
         baz = 'true'
     ";
     let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 14..15,
+            value: "a",
+        }: {
+            Spanned {
+                span: 25..26,
+                value: "a",
+            }: Spanned {
+                span: 29..32,
+                value: "b",
+            },
+            Spanned {
+                span: 41..42,
+                value: "c",
+            }: Spanned {
+                span: 45..48,
+                value: "d",
+            },
+            Spanned {
+                span: 57..58,
+                value: "e",
+            }: Spanned {
+                span: 61..64,
+                value: "f",
+            },
+        },
+        Spanned {
+            span: 78..81,
+            value: "bar",
+        }: {
+            Spanned {
+                span: 91..94,
+                value: "baz",
+            }: Spanned {
+                span: 97..103,
+                value: "true",
+            },
+        },
+    },
+}
+
+"#]]
+    );
     good(input, &foo);
 
     let input = "
@@ -335,12 +459,71 @@ fn test_spanned_nested() {
         g = { h = 'i' }
     ";
     let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 80..84,
+            value: "bazz",
+        }: {},
+        Spanned {
+            span: 23..26,
+            value: "foo",
+        }: {
+            Spanned {
+                span: 31..32,
+                value: "a",
+            }: Spanned {
+                span: 35..38,
+                value: "b",
+            },
+            Spanned {
+                span: 40..43,
+                value: "bar",
+            }: Spanned {
+                span: 46..51,
+                value: "baz",
+            },
+            Spanned {
+                span: 53..54,
+                value: "c",
+            }: Spanned {
+                span: 57..60,
+                value: "d",
+            },
+            Spanned {
+                span: 62..63,
+                value: "e",
+            }: Spanned {
+                span: 66..69,
+                value: "f",
+            },
+        },
+        Spanned {
+            span: 98..99,
+            value: "g",
+        }: {
+            Spanned {
+                span: 104..105,
+                value: "h",
+            }: Spanned {
+                span: 108..111,
+                value: "i",
+            },
+        },
+    },
+}
+
+"#]]
+    );
     good(input, &foo);
 }
 
 #[test]
 fn test_spanned_array() {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Foo {
         foo: Vec<Spanned<BTreeMap<Spanned<String>, Spanned<String>>>>,
     }
@@ -358,6 +541,82 @@ fn test_spanned_array() {
         e = \"h\"
     ";
     let foo_list: Foo = crate::from_str(toml).unwrap();
+    assert_data_eq!(
+        foo_list.to_debug(),
+        str![[r#"
+Foo {
+    foo: [
+        Spanned {
+            span: 0..7,
+            value: {
+                Spanned {
+                    span: 16..17,
+                    value: "a",
+                }: Spanned {
+                    span: 20..23,
+                    value: "b",
+                },
+                Spanned {
+                    span: 32..35,
+                    value: "bar",
+                }: Spanned {
+                    span: 38..43,
+                    value: "baz",
+                },
+                Spanned {
+                    span: 52..53,
+                    value: "c",
+                }: Spanned {
+                    span: 56..59,
+                    value: "d",
+                },
+                Spanned {
+                    span: 68..69,
+                    value: "e",
+                }: Spanned {
+                    span: 72..75,
+                    value: "f",
+                },
+            },
+        },
+        Spanned {
+            span: 84..91,
+            value: {
+                Spanned {
+                    span: 100..101,
+                    value: "a",
+                }: Spanned {
+                    span: 104..107,
+                    value: "c",
+                },
+                Spanned {
+                    span: 116..119,
+                    value: "bar",
+                }: Spanned {
+                    span: 122..127,
+                    value: "baz",
+                },
+                Spanned {
+                    span: 136..137,
+                    value: "c",
+                }: Spanned {
+                    span: 140..143,
+                    value: "g",
+                },
+                Spanned {
+                    span: 152..153,
+                    value: "e",
+                }: Spanned {
+                    span: 156..159,
+                    value: "h",
+                },
+            },
+        },
+    ],
+}
+
+"#]]
+    );
 
     for (foo, expected) in foo_list.foo.iter().zip([0..7, 84..91]) {
         assert_eq!(foo.span(), expected);
