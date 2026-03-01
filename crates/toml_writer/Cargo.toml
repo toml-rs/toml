@@ -34,7 +34,7 @@ alloc = []
 
 [dev-dependencies]
 proptest = "1.7.0"
-snapbox = "0.6.21"
+snapbox = "1.0.0"
 toml_old = { version = "0.5.11", package = "toml" }
 
 [lints]
