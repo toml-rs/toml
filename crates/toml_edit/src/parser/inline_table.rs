@@ -250,7 +250,10 @@ fn descend_path<'a>(
     let _scope = TraceScope::new("inline_table::descend_path");
     #[cfg(feature = "debug")]
     trace(
-        &format!("key={:?}", path.iter().map(|k| k.get()).collect::<Vec<_>>()),
+        &format!(
+            "path={:?}",
+            path.iter().map(|k| k.get()).collect::<Vec<_>>()
+        ),
         anstyle::AnsiColor::Blue.on_default(),
     );
     for key in path.iter() {
@@ -271,7 +274,8 @@ fn descend_path<'a>(
                         // Since tables cannot be defined more than once, redefining such tables using a
                         // [table] header is not allowed. Likewise, using dotted keys to redefine tables
                         // already defined in [table] form is not allowed.
-                        if dotted && !sweet_child_of_mine.is_implicit() {
+                        let mixed_table_types = dotted && !sweet_child_of_mine.is_implicit();
+                        if mixed_table_types {
                             let key_span = get_key_span(key).expect("all keys have spans");
                             errors.report_error(
                                 ParseError::new("duplicate key").with_unexpected(key_span),
@@ -280,12 +284,12 @@ fn descend_path<'a>(
                         }
                         sweet_child_of_mine
                     }
-                    item => {
+                    existing => {
                         let key_span = get_key_span(key).expect("all keys have spans");
                         errors.report_error(
                             ParseError::new(format!(
                                 "cannot extend value of type {} with a dotted key",
-                                item.type_name()
+                                existing.type_name()
                             ))
                             .with_unexpected(key_span),
                         );
