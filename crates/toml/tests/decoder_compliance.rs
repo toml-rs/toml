@@ -45,9 +45,7 @@ fn main() {
     let decoder = decoder::Decoder;
     let mut harness = toml_test_harness::DecoderHarness::new(decoder);
     harness.version("1.1.0");
-    harness
-        .ignore(["invalid/ext/table/append-with-dotted-keys-7.toml"])
-        .unwrap();
+    harness.ignore([]).unwrap();
     harness.snapshot_root("tests/snapshots");
     harness.extend_valid(valid_ext);
     harness.extend_invalid(invalid_ext);
