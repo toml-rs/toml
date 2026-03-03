@@ -206,6 +206,7 @@ fn descend_path<'a, 'i>(
             }
             Entry::Occupied(entry) => {
                 let spanned = entry.into_mut();
+                let old_span = spanned.span();
                 match spanned.as_mut() {
                     DeValue::Table(ref mut sweet_child_of_mine) => {
                         // Since tables cannot be defined more than once, redefining such tables using a
@@ -222,13 +223,16 @@ fn descend_path<'a, 'i>(
                         sweet_child_of_mine
                     }
                     existing => {
+                        let old_span =
+                            toml_parser::Span::new_unchecked(old_span.start, old_span.end);
                         let key_span = get_key_span(key);
                         errors.report_error(
                             ParseError::new(format!(
                                 "cannot extend value of type {} with a dotted key",
                                 existing.type_str()
                             ))
-                            .with_unexpected(key_span),
+                            .with_unexpected(key_span)
+                            .with_context(old_span),
                         );
                         return None;
                     }
