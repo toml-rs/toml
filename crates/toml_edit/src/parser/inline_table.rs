@@ -194,6 +194,16 @@ impl State {
             // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
             let mixed_table_types = table.is_dotted() == path.is_empty();
             if mixed_table_types {
+                #[cfg(feature = "debug")]
+                trace(
+                    &format!("table.dotted={}", table.is_dotted()),
+                    anstyle::AnsiColor::Red.on_default(),
+                );
+                #[cfg(feature = "debug")]
+                trace(
+                    &format!("path.is_empty={}", path.is_empty()),
+                    anstyle::AnsiColor::Red.on_default(),
+                );
                 let key_span = get_key_span(&key).unwrap_or_else(|| event.span());
                 errors.report_error(ParseError::new("duplicate key").with_unexpected(key_span));
             } else {
@@ -257,6 +267,11 @@ fn descend_path<'a>(
         anstyle::AnsiColor::Blue.on_default(),
     );
     for key in path.iter() {
+        #[cfg(feature = "debug")]
+        trace(
+            &format!("path[_]={key:?}"),
+            anstyle::AnsiColor::Blue.on_default(),
+        );
         table = match table.entry_format(key) {
             crate::InlineEntry::Vacant(entry) => {
                 let mut new_table = InlineTable::new();
@@ -276,6 +291,19 @@ fn descend_path<'a>(
                         // already defined in [table] form is not allowed.
                         let mixed_table_types = dotted && !sweet_child_of_mine.is_implicit();
                         if mixed_table_types {
+                            #[cfg(feature = "debug")]
+                            trace(
+                                &format!("dotted={dotted}"),
+                                anstyle::AnsiColor::Red.on_default(),
+                            );
+                            #[cfg(feature = "debug")]
+                            trace(
+                                &format!(
+                                    "sweet_child_of_mine.is_implicit={}",
+                                    sweet_child_of_mine.is_implicit()
+                                ),
+                                anstyle::AnsiColor::Red.on_default(),
+                            );
                             let key_span = get_key_span(key).expect("all keys have spans");
                             errors.report_error(
                                 ParseError::new("duplicate key").with_unexpected(key_span),

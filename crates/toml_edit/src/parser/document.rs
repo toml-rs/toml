@@ -309,6 +309,16 @@ impl State {
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
         let mixed_table_types = dotted && !parent_table.is_implicit();
         if mixed_table_types {
+            #[cfg(feature = "debug")]
+            trace(
+                &format!("dotted={dotted}"),
+                anstyle::AnsiColor::Red.on_default(),
+            );
+            #[cfg(feature = "debug")]
+            trace(
+                &format!("parent_table.is_implicit={}", parent_table.is_implicit()),
+                anstyle::AnsiColor::Red.on_default(),
+            );
             let key_span = get_key_span(&key).expect("all keys have spans");
             errors.report_error(ParseError::new("duplicate key").with_unexpected(key_span));
             return;
@@ -357,6 +367,11 @@ impl State {
                     .entry_format(key)
                     .or_insert(Item::ArrayOfTables(ArrayOfTables::new()));
                 let Some(array) = entry.as_array_of_tables_mut() else {
+                    #[cfg(feature = "debug")]
+                    trace(
+                        "is_array_of_tables=false",
+                        anstyle::AnsiColor::Red.on_default(),
+                    );
                     let key_span = get_key_span(key).expect("all keys have spans");
                     let old_span = entry.span().unwrap_or_default();
                     let old_span = toml_parser::Span::new_unchecked(old_span.start, old_span.end);
@@ -402,6 +417,22 @@ impl State {
                         }
                         // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
                         old_value => {
+                            #[cfg(feature = "debug")]
+                            if let Item::Table(t) = &old_value {
+                                trace(
+                                    &format!("t.dotted={}", t.is_dotted()),
+                                    anstyle::AnsiColor::Red.on_default(),
+                                );
+                                trace(
+                                    &format!("t.is_implicit={}", t.is_implicit()),
+                                    anstyle::AnsiColor::Red.on_default(),
+                                );
+                            } else {
+                                trace(
+                                    &format!("old_value.type_str={}", old_value.type_name()),
+                                    anstyle::AnsiColor::Red.on_default(),
+                                );
+                            }
                             let old_span = old_key.span().expect("all items have spans");
                             let old_span =
                                 toml_parser::Span::new_unchecked(old_span.start, old_span.end);
@@ -455,6 +486,11 @@ fn descend_path<'t>(
         anstyle::AnsiColor::Blue.on_default(),
     );
     for key in path.iter() {
+        #[cfg(feature = "debug")]
+        trace(
+            &format!("path[_]={key:?}"),
+            anstyle::AnsiColor::Blue.on_default(),
+        );
         table = match table.entry_format(key) {
             crate::Entry::Vacant(entry) => {
                 let mut new_table = Table::new();
@@ -480,6 +516,19 @@ fn descend_path<'t>(
                         // already defined in [table] form is not allowed.
                         let mixed_table_types = dotted && !sweet_child_of_mine.is_implicit();
                         if mixed_table_types {
+                            #[cfg(feature = "debug")]
+                            trace(
+                                &format!("dotted={dotted}"),
+                                anstyle::AnsiColor::Red.on_default(),
+                            );
+                            #[cfg(feature = "debug")]
+                            trace(
+                                &format!(
+                                    "sweet_child_of_mine.is_implicit={}",
+                                    sweet_child_of_mine.is_implicit()
+                                ),
+                                anstyle::AnsiColor::Red.on_default(),
+                            );
                             let key_span = get_key_span(key).expect("all keys have spans");
                             errors.report_error(
                                 ParseError::new("duplicate key").with_unexpected(key_span),
