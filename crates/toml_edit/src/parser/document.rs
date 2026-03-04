@@ -511,6 +511,12 @@ fn descend_path<'t>(
                         last_child
                     }
                     Item::Table(ref mut sweet_child_of_mine) => {
+                        if dotted && sweet_child_of_mine.is_implicit() {
+                            // Since tables cannot be defined more than once, redefining such tables using a
+                            // [table] header is not allowed. Likewise, using dotted keys to redefine tables
+                            // already defined in [table] form is not allowed.
+                            sweet_child_of_mine.set_dotted(true);
+                        }
                         // Since tables cannot be defined more than once, redefining such tables using a
                         // [table] header is not allowed. Likewise, using dotted keys to redefine tables
                         // already defined in [table] form is not allowed.
