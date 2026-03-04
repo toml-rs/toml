@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Error when parsing a table that extends a dotted table that extended an implicit table
+
 ## [1.0.4] - 2025-12-17
 
 ## [1.0.3] - 2025-10-09
