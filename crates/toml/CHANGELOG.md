@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.5] - 2026-03-06
+
 ### Fixes
 
 - Report the full dotted key for a value's key's span
@@ -481,7 +483,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.4...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.5...HEAD
+[1.0.5]: https://github.com/toml-rs/toml/compare/toml-v1.0.4...toml-v1.0.5
 [1.0.4]: https://github.com/toml-rs/toml/compare/toml-v1.0.3...toml-v1.0.4
 [1.0.3]: https://github.com/toml-rs/toml/compare/toml-v1.0.2...toml-v1.0.3
 [1.0.2]: https://github.com/toml-rs/toml/compare/toml-v1.0.1...toml-v1.0.2
