@@ -633,7 +633,7 @@ fn implicit_tables() {
     #[allow(dead_code)]
     enum SpannedValue {
         String(String),
-        Map(Vec<(String, Spanned<Self>)>),
+        Map(Vec<(Spanned<String>, Spanned<Self>)>),
     }
 
     impl<'de> Deserialize<'de> for SpannedValue {
@@ -670,37 +670,55 @@ alice.bob = { one.two = "qux" }
 Map(
     [
         (
-            "foo",
+            Spanned {
+                span: 2..5,
+                value: "foo",
+            },
             Spanned {
                 span: 2..5,
                 value: Map(
                     [
                         (
-                            "bar",
+                            Spanned {
+                                span: 6..9,
+                                value: "bar",
+                            },
                             Spanned {
                                 span: 1..10,
                                 value: Map(
                                     [
                                         (
-                                            "alice",
+                                            Spanned {
+                                                span: 11..16,
+                                                value: "alice",
+                                            },
                                             Spanned {
                                                 span: 11..16,
                                                 value: Map(
                                                     [
                                                         (
-                                                            "bob",
+                                                            Spanned {
+                                                                span: 17..20,
+                                                                value: "bob",
+                                                            },
                                                             Spanned {
                                                                 span: 23..42,
                                                                 value: Map(
                                                                     [
                                                                         (
-                                                                            "one",
+                                                                            Spanned {
+                                                                                span: 25..28,
+                                                                                value: "one",
+                                                                            },
                                                                             Spanned {
                                                                                 span: 25..28,
                                                                                 value: Map(
                                                                                     [
                                                                                         (
-                                                                                            "two",
+                                                                                            Spanned {
+                                                                                                span: 29..32,
+                                                                                                value: "two",
+                                                                                            },
                                                                                             Spanned {
                                                                                                 span: 35..40,
                                                                                                 value: String(
