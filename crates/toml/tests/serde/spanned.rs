@@ -636,6 +636,16 @@ fn implicit_tables() {
         Map(Vec<(Spanned<String>, Spanned<Self>)>),
     }
 
+    impl SpannedValue {
+        fn get(&self, key: &str) -> Option<&(Spanned<String>, Spanned<Self>)> {
+            let Self::Map(map) = self else {
+                return None;
+            };
+
+            map.iter().find(|(k, _v)| k.get_ref() == key)
+        }
+    }
+
     impl<'de> Deserialize<'de> for SpannedValue {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
@@ -663,9 +673,9 @@ fn implicit_tables() {
 alice.bob = { one.two = "qux" }
 "#;
 
-    let result = crate::from_str::<SpannedValue>(INPUT);
+    let result = crate::from_str::<SpannedValue>(INPUT).unwrap();
     assert_data_eq!(
-        result.unwrap().to_debug(),
+        result.to_debug(),
         str![[r#"
 Map(
     [
@@ -751,6 +761,25 @@ Map(
 
 "#]]
     );
+
+    let foo = result.get("foo").unwrap();
+    assert_data_eq!(&INPUT[foo.0.span()], str!["foo"]);
+    assert_data_eq!(&INPUT[foo.1.span()], str!["foo"]);
+    let bar = foo.1.get_ref().get("bar").unwrap();
+    assert_data_eq!(&INPUT[bar.0.span()], str!["bar"]);
+    assert_data_eq!(&INPUT[bar.1.span()], str!["[foo.bar]"]);
+    let alice = bar.1.get_ref().get("alice").unwrap();
+    assert_data_eq!(&INPUT[alice.0.span()], str!["alice"]);
+    assert_data_eq!(&INPUT[alice.1.span()], str!["alice"]);
+    let bob = alice.1.get_ref().get("bob").unwrap();
+    assert_data_eq!(&INPUT[bob.0.span()], str!["bob"]);
+    assert_data_eq!(&INPUT[bob.1.span()], str![[r#"{ one.two = "qux" }"#]]);
+    let one = bob.1.get_ref().get("one").unwrap();
+    assert_data_eq!(&INPUT[one.0.span()], str!["one"]);
+    assert_data_eq!(&INPUT[one.1.span()], str!["one"]);
+    let two = one.1.get_ref().get("two").unwrap();
+    assert_data_eq!(&INPUT[two.0.span()], str!["two"]);
+    assert_data_eq!(&INPUT[two.1.span()], str![[r#""qux""#]]);
 }
 
 #[test]
