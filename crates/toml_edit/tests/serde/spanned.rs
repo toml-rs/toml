@@ -1,7 +1,7 @@
 #![allow(renamed_and_removed_lints)]
 #![allow(clippy::blacklisted_name)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt::Debug;
 
 use serde::de::{Deserializer, MapAccess};
@@ -27,7 +27,7 @@ fn test_spanned_field() {
     }
 
     #[track_caller]
-    fn good<T>(input: &str, expected: &str, end: Option<usize>)
+    fn good<T>(input: &str, expected: impl IntoData, span: impl IntoData)
     where
         T: serde::de::DeserializeOwned + Debug + PartialEq,
     {
@@ -35,84 +35,180 @@ fn test_spanned_field() {
         let foo: Foo<T> = crate::from_str(input).unwrap();
         dbg!(&foo);
 
-        assert_eq!(
-            &input[foo.foo.span()],
-            expected,
-            "incorrect `foo.foo.span()`",
-        );
-        assert_eq!(foo.foo.span().start, 6, "incorrect `foo.foo.span().start`");
-        if let Some(end) = end {
-            assert_eq!(foo.foo.span().end, end, "incorrect `foo.foo.span().end`");
-        } else {
-            assert_eq!(
-                foo.foo.span().end,
-                input.len(),
-                "incorrect `foo.foo.span().end`"
-            );
-        }
+        assert_data_eq!(&input[foo.foo.span()], expected,);
+        assert_data_eq!(foo.foo.span().to_debug(), span);
 
         // Test for Spanned<> at the top level
         let foo_outer: Spanned<BareFoo<T>> = crate::from_str(input).unwrap();
         dbg!(&foo_outer);
 
-        assert_eq!(
-            foo_outer.span().start,
-            0,
-            "incorrect `foo_outer.span().start`"
-        );
-        assert_eq!(foo_outer.span().end, 0, "incorrect `foo_outer.span().end`");
-        assert_eq!(
-            foo.foo.into_inner(),
-            foo_outer.into_inner().foo,
-            "deserialized incorrectly"
-        );
+        assert_eq!(&foo_outer.get_ref().foo, foo.foo.get_ref());
+        assert_eq!(foo_outer.span(), 0..0);
     }
 
-    good::<String>("foo = \"foo\"", "\"foo\"", None);
-    good::<u32>("foo = 42", "42", None);
+    good::<String>(
+        "foo = \"foo\"",
+        str![[r#""foo""#]],
+        str![[r#"
+6..11
+
+"#]],
+    );
+    good::<u32>(
+        "foo = 42",
+        str!["42"],
+        str![[r#"
+6..8
+
+"#]],
+    );
     // leading plus
-    good::<u32>("foo = +42", "+42", None);
+    good::<u32>(
+        "foo = +42",
+        str!["+42"],
+        str![[r#"
+6..9
+
+"#]],
+    );
     // table
-    good::<HashMap<String, u32>>(
+    good::<BTreeMap<String, u32>>(
         "foo = {\"foo\" = 42, \"bar\" = 42}",
-        "{\"foo\" = 42, \"bar\" = 42}",
-        None,
+        str![[r#"{"foo" = 42, "bar" = 42}"#]],
+        str![[r#"
+6..30
+
+"#]],
     );
     // array
-    good::<Vec<u32>>("foo = [0, 1, 2, 3, 4]", "[0, 1, 2, 3, 4]", None);
+    good::<Vec<u32>>(
+        "foo = [0, 1, 2, 3, 4]",
+        str!["[0, 1, 2, 3, 4]"],
+        str![[r#"
+6..21
+
+"#]],
+    );
     // datetime
     good::<String>(
         "foo = \"1997-09-09T09:09:09Z\"",
-        "\"1997-09-09T09:09:09Z\"",
-        None,
+        str![[r#""1997-09-09T09:09:09Z""#]],
+        str![[r#"
+6..28
+
+"#]],
     );
 
     let good_datetimes = [
-        "1997-09-09T09:09:09Z",
-        "1997-09-09T09:09:09+09:09",
-        "1997-09-09T09:09:09-09:09",
-        "1997-09-09T09:09:09",
-        "1997-09-09",
-        "09:09:09",
-        "1997-09-09T09:09:09.09Z",
-        "1997-09-09T09:09:09.09+09:09",
-        "1997-09-09T09:09:09.09-09:09",
-        "1997-09-09T09:09:09.09",
-        "09:09:09.09",
+        (
+            "1997-09-09T09:09:09Z",
+            str!["1997-09-09T09:09:09Z"],
+            str![[r#"
+6..26
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09+09:09",
+            str!["1997-09-09T09:09:09+09:09"],
+            str![[r#"
+6..31
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09-09:09",
+            str!["1997-09-09T09:09:09-09:09"],
+            str![[r#"
+6..31
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09",
+            str!["1997-09-09T09:09:09"],
+            str![[r#"
+6..25
+
+"#]],
+        ),
+        (
+            "1997-09-09",
+            str!["1997-09-09"],
+            str![[r#"
+6..16
+
+"#]],
+        ),
+        (
+            "09:09:09",
+            str!["09:09:09"],
+            str![[r#"
+6..14
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09Z",
+            str!["1997-09-09T09:09:09.09Z"],
+            str![[r#"
+6..29
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09+09:09",
+            str!["1997-09-09T09:09:09.09+09:09"],
+            str![[r#"
+6..34
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09-09:09",
+            str!["1997-09-09T09:09:09.09-09:09"],
+            str![[r#"
+6..34
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09",
+            str!["1997-09-09T09:09:09.09"],
+            str![[r#"
+6..28
+
+"#]],
+        ),
+        (
+            "09:09:09.09",
+            str!["09:09:09.09"],
+            str![[r#"
+6..17
+
+"#]],
+        ),
     ];
-    for expected in good_datetimes {
-        let s = format!("foo = {expected}");
-        good::<Datetime>(&s, expected, None);
+    for (value, expected, span) in good_datetimes {
+        let input = format!("foo = {value}");
+        good::<Datetime>(&input, expected, span);
     }
     // ending at something other than the absolute end
-    good::<u32>("foo = 42\nnoise = true", "42", Some(8));
+    good::<u32>(
+        "foo = 42\nnoise = true",
+        str!["42"],
+        str![[r#"
+6..8
+
+"#]],
+    );
 }
 
 #[test]
 fn test_inner_spanned_table() {
     #[derive(Deserialize, Debug)]
     struct Foo {
-        foo: Spanned<HashMap<Spanned<String>, Spanned<String>>>,
+        foo: Spanned<BTreeMap<Spanned<String>, Spanned<String>>>,
     }
 
     #[track_caller]
@@ -172,51 +268,121 @@ fn test_inner_spanned_table() {
 
 #[test]
 fn test_outer_spanned_table() {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Foo {
-        foo: HashMap<Spanned<String>, Spanned<String>>,
+        foo: BTreeMap<Spanned<String>, Spanned<String>>,
     }
 
-    fn good(s: &str) {
-        let foo: Foo = crate::from_str(s).unwrap();
-
+    fn good(s: &str, foo: &Foo) {
         for (k, v) in foo.foo.iter() {
             assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
             assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
         }
     }
 
-    good(
-        "
+    let input = "
         [foo]
         a = 'b'
         bar = 'baz'
         c = 'd'
         e = \"f\"
-    ",
-    );
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 23..24,
+            value: "a",
+        }: Spanned {
+            span: 27..30,
+            value: "b",
+        },
+        Spanned {
+            span: 39..42,
+            value: "bar",
+        }: Spanned {
+            span: 45..50,
+            value: "baz",
+        },
+        Spanned {
+            span: 59..60,
+            value: "c",
+        }: Spanned {
+            span: 63..66,
+            value: "d",
+        },
+        Spanned {
+            span: 75..76,
+            value: "e",
+        }: Spanned {
+            span: 79..82,
+            value: "f",
+        },
+    },
+}
 
-    good(
-        "
-        foo = { a = 'b', bar = 'baz', c = 'd', e = \"f\" }
-    ",
+"#]]
     );
+    good(input, &foo);
+
+    let input = "
+        foo = { a = 'b', bar = 'baz', c = 'd', e = \"f\" }
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 17..18,
+            value: "a",
+        }: Spanned {
+            span: 21..24,
+            value: "b",
+        },
+        Spanned {
+            span: 26..29,
+            value: "bar",
+        }: Spanned {
+            span: 32..37,
+            value: "baz",
+        },
+        Spanned {
+            span: 39..40,
+            value: "c",
+        }: Spanned {
+            span: 43..46,
+            value: "d",
+        },
+        Spanned {
+            span: 48..49,
+            value: "e",
+        }: Spanned {
+            span: 52..55,
+            value: "f",
+        },
+    },
+}
+
+"#]]
+    );
+    good(input, &foo);
 }
 
 #[test]
 fn test_spanned_nested() {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Foo {
-        foo: HashMap<Spanned<String>, HashMap<Spanned<String>, Spanned<String>>>,
+        foo: BTreeMap<Spanned<String>, BTreeMap<Spanned<String>, Spanned<String>>>,
     }
 
-    fn good(s: &str) {
-        let foo: Foo = crate::from_str(s).unwrap();
-
-        for (k, v) in foo.foo.iter() {
-            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
-            for (n_k, n_v) in v.iter() {
-                assert_eq!(&s[n_k.span().start..n_k.span().end], n_k.as_ref());
+    fn good(s: &str, foo: &Foo) {
+        for v in foo.foo.values() {
+            for n_v in v.values() {
                 assert_eq!(
                     &s[(n_v.span().start + 1)..(n_v.span().end - 1)],
                     n_v.as_ref()
@@ -225,32 +391,139 @@ fn test_spanned_nested() {
         }
     }
 
-    good(
-        "
+    let input = "
         [foo.a]
         a = 'b'
         c = 'd'
         e = \"f\"
         [foo.bar]
         baz = 'true'
-    ",
-    );
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 14..15,
+            value: "a",
+        }: {
+            Spanned {
+                span: 25..26,
+                value: "a",
+            }: Spanned {
+                span: 29..32,
+                value: "b",
+            },
+            Spanned {
+                span: 41..42,
+                value: "c",
+            }: Spanned {
+                span: 45..48,
+                value: "d",
+            },
+            Spanned {
+                span: 57..58,
+                value: "e",
+            }: Spanned {
+                span: 61..64,
+                value: "f",
+            },
+        },
+        Spanned {
+            span: 78..81,
+            value: "bar",
+        }: {
+            Spanned {
+                span: 91..94,
+                value: "baz",
+            }: Spanned {
+                span: 97..103,
+                value: "true",
+            },
+        },
+    },
+}
 
-    good(
-        "
+"#]]
+    );
+    good(input, &foo);
+
+    let input = "
         [foo]
         foo = { a = 'b', bar = 'baz', c = 'd', e = \"f\" }
         bazz = {}
         g = { h = 'i' }
-    ",
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    assert_data_eq!(
+        foo.to_debug(),
+        str![[r#"
+Foo {
+    foo: {
+        Spanned {
+            span: 80..84,
+            value: "bazz",
+        }: {},
+        Spanned {
+            span: 23..26,
+            value: "foo",
+        }: {
+            Spanned {
+                span: 31..32,
+                value: "a",
+            }: Spanned {
+                span: 35..38,
+                value: "b",
+            },
+            Spanned {
+                span: 40..43,
+                value: "bar",
+            }: Spanned {
+                span: 46..51,
+                value: "baz",
+            },
+            Spanned {
+                span: 53..54,
+                value: "c",
+            }: Spanned {
+                span: 57..60,
+                value: "d",
+            },
+            Spanned {
+                span: 62..63,
+                value: "e",
+            }: Spanned {
+                span: 66..69,
+                value: "f",
+            },
+        },
+        Spanned {
+            span: 98..99,
+            value: "g",
+        }: {
+            Spanned {
+                span: 104..105,
+                value: "h",
+            }: Spanned {
+                span: 108..111,
+                value: "i",
+            },
+        },
+    },
+}
+
+"#]]
     );
+    good(input, &foo);
 }
 
 #[test]
 fn test_spanned_array() {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct Foo {
-        foo: Vec<Spanned<HashMap<Spanned<String>, Spanned<String>>>>,
+        foo: Vec<Spanned<BTreeMap<Spanned<String>, Spanned<String>>>>,
     }
 
     let toml = "\
@@ -266,6 +539,82 @@ fn test_spanned_array() {
         e = \"h\"
     ";
     let foo_list: Foo = crate::from_str(toml).unwrap();
+    assert_data_eq!(
+        foo_list.to_debug(),
+        str![[r#"
+Foo {
+    foo: [
+        Spanned {
+            span: 0..7,
+            value: {
+                Spanned {
+                    span: 16..17,
+                    value: "a",
+                }: Spanned {
+                    span: 20..23,
+                    value: "b",
+                },
+                Spanned {
+                    span: 32..35,
+                    value: "bar",
+                }: Spanned {
+                    span: 38..43,
+                    value: "baz",
+                },
+                Spanned {
+                    span: 52..53,
+                    value: "c",
+                }: Spanned {
+                    span: 56..59,
+                    value: "d",
+                },
+                Spanned {
+                    span: 68..69,
+                    value: "e",
+                }: Spanned {
+                    span: 72..75,
+                    value: "f",
+                },
+            },
+        },
+        Spanned {
+            span: 84..91,
+            value: {
+                Spanned {
+                    span: 100..101,
+                    value: "a",
+                }: Spanned {
+                    span: 104..107,
+                    value: "c",
+                },
+                Spanned {
+                    span: 116..119,
+                    value: "bar",
+                }: Spanned {
+                    span: 122..127,
+                    value: "baz",
+                },
+                Spanned {
+                    span: 136..137,
+                    value: "c",
+                }: Spanned {
+                    span: 140..143,
+                    value: "g",
+                },
+                Spanned {
+                    span: 152..153,
+                    value: "e",
+                }: Spanned {
+                    span: 156..159,
+                    value: "h",
+                },
+            },
+        },
+    ],
+}
+
+"#]]
+    );
 
     for (foo, expected) in foo_list.foo.iter().zip([0..7, 84..91]) {
         assert_eq!(foo.span(), expected);
@@ -277,41 +626,22 @@ fn test_spanned_array() {
 }
 
 #[test]
-fn deny_unknown_fields() {
-    #[derive(Debug, serde::Deserialize)]
-    #[serde(deny_unknown_fields)]
-    struct Example {
-        #[allow(dead_code)]
-        real: u32,
-    }
-
-    let error = crate::from_str::<Example>(
-        r#"# my comment
-# bla bla bla
-fake = 1"#,
-    )
-    .unwrap_err();
-    assert_data_eq!(
-        error.to_string(),
-        str![[r#"
-TOML parse error at line 3, column 1
-  |
-3 | fake = 1
-  | ^^^^
-unknown field `fake`, expected `real`
-
-"#]]
-        .raw()
-    );
-}
-
-#[test]
 fn implicit_tables() {
     #[derive(Debug)]
     #[allow(dead_code)]
     enum SpannedValue {
         String(String),
-        Map(Vec<(String, Spanned<Self>)>),
+        Map(Vec<(Spanned<String>, Spanned<Self>)>),
+    }
+
+    impl SpannedValue {
+        fn get(&self, key: &str) -> Option<&(Spanned<String>, Spanned<Self>)> {
+            let Self::Map(map) = self else {
+                return None;
+            };
+
+            map.iter().find(|(k, _v)| k.get_ref() == key)
+        }
     }
 
     impl<'de> Deserialize<'de> for SpannedValue {
@@ -341,44 +671,62 @@ fn implicit_tables() {
 alice.bob = { one.two = "qux" }
 "#;
 
-    let result = crate::from_str::<SpannedValue>(INPUT);
+    let result = crate::from_str::<SpannedValue>(INPUT).unwrap();
     assert_data_eq!(
-        result.unwrap().to_debug(),
+        result.to_debug(),
         str![[r#"
 Map(
     [
         (
-            "foo",
+            Spanned {
+                span: 2..5,
+                value: "foo",
+            },
             Spanned {
                 span: 2..5,
                 value: Map(
                     [
                         (
-                            "bar",
+                            Spanned {
+                                span: 6..9,
+                                value: "bar",
+                            },
                             Spanned {
                                 span: 1..10,
                                 value: Map(
                                     [
                                         (
-                                            "alice",
+                                            Spanned {
+                                                span: 11..16,
+                                                value: "alice",
+                                            },
                                             Spanned {
                                                 span: 11..16,
                                                 value: Map(
                                                     [
                                                         (
-                                                            "bob",
+                                                            Spanned {
+                                                                span: 17..20,
+                                                                value: "bob",
+                                                            },
                                                             Spanned {
                                                                 span: 23..42,
                                                                 value: Map(
                                                                     [
                                                                         (
-                                                                            "one",
+                                                                            Spanned {
+                                                                                span: 25..28,
+                                                                                value: "one",
+                                                                            },
                                                                             Spanned {
                                                                                 span: 25..28,
                                                                                 value: Map(
                                                                                     [
                                                                                         (
-                                                                                            "two",
+                                                                                            Spanned {
+                                                                                                span: 29..32,
+                                                                                                value: "two",
+                                                                                            },
                                                                                             Spanned {
                                                                                                 span: 35..40,
                                                                                                 value: String(
@@ -410,5 +758,53 @@ Map(
 )
 
 "#]]
+    );
+
+    let foo = result.get("foo").unwrap();
+    assert_data_eq!(&INPUT[foo.0.span()], str!["foo"]);
+    assert_data_eq!(&INPUT[foo.1.span()], str!["foo"]);
+    let bar = foo.1.get_ref().get("bar").unwrap();
+    assert_data_eq!(&INPUT[bar.0.span()], str!["bar"]);
+    assert_data_eq!(&INPUT[bar.1.span()], str!["[foo.bar]"]);
+    let alice = bar.1.get_ref().get("alice").unwrap();
+    assert_data_eq!(&INPUT[alice.0.span()], str!["alice"]);
+    assert_data_eq!(&INPUT[alice.1.span()], str!["alice"]);
+    let bob = alice.1.get_ref().get("bob").unwrap();
+    assert_data_eq!(&INPUT[bob.0.span()], str!["bob"]);
+    assert_data_eq!(&INPUT[bob.1.span()], str![[r#"{ one.two = "qux" }"#]]);
+    let one = bob.1.get_ref().get("one").unwrap();
+    assert_data_eq!(&INPUT[one.0.span()], str!["one"]);
+    assert_data_eq!(&INPUT[one.1.span()], str!["one"]);
+    let two = one.1.get_ref().get("two").unwrap();
+    assert_data_eq!(&INPUT[two.0.span()], str!["two"]);
+    assert_data_eq!(&INPUT[two.1.span()], str![[r#""qux""#]]);
+}
+
+#[test]
+fn deny_unknown_fields() {
+    #[derive(Debug, serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Example {
+        #[allow(dead_code)]
+        real: u32,
+    }
+
+    let error = crate::from_str::<Example>(
+        r#"# my comment
+# bla bla bla
+fake = 1"#,
+    )
+    .unwrap_err();
+    assert_data_eq!(
+        error.to_string(),
+        str![[r#"
+TOML parse error at line 3, column 1
+  |
+3 | fake = 1
+  | ^^^^
+unknown field `fake`, expected `real`
+
+"#]]
+        .raw()
     );
 }
