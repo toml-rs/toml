@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.6] - 2026-03-06
+
 ### Fixes
 
 - Revert the change from 1.0.5 due to error quality regressions
@@ -487,7 +489,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.5...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.6...HEAD
+[1.0.6]: https://github.com/toml-rs/toml/compare/toml-v1.0.5...toml-v1.0.6
 [1.0.5]: https://github.com/toml-rs/toml/compare/toml-v1.0.4...toml-v1.0.5
 [1.0.4]: https://github.com/toml-rs/toml/compare/toml-v1.0.3...toml-v1.0.4
 [1.0.3]: https://github.com/toml-rs/toml/compare/toml-v1.0.2...toml-v1.0.3
