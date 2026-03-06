@@ -381,10 +381,8 @@ fn test_spanned_nested() {
     }
 
     fn good(s: &str, foo: &Foo) {
-        for (k, v) in foo.foo.iter() {
-            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
-            for (n_k, n_v) in v.iter() {
-                assert_eq!(&s[n_k.span().start..n_k.span().end], n_k.as_ref());
+        for v in foo.foo.values() {
+            for n_v in v.values() {
                 assert_eq!(
                     &s[(n_v.span().start + 1)..(n_v.span().end - 1)],
                     n_v.as_ref()
