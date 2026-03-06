@@ -86,14 +86,12 @@ fn more_key(input: &Input<'_>) -> bool {
 
 struct State {
     current_key: Option<toml_parser::parser::Event>,
-    start: usize,
 }
 
 impl State {
     fn new(key_event: &toml_parser::parser::Event) -> Self {
         Self {
             current_key: Some(*key_event),
-            start: key_event.span().start(),
         }
     }
 
@@ -110,9 +108,8 @@ impl State {
             return;
         };
 
-        let key_start = self.start;
-        let key_end = key.span().end();
-        let key_span = key_start..key_end;
+        let key_span = key.span();
+        let key_span = key_span.start()..key_span.end();
 
         let raw = source.get(key).unwrap();
         let mut decoded = alloc::borrow::Cow::Borrowed("");

@@ -1,7 +1,7 @@
-TOML parse error at line 3, column 2
+TOML parse error at line 3, column 4
   |
 3 | [a.b]
-  |  ^^^
+  |    ^
 duplicate key
 
 ---

@@ -381,8 +381,10 @@ fn test_spanned_nested() {
     }
 
     fn good(s: &str, foo: &Foo) {
-        for v in foo.foo.values() {
-            for n_v in v.values() {
+        for (k, v) in foo.foo.iter() {
+            assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
+            for (n_k, n_v) in v.iter() {
+                assert_eq!(&s[n_k.span().start..n_k.span().end], n_k.as_ref());
                 assert_eq!(
                     &s[(n_v.span().start + 1)..(n_v.span().end - 1)],
                     n_v.as_ref()
@@ -406,7 +408,7 @@ fn test_spanned_nested() {
 Foo {
     foo: {
         Spanned {
-            span: 10..15,
+            span: 14..15,
             value: "a",
         }: {
             Spanned {
@@ -432,7 +434,7 @@ Foo {
             },
         },
         Spanned {
-            span: 74..81,
+            span: 78..81,
             value: "bar",
         }: {
             Spanned {
@@ -688,7 +690,7 @@ Map(
                     [
                         (
                             Spanned {
-                                span: 2..9,
+                                span: 6..9,
                                 value: "bar",
                             },
                             Spanned {
@@ -706,7 +708,7 @@ Map(
                                                     [
                                                         (
                                                             Spanned {
-                                                                span: 11..20,
+                                                                span: 17..20,
                                                                 value: "bob",
                                                             },
                                                             Spanned {
@@ -724,7 +726,7 @@ Map(
                                                                                     [
                                                                                         (
                                                                                             Spanned {
-                                                                                                span: 25..32,
+                                                                                                span: 29..32,
                                                                                                 value: "two",
                                                                                             },
                                                                                             Spanned {
@@ -764,19 +766,19 @@ Map(
     assert_data_eq!(&INPUT[foo.0.span()], str!["foo"]);
     assert_data_eq!(&INPUT[foo.1.span()], str!["foo"]);
     let bar = foo.1.get_ref().get("bar").unwrap();
-    assert_data_eq!(&INPUT[bar.0.span()], str!["foo.bar"]);
+    assert_data_eq!(&INPUT[bar.0.span()], str!["bar"]);
     assert_data_eq!(&INPUT[bar.1.span()], str!["[foo.bar]"]);
     let alice = bar.1.get_ref().get("alice").unwrap();
     assert_data_eq!(&INPUT[alice.0.span()], str!["alice"]);
     assert_data_eq!(&INPUT[alice.1.span()], str!["alice"]);
     let bob = alice.1.get_ref().get("bob").unwrap();
-    assert_data_eq!(&INPUT[bob.0.span()], str!["alice.bob"]);
+    assert_data_eq!(&INPUT[bob.0.span()], str!["bob"]);
     assert_data_eq!(&INPUT[bob.1.span()], str![[r#"{ one.two = "qux" }"#]]);
     let one = bob.1.get_ref().get("one").unwrap();
     assert_data_eq!(&INPUT[one.0.span()], str!["one"]);
     assert_data_eq!(&INPUT[one.1.span()], str!["one"]);
     let two = one.1.get_ref().get("two").unwrap();
-    assert_data_eq!(&INPUT[two.0.span()], str!["one.two"]);
+    assert_data_eq!(&INPUT[two.0.span()], str!["two"]);
     assert_data_eq!(&INPUT[two.1.span()], str![[r#""qux""#]]);
 }
 
