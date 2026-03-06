@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Revert the change from 1.0.5 due to error quality regressions
+
 ## [1.0.5] - 2026-03-06
 
 ### Fixes
