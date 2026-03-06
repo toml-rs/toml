@@ -1,7 +1,7 @@
 #![allow(renamed_and_removed_lints)]
 #![allow(clippy::blacklisted_name)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt::Debug;
 
 use serde::de::{Deserializer, MapAccess};
@@ -72,7 +72,7 @@ fn test_spanned_field() {
 "#]],
     );
     // table
-    good::<HashMap<String, u32>>(
+    good::<BTreeMap<String, u32>>(
         "foo = {\"foo\" = 42, \"bar\" = 42}",
         str![[r#"{"foo" = 42, "bar" = 42}"#]],
         str![[r#"
@@ -208,7 +208,7 @@ fn test_spanned_field() {
 fn test_inner_spanned_table() {
     #[derive(Deserialize, Debug)]
     struct Foo {
-        foo: Spanned<HashMap<Spanned<String>, Spanned<String>>>,
+        foo: Spanned<BTreeMap<Spanned<String>, Spanned<String>>>,
     }
 
     #[track_caller]
@@ -270,7 +270,7 @@ fn test_inner_spanned_table() {
 fn test_outer_spanned_table() {
     #[derive(Deserialize)]
     struct Foo {
-        foo: HashMap<Spanned<String>, Spanned<String>>,
+        foo: BTreeMap<Spanned<String>, Spanned<String>>,
     }
 
     fn good(s: &str) {
@@ -303,7 +303,7 @@ fn test_outer_spanned_table() {
 fn test_spanned_nested() {
     #[derive(Deserialize)]
     struct Foo {
-        foo: HashMap<Spanned<String>, HashMap<Spanned<String>, Spanned<String>>>,
+        foo: BTreeMap<Spanned<String>, BTreeMap<Spanned<String>, Spanned<String>>>,
     }
 
     fn good(s: &str) {
@@ -346,7 +346,7 @@ fn test_spanned_nested() {
 fn test_spanned_array() {
     #[derive(Deserialize)]
     struct Foo {
-        foo: Vec<Spanned<HashMap<Spanned<String>, Spanned<String>>>>,
+        foo: Vec<Spanned<BTreeMap<Spanned<String>, Spanned<String>>>>,
     }
 
     let toml = "\
