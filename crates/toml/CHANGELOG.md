@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Report the full dotted key for a value's key's span
+
 ## [1.0.4] - 2026-03-04
 
 ### Fixes
