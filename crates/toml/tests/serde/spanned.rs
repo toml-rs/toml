@@ -273,30 +273,28 @@ fn test_outer_spanned_table() {
         foo: BTreeMap<Spanned<String>, Spanned<String>>,
     }
 
-    fn good(s: &str) {
-        let foo: Foo = crate::from_str(s).unwrap();
-
+    fn good(s: &str, foo: &Foo) {
         for (k, v) in foo.foo.iter() {
             assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
             assert_eq!(&s[(v.span().start + 1)..(v.span().end - 1)], v.as_ref());
         }
     }
 
-    good(
-        "
+    let input = "
         [foo]
         a = 'b'
         bar = 'baz'
         c = 'd'
         e = \"f\"
-    ",
-    );
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    good(input, &foo);
 
-    good(
-        "
+    let input = "
         foo = { a = 'b', bar = 'baz', c = 'd', e = \"f\" }
-    ",
-    );
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    good(input, &foo);
 }
 
 #[test]
@@ -306,9 +304,7 @@ fn test_spanned_nested() {
         foo: BTreeMap<Spanned<String>, BTreeMap<Spanned<String>, Spanned<String>>>,
     }
 
-    fn good(s: &str) {
-        let foo: Foo = crate::from_str(s).unwrap();
-
+    fn good(s: &str, foo: &Foo) {
         for (k, v) in foo.foo.iter() {
             assert_eq!(&s[k.span().start..k.span().end], k.as_ref());
             for (n_k, n_v) in v.iter() {
@@ -321,25 +317,25 @@ fn test_spanned_nested() {
         }
     }
 
-    good(
-        "
+    let input = "
         [foo.a]
         a = 'b'
         c = 'd'
         e = \"f\"
         [foo.bar]
         baz = 'true'
-    ",
-    );
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    good(input, &foo);
 
-    good(
-        "
+    let input = "
         [foo]
         foo = { a = 'b', bar = 'baz', c = 'd', e = \"f\" }
         bazz = {}
         g = { h = 'i' }
-    ",
-    );
+    ";
+    let foo: Foo = crate::from_str(input).unwrap();
+    good(input, &foo);
 }
 
 #[test]
