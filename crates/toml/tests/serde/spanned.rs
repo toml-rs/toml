@@ -27,7 +27,7 @@ fn test_spanned_field() {
     }
 
     #[track_caller]
-    fn good<T>(input: &str, expected: &str, end: Option<usize>)
+    fn good<T>(input: &str, expected: impl IntoData, span: impl IntoData)
     where
         T: serde::de::DeserializeOwned + Debug + PartialEq,
     {
@@ -35,77 +35,173 @@ fn test_spanned_field() {
         let foo: Foo<T> = crate::from_str(input).unwrap();
         dbg!(&foo);
 
-        assert_eq!(
-            &input[foo.foo.span()],
-            expected,
-            "incorrect `foo.foo.span()`",
-        );
-        assert_eq!(foo.foo.span().start, 6, "incorrect `foo.foo.span().start`");
-        if let Some(end) = end {
-            assert_eq!(foo.foo.span().end, end, "incorrect `foo.foo.span().end`");
-        } else {
-            assert_eq!(
-                foo.foo.span().end,
-                input.len(),
-                "incorrect `foo.foo.span().end`"
-            );
-        }
+        assert_data_eq!(&input[foo.foo.span()], expected,);
+        assert_data_eq!(foo.foo.span().to_debug(), span);
 
         // Test for Spanned<> at the top level
         let foo_outer: Spanned<BareFoo<T>> = crate::from_str(input).unwrap();
         dbg!(&foo_outer);
 
-        assert_eq!(
-            foo_outer.span().start,
-            0,
-            "incorrect `foo_outer.span().start`"
-        );
-        assert_eq!(foo_outer.span().end, 0, "incorrect `foo_outer.span().end`");
-        assert_eq!(
-            foo.foo.into_inner(),
-            foo_outer.into_inner().foo,
-            "deserialized incorrectly"
-        );
+        assert_eq!(&foo_outer.get_ref().foo, foo.foo.get_ref());
+        assert_eq!(foo_outer.span(), 0..0);
     }
 
-    good::<String>("foo = \"foo\"", "\"foo\"", None);
-    good::<u32>("foo = 42", "42", None);
+    good::<String>(
+        "foo = \"foo\"",
+        str![[r#""foo""#]],
+        str![[r#"
+6..11
+
+"#]],
+    );
+    good::<u32>(
+        "foo = 42",
+        str!["42"],
+        str![[r#"
+6..8
+
+"#]],
+    );
     // leading plus
-    good::<u32>("foo = +42", "+42", None);
+    good::<u32>(
+        "foo = +42",
+        str!["+42"],
+        str![[r#"
+6..9
+
+"#]],
+    );
     // table
     good::<HashMap<String, u32>>(
         "foo = {\"foo\" = 42, \"bar\" = 42}",
-        "{\"foo\" = 42, \"bar\" = 42}",
-        None,
+        str![[r#"{"foo" = 42, "bar" = 42}"#]],
+        str![[r#"
+6..30
+
+"#]],
     );
     // array
-    good::<Vec<u32>>("foo = [0, 1, 2, 3, 4]", "[0, 1, 2, 3, 4]", None);
+    good::<Vec<u32>>(
+        "foo = [0, 1, 2, 3, 4]",
+        str!["[0, 1, 2, 3, 4]"],
+        str![[r#"
+6..21
+
+"#]],
+    );
     // datetime
     good::<String>(
         "foo = \"1997-09-09T09:09:09Z\"",
-        "\"1997-09-09T09:09:09Z\"",
-        None,
+        str![[r#""1997-09-09T09:09:09Z""#]],
+        str![[r#"
+6..28
+
+"#]],
     );
 
     let good_datetimes = [
-        "1997-09-09T09:09:09Z",
-        "1997-09-09T09:09:09+09:09",
-        "1997-09-09T09:09:09-09:09",
-        "1997-09-09T09:09:09",
-        "1997-09-09",
-        "09:09:09",
-        "1997-09-09T09:09:09.09Z",
-        "1997-09-09T09:09:09.09+09:09",
-        "1997-09-09T09:09:09.09-09:09",
-        "1997-09-09T09:09:09.09",
-        "09:09:09.09",
+        (
+            "1997-09-09T09:09:09Z",
+            str!["1997-09-09T09:09:09Z"],
+            str![[r#"
+6..26
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09+09:09",
+            str!["1997-09-09T09:09:09+09:09"],
+            str![[r#"
+6..31
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09-09:09",
+            str!["1997-09-09T09:09:09-09:09"],
+            str![[r#"
+6..31
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09",
+            str!["1997-09-09T09:09:09"],
+            str![[r#"
+6..25
+
+"#]],
+        ),
+        (
+            "1997-09-09",
+            str!["1997-09-09"],
+            str![[r#"
+6..16
+
+"#]],
+        ),
+        (
+            "09:09:09",
+            str!["09:09:09"],
+            str![[r#"
+6..14
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09Z",
+            str!["1997-09-09T09:09:09.09Z"],
+            str![[r#"
+6..29
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09+09:09",
+            str!["1997-09-09T09:09:09.09+09:09"],
+            str![[r#"
+6..34
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09-09:09",
+            str!["1997-09-09T09:09:09.09-09:09"],
+            str![[r#"
+6..34
+
+"#]],
+        ),
+        (
+            "1997-09-09T09:09:09.09",
+            str!["1997-09-09T09:09:09.09"],
+            str![[r#"
+6..28
+
+"#]],
+        ),
+        (
+            "09:09:09.09",
+            str!["09:09:09.09"],
+            str![[r#"
+6..17
+
+"#]],
+        ),
     ];
-    for expected in good_datetimes {
-        let s = format!("foo = {expected}");
-        good::<Datetime>(&s, expected, None);
+    for (value, expected, span) in good_datetimes {
+        let input = format!("foo = {value}");
+        good::<Datetime>(&input, expected, span);
     }
     // ending at something other than the absolute end
-    good::<u32>("foo = 42\nnoise = true", "42", Some(8));
+    good::<u32>(
+        "foo = 42\nnoise = true",
+        str!["42"],
+        str![[r#"
+6..8
+
+"#]],
+    );
 }
 
 #[test]
