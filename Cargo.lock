@@ -18,7 +18,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ae563653d1938f79b1ab1b5e668c87c76a9930414574a6583a7b7e11a8e6192"
 dependencies = [
  "anstyle",
- "anstyle-parse",
+ "anstyle-parse 0.2.7",
+ "anstyle-query",
+ "anstyle-wincon",
+ "colorchoice",
+ "is_terminal_polyfill",
+ "utf8parse",
+]
+
+[[package]]
+name = "anstream"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d"
+dependencies = [
+ "anstyle",
+ "anstyle-parse 1.0.0",
  "anstyle-query",
  "anstyle-wincon",
  "colorchoice",
@@ -28,15 +43,24 @@ dependencies = [
 
 [[package]]
 name = "anstyle"
-version = "1.0.11"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "862ed96ca487e809f1c8e5a8447f6ee2cf102f846893800b20cebdf541fc6bbd"
+checksum = "5192cca8006f1fd4f7237516f40fa183bb07f8fbdfedaa0036de5ea9b0b45e78"
 
 [[package]]
 name = "anstyle-parse"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e7644824f0aa2c7b9384579234ef10eb7efb6a0deb83f9630a49594dd9c15c2"
+dependencies = [
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle-parse"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e"
 dependencies = [
  "utf8parse",
 ]
@@ -505,7 +529,7 @@ version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ca907aef7f70aceecb01e88588062946dd0af0727d80a68d9a1e928dacf07c9"
 dependencies = [
- "anstream",
+ "anstream 0.6.20",
  "anstyle",
  "lexarg-error",
  "lexarg-parser",
@@ -837,11 +861,24 @@ version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96dcfc4581e3355d70ac2ee14cfdf81dce3d85c85f1ed9e2c1d3013f53b3436b"
 dependencies = [
- "anstream",
+ "anstream 0.6.20",
  "anstyle",
  "normalize-line-endings",
  "similar",
- "snapbox-macros",
+ "snapbox-macros 0.3.10",
+]
+
+[[package]]
+name = "snapbox"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7a2e43da79cf7c50d938bd15e4b17e7fc450113e5ace6e6e9acfe022facbf8d"
+dependencies = [
+ "anstream 1.0.0",
+ "anstyle",
+ "normalize-line-endings",
+ "similar",
+ "snapbox-macros 1.0.1",
 ]
 
 [[package]]
@@ -850,7 +887,16 @@ version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16569f53ca23a41bb6f62e0a5084aa1661f4814a67fa33696a79073e03a664af"
 dependencies = [
- "anstream",
+ "anstream 0.6.20",
+]
+
+[[package]]
+name = "snapbox-macros"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d62a48443d404309a6006676336ff6311ef72ee78561d6a7628d952912155386"
+dependencies = [
+ "anstream 1.0.0",
 ]
 
 [[package]]
@@ -901,7 +947,7 @@ dependencies = [
 name = "toml"
 version = "1.0.6+spec-1.1.0"
 dependencies = [
- "anstream",
+ "anstream 0.6.20",
  "anstyle",
  "foldhash",
  "indexmap 2.11.4",
@@ -911,7 +957,7 @@ dependencies = [
  "serde_core",
  "serde_json",
  "serde_spanned",
- "snapbox",
+ "snapbox 1.1.0",
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
@@ -950,7 +996,7 @@ checksum = "c1b0c89104957a5be58bd9d3b853691e11421b74effc1234430714a8dd48b8d5"
 dependencies = [
  "ignore",
  "libtest2-mimic",
- "snapbox",
+ "snapbox 0.6.21",
  "toml-test",
  "toml-test-data",
 ]
@@ -975,14 +1021,14 @@ name = "toml_datetime"
 version = "1.0.0+spec-1.1.0"
 dependencies = [
  "serde_core",
- "snapbox",
+ "snapbox 1.1.0",
 ]
 
 [[package]]
 name = "toml_edit"
 version = "0.25.4+spec-1.1.0"
 dependencies = [
- "anstream",
+ "anstream 0.6.20",
  "anstyle",
  "indexmap 2.11.4",
  "proptest",
@@ -991,7 +1037,7 @@ dependencies = [
  "serde_core",
  "serde_json",
  "serde_spanned",
- "snapbox",
+ "snapbox 1.1.0",
  "toml 1.0.6+spec-1.1.0",
  "toml-test-data",
  "toml-test-harness",
@@ -1014,9 +1060,9 @@ dependencies = [
 name = "toml_parser"
 version = "1.0.9+spec-1.1.0"
 dependencies = [
- "anstream",
+ "anstream 0.6.20",
  "anstyle",
- "snapbox",
+ "snapbox 1.1.0",
  "toml_datetime",
  "winnow",
 ]
@@ -1026,7 +1072,7 @@ name = "toml_writer"
 version = "1.0.6+spec-1.1.0"
 dependencies = [
  "proptest",
- "snapbox",
+ "snapbox 1.1.0",
  "toml 0.5.11",
 ]
 
@@ -1088,7 +1134,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.0",
 ]
 
 [[package]]
