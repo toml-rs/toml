@@ -39,7 +39,7 @@ winnow = { version = "0.7.13", default-features = false }
 
 [dev-dependencies]
 anstream = { version = "0.6.20", features = ["test"] }
-snapbox = "0.6.21"
+snapbox = "1.0.0"
 toml_datetime = { path = "../toml_datetime" }
 
 [lints]
