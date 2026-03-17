@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.10] - 2026-03-17
+
 ### Internal
 
 - Update dependencies
@@ -75,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.9...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.10...HEAD
+[1.0.10]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.9...toml_parser-v1.0.10
 [1.0.9]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.8...toml_parser-v1.0.9
 [1.0.8]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.7...toml_parser-v1.0.8
 [1.0.7]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.6...toml_parser-v1.0.7

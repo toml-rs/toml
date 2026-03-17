@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.7] - 2026-03-17
+
 ### Internal
 
 - Update dependencies
@@ -493,7 +495,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.0.7...HEAD
+[1.0.7]: https://github.com/toml-rs/toml/compare/toml-v1.0.6...toml-v1.0.7
 [1.0.6]: https://github.com/toml-rs/toml/compare/toml-v1.0.5...toml-v1.0.6
 [1.0.5]: https://github.com/toml-rs/toml/compare/toml-v1.0.4...toml-v1.0.5
 [1.0.4]: https://github.com/toml-rs/toml/compare/toml-v1.0.3...toml-v1.0.4
