@@ -1799,9 +1799,9 @@ foo = { bar = 1 }
         *root.get_mut("foo").unwrap() = Item::Table(new_foo);
     })
     .produces_display(str![[r#"
-[
+
 # hello i'm a comment
-foo ]
+[foo]
 bar = 1
 baz = 2
 
@@ -1825,9 +1825,9 @@ foo = [{ bar = 1 }]
         *root.get_mut("foo").unwrap() = Item::ArrayOfTables(arr);
     })
     .produces_display(str![[r#"
-[[
+
 # hello i'm a comment
-foo ]]
+[[foo]]
 bar = 1
 baz = 2
 

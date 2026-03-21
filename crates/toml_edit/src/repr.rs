@@ -187,6 +187,11 @@ pub struct Decor {
 }
 
 impl Decor {
+    pub(crate) const EMPTY: Self = Self {
+        prefix: None,
+        suffix: None,
+    };
+
     /// Creates a new decor from the given prefix and suffix.
     pub fn new(prefix: impl Into<RawString>, suffix: impl Into<RawString>) -> Self {
         Self {
