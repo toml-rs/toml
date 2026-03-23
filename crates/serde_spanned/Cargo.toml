@@ -30,7 +30,7 @@ std = ["alloc", "serde_core?/std"]
 serde = ["dep:serde_core"]
 
 [dependencies]
-serde_core = { version = "1.0.225", optional = true, default-features = false }
+serde_core = { version = "1.0.228", optional = true, default-features = false }
 
 [dev-dependencies]
 serde = "1"
