@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
-### Fixes
+### Compatibility
 
-- Error when parsing a table that extends a dotted table that extended an implicit table
+- Update MSRV to 1.85
 
 ## [1.0.4] - 2025-12-17
 
