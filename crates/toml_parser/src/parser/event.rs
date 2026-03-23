@@ -1,8 +1,8 @@
-use crate::decoder::Encoding;
 use crate::ErrorSink;
 use crate::ParseError;
 use crate::Source;
 use crate::Span;
+use crate::decoder::Encoding;
 
 pub trait EventReceiver {
     fn std_table_open(&mut self, _span: Span, _error: &mut dyn ErrorSink) {}

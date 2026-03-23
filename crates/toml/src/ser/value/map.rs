@@ -2,12 +2,12 @@ use core::fmt::Write as _;
 
 use toml_writer::TomlWrite as _;
 
-use super::array::SerializeTupleVariant;
-use super::array::SerializeValueArray;
-use super::key::KeySerializer;
 use super::Error;
 use super::Style;
 use super::ValueSerializer;
+use super::array::SerializeTupleVariant;
+use super::array::SerializeValueArray;
+use super::key::KeySerializer;
 use crate::alloc_prelude::*;
 
 #[doc(hidden)]

@@ -3,8 +3,8 @@
 const NUM_ENTRIES: &[usize] = &[10, 100];
 
 mod toml_parser {
-    use crate::generate;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn tokens(bencher: divan::Bencher, num_entries: usize) {
@@ -102,8 +102,8 @@ mod toml_parser {
 }
 
 mod toml_edit {
-    use crate::generate;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {
@@ -115,8 +115,8 @@ mod toml_edit {
 }
 
 mod toml {
-    use crate::generate;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn detable_owned(bencher: divan::Bencher, num_entries: usize) {
@@ -148,8 +148,8 @@ mod toml {
 }
 
 mod toml_v05 {
-    use crate::generate;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {

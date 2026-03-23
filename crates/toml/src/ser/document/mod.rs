@@ -12,9 +12,9 @@ mod strategy;
 
 use toml_writer::TomlWrite as _;
 
+use super::Error;
 use super::style;
 use super::value;
-use super::Error;
 use crate::alloc_prelude::*;
 use buffer::Table;
 use strategy::SerializationStrategy;

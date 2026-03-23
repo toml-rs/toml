@@ -1,11 +1,11 @@
+use crate::Item;
+use crate::RawString;
+use crate::Value;
 use crate::key::Key;
 use crate::parser::key::on_key;
 use crate::parser::prelude::*;
 use crate::parser::value::value;
 use crate::repr::Decor;
-use crate::Item;
-use crate::RawString;
-use crate::Value;
 use crate::{ArrayOfTables, Document, Table};
 
 /// ```abnf

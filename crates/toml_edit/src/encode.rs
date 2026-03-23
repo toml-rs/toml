@@ -5,6 +5,7 @@ use toml_datetime::Datetime;
 use toml_writer::ToTomlValue as _;
 use toml_writer::TomlWrite as _;
 
+use crate::DocumentMut;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{Formatted, Repr, ValueRepr};
@@ -14,7 +15,6 @@ use crate::table::{
 use crate::value::{
     DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
 };
-use crate::DocumentMut;
 use crate::{Array, InlineTable, Item, Table, Value};
 
 pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -> Result {

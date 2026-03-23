@@ -4,8 +4,8 @@ mod map;
 
 use toml_writer::TomlWrite as _;
 
-use super::style::Style;
 use super::Error;
+use super::style::Style;
 use crate::alloc_prelude::*;
 #[allow(clippy::wildcard_imports)]
 pub(crate) use array::*;

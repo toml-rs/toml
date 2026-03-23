@@ -2,11 +2,11 @@ use core::fmt::Write as _;
 
 use toml_writer::TomlWrite as _;
 
-use super::style::Style;
-use super::value::ValueSerializer;
 use super::Buffer;
 use super::Error;
 use super::Table;
+use super::style::Style;
+use super::value::ValueSerializer;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTupleVariant<'d> {

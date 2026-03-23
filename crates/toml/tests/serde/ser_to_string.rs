@@ -24,20 +24,22 @@ fn no_unnecessary_newlines_array() {
         pub(crate) surname: String,
     }
 
-    assert!(!crate::to_string(&Users {
-        user: vec![
-            User {
-                name: "John".to_owned(),
-                surname: "Doe".to_owned(),
-            },
-            User {
-                name: "Jane".to_owned(),
-                surname: "Dough".to_owned(),
-            },
-        ],
-    })
-    .unwrap()
-    .starts_with('\n'));
+    assert!(
+        !crate::to_string(&Users {
+            user: vec![
+                User {
+                    name: "John".to_owned(),
+                    surname: "Doe".to_owned(),
+                },
+                User {
+                    name: "Jane".to_owned(),
+                    surname: "Dough".to_owned(),
+                },
+            ],
+        })
+        .unwrap()
+        .starts_with('\n')
+    );
 }
 
 #[test]
@@ -54,18 +56,20 @@ fn no_unnecessary_newlines_table() {
         pub(crate) surname: String,
     }
 
-    assert!(!crate::to_string(&TwoUsers {
-        user0: User {
-            name: "John".to_owned(),
-            surname: "Doe".to_owned(),
-        },
-        user1: User {
-            name: "Jane".to_owned(),
-            surname: "Dough".to_owned(),
-        },
-    })
-    .unwrap()
-    .starts_with('\n'));
+    assert!(
+        !crate::to_string(&TwoUsers {
+            user0: User {
+                name: "John".to_owned(),
+                surname: "Doe".to_owned(),
+            },
+            user1: User {
+                name: "Jane".to_owned(),
+                surname: "Dough".to_owned(),
+            },
+        })
+        .unwrap()
+        .starts_with('\n')
+    );
 }
 
 #[test]

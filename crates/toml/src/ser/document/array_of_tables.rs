@@ -1,8 +1,8 @@
-use super::style::Style;
 use super::Buffer;
 use super::Error;
 use super::Serializer;
 use super::Table;
+use super::style::Style;
 use crate::alloc_prelude::*;
 
 pub(crate) struct ArrayOfTablesSerializer<'d> {

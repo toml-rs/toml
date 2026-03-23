@@ -21,13 +21,13 @@ mod ser_to_string;
 mod ser_to_string_pretty;
 mod spanned;
 
+use toml::Spanned;
 use toml::from_str;
 use toml::to_string;
 use toml::to_string_pretty;
 use toml::value::Date;
 use toml::value::Datetime;
 use toml::value::Time;
-use toml::Spanned;
 
 use toml::Table as SerdeDocument;
 use toml::Table as SerdeTable;

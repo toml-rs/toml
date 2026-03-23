@@ -1,9 +1,9 @@
 use serde_core::de;
 use serde_core::ser;
 
+use crate::Value;
 use crate::alloc_prelude::*;
 use crate::map::Map;
-use crate::Value;
 
 /// Type representing a TOML table, payload of the `Value::Table` variant.
 ///
