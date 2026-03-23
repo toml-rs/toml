@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.0] - 2026-03-23
+
 ### Compatibility
 
 - Update MSRV to 1.85
@@ -81,7 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.0...HEAD
+[1.1.0]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.10...toml_parser-v1.1.0
 [1.0.10]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.9...toml_parser-v1.0.10
 [1.0.9]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.8...toml_parser-v1.0.9
 [1.0.8]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.7...toml_parser-v1.0.8
