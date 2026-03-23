@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.8] - 2026-03-23
+
 ### Fixes
 
 - Gracefully adjust when an inline table with leading comments is turned into a standard table
@@ -973,7 +975,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.8...HEAD
+[0.25.8]: https://github.com/toml-rs/toml/compare/v0.25.7...v0.25.8
 [0.25.7]: https://github.com/toml-rs/toml/compare/v0.25.6...v0.25.7
 [0.25.6]: https://github.com/toml-rs/toml/compare/v0.25.5...v0.25.6
 [0.25.5]: https://github.com/toml-rs/toml/compare/v0.25.4...v0.25.5
