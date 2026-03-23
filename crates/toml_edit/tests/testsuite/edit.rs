@@ -1681,3 +1681,105 @@ tool = { typst-test.tests = "tests" }
 "#]]
     );
 }
+
+#[test]
+fn array_of_tables_insert_at_beginning() {
+    given(
+        r#"[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "banana"
+"#,
+    )
+    .running(|root| {
+        let array = root["fruit"].as_array_of_tables_mut().unwrap();
+        let mut new_table = Table::new();
+        new_table.insert("name", value("cherry"));
+        array.insert(0, new_table);
+        // The previously-first table (now at index 1) had no leading blank line
+        // from parsing; fix it up so it separates properly.
+        array.get_mut(1).unwrap().decor_mut().set_prefix("\n");
+    })
+    .produces_display(str![[r#"
+[[fruit]]
+name = "cherry"
+
+[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "banana"
+
+"#]]);
+}
+
+#[test]
+fn array_of_tables_insert_in_middle() {
+    given(
+        r#"[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "banana"
+"#,
+    )
+    .running(|root| {
+        let array = root["fruit"].as_array_of_tables_mut().unwrap();
+        let mut new_table = Table::new();
+        new_table.insert("name", value("cherry"));
+        // Give the new table a leading blank line to match the existing style.
+        new_table.decor_mut().set_prefix("\n");
+        array.insert(1, new_table);
+    })
+    .produces_display(str![[r#"
+[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "cherry"
+
+[[fruit]]
+name = "banana"
+
+"#]]);
+}
+
+#[test]
+fn array_of_tables_insert_at_end() {
+    given(
+        r#"[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "banana"
+"#,
+    )
+    .running(|root| {
+        let array = root["fruit"].as_array_of_tables_mut().unwrap();
+        let mut new_table = Table::new();
+        new_table.insert("name", value("cherry"));
+        // Give the new table a leading blank line to match the existing style.
+        new_table.decor_mut().set_prefix("\n");
+        array.insert(2, new_table);
+    })
+    .produces_display(str![[r#"
+[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "banana"
+
+[[fruit]]
+name = "cherry"
+
+"#]]);
+}
+
+#[test]
+#[should_panic]
+fn array_of_tables_insert_out_of_bounds() {
+    let mut array = toml_edit::ArrayOfTables::new();
+    let t = Table::new();
+    array.insert(1, t);
+}

@@ -89,6 +89,16 @@ impl ArrayOfTables {
         self.values.push(Item::Table(table));
     }
 
+    /// Inserts a table at the given index within the array, shifting all
+    /// tables after it to the right.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index > len`.
+    pub fn insert(&mut self, index: usize, table: Table) {
+        self.values.insert(index, Item::Table(table));
+    }
+
     /// Removes a table with the given index.
     pub fn remove(&mut self, index: usize) -> Table {
         self.values
