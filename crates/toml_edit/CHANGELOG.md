@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Gracefully adjust when an inline table with leading comments is turned into a standard table
+
 ## [0.25.7] - 2026-03-23
 
 ### Features
