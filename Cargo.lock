@@ -947,7 +947,7 @@ dependencies = [
 name = "toml"
 version = "1.1.0+spec-1.1.0"
 dependencies = [
- "anstream 0.6.20",
+ "anstream 1.0.0",
  "anstyle",
  "foldhash",
  "indexmap 2.11.4",
@@ -1028,7 +1028,7 @@ dependencies = [
 name = "toml_edit"
 version = "0.25.6+spec-1.1.0"
 dependencies = [
- "anstream 0.6.20",
+ "anstream 1.0.0",
  "anstyle",
  "indexmap 2.11.4",
  "proptest",
@@ -1060,7 +1060,7 @@ dependencies = [
 name = "toml_parser"
 version = "1.1.0+spec-1.1.0"
 dependencies = [
- "anstream 0.6.20",
+ "anstream 1.0.0",
  "anstyle",
  "snapbox 1.1.0",
  "toml_datetime",
