@@ -775,10 +775,7 @@ impl fmt::Display for DatetimeParseError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for DatetimeParseError {}
-#[cfg(all(not(feature = "std"), feature = "serde"))]
-impl serde_core::de::StdError for DatetimeParseError {}
+impl core::error::Error for DatetimeParseError {}
 
 #[cfg(feature = "serde")]
 #[cfg(feature = "alloc")]

@@ -66,10 +66,7 @@ impl core::fmt::Debug for Error {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for Error {}
-#[cfg(not(feature = "std"))]
-impl serde_core::de::StdError for Error {}
+impl core::error::Error for Error {}
 
 /// Errors that can occur when deserializing a type.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
