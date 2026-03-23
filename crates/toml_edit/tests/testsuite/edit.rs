@@ -1783,3 +1783,53 @@ fn array_of_tables_insert_out_of_bounds() {
     let t = Table::new();
     array.insert(1, t);
 }
+
+#[test]
+fn inline_table_to_table_with_comment() {
+    given(
+        r#"
+# hello i'm a comment
+foo = { bar = 1 }
+"#,
+    )
+    .running(|root| {
+        let mut new_foo = Table::new();
+        new_foo.insert("bar", Item::Value(1.into()));
+        new_foo.insert("baz", Item::Value(2.into()));
+        *root.get_mut("foo").unwrap() = Item::Table(new_foo);
+    })
+    .produces_display(str![[r#"
+[
+# hello i'm a comment
+foo ]
+bar = 1
+baz = 2
+
+"#]]);
+}
+
+#[test]
+fn inline_table_to_array_of_tables_with_comment() {
+    given(
+        r#"
+# hello i'm a comment
+foo = [{ bar = 1 }]
+"#,
+    )
+    .running(|root| {
+        let mut new_foo_entry = Table::new();
+        new_foo_entry.insert("bar", Item::Value(1.into()));
+        new_foo_entry.insert("baz", Item::Value(2.into()));
+        let mut arr = toml_edit::ArrayOfTables::new();
+        arr.push(new_foo_entry);
+        *root.get_mut("foo").unwrap() = Item::ArrayOfTables(arr);
+    })
+    .produces_display(str![[r#"
+[[
+# hello i'm a comment
+foo ]]
+bar = 1
+baz = 2
+
+"#]]);
+}
