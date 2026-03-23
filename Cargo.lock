@@ -883,19 +883,6 @@ checksum = "bbbb5d9659141646ae647b42fe094daf6c6192d1620870b449d9557f748b2daa"
 
 [[package]]
 name = "snapbox"
-version = "0.6.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c1abc378119f77310836665f8523018532cf7e3faeb3b10b01da5a7321bf8e1"
-dependencies = [
- "anstream 0.6.21",
- "anstyle",
- "normalize-line-endings",
- "similar",
- "snapbox-macros 0.4.0",
-]
-
-[[package]]
-name = "snapbox"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7a2e43da79cf7c50d938bd15e4b17e7fc450113e5ace6e6e9acfe022facbf8d"
@@ -904,16 +891,7 @@ dependencies = [
  "anstyle",
  "normalize-line-endings",
  "similar",
- "snapbox-macros 1.0.1",
-]
-
-[[package]]
-name = "snapbox-macros"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b750c344002d7cc69afb9da00ebd9b5c0f8ac2eb7d115d9d45d5b5f47718d74"
-dependencies = [
- "anstream 0.6.21",
+ "snapbox-macros",
 ]
 
 [[package]]
@@ -983,7 +961,7 @@ dependencies = [
  "serde_core",
  "serde_json",
  "serde_spanned",
- "snapbox 1.1.0",
+ "snapbox",
  "toml-test-data",
  "toml-test-harness",
  "toml_datetime",
@@ -995,9 +973,9 @@ dependencies = [
 
 [[package]]
 name = "toml-test"
-version = "2.0.4"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2849d808127660fc2182eb19c6fa69fd8d34a3968df247aa968da712c5a10064"
+checksum = "3ce4e08cfbb71beaafa49d32de7e7a158f650d116e95d6737fbe5bb925bf599a"
 dependencies = [
  "chrono",
  "ryu",
@@ -1007,22 +985,22 @@ dependencies = [
 
 [[package]]
 name = "toml-test-data"
-version = "2.4.0"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b59b1c6fa1ba45f952bfe2c40b1fc6dab837507837ed69b04fb5d56cf3bed7d4"
+checksum = "5c427d380515dcbbaf1b1e2b8bdc39eee7ea789c388a02ff25112a84e798e203"
 dependencies = [
  "include_dir",
 ]
 
 [[package]]
 name = "toml-test-harness"
-version = "1.4.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1b0c89104957a5be58bd9d3b853691e11421b74effc1234430714a8dd48b8d5"
+checksum = "a9ca424736a2deac965232dc59150421f13bd2271291ba2b76215a1b27f48aa7"
 dependencies = [
  "ignore",
  "libtest2-mimic",
- "snapbox 0.6.24",
+ "snapbox",
  "toml-test",
  "toml-test-data",
 ]
@@ -1047,7 +1025,7 @@ name = "toml_datetime"
 version = "1.1.0+spec-1.1.0"
 dependencies = [
  "serde_core",
- "snapbox 1.1.0",
+ "snapbox",
 ]
 
 [[package]]
@@ -1063,7 +1041,7 @@ dependencies = [
  "serde_core",
  "serde_json",
  "serde_spanned",
- "snapbox 1.1.0",
+ "snapbox",
  "toml 1.1.0+spec-1.1.0",
  "toml-test-data",
  "toml-test-harness",
@@ -1088,7 +1066,7 @@ version = "1.1.0+spec-1.1.0"
 dependencies = [
  "anstream 1.0.0",
  "anstyle",
- "snapbox 1.1.0",
+ "snapbox",
  "toml_datetime",
  "winnow",
 ]
@@ -1098,7 +1076,7 @@ name = "toml_writer"
 version = "1.1.0+spec-1.1.0"
 dependencies = [
  "proptest",
- "snapbox 1.1.0",
+ "snapbox",
  "toml 0.5.11",
 ]
 
