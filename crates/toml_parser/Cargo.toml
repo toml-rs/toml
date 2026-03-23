@@ -33,13 +33,13 @@ unsafe = []
 debug = ["std", "dep:anstream", "dep:anstyle"]
 
 [dependencies]
-anstream = { version = "0.6.20", optional = true }
-anstyle = { version = "1.0.11", optional = true }
+anstream = { version = "0.6.21", optional = true }
+anstyle = { version = "1.0.14", optional = true }
 winnow = { version = "1.0.0", default-features = false }
 
 [dev-dependencies]
-anstream = { version = "0.6.20", features = ["test"] }
-snapbox = "1.0.0"
+anstream = { version = "0.6.21", features = ["test"] }
+snapbox = "1.1.0"
 toml_datetime = { path = "../toml_datetime" }
 
 [lints]
