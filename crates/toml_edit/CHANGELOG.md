@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `ArrayOfTables::insert`
+
 ## [0.25.6] - 2026-03-23
 
 ### Compatibility
