@@ -407,7 +407,7 @@ fn descend_path<'t, 'i>(
                 let spanned = entry.into_mut();
                 let old_span = spanned.span();
                 match spanned.as_mut() {
-                    DeValue::Array(ref mut array) => {
+                    DeValue::Array(array) => {
                         if !array.is_array_of_tables() {
                             let old_span =
                                 toml_parser::Span::new_unchecked(old_span.start, old_span.end);
@@ -445,7 +445,7 @@ fn descend_path<'t, 'i>(
                             }
                         }
                     }
-                    DeValue::Table(ref mut sweet_child_of_mine) => {
+                    DeValue::Table(sweet_child_of_mine) => {
                         if sweet_child_of_mine.is_inline() {
                             let key_span = get_key_span(key);
                             errors.report_error(

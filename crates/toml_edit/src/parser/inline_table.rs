@@ -285,7 +285,7 @@ fn descend_path<'a>(
             }
             crate::InlineEntry::Occupied(entry) => {
                 match entry.into_mut() {
-                    Value::InlineTable(ref mut sweet_child_of_mine) => {
+                    Value::InlineTable(sweet_child_of_mine) => {
                         // Since tables cannot be defined more than once, redefining such tables using a
                         // [table] header is not allowed. Likewise, using dotted keys to redefine tables
                         // already defined in [table] form is not allowed.

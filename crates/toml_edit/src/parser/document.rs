@@ -502,7 +502,7 @@ fn descend_path<'t>(
             }
             crate::Entry::Occupied(entry) => {
                 match entry.into_mut() {
-                    Item::ArrayOfTables(ref mut array) => {
+                    Item::ArrayOfTables(array) => {
                         debug_assert!(!array.is_empty());
 
                         let index = array.len() - 1;
@@ -510,7 +510,7 @@ fn descend_path<'t>(
 
                         last_child
                     }
-                    Item::Table(ref mut sweet_child_of_mine) => {
+                    Item::Table(sweet_child_of_mine) => {
                         if dotted && sweet_child_of_mine.is_implicit() {
                             // Since tables cannot be defined more than once, redefining such tables using a
                             // [table] header is not allowed. Likewise, using dotted keys to redefine tables
@@ -543,7 +543,7 @@ fn descend_path<'t>(
                         }
                         sweet_child_of_mine
                     }
-                    Item::Value(ref existing) => {
+                    Item::Value(existing) => {
                         let old_span = existing.span().expect("all items have spans");
                         let old_span =
                             toml_parser::Span::new_unchecked(old_span.start, old_span.end);

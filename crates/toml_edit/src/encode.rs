@@ -244,13 +244,13 @@ where
 
     for (key, value) in table.items.iter() {
         match value {
-            Item::Table(ref t) => {
+            Item::Table(t) => {
                 let key = key.clone();
                 path.push(key);
                 visit_nested_tables(t, path, false, callback)?;
                 path.pop();
             }
-            Item::ArrayOfTables(ref a) => {
+            Item::ArrayOfTables(a) => {
                 for t in a.iter() {
                     let key = key.clone();
                     path.push(key);

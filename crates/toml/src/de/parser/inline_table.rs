@@ -223,7 +223,7 @@ fn descend_path<'a, 'i>(
                 let spanned = entry.into_mut();
                 let old_span = spanned.span();
                 match spanned.as_mut() {
-                    DeValue::Table(ref mut sweet_child_of_mine) => {
+                    DeValue::Table(sweet_child_of_mine) => {
                         // Since tables cannot be defined more than once, redefining such tables using a
                         // [table] header is not allowed. Likewise, using dotted keys to redefine tables
                         // already defined in [table] form is not allowed.
