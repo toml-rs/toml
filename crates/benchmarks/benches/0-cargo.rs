@@ -81,7 +81,7 @@ mod toml_parser {
 }
 
 mod toml_edit {
-    use toml_benchmarks::{manifest, Data, MANIFESTS};
+    use toml_benchmarks::{Data, MANIFESTS, manifest};
 
     #[divan::bench(args=MANIFESTS)]
     fn document(sample: &Data<'static>) -> ::toml_edit::DocumentMut {
@@ -95,7 +95,7 @@ mod toml_edit {
 }
 
 mod toml {
-    use toml_benchmarks::{manifest, Data, MANIFESTS};
+    use toml_benchmarks::{Data, MANIFESTS, manifest};
 
     #[divan::bench(args=MANIFESTS)]
     fn detable(sample: &Data<'static>) -> serde_spanned::Spanned<::toml::de::DeTable<'static>> {
@@ -124,7 +124,7 @@ mod toml {
 }
 
 mod toml_v05 {
-    use toml_benchmarks::{manifest, Data, MANIFESTS};
+    use toml_benchmarks::{Data, MANIFESTS, manifest};
 
     #[divan::bench(args=MANIFESTS)]
     fn document(sample: &Data<'static>) -> ::toml_old::Value {
@@ -138,7 +138,7 @@ mod toml_v05 {
 }
 
 mod serde_json {
-    use toml_benchmarks::{manifest, Data, MANIFESTS};
+    use toml_benchmarks::{Data, MANIFESTS, manifest};
 
     #[divan::bench(args=MANIFESTS)]
     fn document(bencher: divan::Bencher, sample: &Data) {

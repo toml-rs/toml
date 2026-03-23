@@ -1,7 +1,7 @@
 //! Deserialization support for [`Spanned`]
 
-use serde_core::de::value::BorrowedStrDeserializer;
 use serde_core::de::IntoDeserializer as _;
+use serde_core::de::value::BorrowedStrDeserializer;
 
 use crate::Spanned;
 

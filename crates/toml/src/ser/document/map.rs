@@ -2,15 +2,15 @@ use core::fmt::Write as _;
 
 use toml_writer::TomlWrite as _;
 
-use super::array_of_tables::ArrayOfTablesSerializer;
-use super::style::Style;
-use super::value::KeySerializer;
-use super::value::ValueSerializer;
 use super::Buffer;
 use super::Error;
 use super::SerializationStrategy;
 use super::Serializer;
 use super::Table;
+use super::array_of_tables::ArrayOfTablesSerializer;
+use super::style::Style;
+use super::value::KeySerializer;
+use super::value::ValueSerializer;
 use crate::alloc_prelude::*;
 
 #[doc(hidden)]

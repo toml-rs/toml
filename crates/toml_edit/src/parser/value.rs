@@ -1,9 +1,9 @@
+use crate::RawString;
+use crate::Value;
 use crate::parser::array::on_array;
 use crate::parser::inline_table::on_inline_table;
 use crate::parser::prelude::*;
 use crate::repr::{Formatted, Repr};
-use crate::RawString;
-use crate::Value;
 
 /// ```abnf
 /// val = string / boolean / array / inline-table / date-time / float / integer

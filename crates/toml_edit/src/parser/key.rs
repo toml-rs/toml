@@ -1,8 +1,8 @@
+use crate::RawString;
 use crate::key::Key;
 use crate::parser::prelude::*;
 use crate::repr::Decor;
 use crate::repr::Repr;
-use crate::RawString;
 
 /// ```abnf
 /// key = simple-key / dotted-key

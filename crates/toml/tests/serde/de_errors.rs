@@ -1,6 +1,6 @@
 use std::fmt;
 
-use serde::{de, Deserialize};
+use serde::{Deserialize, de};
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;

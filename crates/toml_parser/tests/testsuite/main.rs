@@ -4,12 +4,12 @@
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 
-use toml_parser::decoder::ScalarKind;
-use toml_parser::parser::*;
 use toml_parser::ErrorSink as _;
 use toml_parser::ParseError;
 use toml_parser::Source;
 use toml_parser::Span;
+use toml_parser::decoder::ScalarKind;
+use toml_parser::parser::*;
 
 mod parse_document;
 mod parse_simple_key;

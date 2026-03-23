@@ -3,13 +3,13 @@
 const NUM_ENTRIES: &[usize] = &[10, 100];
 
 mod toml_parser {
-    use crate::gen;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn tokens(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
                 let source = ::toml_parser::Source::new(&sample);
@@ -20,7 +20,7 @@ mod toml_parser {
     #[divan::bench(args = NUM_ENTRIES)]
     fn events(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
                 let source = ::toml_parser::Source::new(&sample);
@@ -39,7 +39,7 @@ mod toml_parser {
     #[divan::bench(args = NUM_ENTRIES)]
     fn decoded(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
                 struct Void<'s> {
@@ -102,26 +102,26 @@ mod toml_parser {
 }
 
 mod toml_edit {
-    use crate::gen;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| sample.parse::<toml_edit::DocumentMut>().unwrap());
     }
 }
 
 mod toml {
-    use crate::gen;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn detable_owned(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| {
                 let mut table = toml::de::DeTable::parse(&sample).unwrap();
@@ -141,26 +141,26 @@ mod toml {
     #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| sample.parse::<toml::Table>().unwrap());
     }
 }
 
 mod toml_v05 {
-    use crate::gen;
     use crate::NUM_ENTRIES;
+    use crate::generate;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {
         bencher
-            .with_inputs(|| gen(num_entries))
+            .with_inputs(|| generate(num_entries))
             .input_counter(divan::counter::BytesCount::of_str)
             .bench_values(|sample| sample.parse::<toml_old::Value>().unwrap());
     }
 }
 
-fn gen(num_entries: usize) -> String {
+fn generate(num_entries: usize) -> String {
     let mut s = String::new();
     for i in 0..num_entries {
         s += &format!("[header_no_{i}]\n");

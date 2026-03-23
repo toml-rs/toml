@@ -1,8 +1,8 @@
+use super::Error;
 use super::array::SerializeTupleVariant;
 use super::array::SerializeValueArray;
 use super::key::KeySerializer;
 use super::value::ValueSerializer;
-use super::Error;
 
 #[doc(hidden)]
 #[allow(clippy::large_enum_variant)]

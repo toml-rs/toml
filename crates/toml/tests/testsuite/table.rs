@@ -2,8 +2,8 @@ use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
 
-use toml::map::Map;
 use toml::Value::{Array, Integer, String, Table};
+use toml::map::Map;
 
 #[test]
 fn display() {

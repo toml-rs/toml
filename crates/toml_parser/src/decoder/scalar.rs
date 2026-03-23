@@ -3,12 +3,12 @@ use winnow::stream::FindSlice as _;
 use winnow::stream::Offset as _;
 use winnow::stream::Stream as _;
 
-use crate::decoder::StringBuilder;
 use crate::ErrorSink;
 use crate::Expected;
 use crate::ParseError;
 use crate::Raw;
 use crate::Span;
+use crate::decoder::StringBuilder;
 
 const ALLOCATION_ERROR: &str = "could not allocate for string";
 

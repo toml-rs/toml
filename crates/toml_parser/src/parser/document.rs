@@ -3,6 +3,9 @@ use winnow::stream::Stream as _;
 use winnow::stream::TokenSlice;
 
 use super::EventReceiver;
+use crate::ErrorSink;
+use crate::Expected;
+use crate::ParseError;
 #[cfg(feature = "debug")]
 use crate::debug::DebugErrorSink;
 #[cfg(feature = "debug")]
@@ -10,9 +13,6 @@ use crate::debug::DebugEventReceiver;
 use crate::decoder::Encoding;
 use crate::lexer::Token;
 use crate::lexer::TokenKind;
-use crate::ErrorSink;
-use crate::Expected;
-use crate::ParseError;
 
 /// Parse lexed tokens into [`Event`][super::Event]s
 pub fn parse_document(

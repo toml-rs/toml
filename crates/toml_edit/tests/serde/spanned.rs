@@ -4,8 +4,8 @@
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 
-use serde::de::{Deserializer, MapAccess};
 use serde::Deserialize;
+use serde::de::{Deserializer, MapAccess};
 use serde_untagged::UntaggedEnumVisitor;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;

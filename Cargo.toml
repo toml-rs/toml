@@ -1,12 +1,12 @@
 [workspace]
 members = ["crates/*"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 repository = "https://github.com/toml-rs/toml"
 license = "MIT OR Apache-2.0"
-edition = "2021"
-rust-version = "1.76"  # MSRV
+edition = "2024"
+rust-version = "1.85"  # MSRV
 include = [
   "build.rs",
   "src/**/*",
