@@ -99,6 +99,29 @@ impl ArrayOfTables {
         self.values.insert(index, Item::Table(table));
     }
 
+    /// Replaces a table at the given index within the array, returning the old table.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index >= len`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use toml_edit::{ArrayOfTables, Table, value};
+    ///
+    /// let mut arr = ArrayOfTables::new();
+    /// arr.push(Table::from_iter([("name", value("apple"))]));
+    ///
+    /// arr.replace(0, Table::from_iter([("name", value("banana"))]));
+    /// ```
+    pub fn replace(&mut self, index: usize, table: Table) -> Table {
+        match std::mem::replace(&mut self.values[index], Item::Table(table)) {
+            Item::Table(old) => old,
+            x => panic!("non-table item {x:?} in an array of tables"),
+        }
+    }
+
     /// Removes a table with the given index.
     pub fn remove(&mut self, index: usize) -> Table {
         self.values

@@ -1833,3 +1833,39 @@ baz = 2
 
 "#]]);
 }
+
+#[test]
+fn array_of_tables_replace() {
+    given(
+        r#"[[fruit]]
+name = "apple"
+
+# tropical
+[[fruit]]
+name = "banana"
+"#,
+    )
+    .running(|root| {
+        let array = root["fruit"].as_array_of_tables_mut().unwrap();
+        let mut new_table = Table::new();
+        new_table.insert("name", value("cherry"));
+        let old = array.replace(1, new_table);
+        assert_eq!(old["name"].as_str(), Some("banana"));
+    })
+    .produces_display(str![[r#"
+[[fruit]]
+name = "apple"
+
+[[fruit]]
+name = "cherry"
+
+"#]]);
+}
+
+#[test]
+#[should_panic]
+fn array_of_tables_replace_out_of_bounds() {
+    let mut array = toml_edit::ArrayOfTables::new();
+    let t = Table::new();
+    array.replace(0, t);
+}
