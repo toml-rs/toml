@@ -22,7 +22,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  security_audit:
+  audit:
+    permissions:
+      contents: none
+    name: CI
+    needs: [advisories, cargo_deny, actions]
+    runs-on: ubuntu-latest
+    if: "always()"
+    steps:
+      - name: Failed
+        run: exit 1
+        if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')"
+  advisories:
     permissions:
       issues: write # to create issues (actions-rs/audit-check)
       checks: write # to create check (actions-rs/audit-check)
