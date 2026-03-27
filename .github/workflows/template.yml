@@ -31,9 +31,10 @@ jobs:
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         fetch-depth: 0
+        persist-credentials: false
     - name: Configure git
       run: |
-        git config --global user.name '${{ github.actor }}'
+        git config --global user.name '${GITHUB_ACTOR}'
         git config --global user.email '<>'
     - name: Fetch template
       run: "git remote add template ${{ env.TEMPLATE_URL }} && git fetch template ${{ env.TEMPLATE_BRANCH }}"
