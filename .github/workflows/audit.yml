@@ -25,7 +25,7 @@ jobs:
   audit:
     permissions:
       contents: none
-    name: CI
+    name: Audit
     needs: [advisories, cargo_deny, actions]
     runs-on: ubuntu-latest
     if: "always()"
