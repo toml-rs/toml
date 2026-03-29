@@ -626,27 +626,40 @@ fn opt_dot_keys(
 /// val = string / boolean / array / inline-table / date-time / float / integer
 /// ```
 fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut dyn ErrorSink) {
-    let Some(current_token) = tokens.next_token() else {
-        let previous_span = tokens
-            .previous_tokens()
-            .find(|t| {
-                !matches!(
-                    t.kind(),
-                    TokenKind::Whitespace
-                        | TokenKind::Comment
-                        | TokenKind::Newline
-                        | TokenKind::Eof
-                )
-            })
-            .map(|t| t.span())
-            .unwrap_or_default();
+    // Skip extra `=` tokens.
+    let current_token = loop {
+        let Some(current_token) = tokens.next_token() else {
+            let previous_span = tokens
+                .previous_tokens()
+                .find(|t| {
+                    !matches!(
+                        t.kind(),
+                        TokenKind::Whitespace
+                            | TokenKind::Comment
+                            | TokenKind::Newline
+                            | TokenKind::Eof
+                    )
+                })
+                .map(|t| t.span())
+                .unwrap_or_default();
+            error.report_error(
+                ParseError::new("missing value")
+                    .with_context(previous_span)
+                    .with_expected(&[Expected::Description("value")])
+                    .with_unexpected(previous_span.after()),
+            );
+            return;
+        };
+        if current_token.kind() != TokenKind::Equals {
+            break current_token;
+        }
         error.report_error(
-            ParseError::new("missing value")
-                .with_context(previous_span)
-                .with_expected(&[Expected::Description("value")])
-                .with_unexpected(previous_span.after()),
+            ParseError::new("extra `=`")
+                .with_context(current_token.span())
+                .with_expected(&[])
+                .with_unexpected(current_token.span()),
         );
-        return;
+        receiver.error(current_token.span(), error);
     };
 
     match current_token.kind() {
@@ -660,16 +673,8 @@ fn value(tokens: &mut Stream<'_>, receiver: &mut dyn EventReceiver, error: &mut 
             receiver.scalar(fake_key, encoding, error);
             seek(tokens, -1);
         }
-        TokenKind::Equals => {
-            error.report_error(
-                ParseError::new("extra `=`")
-                    .with_context(current_token.span())
-                    .with_expected(&[])
-                    .with_unexpected(current_token.span()),
-            );
-            receiver.error(current_token.span(), error);
-            value(tokens, receiver, error);
-        }
+        // Handled by the while loop above
+        TokenKind::Equals => unreachable!(),
         TokenKind::LeftCurlyBracket => {
             on_inline_table_open(tokens, current_token, receiver, error);
         }
