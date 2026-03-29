@@ -158,24 +158,25 @@ fn decode_sign_prefix<'i>(
     output: &mut dyn StringBuilder<'i>,
     error: &mut dyn ErrorSink,
 ) -> ScalarKind {
-    let Some(first) = value.as_bytes().first() else {
-        return decode_invalid(raw, output, error);
+    let mut value = value;
+    let first = loop {
+        let Some(first) = value.as_bytes().first() else {
+            return decode_invalid(raw, output, error);
+        };
+        if !matches!(first, b'+' | b'-') {
+            break first;
+        }
+        let start = value.offset_from(&raw.as_str());
+        let end = start + 1;
+        error.report_error(
+            ParseError::new("redundant numeric sign")
+                .with_context(Span::new_unchecked(0, raw.len()))
+                .with_expected(&[])
+                .with_unexpected(Span::new_unchecked(start, end)),
+        );
+        value = &value[1..];
     };
     match first {
-        // number starts
-        b'+' | b'-' => {
-            let start = value.offset_from(&raw.as_str());
-            let end = start + 1;
-            error.report_error(
-                ParseError::new("redundant numeric sign")
-                    .with_context(Span::new_unchecked(0, raw.len()))
-                    .with_expected(&[])
-                    .with_unexpected(Span::new_unchecked(start, end)),
-            );
-
-            let value = &value[1..];
-            decode_sign_prefix(raw, value, output, error)
-        }
         // Report as if they were numbers because its most likely a typo
         b'_' => decode_datetime_or_float_or_integer(value, raw, output, error),
         // Date/number starts
@@ -769,4 +770,28 @@ fn decode_invalid<'i>(
         );
     }
     ScalarKind::String
+}
+
+#[cfg(test)]
+#[cfg(feature = "std")]
+mod test {
+    use super::*;
+    use alloc::borrow::Cow;
+
+    #[test]
+    fn many_redundant_signs() {
+        // Regression test: decode_sign_prefix previously recursed once per sign
+        // character, causing a stack overflow on long runs.
+        let signs = "-".repeat(5_000);
+        let input = format!("{signs}1");
+
+        let mut error = Vec::new();
+        let mut output = Cow::Borrowed("");
+        decode_unquoted_scalar(
+            Raw::new_unchecked(&input, None, Default::default()),
+            &mut output,
+            &mut error,
+        );
+        assert!(!error.is_empty());
+    }
 }
