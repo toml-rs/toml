@@ -115,6 +115,11 @@ impl std::fmt::Display for TomlError {
             let highlight_len = span.end - span.start;
             // Allow highlight to go one past the line
             let highlight_len = highlight_len.min(content.len().saturating_sub(column));
+            // Convert byte length to character count to match the char-based column
+            let highlight_len = input
+                .get(span.start..span.start + highlight_len)
+                .map(|s| s.chars().count())
+                .unwrap_or(highlight_len);
 
             writeln!(f, "TOML parse error at line {line_num}, column {col_num}")?;
             //   |

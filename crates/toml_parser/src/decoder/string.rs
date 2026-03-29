@@ -702,8 +702,8 @@ pub(crate) fn decode_unquoted_key<'i>(
         );
     }
 
-    for (i, b) in s.as_bytes().iter().enumerate() {
-        if !UNQUOTED_CHAR.contains_token(b) {
+    for (i, ch) in s.char_indices() {
+        if !ch.is_ascii() || !UNQUOTED_CHAR.contains_token(&(ch as u8)) {
             error.report_error(
                 ParseError::new("invalid unquoted key")
                     .with_context(Span::new_unchecked(0, s.len()))
@@ -713,7 +713,7 @@ pub(crate) fn decode_unquoted_key<'i>(
                         Expected::Literal("-"),
                         Expected::Literal("_"),
                     ])
-                    .with_unexpected(Span::new_unchecked(i, i)),
+                    .with_unexpected(Span::new_unchecked(i, i + ch.len_utf8())),
             );
         }
     }
