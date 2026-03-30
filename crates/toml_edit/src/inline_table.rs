@@ -53,31 +53,35 @@ impl InlineTable {
     /// For example, this will return dotted keys
     pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         let mut values = Vec::new();
-        let root = Vec::new();
-        self.append_values(&root, &mut values);
+        let mut root = Vec::new();
+        self.append_values(&mut root, &mut values);
         values
     }
 
+    /// Helper for `get_values()`.
+    ///
+    /// `path` is the parent for this table. path is mutable to reuse allocations but no mutations
+    /// should be observable.
     pub(crate) fn append_values<'s>(
         &'s self,
-        parent: &[&'s Key],
+        path: &mut Vec<&'s Key>,
         values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
     ) {
         for (key, value) in self.items.iter() {
-            let mut path = parent.to_vec();
             path.push(key);
             match value {
                 Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
-                    table.append_values(&path, values);
+                    table.append_values(path, values);
                 }
                 Item::Value(value) => {
-                    values.push((path, value));
+                    values.push((path.clone(), value));
                 }
                 Item::Table(table) => {
-                    table.append_all_values(&path, values);
+                    table.append_all_values(path, values);
                 }
                 _ => {}
             }
+            path.pop();
         }
     }
 

@@ -66,64 +66,72 @@ impl Table {
     /// For example, this will return dotted keys
     pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
         let mut values = Vec::new();
-        let root = Vec::new();
-        self.append_values(&root, &mut values);
+        let mut root = Vec::new();
+        self.append_values(&mut root, &mut values);
         values
     }
 
+    /// Helper for `get_values()`.
+    ///
+    /// `path` is the parent for this table. path is mutable to reuse allocations but no mutations
+    /// should be observable.
     fn append_values<'s>(
         &'s self,
-        parent: &[&'s Key],
+        path: &mut Vec<&'s Key>,
         values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
     ) {
         for (key, value) in self.items.iter() {
-            let mut path = parent.to_vec();
             path.push(key);
             match value {
                 Item::Table(table) if table.is_dotted() => {
-                    table.append_values(&path, values);
+                    table.append_values(path, values);
                 }
                 Item::Value(value) => {
                     if let Some(table) = value.as_inline_table() {
                         if table.is_dotted() {
-                            table.append_values(&path, values);
+                            table.append_values(path, values);
                         } else {
-                            values.push((path, value));
+                            values.push((path.clone(), value));
                         }
                     } else {
-                        values.push((path, value));
+                        values.push((path.clone(), value));
                     }
                 }
                 _ => {}
             }
+            path.pop();
         }
     }
 
+    /// Helper for `get_values()`.
+    ///
+    /// `path` is the parent for this table. path is mutable to reuse allocations but no mutations
+    /// should be observable.
     pub(crate) fn append_all_values<'s>(
         &'s self,
-        parent: &[&'s Key],
+        path: &mut Vec<&'s Key>,
         values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
     ) {
         for (key, value) in self.items.iter() {
-            let mut path = parent.to_vec();
             path.push(key);
             match value {
                 Item::Table(table) => {
-                    table.append_all_values(&path, values);
+                    table.append_all_values(path, values);
                 }
                 Item::Value(value) => {
                     if let Some(table) = value.as_inline_table() {
                         if table.is_dotted() {
-                            table.append_values(&path, values);
+                            table.append_values(path, values);
                         } else {
-                            values.push((path, value));
+                            values.push((path.clone(), value));
                         }
                     } else {
-                        values.push((path, value));
+                        values.push((path.clone(), value));
                     }
                 }
                 _ => {}
             }
+            path.pop();
         }
     }
 
