@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `ArrayOfTables::replace`
+
+### Fixes
+
+- *(parser)* Remove stack overflow with *many* `=` in a row
+- *(parser)* Remove stack overflow with *many* `+` / `-` in a row
+
+### Performance
+
+- *(serde)* Reduce allocations on deserialization
+- Reduce allocations on TOML writing
+
 ## [0.25.8] - 2026-03-23
 
 ### Fixes

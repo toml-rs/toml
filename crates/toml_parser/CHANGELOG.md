@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Remove stack overflow with *many* `=` in a row
+- Remove stack overflow with *many* `+` / `-` in a row
+
 ## [1.1.0] - 2026-03-23
 
 ### Compatibility
