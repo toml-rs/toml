@@ -512,3 +512,17 @@ v=1_.2
         file![_].raw(),
     );
 }
+
+#[test]
+fn many_extra_equals() {
+    // Regression test: a long run of `=` does not cause stack overflow.
+    let equals = "=".repeat(5_000);
+    let input = format!("v{equals}1\n");
+
+    let mut actual = crate::EventResults::new(&input);
+    let doc = Source::new(&input);
+    let tokens = doc.lex().into_vec();
+    parse_document(&tokens, &mut actual.events, &mut actual.errors);
+
+    assert!(!actual.errors.is_empty());
+}
