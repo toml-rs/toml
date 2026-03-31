@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.1] - 2026-03-31
+
 ### Fixes
 
 - Remove stack overflow with *many* `=` in a row
@@ -88,7 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.1...HEAD
+[1.1.1]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.0...toml_parser-v1.1.1
 [1.1.0]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.10...toml_parser-v1.1.0
 [1.0.10]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.9...toml_parser-v1.0.10
 [1.0.9]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.8...toml_parser-v1.0.9

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.1] - 2026-03-31
+
 ## [1.1.0] - 2026-03-23
 
 ### Compatibility
@@ -131,7 +133,8 @@ MSRV is now 1.64.0
 ## [0.5.0] - 2022-10-21
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v1.1.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_datetime-v1.1.1...HEAD
+[1.1.1]: https://github.com/toml-rs/toml/compare/toml_datetime-v1.1.0...toml_datetime-v1.1.1
 [1.1.0]: https://github.com/toml-rs/toml/compare/toml_datetime-v1.0.1...toml_datetime-v1.1.0
 [1.0.1]: https://github.com/toml-rs/toml/compare/toml_datetime-v1.0.0...toml_datetime-v1.0.1
 [1.0.0]: https://github.com/toml-rs/toml/compare/toml_datetime-v0.7.5...toml_datetime-v1.0.0

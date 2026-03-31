@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.9] - 2026-03-31
+
 ### Features
 
 - Add `ArrayOfTables::replace`
@@ -989,7 +991,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.8...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.9...HEAD
+[0.25.9]: https://github.com/toml-rs/toml/compare/v0.25.8...v0.25.9
 [0.25.8]: https://github.com/toml-rs/toml/compare/v0.25.7...v0.25.8
 [0.25.7]: https://github.com/toml-rs/toml/compare/v0.25.6...v0.25.7
 [0.25.6]: https://github.com/toml-rs/toml/compare/v0.25.5...v0.25.6
