@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.10] - 2026-04-01
+
 ### Fixes
 
 - *(parser)* For unquoted keys, report a span over all contigious invalid characters, rather than insertion points before each byte
@@ -995,7 +997,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.9...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.10...HEAD
+[0.25.10]: https://github.com/toml-rs/toml/compare/v0.25.9...v0.25.10
 [0.25.9]: https://github.com/toml-rs/toml/compare/v0.25.8...v0.25.9
 [0.25.8]: https://github.com/toml-rs/toml/compare/v0.25.7...v0.25.8
 [0.25.7]: https://github.com/toml-rs/toml/compare/v0.25.6...v0.25.7
