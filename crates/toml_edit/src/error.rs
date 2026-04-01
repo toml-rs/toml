@@ -1,3 +1,5 @@
+use unicode_width::UnicodeWidthStr as _;
+
 /// A TOML parse error
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct TomlError {
@@ -112,7 +114,11 @@ impl std::fmt::Display for TomlError {
             let col_num = column + 1;
             let gutter = line_num.to_string().len();
             let content = input.split('\n').nth(line).expect("valid line number");
-            let highlight_len = span.end - span.start;
+            let highlight_len = input
+                .get(span.start..span.end)
+                .map(|s| s.width())
+                .unwrap_or(span.end - span.start);
+
             // Allow highlight to go one past the line
             let highlight_len = highlight_len.min(content.len().saturating_sub(column));
 
@@ -176,7 +182,7 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     let line = input[0..line_start].iter().filter(|b| **b == b'\n').count();
 
     let column = std::str::from_utf8(&input[line_start..=index])
-        .map(|s| s.chars().count() - 1)
+        .map(|s| s.width().saturating_sub(1))
         .unwrap_or_else(|_| index - line_start);
     let column = column + column_offset;
 
