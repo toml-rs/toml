@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* For unquoted keys, report a span over all contigious invalid characters, rather than insertion points before each byte
+
 ## [0.25.9] - 2026-03-31
 
 ### Features
