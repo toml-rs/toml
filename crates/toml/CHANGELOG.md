@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixes
 
-- *(parser)* For unquoted keys, report a span over all contigious invalid characters, rather than insertion points before each byte
+- *(parser)* For unquoted keys, report a span over all contiguous invalid characters, rather than insertion points before each byte
 
 ## [1.1.1] - 2026-03-31
 
