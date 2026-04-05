@@ -149,6 +149,12 @@ duplicate key
 }
 
 #[test]
+#[should_panic = "all items have spans"]
+fn inline_table_missing_key() {
+    t("={[]\r].", str![[]]);
+}
+
+#[test]
 fn emoji_error_span() {
     let input = "key = 😀";
     dbg!(input);

@@ -149,6 +149,22 @@ duplicate key
 }
 
 #[test]
+fn inline_table_missing_key() {
+    t(
+        "={[]\r].",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ={[]
+].
+  |   ^
+missing key for inline table element, expected key
+
+"#]],
+    );
+}
+
+#[test]
 fn emoji_error_span() {
     let input = "key = 😀";
     dbg!(input);
