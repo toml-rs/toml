@@ -332,6 +332,11 @@ unknown field `c_d`, expected `c_a` or `c_b`
 }
 
 #[test]
+fn exact_spanless_value_repro_returns_error() {
+    let _ = crate::from_str::<crate::SerdeDocument>("={[]\r].").unwrap_err();
+}
+
+#[test]
 fn serde_derive_deserialize_errors() {
     bad::<Parent<String>>(
         "
