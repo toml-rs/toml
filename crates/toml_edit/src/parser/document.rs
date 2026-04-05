@@ -544,18 +544,18 @@ fn descend_path<'t>(
                         sweet_child_of_mine
                     }
                     Item::Value(existing) => {
-                        let old_span = existing.span().expect("all items have spans");
-                        let old_span =
-                            toml_parser::Span::new_unchecked(old_span.start, old_span.end);
                         let key_span = get_key_span(key).expect("all keys have spans");
-                        errors.report_error(
-                            ParseError::new(format!(
-                                "cannot extend value of type {} with a dotted key",
-                                existing.type_name()
-                            ))
-                            .with_unexpected(key_span)
-                            .with_context(old_span),
-                        );
+                        let mut error = ParseError::new(format!(
+                            "cannot extend value of type {} with a dotted key",
+                            existing.type_name()
+                        ))
+                        .with_unexpected(key_span);
+                        if let Some(old_span) = existing.span() {
+                            let old_span =
+                                toml_parser::Span::new_unchecked(old_span.start, old_span.end);
+                            error = error.with_context(old_span);
+                        }
+                        errors.report_error(error);
                         return None;
                     }
                     Item::None => unreachable!(),
