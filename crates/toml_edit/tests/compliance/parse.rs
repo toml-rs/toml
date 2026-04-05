@@ -692,3 +692,11 @@ extra `=`, expected nothing
 "#]]
     );
 }
+
+#[test]
+fn exact_spanless_value_repro_returns_error() {
+    let input = "={[]\r].";
+
+    let _ = input.parse::<crate::RustDocument>().unwrap_err();
+    let _ = input.parse::<toml_edit::Document<String>>().unwrap_err();
+}
