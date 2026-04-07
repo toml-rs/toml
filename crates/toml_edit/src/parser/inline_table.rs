@@ -22,10 +22,12 @@ pub(crate) fn on_inline_table(
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("inline_table::on_inline_table");
     let mut result = InlineTable::new();
+    let mut close_span = open_event.span();
 
     let mut state = State::default();
     state.open(open_event);
     while let Some(event) = input.next_token() {
+        close_span = event.span();
         match event.kind() {
             EventKind::StdTableOpen
             | EventKind::ArrayTableOpen
@@ -80,6 +82,9 @@ pub(crate) fn on_inline_table(
                 break;
             }
         }
+    }
+    if result.span.is_none() {
+        result.span = Some(open_event.span().start()..close_span.end());
     }
 
     Value::InlineTable(result)

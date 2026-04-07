@@ -149,9 +149,19 @@ duplicate key
 }
 
 #[test]
-#[should_panic = "all items have spans"]
 fn inline_table_missing_key() {
-    t("={[]\r].", str![[]]);
+    t(
+        "={[]\r].",
+        str![[r#"
+TOML parse error at line 1, column 3
+  |
+1 | ={[]
+].
+  |   ^
+missing key for inline table element, expected key
+
+"#]],
+    );
 }
 
 #[test]
