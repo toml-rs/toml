@@ -20,10 +20,12 @@ pub(crate) fn on_array(
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("array::on_array");
     let mut result = Array::new();
+    let mut close_span = open_event.span();
 
     let mut state = State::default();
     state.open(open_event);
     while let Some(event) = input.next_token() {
+        close_span = event.span();
         match event.kind() {
             EventKind::StdTableOpen
             | EventKind::ArrayTableOpen
@@ -73,6 +75,9 @@ pub(crate) fn on_array(
                 break;
             }
         }
+    }
+    if result.span.is_none() {
+        result.span = Some(open_event.span().start()..close_span.end());
     }
 
     Value::Array(result)

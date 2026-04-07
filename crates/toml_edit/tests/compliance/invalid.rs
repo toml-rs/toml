@@ -165,9 +165,18 @@ missing key for inline table element, expected key
 }
 
 #[test]
-#[should_panic = "all items have spans"]
 fn inline_table_missing_key_in_array() {
-    t("a=[{[]-]{\na.", str![[]]);
+    t(
+        "a=[{[]-]{\na.",
+        str![[r#"
+TOML parse error at line 1, column 5
+  |
+1 | a=[{[]-]{
+  |     ^
+missing key for inline table element, expected key
+
+"#]],
+    );
 }
 
 #[test]
