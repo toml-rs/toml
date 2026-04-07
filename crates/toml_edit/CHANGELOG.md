@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Don't panic on unclosed arrays and inline tables
+
 ## [0.25.10] - 2026-04-01
 
 ### Fixes
