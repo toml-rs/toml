@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.11] - 2026-04-07
+
 ### Fixes
 
 - Don't panic on unclosed arrays and inline tables
@@ -1001,7 +1003,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.10...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.11...HEAD
+[0.25.11]: https://github.com/toml-rs/toml/compare/v0.25.10...v0.25.11
 [0.25.10]: https://github.com/toml-rs/toml/compare/v0.25.9...v0.25.10
 [0.25.9]: https://github.com/toml-rs/toml/compare/v0.25.8...v0.25.9
 [0.25.8]: https://github.com/toml-rs/toml/compare/v0.25.7...v0.25.8
