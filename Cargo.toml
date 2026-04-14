@@ -7,13 +7,13 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 rust-version = "1.65.0"  # MSRV
 include = [
-  "build.rs",
-  "src/**/*",
-  "Cargo.toml",
-  "Cargo.lock",
-  "LICENSE*",
-  "README.md",
-  "examples/**/*"
+  "/build.rs",
+  "/src/**/*",
+  "/Cargo.toml",
+  "/Cargo.lock",
+  "/LICENSE*",
+  "/README.md",
+  "/examples/**/*"
 ]
 
 [workspace.lints.rust]
