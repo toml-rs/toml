@@ -433,7 +433,7 @@ impl Table {
     pub fn insert(&mut self, key: &str, item: Item) -> Option<Item> {
         use indexmap::map::MutableEntryKey;
         let key = Key::new(key);
-        match self.items.entry(key.clone()) {
+        match self.items.entry(key) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 entry.key_mut().fmt();
                 let old = std::mem::replace(entry.get_mut(), item);
