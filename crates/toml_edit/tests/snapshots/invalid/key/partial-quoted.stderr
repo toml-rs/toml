@@ -1,5 +1,5 @@
-TOML parse error at line 1, column 8
+TOML parse error at line 1, column 1
   |
 1 | partial"quoted" = 5
-  |        ^
-invalid unquoted key, expected letters, numbers, `-`, `_`
+  | ^
+invalid basic string, expected `"`
