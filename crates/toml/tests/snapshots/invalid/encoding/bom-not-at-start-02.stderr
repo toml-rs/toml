@@ -1,1 +1,12 @@
-invalid utf-8 sequence of 1 bytes from index 18
+TOML parse error at line 1, column 3
+  |
+1 | ﻿﻿# Contains two UTF-8 BOMS at the start
+  |   ^
+key with no value, expected `=`
+
+---
+TOML parse error at line 1, column 4
+  |
+1 | ﻿﻿# Contains two UTF-8 BOMS at the start
+  |    ^^^
+invalid unquoted key, expected letters, numbers, `-`, `_`
