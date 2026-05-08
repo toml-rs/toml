@@ -1,0 +1,5 @@
+TOML parse error at line 1, column 22
+  |
+1 | linetab-number-04 = +inf
+  |                      ^^^^
+invalid float, expected `inf`

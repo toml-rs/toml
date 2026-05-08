@@ -1,0 +1,5 @@
+TOML parse error at line 1, column 18
+  |
+1 | arabic-zero-04 = ٠e0
+  |                  ^^^^
+string values must be quoted, expected literal string

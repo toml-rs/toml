@@ -1,1 +1,5 @@
-invalid utf-8 sequence of 1 bytes from index 17
+TOML parse error at line 2, column 3
+  |
+2 | a=﻿1
+  |   ^^^^
+string values must be quoted, expected literal string

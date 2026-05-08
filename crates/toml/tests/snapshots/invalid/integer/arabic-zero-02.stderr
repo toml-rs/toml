@@ -1,0 +1,5 @@
+TOML parse error at line 1, column 18
+  |
+1 | arabic-zero-02 = 1_0٠
+  |                  ^^^^^
+integer number overflowed

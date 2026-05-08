@@ -1,0 +1,5 @@
+TOML parse error at line 2, column 5
+  |
+2 | d = 02026-05-07T14:15:16Z
+  |     ^^^^^^^^^^^^^^^^^^^^^
+invalid date, expected a four-digit year (YYYY)
