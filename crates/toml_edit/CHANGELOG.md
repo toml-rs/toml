@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.12] - 2026-05-27
+
 ### Fixes
 
 - Prevent `Table::set_postion` from moving a table before the root table
@@ -1007,7 +1009,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.11...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.12...HEAD
+[0.25.12]: https://github.com/toml-rs/toml/compare/v0.25.11...v0.25.12
 [0.25.11]: https://github.com/toml-rs/toml/compare/v0.25.10...v0.25.11
 [0.25.10]: https://github.com/toml-rs/toml/compare/v0.25.9...v0.25.10
 [0.25.9]: https://github.com/toml-rs/toml/compare/v0.25.8...v0.25.9
