@@ -219,7 +219,7 @@ impl Display for DocumentMut {
         })
         .unwrap();
 
-        tables.sort_by_key(|&(id, _, _, _)| id);
+        tables.sort_by_key(|(id, _, path, _)| (!path.is_empty(), *id));
         let mut first_table = true;
         for (_, table, path, is_array) in tables {
             visit_table(f, None, table, &path, is_array, &mut first_table)?;
