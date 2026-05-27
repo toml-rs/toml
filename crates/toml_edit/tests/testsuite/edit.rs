@@ -1046,6 +1046,35 @@ fn test_set_position() {
 }
 
 #[test]
+fn test_set_position_negative() {
+    given(
+        r#"
+        edition = "2015"
+        [dependencies]
+        [dependencies.opencl]
+        [dev-dependencies]"#,
+    )
+    .running(|root| {
+        let package = root.entry("package").or_insert_with(|| {
+            let mut t = Table::new();
+            t.set_position(Some(-1));
+            t.into()
+        });
+        package["edition"] = "2024".into();
+    })
+    .produces_display(str![[r#"
+[package]
+edition = "2024"
+
+        edition = "2015"
+        [dependencies]
+        [dependencies.opencl]
+        [dev-dependencies]
+
+"#]]);
+}
+
+#[test]
 fn test_multiple_zero_positions() {
     given(
         r#"
