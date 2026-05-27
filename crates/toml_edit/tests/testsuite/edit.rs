@@ -1063,10 +1063,11 @@ fn test_set_position_negative() {
         package["edition"] = "2024".into();
     })
     .produces_display(str![[r#"
-[package]
-edition = "2024"
 
         edition = "2015"
+
+[package]
+edition = "2024"
         [dependencies]
         [dependencies.opencl]
         [dev-dependencies]
