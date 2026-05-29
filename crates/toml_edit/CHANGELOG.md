@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixes
 
-- Prevent `Table::set_postion` from moving a table before the root table
+- Prevent `Table::set_position` from moving a table before the root table
 
 ## [0.25.11] - 2026-04-07
 
