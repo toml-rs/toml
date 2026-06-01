@@ -24,4 +24,4 @@ jobs:
       with:
         persist-credentials: false
     - name: Spell Check Repo
-      uses: crate-ci/typos@52940116a3ef7d561b8e27ca5b90db8c8c73b2b5 # master
+      uses: crate-ci/typos@823a0a4672ea7c524f9a1fd99c5c5ae5b1952bf2 # master
