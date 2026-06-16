@@ -57,6 +57,126 @@ fn document_key_string_comment() {
 }
 
 #[test]
+fn document_unclosed_dotted_key_relpath() {
+    t(
+        r#"
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io]
+crate3."path = "../somewhere"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_unclosed_dotted_key_abspath() {
+    t(
+        r#"
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io]
+crate4."path = "/somewhere"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_unclosed_inline_table_key_relpath() {
+    t(
+        r#"
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io]
+crate5 = { "path = "../somewhere" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_unclosed_inline_table_key_abspath() {
+    t(
+        r#"
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io]
+crate6 = { "path = "/somewhere" }
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_unclosed_table_key_relpath() {
+    t(
+        r#"
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io.crate7]
+"path = "../somewhere"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
+fn document_unclosed_table_key_abspath() {
+    t(
+        r#"
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io.crate8]
+"path = "/somewhere"
+"#,
+        file![_].raw(),
+    );
+}
+
+#[test]
 fn document_key_ws() {
     t(
         r#" hello . darkness . my = 'old friend'
