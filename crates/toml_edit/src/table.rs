@@ -358,16 +358,12 @@ impl Table {
 
     /// Returns an optional reference to an item given the key.
     pub fn get<'a>(&'a self, key: &str) -> Option<&'a Item> {
-        self.items
-            .get(key)
-            .and_then(|value| if !value.is_none() { Some(value) } else { None })
+        self.items.get(key).filter(|value| !value.is_none())
     }
 
     /// Returns an optional mutable reference to an item given the key.
     pub fn get_mut<'a>(&'a mut self, key: &str) -> Option<&'a mut Item> {
-        self.items
-            .get_mut(key)
-            .and_then(|value| if !value.is_none() { Some(value) } else { None })
+        self.items.get_mut(key).filter(|value| !value.is_none())
     }
 
     /// Return references to the key-value pair stored for key, if it is present, else None.

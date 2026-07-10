@@ -38,7 +38,7 @@ impl Index for str {
             Item::Value(ref v) => v
                 .as_inline_table()
                 .and_then(|t| t.items.get(self))
-                .and_then(|value| if !value.is_none() { Some(value) } else { None }),
+                .filter(|value| !value.is_none()),
             _ => None,
         }
     }
