@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(writer)* Don't overflow when writing a string with more than 255 quotes in a row
+
 ## [1.1.2] - 2026-04-01
 
 ### Fixes
