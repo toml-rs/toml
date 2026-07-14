@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.3] - 2026-07-14
+
 ### Fixes
 
 - *(writer)* Don't overflow when writing a string with more than 255 quotes in a row
@@ -518,7 +520,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.1.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.1.3...HEAD
+[1.1.3]: https://github.com/toml-rs/toml/compare/toml-v1.1.2...toml-v1.1.3
 [1.1.2]: https://github.com/toml-rs/toml/compare/toml-v1.1.1...toml-v1.1.2
 [1.1.1]: https://github.com/toml-rs/toml/compare/toml-v1.1.0...toml-v1.1.1
 [1.1.0]: https://github.com/toml-rs/toml/compare/toml-v1.0.7...toml-v1.1.0
