@@ -578,6 +578,12 @@ StringResults {
     );
 }
 
+#[test]
+#[should_panic = "attempt to add with overflow"]
+fn many_quotes() {
+    t(&"\"".repeat(256), str![[""]]);
+}
+
 proptest! {
     /// Verify defaults are compatible with the old TOML parser so new Cargo doesn't cause an MSRV
     /// bump
