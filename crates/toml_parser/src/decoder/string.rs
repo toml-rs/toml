@@ -688,6 +688,16 @@ pub(crate) fn decode_unquoted_key<'i>(
 ) {
     let s = raw.as_str();
 
+    if s.ends_with("'''") {
+        return decode_ml_literal_string(raw, output, error);
+    } else if s.ends_with("\"\"\"") {
+        return decode_ml_basic_string(raw, output, error);
+    } else if s.ends_with("'") {
+        return decode_literal_string(raw, output, error);
+    } else if s.ends_with("\"") {
+        return decode_basic_string(raw, output, error);
+    }
+
     if s.is_empty() {
         error.report_error(
             ParseError::new("unquoted keys cannot be empty")
