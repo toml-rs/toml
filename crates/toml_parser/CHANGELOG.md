@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Reduce over-allocation with improved tokens/bytes calculation
+
 ## [1.1.2] - 2026-04-01
 
 ### Fixes
