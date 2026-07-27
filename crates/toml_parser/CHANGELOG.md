@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.3] - 2026-07-27
+
 ### Performance
 
 - Reduce over-allocation with improved tokens/bytes calculation
@@ -100,7 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.2...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.3...HEAD
+[1.1.3]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.2...toml_parser-v1.1.3
 [1.1.2]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.1...toml_parser-v1.1.2
 [1.1.1]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.0...toml_parser-v1.1.1
 [1.1.0]: https://github.com/toml-rs/toml/compare/toml_parser-v1.0.10...toml_parser-v1.1.0
