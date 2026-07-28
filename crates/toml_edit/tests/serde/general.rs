@@ -1376,15 +1376,8 @@ fn deserialize_datetime_from_value_issue_440() {
     let json = value.clone().try_into::<serde_json::Value>().unwrap();
     assert_eq!(json, serde_json::Value::String(input.to_owned()));
 
-    let error = value.try_into::<crate::Datetime>().unwrap_err();
-    assert_data_eq!(
-        error.to_string(),
-        str![[r#"
-invalid type: string "1979-05-27T07:32:00Z", expected a TOML datetime
-
-"#]]
-        .raw()
-    );
+    let datetime = value.try_into::<crate::Datetime>().unwrap();
+    assert_eq!(datetime.to_string(), input);
 }
 
 #[test]
