@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(serde)* Preserve `Value::Datetime` when deserializing to other formats
+
 ## [1.1.3] - 2026-07-14
 
 ### Fixes
