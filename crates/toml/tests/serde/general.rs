@@ -1492,6 +1492,25 @@ fn table_type_enum_regression_issue_388() {
 }
 
 #[test]
+fn deserialize_datetime_from_value_issue_440() {
+    let input = "1979-05-27T07:32:00Z";
+    let value = crate::value_from_str::<crate::SerdeValue>(input).unwrap();
+
+    let json = value.clone().try_into::<serde_json::Value>().unwrap();
+    assert_eq!(json, serde_json::Value::String(input.to_owned()));
+
+    let error = value.try_into::<crate::Datetime>().unwrap_err();
+    assert_data_eq!(
+        error.to_string(),
+        str![[r#"
+invalid type: string "1979-05-27T07:32:00Z", expected a TOML datetime
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
 fn serialize_datetime_issue_333() {
     #[derive(Serialize)]
     struct Struct {
