@@ -6,6 +6,7 @@ use toml_writer::ToTomlValue as _;
 use toml_writer::TomlWrite as _;
 
 use crate::DocumentMut;
+use crate::RawString;
 use crate::inline_table::DEFAULT_INLINE_KEY_DECOR;
 use crate::key::Key;
 use crate::repr::{Decor, Formatted, Repr, ValueRepr};
@@ -202,30 +203,54 @@ pub(crate) fn encode_value(
     }
 }
 
+fn encode_document(
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    decor: &Decor,
+    root: &Table,
+    trailing: &RawString,
+) -> Result {
+    decor.prefix_encode(buf, input, DEFAULT_ROOT_DECOR.0)?;
+
+    let mut path = Vec::new();
+    let mut last_position = 0;
+    let mut tables = Vec::new();
+    visit_nested_tables(root, &mut path, false, &mut |t, p, is_array| {
+        if let Some(pos) = t.position() {
+            last_position = pos;
+        }
+        tables.push((last_position, t, p.clone(), is_array));
+        Ok(())
+    })
+    .unwrap();
+
+    tables.sort_by_key(|(id, _, path, _)| (!path.is_empty(), *id));
+    let mut first_table = true;
+    for (_, table, path, is_array) in tables {
+        visit_table(buf, input, table, &path, is_array, &mut first_table)?;
+    }
+    decor.suffix_encode(buf, input, DEFAULT_ROOT_DECOR.1)?;
+    trailing.encode_with_default(buf, input, "")
+}
+
 impl Display for DocumentMut {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let decor = self.decor();
-        decor.prefix_encode(f, None, DEFAULT_ROOT_DECOR.0)?;
+        encode_document(f, None, self.decor(), self.as_table(), self.trailing())
+    }
+}
 
-        let mut path = Vec::new();
-        let mut last_position = 0;
-        let mut tables = Vec::new();
-        visit_nested_tables(self.as_table(), &mut path, false, &mut |t, p, is_array| {
-            if let Some(pos) = t.position() {
-                last_position = pos;
-            }
-            tables.push((last_position, t, p.clone(), is_array));
-            Ok(())
-        })
-        .unwrap();
-
-        tables.sort_by_key(|(id, _, path, _)| (!path.is_empty(), *id));
-        let mut first_table = true;
-        for (_, table, path, is_array) in tables {
-            visit_table(f, None, table, &path, is_array, &mut first_table)?;
-        }
-        decor.suffix_encode(f, None, DEFAULT_ROOT_DECOR.1)?;
-        self.trailing().encode_with_default(f, None, "")
+impl<S: AsRef<str>> Display for crate::Document<S> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        // `Document<S>` keeps the parsed tree spanned against the original
+        // source, so resolve the decor/reprs against it (unlike `DocumentMut`,
+        // which is despanned and passes `None`).
+        encode_document(
+            f,
+            Some(self.raw()),
+            self.decor(),
+            self.as_table(),
+            self.trailing(),
+        )
     }
 }
 

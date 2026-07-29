@@ -1899,3 +1899,27 @@ fn array_of_tables_replace_out_of_bounds() {
     let t = Table::new();
     array.replace(0, t);
 }
+
+#[test]
+fn document_string_display_matches_source() {
+    // Regression for https://github.com/toml-rs/toml/issues/1008: `Document<S>`
+    // had no `Display` of its own, so `to_string()` resolved through its `Deref`
+    // to `Table`, which dropped `[table]` headers and produced an empty string.
+    // It must losslessly round-trip its source, matching `DocumentMut`.
+    let inputs = [
+        "\n[project]\nx = \"y\"\n",
+        "a = 1\n",
+        "# leading\n[a.b]\nc = 2\n\n[[arr]]\nx = 1\n",
+        "",
+    ];
+    for input in inputs {
+        let doc = input.parse::<toml_edit::Document<String>>().unwrap();
+        assert_eq!(doc.to_string(), input, "Document<String> should round-trip");
+        let doc_mut = input.parse::<DocumentMut>().unwrap();
+        assert_eq!(
+            doc.to_string(),
+            doc_mut.to_string(),
+            "Document<String> should match DocumentMut"
+        );
+    }
+}
