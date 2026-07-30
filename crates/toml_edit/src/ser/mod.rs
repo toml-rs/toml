@@ -77,8 +77,8 @@ where
 
 /// Serialize the given data structure as a "pretty" String of TOML.
 ///
-/// This is identical to `to_string` except the output string has a more
-/// "pretty" output. See `ValueSerializer::pretty` for more details.
+/// This is identical to [`to_string`] except the output string has a more
+/// "pretty" output.
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
