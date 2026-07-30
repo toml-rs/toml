@@ -74,8 +74,8 @@ where
 
 /// Serialize the given data structure as a "pretty" String of TOML.
 ///
-/// This is identical to `to_string` except the output string has a more
-/// "pretty" output. See `Serializer::pretty` for more details.
+/// This is identical to [`to_string`] except the output string has a more
+/// "pretty" output. See [`Serializer::pretty`] for more details.
 ///
 /// To serialize TOML values, instead of documents, see [`ValueSerializer`].
 ///
