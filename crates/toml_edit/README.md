@@ -41,6 +41,7 @@ c = { d = "hello" }
 Things it does not preserve:
 
 * Order of dotted keys, see [issue](https://github.com/toml-rs/toml/issues/163).
+* Lack of trailing newline, see [issue](https://github.com/toml-rs/toml/issues/1158).
 
 ## License
 
