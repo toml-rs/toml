@@ -97,7 +97,7 @@ pub(crate) fn encode_array(
     decor.prefix_encode(buf, input, default_decor.0)?;
     buf.open_array()?;
 
-    for (i, elem) in this.iter().enumerate() {
+    for (i, elem) in this.iter_values().enumerate() {
         let inner_decor;
         if i == 0 {
             inner_decor = DEFAULT_LEADING_VALUE_DECOR;
@@ -223,7 +223,7 @@ where
                 path.pop();
             }
             Item::ArrayOfTables(a) => {
-                for t in a.iter() {
+                for t in a.iter_tables() {
                     path.push(key);
                     visit_nested_tables(t, path, true, callback)?;
                     path.pop();

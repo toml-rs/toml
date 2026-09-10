@@ -106,7 +106,11 @@ impl Array {
 impl Array {
     /// Returns an iterator over all values.
     pub fn iter(&self) -> ArrayIter<'_> {
-        Box::new(self.values.iter().filter_map(Item::as_value))
+        Box::new(self.iter_values())
+    }
+
+    pub(crate) fn iter_values(&self) -> impl Iterator<Item = &Value> {
+        self.values.iter().filter_map(Item::as_value)
     }
 
     /// Returns an iterator over all values.
