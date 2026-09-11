@@ -4,7 +4,6 @@ use indexmap::map::IndexMap;
 
 use crate::key::Key;
 use crate::repr::Decor;
-use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{InlineTable, Item, KeyMut, Value};
 
 /// A TOML table, a top-level collection of key/[`Value`] pairs under a header and logical
@@ -485,19 +484,7 @@ impl Table {
 #[cfg(feature = "display")]
 impl std::fmt::Display for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let children = self.get_values();
-        // print table body
-        for (key_path, value) in children {
-            let leaf_decor = key_path
-                .last()
-                .expect("always at least one key")
-                .leaf_decor();
-            crate::encode::encode_key_path(&key_path, f, None, DEFAULT_KEY_DECOR, leaf_decor)?;
-            write!(f, "=")?;
-            crate::encode::encode_value(value, f, None, DEFAULT_VALUE_DECOR)?;
-            writeln!(f)?;
-        }
-        Ok(())
+        crate::encode::encode_table_body(self, f, None)
     }
 }
 
