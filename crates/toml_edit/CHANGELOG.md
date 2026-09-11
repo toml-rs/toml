@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Reduce allocations when rendering array of tables
+
 ## [0.25.14] - 2026-09-10
 
 ### Performance
