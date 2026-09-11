@@ -32,18 +32,38 @@ pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -
     Ok(())
 }
 
-pub(crate) fn encode_key_path(
+fn encode_key_path(
     this: &[&Key],
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+    leaf_decor: &Decor,
+) -> Result {
+    let (leaf, prefix) = this.split_last().expect("always at least one key");
+    encode_key_path_parts(
+        prefix.iter().copied(),
+        leaf,
+        buf,
+        input,
+        default_decor,
+        leaf_decor,
+    )
+}
+
+fn encode_key_path_parts<'k>(
+    prefix: impl ExactSizeIterator<Item = &'k Key>,
+    leaf: &'k Key,
     mut buf: &mut dyn Write,
     input: Option<&str>,
     default_decor: (&str, &str),
     leaf_decor: &Decor,
 ) -> Result {
-    for (i, key) in this.iter().enumerate() {
+    let leaf_index = prefix.len();
+    for (i, key) in prefix.chain(std::iter::once(leaf)).enumerate() {
         let dotted_decor = key.dotted_decor();
 
         let first = i == 0;
-        let last = i + 1 == this.len();
+        let last = i == leaf_index;
 
         if first {
             leaf_decor.prefix_encode(buf, input, default_decor.0)?;
