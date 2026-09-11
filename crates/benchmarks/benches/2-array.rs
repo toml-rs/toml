@@ -108,6 +108,8 @@ mod toml_parser {
 mod toml_edit {
     use crate::NUM_ENTRIES;
     use crate::generate;
+    use crate::generate_arrays_of_tables;
+    use crate::generate_value_arrays;
 
     #[divan::bench(args = NUM_ENTRIES)]
     fn document(bencher: divan::Bencher, num_entries: usize) {
@@ -120,6 +122,22 @@ mod toml_edit {
     #[divan::bench(args = NUM_ENTRIES)]
     fn dump(bencher: divan::Bencher, num_entries: usize) {
         let document = generate(num_entries)
+            .parse::<toml_edit::DocumentMut>()
+            .unwrap();
+        bencher.bench(|| std::hint::black_box(&document).to_string());
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn value_arrays_dump(bencher: divan::Bencher, num_entries: usize) {
+        let document = generate_value_arrays(num_entries)
+            .parse::<toml_edit::DocumentMut>()
+            .unwrap();
+        bencher.bench(|| std::hint::black_box(&document).to_string());
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn arrays_of_tables_dump(bencher: divan::Bencher, num_entries: usize) {
+        let document = generate_arrays_of_tables(num_entries)
             .parse::<toml_edit::DocumentMut>()
             .unwrap();
         bencher.bench(|| std::hint::black_box(&document).to_string());
@@ -188,6 +206,23 @@ fn generate(num_entries: usize) -> String {
     let mut s = String::new();
     for _ in 0..num_entries {
         s += "[[header]]\n";
+        s += "entry = 42\n";
+    }
+    s
+}
+
+fn generate_value_arrays(num_entries: usize) -> String {
+    let mut s = String::new();
+    for i in 0..num_entries {
+        s += &format!("array_{i} = [1, 2, 3]\n");
+    }
+    s
+}
+
+fn generate_arrays_of_tables(num_entries: usize) -> String {
+    let mut s = String::new();
+    for i in 0..num_entries {
+        s += &format!("[[header_{i}]]\n");
         s += "entry = 42\n";
     }
     s

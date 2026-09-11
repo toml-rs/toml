@@ -50,7 +50,11 @@ impl ArrayOfTables {
 impl ArrayOfTables {
     /// Returns an iterator over tables.
     pub fn iter(&self) -> ArrayOfTablesIter<'_> {
-        Box::new(self.values.iter().filter_map(Item::as_table))
+        Box::new(self.iter_tables())
+    }
+
+    pub(crate) fn iter_tables(&self) -> impl Iterator<Item = &Table> {
+        self.values.iter().filter_map(Item::as_table)
     }
 
     /// Returns an iterator over tables.
