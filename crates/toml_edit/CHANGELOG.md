@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.15] - 2026-09-11
+
 ### Performance
 
 - Reduce allocations when rendering array of tables
@@ -1027,7 +1029,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.14...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.15...HEAD
+[0.25.15]: https://github.com/toml-rs/toml/compare/v0.25.14...v0.25.15
 [0.25.14]: https://github.com/toml-rs/toml/compare/v0.25.13...v0.25.14
 [0.25.13]: https://github.com/toml-rs/toml/compare/v0.25.12...v0.25.13
 [0.25.12]: https://github.com/toml-rs/toml/compare/v0.25.11...v0.25.12
