@@ -324,7 +324,18 @@ fn visit_table(
         table.decor.suffix_encode(buf, input, default_decor.1)?;
         writeln!(buf)?;
     }
-    // print table body
+    encode_table_values(children, buf, input)
+}
+
+pub(crate) fn encode_table_body(table: &Table, buf: &mut dyn Write, input: Option<&str>) -> Result {
+    encode_table_values(table.get_values(), buf, input)
+}
+
+fn encode_table_values(
+    children: Vec<(Vec<&Key>, &Value)>,
+    mut buf: &mut dyn Write,
+    input: Option<&str>,
+) -> Result {
     for (key_path, value) in children {
         let leaf_decor = key_path
             .last()
