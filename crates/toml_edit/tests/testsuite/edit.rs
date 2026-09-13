@@ -1971,3 +1971,35 @@ fn array_of_tables_replace_out_of_bounds() {
     let t = Table::new();
     array.replace(0, t);
 }
+
+// https://github.com/toml-rs/toml/issues/1213
+#[test]
+fn crlf_document_without_multiline_string_roundtrips_uniformly() {
+    let input = "a = 1\r\nb = 2\r\n";
+    let doc = input.parse::<DocumentMut>().unwrap();
+    assert_eq!(doc.to_string(), "a = 1\nb = 2\n");
+}
+
+// https://github.com/toml-rs/toml/issues/1213
+#[test]
+fn crlf_multiline_string_in_crlf_document_roundtrips() {
+    let input = "s = \"\"\"\r\ntext\r\n\"\"\"\r\nb = 2\r\n";
+    let doc = input.parse::<DocumentMut>().unwrap();
+    assert_eq!(doc.to_string(), "s = \"\"\"\r\ntext\r\n\"\"\"\nb = 2\n");
+}
+
+// https://github.com/toml-rs/toml/issues/1213
+#[test]
+fn crlf_multiline_literal_string_in_crlf_document_roundtrips() {
+    let input = "s = '''\r\ntext\r\n'''\r\nb = 2\r\n";
+    let doc = input.parse::<DocumentMut>().unwrap();
+    assert_eq!(doc.to_string(), "s = '''\r\ntext\r\n'''\nb = 2\n");
+}
+
+// https://github.com/toml-rs/toml/issues/1213
+#[test]
+fn lf_multiline_string_in_crlf_document_roundtrips_uniformly() {
+    let input = "s = \"\"\"\ntext\n\"\"\"\r\nb = 2\r\n";
+    let doc = input.parse::<DocumentMut>().unwrap();
+    assert_eq!(doc.to_string(), "s = \"\"\"\ntext\n\"\"\"\nb = 2\n");
+}
