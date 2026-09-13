@@ -1985,7 +1985,8 @@ fn crlf_document_without_multiline_string_roundtrips_uniformly() {
 fn crlf_multiline_string_in_crlf_document_roundtrips() {
     let input = "s = \"\"\"\r\ntext\r\n\"\"\"\r\nb = 2\r\n";
     let doc = input.parse::<DocumentMut>().unwrap();
-    assert_eq!(doc.to_string(), "s = \"\"\"\r\ntext\r\n\"\"\"\nb = 2\n");
+    assert_eq!(doc.to_string(), "s = \"\"\"\ntext\n\"\"\"\nb = 2\n");
+    assert_eq!(doc["s"].as_str(), Some("text\n"));
 }
 
 // https://github.com/toml-rs/toml/issues/1213
@@ -1993,7 +1994,8 @@ fn crlf_multiline_string_in_crlf_document_roundtrips() {
 fn crlf_multiline_literal_string_in_crlf_document_roundtrips() {
     let input = "s = '''\r\ntext\r\n'''\r\nb = 2\r\n";
     let doc = input.parse::<DocumentMut>().unwrap();
-    assert_eq!(doc.to_string(), "s = '''\r\ntext\r\n'''\nb = 2\n");
+    assert_eq!(doc.to_string(), "s = '''\ntext\n'''\nb = 2\n");
+    assert_eq!(doc["s"].as_str(), Some("text\n"));
 }
 
 // https://github.com/toml-rs/toml/issues/1213
