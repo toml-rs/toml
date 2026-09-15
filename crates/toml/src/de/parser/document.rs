@@ -118,8 +118,6 @@ fn on_table<'i>(
     let mut current_path = None;
     let mut current_key = None;
     let mut current_span = open_event.span();
-    let mut current_prefix = None;
-    let mut current_suffix = None;
 
     while let Some(event) = input.next_token() {
         match event.kind() {
@@ -148,19 +146,11 @@ fn on_table<'i>(
                 break;
             }
             EventKind::SimpleKey => {
-                current_prefix.get_or_insert_with(|| event.span().before());
                 let (path, key) = on_key(event, input, source, errors);
                 current_path = Some(path);
                 current_key = key;
-                current_suffix.get_or_insert_with(|| event.span().after());
             }
-            EventKind::Whitespace => {
-                if current_key.is_some() {
-                    current_suffix = Some(event.span());
-                } else {
-                    current_prefix = Some(event.span());
-                }
-            }
+            EventKind::Whitespace => {}
         }
     }
 

@@ -14,12 +14,12 @@ fn t(decoded: impl ToTomlValue, expected: impl IntoData) {
 
 #[test]
 fn zero() {
-    t(0.0f64, str!["0.0"]);
+    t(0.0_f64, str!["0.0"]);
 }
 
 #[test]
 fn neg_zero() {
-    t(-0.0f64, str!["-0.0"]);
+    t(-0.0_f64, str!["-0.0"]);
 }
 
 #[test]
