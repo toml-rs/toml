@@ -75,6 +75,17 @@ impl<'d> ValueSerializer<'d> {
         }
     }
 
+    /// Creates a new serializer that will emit TOML into the buffer provided,
+    /// using a default "pretty" style.
+    ///
+    /// The serializer can then be used to serialize a type after which the data
+    /// will be present in `dst`.
+    pub fn pretty(dst: &'d mut String) -> Self {
+        let mut ser = Self::new(dst);
+        ser.style.multiline_array = true;
+        ser
+    }
+
     pub(crate) fn with_style(dst: &'d mut String, style: Style) -> Self {
         Self { dst, style }
     }
