@@ -340,27 +340,25 @@ impl EventReceiver for ValidateWhitespace<'_, '_> {
         self.receiver.value_sep(span, error);
     }
     fn whitespace(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        #[cfg(feature = "unsafe")] // SAFETY: callers must use valid span
-        let raw = unsafe { self.source.get_unchecked(span) };
-        #[cfg(not(feature = "unsafe"))]
+        // `EventReceiver` is a safe trait and `ValidateWhitespace` is constructed
+        // through a safe public API, so `span` cannot be trusted to be valid even
+        // when the `unsafe` feature is enabled: always bounds-check it.
         let raw = self.source.get(span).expect("token spans are valid");
         raw.decode_whitespace(error);
 
         self.receiver.whitespace(span, error);
     }
     fn comment(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        #[cfg(feature = "unsafe")] // SAFETY: callers must use valid span
-        let raw = unsafe { self.source.get_unchecked(span) };
-        #[cfg(not(feature = "unsafe"))]
+        // See the comment in `whitespace` above: this must stay on the checked path
+        // regardless of the `unsafe` feature.
         let raw = self.source.get(span).expect("token spans are valid");
         raw.decode_comment(error);
 
         self.receiver.comment(span, error);
     }
     fn newline(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        #[cfg(feature = "unsafe")] // SAFETY: callers must use valid span
-        let raw = unsafe { self.source.get_unchecked(span) };
-        #[cfg(not(feature = "unsafe"))]
+        // See the comment in `whitespace` above: this must stay on the checked path
+        // regardless of the `unsafe` feature.
         let raw = self.source.get(span).expect("token spans are valid");
         raw.decode_newline(error);
 
@@ -539,5 +537,98 @@ impl EventKind {
             Self::Newline => "newline",
             Self::Error => "error",
         }
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::std_instead_of_core)] // `std::panic::catch_unwind` has no `core` equivalent
+mod test {
+    use super::*;
+    use crate::Source;
+
+    // Regression test for the soundness issue reported in toml-rs/toml#1175.
+    //
+    // `ValidateWhitespace` is a safe, public `EventReceiver` implementation. Its
+    // `whitespace`/`comment`/`newline` methods must never rely on the caller having
+    // passed a valid `Span`, even when the opt-in `unsafe` feature is enabled,
+    // because 100% safe code can construct an out-of-bounds `Span` (e.g. via the
+    // safe `Span::new_unchecked`) and hand it to these methods.
+    //
+    // Before the fix, with `--features unsafe`, this reaches
+    // `self.source.get_unchecked(span)` on an out-of-range span, which is immediate
+    // Undefined Behavior (confirmed under Miri: "pointer not dereferenceable").
+    // After the fix, the same call always goes through the checked path and turns
+    // into a controlled panic instead of memory unsafety.
+    #[test]
+    fn whitespace_rejects_out_of_bounds_span() {
+        let source = Source::new("abc");
+        let mut receiver = ();
+        let mut validator = ValidateWhitespace::new(&mut receiver, source);
+        let oob_span = Span::new_unchecked(0, 100);
+
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            validator.whitespace(oob_span, &mut ());
+        }));
+
+        assert!(
+            result.is_err(),
+            "out-of-bounds span must be rejected via a controlled panic, not silently \
+             accepted or turned into undefined behavior"
+        );
+    }
+
+    #[test]
+    fn comment_rejects_out_of_bounds_span() {
+        let source = Source::new("abc");
+        let mut receiver = ();
+        let mut validator = ValidateWhitespace::new(&mut receiver, source);
+        let oob_span = Span::new_unchecked(0, 100);
+
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            validator.comment(oob_span, &mut ());
+        }));
+
+        assert!(
+            result.is_err(),
+            "out-of-bounds span must be rejected via a controlled panic, not silently \
+             accepted or turned into undefined behavior"
+        );
+    }
+
+    #[test]
+    fn newline_rejects_out_of_bounds_span() {
+        let source = Source::new("abc");
+        let mut receiver = ();
+        let mut validator = ValidateWhitespace::new(&mut receiver, source);
+        let oob_span = Span::new_unchecked(0, 100);
+
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            validator.newline(oob_span, &mut ());
+        }));
+
+        assert!(
+            result.is_err(),
+            "out-of-bounds span must be rejected via a controlled panic, not silently \
+             accepted or turned into undefined behavior"
+        );
+    }
+
+    // Sanity check: a span that legitimately spans the whole (short) source must
+    // still be accepted and not treated as out-of-bounds.
+    #[test]
+    fn whitespace_accepts_in_bounds_span() {
+        let source = Source::new("   ");
+        let mut receiver = ();
+        let mut validator = ValidateWhitespace::new(&mut receiver, source);
+        let in_bounds_span = Span::new_unchecked(0, 3);
+
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            validator.whitespace(in_bounds_span, &mut ());
+        }));
+
+        assert!(
+            result.is_ok(),
+            "a span within bounds of the source must be accepted"
+        );
     }
 }
