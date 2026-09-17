@@ -76,8 +76,15 @@ pub(crate) fn on_scalar(
     let kind = raw.decode_scalar(&mut decoded, errors);
     match kind {
         toml_parser::decoder::ScalarKind::String => {
+            // Multi-line string newlines are normalized to LF, so re-encode a
+            // CRLF raw string to keep the repr consistent with the value
+            let value_raw = if raw.as_str().contains("\r\n") {
+                Repr::new_unchecked(raw.as_str().replace("\r\n", "\n"))
+            } else {
+                Repr::new_unchecked(value_raw)
+            };
             let mut f = Formatted::new(decoded.into());
-            f.set_repr_unchecked(Repr::new_unchecked(value_raw));
+            f.set_repr_unchecked(value_raw);
             Value::String(f)
         }
         toml_parser::decoder::ScalarKind::Boolean(value) => {

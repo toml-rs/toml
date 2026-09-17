@@ -168,14 +168,30 @@ pub(crate) fn decode_ml_literal_string<'i>(
         }
     }
 
-    if !output.push_str(s) {
+    // TOML permits parsers to normalize newlines; normalize CRLF to LF so a
+    // multi-line string's content does not depend on the document's line
+    // endings
+    if s.contains("\r\n") {
+        for (i, part) in s.split("\r\n").enumerate() {
+            if 0 < i && !output.push_char('\n') {
+                error.report_error(
+                    ParseError::new(ALLOCATION_ERROR)
+                        .with_unexpected(Span::new_unchecked(0, raw.len())),
+                );
+            }
+            if !output.push_str(part) {
+                error.report_error(
+                    ParseError::new(ALLOCATION_ERROR)
+                        .with_unexpected(Span::new_unchecked(0, raw.len())),
+                );
+            }
+        }
+    } else if !output.push_str(s) {
         error.report_error(
             ParseError::new(ALLOCATION_ERROR).with_unexpected(Span::new_unchecked(0, raw.len())),
         );
     }
 }
-
-/// Parse basic string
 ///
 /// ```abnf
 /// ;; Basic String
@@ -515,15 +531,17 @@ pub(crate) fn decode_ml_basic_string<'i>(
             };
             #[cfg(feature = "unsafe")]
             // SAFETY: Newlines ensure `offset` is along UTF-8 boundary
-            let newline = unsafe { s.next_slice_unchecked(offset) };
+            unsafe {
+                s.next_slice_unchecked(offset);
+            }
             #[cfg(not(feature = "unsafe"))]
-            let newline = s.next_slice(offset);
-            if !output.push_str(newline) {
-                let start = newline.offset_from(&raw.as_str());
-                let end = start + newline.len();
+            s.next_slice(offset);
+            // TOML permits parsers to normalize newlines; normalize CRLF to LF
+            if !output.push_str("\n") {
+                let start = s.offset_from(&raw.as_str());
                 error.report_error(
                     ParseError::new(ALLOCATION_ERROR)
-                        .with_unexpected(Span::new_unchecked(start, end)),
+                        .with_unexpected(Span::new_unchecked(start, start)),
                 );
             }
         } else {
@@ -849,6 +867,18 @@ mod test {
                 .raw(),
             ),
             (
+                "'''\r\ntext\r\n'''",
+                str![[r#"text
+
+"#]]
+                .raw(),
+                str![[r#"
+[]
+
+"#]]
+                .raw(),
+            ),
+            (
                 r#"'''
 The first newline is
 trimmed in raw strings.
@@ -1025,6 +1055,19 @@ Location	SF. 𠜎
                 r#""""
 Roses are red
 Violets are blue""""#,
+                str![[r#"
+Roses are red
+Violets are blue
+"#]]
+                .raw(),
+                str![[r#"
+[]
+
+"#]]
+                .raw(),
+            ),
+            (
+                "\"\"\"\r\nRoses are red\r\nViolets are blue\"\"\"",
                 str![[r#"
 Roses are red
 Violets are blue
