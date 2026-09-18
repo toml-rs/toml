@@ -1,6 +1,6 @@
 # toml_edit
 
-[![Documentation](https://img.shields.io/badge/docs-master-blue.svg)](https://docs.rs/toml_edit)
+[![Documentation](https://img.shields.io/badge/docs-main-blue.svg)](https://docs.rs/toml_edit)
 ![License](https://img.shields.io/crates/l/toml_edit.svg)
 [![Crates Status](https://img.shields.io/crates/v/toml_edit.svg)](https://crates.io/crates/toml_edit)
 
