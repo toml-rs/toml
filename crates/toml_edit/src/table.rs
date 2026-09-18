@@ -4,7 +4,6 @@ use indexmap::map::IndexMap;
 
 use crate::key::Key;
 use crate::repr::Decor;
-use crate::value::DEFAULT_VALUE_DECOR;
 use crate::{InlineTable, Item, KeyMut, Value};
 
 /// A TOML table, a top-level collection of key/[`Value`] pairs under a header and logical
@@ -65,74 +64,11 @@ impl Table {
     ///
     /// For example, this will return dotted keys
     pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
-        let mut values = Vec::new();
-        let mut root = Vec::new();
-        self.append_values(&mut root, &mut values);
-        values
+        self.iter_values().into_vec()
     }
 
-    /// Helper for `get_values()`.
-    ///
-    /// `path` is the parent for this table. path is mutable to reuse allocations but no mutations
-    /// should be observable.
-    fn append_values<'s>(
-        &'s self,
-        path: &mut Vec<&'s Key>,
-        values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
-    ) {
-        for (key, value) in self.items.iter() {
-            path.push(key);
-            match value {
-                Item::Table(table) if table.is_dotted() => {
-                    table.append_values(path, values);
-                }
-                Item::Value(value) => {
-                    if let Some(table) = value.as_inline_table() {
-                        if table.is_dotted() {
-                            table.append_values(path, values);
-                        } else {
-                            values.push((path.clone(), value));
-                        }
-                    } else {
-                        values.push((path.clone(), value));
-                    }
-                }
-                _ => {}
-            }
-            path.pop();
-        }
-    }
-
-    /// Helper for `get_values()`.
-    ///
-    /// `path` is the parent for this table. path is mutable to reuse allocations but no mutations
-    /// should be observable.
-    pub(crate) fn append_all_values<'s>(
-        &'s self,
-        path: &mut Vec<&'s Key>,
-        values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
-    ) {
-        for (key, value) in self.items.iter() {
-            path.push(key);
-            match value {
-                Item::Table(table) => {
-                    table.append_all_values(path, values);
-                }
-                Item::Value(value) => {
-                    if let Some(table) = value.as_inline_table() {
-                        if table.is_dotted() {
-                            table.append_values(path, values);
-                        } else {
-                            values.push((path.clone(), value));
-                        }
-                    } else {
-                        values.push((path.clone(), value));
-                    }
-                }
-                _ => {}
-            }
-            path.pop();
-        }
+    pub(crate) fn iter_values(&self) -> ValueEntries<'_> {
+        ValueEntries::new(&self.items, false)
     }
 
     /// Auto formats the table.
@@ -485,19 +421,7 @@ impl Table {
 #[cfg(feature = "display")]
 impl std::fmt::Display for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let children = self.get_values();
-        // print table body
-        for (key_path, value) in children {
-            let leaf_decor = key_path
-                .last()
-                .expect("always at least one key")
-                .leaf_decor();
-            crate::encode::encode_key_path(&key_path, f, None, DEFAULT_KEY_DECOR, leaf_decor)?;
-            write!(f, "=")?;
-            crate::encode::encode_value(value, f, None, DEFAULT_VALUE_DECOR)?;
-            writeln!(f)?;
-        }
-        Ok(())
+        crate::encode::encode_table_body(self, f, None)
     }
 }
 
@@ -541,6 +465,103 @@ impl<'s> IntoIterator for &'s Table {
 }
 
 pub(crate) type KeyValuePairs = IndexMap<Key, Item>;
+
+/// Visual key/value traversal. Only nested key paths require stack storage.
+///
+/// Entries borrow their key-path prefix from the cursor, so the path must be
+/// consumed before advancing with either `next()` or `peek()`.
+pub(crate) struct ValueEntries<'a> {
+    current: ValueEntriesFrame<'a>,
+    parents: Vec<ValueEntriesParent<'a>>,
+    // When cached, the traversal is already positioned at this value's path.
+    peeked: Option<(&'a Key, &'a Value)>,
+}
+
+struct ValueEntriesFrame<'a> {
+    items: indexmap::map::Iter<'a, Key, Item>,
+    // Dotted tables are always flattened; inline-table bodies also flatten
+    // ordinary table descendants.
+    flatten_all_tables: bool,
+}
+
+struct ValueEntriesParent<'a> {
+    frame: ValueEntriesFrame<'a>,
+    key: &'a Key,
+}
+
+impl<'a> ValueEntries<'a> {
+    pub(crate) fn new(items: &'a KeyValuePairs, flatten_all_tables: bool) -> Self {
+        Self {
+            current: ValueEntriesFrame {
+                items: items.iter(),
+                flatten_all_tables,
+            },
+            parents: Vec::new(),
+            peeked: None,
+        }
+    }
+
+    pub(crate) fn next(
+        &mut self,
+    ) -> Option<(
+        impl ExactSizeIterator<Item = &'a Key> + '_,
+        &'a Key,
+        &'a Value,
+    )> {
+        let (key, value) = self.peeked.take().or_else(|| self.advance())?;
+        let prefix = self.parents.iter().map(|parent| parent.key);
+        Some((prefix, key, value))
+    }
+
+    #[cfg(feature = "display")]
+    pub(crate) fn peek(&mut self) -> Option<(&'a Key, &'a Value)> {
+        if self.peeked.is_none() {
+            self.peeked = self.advance();
+        }
+        self.peeked
+    }
+
+    pub(crate) fn into_vec(mut self) -> Vec<(Vec<&'a Key>, &'a Value)> {
+        let mut values = Vec::new();
+        while let Some((prefix, key, value)) = self.next() {
+            let path = prefix.chain(std::iter::once(key)).collect();
+            values.push((path, value));
+        }
+        values
+    }
+
+    fn advance(&mut self) -> Option<(&'a Key, &'a Value)> {
+        loop {
+            let Some((key, item)) = self.current.items.next() else {
+                self.current = self.parents.pop()?.frame;
+                continue;
+            };
+
+            match item {
+                Item::Table(table) if self.current.flatten_all_tables || table.is_dotted() => {
+                    self.descend(key, &table.items, self.current.flatten_all_tables);
+                }
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    self.descend(key, &table.items, true);
+                }
+                Item::Value(value) => return Some((key, value)),
+                _ => {}
+            }
+        }
+    }
+
+    fn descend(&mut self, key: &'a Key, items: &'a KeyValuePairs, flatten_all_tables: bool) {
+        let child = ValueEntriesFrame {
+            items: items.iter(),
+            flatten_all_tables,
+        };
+        // The saved iterator has consumed this child and will resume at its sibling.
+        self.parents.push(ValueEntriesParent {
+            frame: std::mem::replace(&mut self.current, child),
+            key,
+        });
+    }
+}
 
 fn decorate_table(table: &mut Table) {
     use indexmap::map::MutableKeys;
@@ -821,5 +842,214 @@ impl<'a> VacantEntry<'a> {
     pub fn insert(self, value: Item) -> &'a mut Item {
         let entry = self.entry;
         entry.insert(value)
+    }
+}
+
+#[cfg(all(test, feature = "display"))]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    type VisualValues<'a> = Vec<(Vec<&'a Key>, &'a Value)>;
+    type EntryIdentity = (Vec<*const Key>, *const Value);
+
+    fn pairs(items: Vec<Item>) -> KeyValuePairs {
+        items
+            .into_iter()
+            .enumerate()
+            .map(|(i, item)| (Key::new(format!("key_{i}")), item))
+            .collect()
+    }
+
+    fn arbitrary_item() -> BoxedStrategy<Item> {
+        let array = crate::Array::from_iter([1, 2]);
+        let mut tables = crate::ArrayOfTables::new();
+        tables.push(Table::with_pairs(pairs(vec![crate::value(3)])));
+        let leaf = prop_oneof![
+            Just(Item::None),
+            any::<i64>().prop_map(|value| Item::Value(value.into())),
+            any::<bool>().prop_map(|value| Item::Value(value.into())),
+            Just(Item::Value(crate::Array::new().into())),
+            Just(Item::ArrayOfTables(crate::ArrayOfTables::new())),
+            Just(Item::Value(array.into())),
+            Just(Item::ArrayOfTables(tables)),
+        ];
+        leaf.prop_recursive(8, 128, 4, |inner| {
+            (
+                prop::collection::vec(inner, 0..5),
+                any::<bool>(),
+                any::<bool>(),
+                any::<bool>(),
+            )
+                .prop_map(|(items, inline, dotted, implicit)| {
+                    if inline {
+                        let mut table = InlineTable::with_pairs(pairs(items));
+                        table.set_dotted(dotted);
+                        table.set_implicit(implicit);
+                        Item::Value(table.into())
+                    } else {
+                        let mut table = Table::with_pairs(pairs(items));
+                        table.set_dotted(dotted);
+                        table.set_implicit(implicit);
+                        Item::Table(table)
+                    }
+                })
+        })
+        .boxed()
+    }
+
+    fn identities(values: &VisualValues<'_>) -> Vec<EntryIdentity> {
+        values
+            .iter()
+            .map(|(path, value)| {
+                (
+                    path.iter().map(|key| std::ptr::from_ref(*key)).collect(),
+                    std::ptr::from_ref(*value),
+                )
+            })
+            .collect()
+    }
+
+    fn check_cursor(
+        mut cursor: ValueEntries<'_>,
+        expected: &VisualValues<'_>,
+        peek_counts: &[u8],
+    ) -> Result<(), TestCaseError> {
+        let mut actual = Vec::new();
+        for i in 0..=expected.len() {
+            let expected_entry = expected.get(i).map(|(path, value)| {
+                (
+                    std::ptr::from_ref(*path.last().unwrap()),
+                    std::ptr::from_ref(*value),
+                )
+            });
+            for _ in 0..peek_counts[i % peek_counts.len()] {
+                let peeked = cursor
+                    .peek()
+                    .map(|(key, value)| (std::ptr::from_ref(key), std::ptr::from_ref(value)));
+                prop_assert_eq!(peeked, expected_entry);
+            }
+            let entry = cursor
+                .next()
+                .map(|(prefix, key, value)| (prefix.chain(std::iter::once(key)).collect(), value));
+            prop_assert_eq!(entry.is_some(), expected_entry.is_some());
+            if let Some(entry) = entry {
+                actual.push(entry);
+            }
+        }
+        prop_assert_eq!(identities(&actual), identities(expected));
+        prop_assert!(cursor.peek().is_none());
+        prop_assert!(cursor.peek().is_none());
+        prop_assert!(cursor.next().is_none());
+        Ok(())
+    }
+
+    // Preserve the previous recursive traversal as an independent reference.
+    fn reference_table<'a>(
+        table: &'a Table,
+        path: &mut Vec<&'a Key>,
+        values: &mut VisualValues<'a>,
+    ) {
+        for (key, item) in &table.items {
+            path.push(key);
+            match item {
+                Item::Table(table) if table.is_dotted() => {
+                    reference_table(table, path, values);
+                }
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    reference_inline(table, path, values);
+                }
+                Item::Value(value) => values.push((path.clone(), value)),
+                _ => {}
+            }
+            path.pop();
+        }
+    }
+
+    fn reference_inline<'a>(
+        table: &'a InlineTable,
+        path: &mut Vec<&'a Key>,
+        values: &mut VisualValues<'a>,
+    ) {
+        for (key, item) in &table.items {
+            path.push(key);
+            match item {
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    reference_inline(table, path, values);
+                }
+                Item::Value(value) => values.push((path.clone(), value)),
+                Item::Table(table) => reference_all_values(table, path, values),
+                _ => {}
+            }
+            path.pop();
+        }
+    }
+
+    fn reference_all_values<'a>(
+        table: &'a Table,
+        path: &mut Vec<&'a Key>,
+        values: &mut VisualValues<'a>,
+    ) {
+        for (key, item) in &table.items {
+            path.push(key);
+            match item {
+                Item::Table(table) => reference_all_values(table, path, values),
+                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
+                    reference_inline(table, path, values);
+                }
+                Item::Value(value) => values.push((path.clone(), value)),
+                _ => {}
+            }
+            path.pop();
+        }
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig {
+            cases: 512,
+            ..ProptestConfig::default()
+        })]
+
+        #[test]
+        fn visual_values_match_reference(
+            items in prop::collection::vec(arbitrary_item(), 0..5),
+            peek_counts in prop::collection::vec(0u8..4, 1..8),
+        ) {
+            let items = pairs(items);
+            let table = Table::with_pairs(items.clone());
+            let inline = InlineTable::with_pairs(items);
+
+            let mut expected = Vec::new();
+            reference_table(&table, &mut Vec::new(), &mut expected);
+            prop_assert_eq!(identities(&table.get_values()), identities(&expected));
+            check_cursor(table.iter_values(), &expected, &peek_counts)?;
+
+            let mut expected = Vec::new();
+            reference_inline(&inline, &mut Vec::new(), &mut expected);
+            prop_assert_eq!(identities(&inline.get_values()), identities(&expected));
+            check_cursor(inline.iter_values(), &expected, &peek_counts)?;
+        }
+    }
+
+    #[test]
+    fn visual_values_restore_deep_mixed_paths() {
+        let mut item = crate::value(42);
+        for depth in 0..12 {
+            let items = pairs(vec![Item::None, item, crate::value(depth), Item::None]);
+            item = if depth % 2 == 0 {
+                Item::Table(Table::with_pairs(items))
+            } else {
+                let mut table = InlineTable::with_pairs(items);
+                table.set_dotted(true);
+                Item::Value(table.into())
+            };
+        }
+        let hidden = Table::with_pairs(pairs(vec![crate::value(99)]));
+        let table = Table::with_pairs(pairs(vec![item, Item::Table(hidden), crate::value(0)]));
+        let mut expected = Vec::new();
+        reference_table(&table, &mut Vec::new(), &mut expected);
+        assert_eq!(expected.len(), 14);
+        assert_eq!(identities(&table.get_values()), identities(&expected));
+        check_cursor(table.iter_values(), &expected, &[0, 1, 2, 3]).unwrap();
     }
 }

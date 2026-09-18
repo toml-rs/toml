@@ -11,6 +11,7 @@ use crate::key::Key;
 use crate::repr::{Decor, Formatted, Repr, ValueRepr};
 use crate::table::{
     DEFAULT_KEY_DECOR, DEFAULT_KEY_PATH_DECOR, DEFAULT_ROOT_DECOR, DEFAULT_TABLE_DECOR,
+    ValueEntries,
 };
 use crate::value::{
     DEFAULT_LEADING_VALUE_DECOR, DEFAULT_TRAILING_VALUE_DECOR, DEFAULT_VALUE_DECOR,
@@ -32,18 +33,38 @@ pub(crate) fn encode_key(this: &Key, buf: &mut dyn Write, input: Option<&str>) -
     Ok(())
 }
 
-pub(crate) fn encode_key_path(
+fn encode_key_path(
     this: &[&Key],
+    buf: &mut dyn Write,
+    input: Option<&str>,
+    default_decor: (&str, &str),
+    leaf_decor: &Decor,
+) -> Result {
+    let (leaf, prefix) = this.split_last().expect("always at least one key");
+    encode_key_path_parts(
+        prefix.iter().copied(),
+        leaf,
+        buf,
+        input,
+        default_decor,
+        leaf_decor,
+    )
+}
+
+fn encode_key_path_parts<'k>(
+    prefix: impl ExactSizeIterator<Item = &'k Key>,
+    leaf: &'k Key,
     mut buf: &mut dyn Write,
     input: Option<&str>,
     default_decor: (&str, &str),
     leaf_decor: &Decor,
 ) -> Result {
-    for (i, key) in this.iter().enumerate() {
+    let leaf_index = prefix.len();
+    for (i, key) in prefix.chain(std::iter::once(leaf)).enumerate() {
         let dotted_decor = key.dotted_decor();
 
         let first = i == 0;
-        let last = i + 1 == this.len();
+        let last = i == leaf_index;
 
         if first {
             leaf_decor.prefix_encode(buf, input, default_decor.0)?;
@@ -128,23 +149,30 @@ pub(crate) fn encode_table(
     decor.prefix_encode(buf, input, default_decor.0)?;
     buf.open_inline_table()?;
 
-    let children = this.get_values();
-    let len = children.len();
-    for (i, (key_path, value)) in children.into_iter().enumerate() {
-        if i != 0 {
+    let mut children = this.iter_values();
+    let mut first = true;
+    loop {
+        let Some((prefix, key, value)) = children.next() else {
+            break;
+        };
+        if !first {
             buf.val_sep()?;
         }
-        let inner_decor = if i == len - 1 {
+        first = false;
+        encode_key_path_parts(
+            prefix,
+            key,
+            buf,
+            input,
+            DEFAULT_INLINE_KEY_DECOR,
+            key.leaf_decor(),
+        )?;
+        buf.keyval_sep()?;
+        let inner_decor = if children.peek().is_none() {
             DEFAULT_TRAILING_VALUE_DECOR
         } else {
             DEFAULT_VALUE_DECOR
         };
-        let leaf_decor = key_path
-            .last()
-            .expect("always at least one key")
-            .leaf_decor();
-        encode_key_path(&key_path, buf, input, DEFAULT_INLINE_KEY_DECOR, leaf_decor)?;
-        buf.keyval_sep()?;
         encode_value(value, buf, input, inner_decor)?;
     }
     if this.trailing_comma() && !this.is_empty() {
@@ -272,7 +300,8 @@ fn visit_table(
     is_array_of_tables: bool,
     first_table: &mut bool,
 ) -> Result {
-    let children = table.get_values();
+    let mut children = table.iter_values();
+    let has_values = children.peek().is_some();
     // We are intentionally hiding implicit tables without any tables nested under them (ie
     // `table.is_empty()` which is in contrast to `table.get_values().is_empty()`).  We are
     // trusting the user that an empty implicit table is not semantically meaningful
@@ -282,11 +311,11 @@ fn visit_table(
     //
     // However, this means that users need to take care in deciding what tables get marked as
     // implicit.
-    let is_visible_std_table = !(table.implicit && children.is_empty());
+    let is_visible_std_table = !(table.implicit && !has_values);
 
     if path.is_empty() {
         // don't print header for the root node
-        if !children.is_empty() {
+        if has_values {
             *first_table = false;
         }
     } else if is_array_of_tables {
@@ -324,13 +353,20 @@ fn visit_table(
         table.decor.suffix_encode(buf, input, default_decor.1)?;
         writeln!(buf)?;
     }
-    // print table body
-    for (key_path, value) in children {
-        let leaf_decor = key_path
-            .last()
-            .expect("always at least one key")
-            .leaf_decor();
-        encode_key_path(&key_path, buf, input, DEFAULT_KEY_DECOR, leaf_decor)?;
+    encode_table_values(&mut children, buf, input)
+}
+
+pub(crate) fn encode_table_body(table: &Table, buf: &mut dyn Write, input: Option<&str>) -> Result {
+    encode_table_values(&mut table.iter_values(), buf, input)
+}
+
+fn encode_table_values(
+    children: &mut ValueEntries<'_>,
+    mut buf: &mut dyn Write,
+    input: Option<&str>,
+) -> Result {
+    while let Some((prefix, key, value)) = children.next() {
+        encode_key_path_parts(prefix, key, buf, input, DEFAULT_KEY_DECOR, key.leaf_decor())?;
         buf.keyval_sep()?;
         encode_value(value, buf, input, DEFAULT_VALUE_DECOR)?;
         writeln!(buf)?;
