@@ -102,8 +102,17 @@ impl<'de> de::Deserialize<'de> for Table {
             {
                 let mut values = Map::new();
 
-                while let Some((key, value)) = visitor.next_entry()? {
-                    values.insert(key, value);
+                while let Some(key) = visitor.next_key::<String>()? {
+                    match values.entry(key) {
+                        crate::map::Entry::Vacant(vacant) => {
+                            vacant.insert(visitor.next_value()?);
+                        }
+                        crate::map::Entry::Occupied(occupied) => {
+                            let key = occupied.key();
+                            let msg = format!("duplicate key: `{key}`");
+                            return Err(de::Error::custom(msg));
+                        }
+                    }
                 }
 
                 Ok(values)
