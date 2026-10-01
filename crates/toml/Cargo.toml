@@ -67,7 +67,7 @@ toml-test-harness = { version = "1.14.1", features = ["snapshot"] }
 toml-test-data = "2.14.1"
 snapbox = "1.1.0"
 walkdir = "2.5.0"
-itertools = "0.14.0"
+itertools = "0.15.0"
 serde-untagged = "0.1.9"
 
 [[test]]
