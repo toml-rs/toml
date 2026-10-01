@@ -7,6 +7,8 @@ static ALLOC: divan::AllocProfiler = divan::AllocProfiler::system();
 const NUM_ENTRIES: &[usize] = &[10, 100];
 
 mod toml_edit {
+    use std::fmt::Write as _;
+
     use crate::NUM_ENTRIES;
 
     #[divan::bench(args = NUM_ENTRIES)]
@@ -26,6 +28,30 @@ mod toml_edit {
             };
             document.insert(&key, ::toml_edit::Item::Value(value));
         }
+        bencher.bench(|| std::hint::black_box(&document).to_string());
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn dotted_dump(bencher: divan::Bencher, entries: usize) {
+        let mut input = String::new();
+        for i in 0..entries {
+            writeln!(&mut input, "parent.child.key_{i} = {i}").unwrap();
+        }
+        let document = input.parse::<::toml_edit::DocumentMut>().unwrap();
+        bencher.bench(|| std::hint::black_box(&document).to_string());
+    }
+
+    #[divan::bench(args = NUM_ENTRIES)]
+    fn inline_dump(bencher: divan::Bencher, entries: usize) {
+        let mut input = String::from("value = { ");
+        for i in 0..entries {
+            if i != 0 {
+                input.push_str(", ");
+            }
+            write!(&mut input, "parent.child.key_{i} = {i}").unwrap();
+        }
+        input.push_str(" }\n");
+        let document = input.parse::<::toml_edit::DocumentMut>().unwrap();
         bencher.bench(|| std::hint::black_box(&document).to_string());
     }
 }
