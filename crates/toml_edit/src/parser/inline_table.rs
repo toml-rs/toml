@@ -51,9 +51,10 @@ pub(crate) fn on_inline_table(
                 continue;
             }
             EventKind::SimpleKey => {
-                let mut path = Vec::new();
-                let (_, key) = on_key(event, input, source, errors, &mut path);
-                state.capture_key(event, path, key);
+                state.current_key = None;
+                state.arena.clear();
+                let (path_span, key) = on_key(event, input, source, errors, &mut state.arena);
+                state.capture_key(event, path_span, key);
             }
             EventKind::KeyValSep => {
                 state.finish_key(event);
@@ -94,7 +95,8 @@ pub(crate) fn on_inline_table(
 #[derive(Default)]
 struct State {
     current_prefix: Option<toml_parser::Span>,
-    current_key: Option<(Vec<Key>, Key)>,
+    arena: Vec<Key>,
+    current_key: Option<(toml_parser::Span, Key)>,
     seen_keyval_sep: bool,
     current_value: Option<Value>,
     trailing_start: Option<usize>,
@@ -128,7 +130,7 @@ impl State {
     fn capture_key(
         &mut self,
         event: &toml_parser::parser::Event,
-        path: Vec<Key>,
+        path_span: toml_parser::Span,
         key: Option<Key>,
     ) {
         #[cfg(feature = "debug")]
@@ -137,7 +139,7 @@ impl State {
         self.current_prefix
             .get_or_insert_with(|| event.span().before());
         if let Some(key) = key {
-            self.current_key = Some((path, key));
+            self.current_key = Some((path_span, key));
         }
     }
 
@@ -178,9 +180,10 @@ impl State {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("inline_table::finish_value");
         self.seen_keyval_sep = false;
-        if let (Some((path, key)), Some(mut value)) =
+        if let (Some((path_span, key)), Some(mut value)) =
             (self.current_key.take(), self.current_value.take())
         {
+            let path = &self.arena[path_span.start()..path_span.end()];
             let prefix = self
                 .current_prefix
                 .take()
@@ -189,7 +192,7 @@ impl State {
                 .current_suffix
                 .take()
                 .unwrap_or_else(|| event.span().before());
-            let Some(table) = descend_path(result, &path, true, errors) else {
+            let Some(table) = descend_path(result, path, true, errors) else {
                 return;
             };
 

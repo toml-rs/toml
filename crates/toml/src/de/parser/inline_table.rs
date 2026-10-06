@@ -53,9 +53,10 @@ pub(crate) fn on_inline_table<'i>(
                 continue;
             }
             EventKind::SimpleKey => {
-                let mut path = Vec::new();
-                let (_, key) = on_key(event, input, source, errors, &mut path);
-                state.capture_key(event, path, key);
+                state.current_key = None;
+                state.arena.clear();
+                let (path_span, key) = on_key(event, input, source, errors, &mut state.arena);
+                state.capture_key(event, path_span, key);
             }
             EventKind::KeyValSep => {
                 state.finish_key(event);
@@ -93,7 +94,8 @@ pub(crate) fn on_inline_table<'i>(
 
 #[derive(Default)]
 struct State<'i> {
-    current_key: Option<(Vec<Spanned<DeString<'i>>>, Spanned<DeString<'i>>)>,
+    arena: Vec<Spanned<DeString<'i>>>,
+    current_key: Option<(toml_parser::Span, Spanned<DeString<'i>>)>,
     seen_keyval_sep: bool,
     current_value: Option<Spanned<DeValue<'i>>>,
 }
@@ -104,13 +106,13 @@ impl<'i> State<'i> {
     fn capture_key(
         &mut self,
         _event: &toml_parser::parser::Event,
-        path: Vec<Spanned<DeString<'i>>>,
+        path_span: toml_parser::Span,
         key: Option<Spanned<DeString<'i>>>,
     ) {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("inline_table::capture_key");
         if let Some(key) = key {
-            self.current_key = Some((path, key));
+            self.current_key = Some((path_span, key));
         }
     }
 
@@ -135,10 +137,11 @@ impl<'i> State<'i> {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("inline_table::finish_value");
         self.seen_keyval_sep = false;
-        if let (Some((path, key)), Some(value)) =
+        if let (Some((path_span, key)), Some(value)) =
             (self.current_key.take(), self.current_value.take())
         {
-            let Some(table) = descend_path(result, &path, true, errors) else {
+            let path = &self.arena[path_span.start()..path_span.end()];
+            let Some(table) = descend_path(result, path, true, errors) else {
                 return;
             };
 
