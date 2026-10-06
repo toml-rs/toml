@@ -286,6 +286,10 @@ fn literal_eats_crlf() {
 }
 
 #[test]
+#[expect(
+    clippy::float_cmp_const,
+    reason = "parsing should produce the exact float"
+)]
 fn floats() {
     macro_rules! t {
         ($actual:expr, $expected:expr) => {{
