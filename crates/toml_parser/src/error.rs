@@ -78,12 +78,12 @@ impl ParseError {
         self.unexpected
     }
 
-    pub(crate) fn rebase_spans(mut self, offset: usize) -> Self {
+    pub(crate) fn rebase_spans(mut self, offset: u32) -> Self {
         if let Some(context) = self.context.as_mut() {
-            *context += offset;
+            *context = context.rebase(offset);
         }
         if let Some(unexpected) = self.unexpected.as_mut() {
-            *unexpected += offset;
+            *unexpected = unexpected.rebase(offset);
         }
         self
     }
@@ -99,4 +99,19 @@ type ErrorStr = &'static str;
 pub enum Expected {
     Literal(&'static str),
     Description(&'static str),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ParseError, Span};
+
+    #[test]
+    fn rebase_error_spans() {
+        let error = ParseError::new("error")
+            .with_context(Span::new_unchecked(1, 5))
+            .with_unexpected(Span::new_unchecked(2, 3))
+            .rebase_spans(10);
+        assert_eq!(error.context(), Some(Span::new_unchecked(11, 15)));
+        assert_eq!(error.unexpected(), Some(Span::new_unchecked(12, 13)));
+    }
 }

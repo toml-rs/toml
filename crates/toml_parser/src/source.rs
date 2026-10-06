@@ -16,6 +16,10 @@ impl<'i> Source<'i> {
     }
 
     /// Start lexing the TOML encoded data
+    ///
+    /// # Panics
+    ///
+    /// Panics if the input is longer than [`u32::MAX`] bytes.
     pub fn lex(&self) -> Lexer<'i> {
         Lexer::new(self.input)
     }
@@ -196,15 +200,42 @@ impl<'i> Raw<'i> {
 }
 
 /// Location within the [`Source`]
+///
+/// Span offsets are limited to [`u32::MAX`] bytes.
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
-    start: usize,
-    end: usize,
+    start: u32,
+    end: u32,
 }
 
 impl Span {
+    /// Create a span without checking whether its offsets are ordered or in bounds.
+    ///
+    /// # Panics
+    ///
+    /// Panics if either offset exceeds [`u32::MAX`].
     pub fn new_unchecked(start: usize, end: usize) -> Self {
-        Self { start, end }
+        Self {
+            start: u32::try_from(start).expect("span start exceeds u32::MAX"),
+            end: u32::try_from(end).expect("span end exceeds u32::MAX"),
+        }
+    }
+
+    /// Construct offsets known to be within a source whose length was checked.
+    pub(crate) fn from_bounded_offsets(start: usize, end: usize) -> Self {
+        debug_assert!(u32::try_from(start).is_ok());
+        debug_assert!(u32::try_from(end).is_ok());
+        Self {
+            start: start as u32,
+            end: end as u32,
+        }
+    }
+
+    pub(crate) fn rebase(self, offset: u32) -> Self {
+        Self {
+            start: self.start + offset,
+            end: self.end + offset,
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -212,29 +243,38 @@ impl Span {
     }
 
     pub fn len(&self) -> usize {
-        self.end - self.start
+        self.end() - self.start()
     }
 
     pub fn start(&self) -> usize {
-        self.start
+        self.start as usize
     }
 
     pub fn end(&self) -> usize {
-        self.end
+        self.end as usize
     }
 
     pub fn before(&self) -> Self {
-        Self::new_unchecked(self.start, self.start)
+        Self {
+            start: self.start,
+            end: self.start,
+        }
     }
 
     pub fn after(&self) -> Self {
-        Self::new_unchecked(self.end, self.end)
+        Self {
+            start: self.end,
+            end: self.end,
+        }
     }
 
     /// Extend this `Raw` to the end of `after`
     #[must_use]
     pub fn append(&self, after: Self) -> Self {
-        Self::new_unchecked(self.start, after.end)
+        Self {
+            start: self.start,
+            end: after.end,
+        }
     }
 }
 
@@ -248,10 +288,7 @@ impl core::ops::Add<usize> for Span {
     type Output = Self;
 
     fn add(self, offset: usize) -> Self::Output {
-        Self::Output {
-            start: self.start + offset,
-            end: self.end + offset,
-        }
+        Self::new_unchecked(self.start() + offset, self.end() + offset)
     }
 }
 
@@ -259,17 +296,59 @@ impl core::ops::Add<Span> for usize {
     type Output = Span;
 
     fn add(self, span: Span) -> Self::Output {
-        Self::Output {
-            start: span.start + self,
-            end: span.end + self,
-        }
+        span + self
     }
 }
 
 impl core::ops::AddAssign<usize> for Span {
     fn add_assign(&mut self, rhs: usize) {
-        self.start += rhs;
-        self.end += rhs;
+        *self = *self + rhs;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Span;
+
+    #[test]
+    fn span_offsets_and_rebasing() {
+        let span = Span::new_unchecked(1, 3);
+        assert_eq!((span.start(), span.end(), span.len()), (1, 3, 2));
+        assert_eq!(span.before(), Span::new_unchecked(1, 1));
+        assert_eq!(span.after(), Span::new_unchecked(3, 3));
+        assert_eq!(
+            span.append(Span::new_unchecked(4, 6)),
+            Span::new_unchecked(1, 6)
+        );
+        assert_eq!(span + 2, Span::new_unchecked(3, 5));
+        assert_eq!(2 + span, Span::new_unchecked(3, 5));
+        let mut rebased = span;
+        rebased += 2;
+        assert_eq!(rebased, Span::new_unchecked(3, 5));
+
+        let max = u32::MAX as usize;
+        assert_eq!(Span::new_unchecked(max, max).end(), max);
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    #[test]
+    #[should_panic(expected = "span start exceeds u32::MAX")]
+    fn span_rejects_start_above_limit() {
+        Span::new_unchecked(u32::MAX as usize + 1, 0);
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    #[test]
+    #[should_panic(expected = "span end exceeds u32::MAX")]
+    fn span_rejects_end_above_limit() {
+        Span::new_unchecked(0, u32::MAX as usize + 1);
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    #[test]
+    #[should_panic(expected = "span end exceeds u32::MAX")]
+    fn rebase_rejects_offset_above_limit() {
+        let _ = Span::new_unchecked(0, u32::MAX as usize) + 1;
     }
 }
 

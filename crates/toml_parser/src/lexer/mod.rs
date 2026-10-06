@@ -31,6 +31,11 @@ pub struct Lexer<'i> {
 
 impl<'i> Lexer<'i> {
     pub(crate) fn new(input: &'i str) -> Self {
+        // Every offset produced by this lexer is bounded by the input length.
+        assert!(
+            u32::try_from(input.len()).is_ok(),
+            "source exceeds u32::MAX bytes"
+        );
         let mut stream = Stream::new(input);
         if input.as_bytes().starts_with(BOM) {
             let offset = BOM.len();
@@ -63,7 +68,7 @@ impl Iterator for Lexer<'_> {
             } else {
                 self.eof = true;
                 let start = self.stream.current_token_start();
-                let span = Span::new_unchecked(start, start);
+                let span = Span::from_bounded_offsets(start, start);
                 return Some(Token::new(TokenKind::Eof, span));
             }
         };
@@ -128,7 +133,7 @@ fn lex_ascii_char(stream: &mut Stream<'_>, kind: TokenKind) -> Token {
     stream.next_slice(offset);
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(kind, span)
 }
 
@@ -162,7 +167,7 @@ fn lex_whitespace(stream: &mut Stream<'_>) -> Token {
     stream.next_slice(offset);
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::Whitespace, span)
 }
 
@@ -204,7 +209,7 @@ fn lex_comment(stream: &mut Stream<'_>) -> Token {
     stream.next_slice(offset);
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::Comment, span)
 }
 
@@ -242,7 +247,7 @@ fn lex_crlf(stream: &mut Stream<'_>) -> Token {
     #[cfg(not(feature = "unsafe"))]
     stream.next_slice(offset);
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
 
     Token::new(TokenKind::Newline, span)
 }
@@ -293,7 +298,7 @@ fn lex_literal_string(stream: &mut Stream<'_>) -> Token {
     stream.next_slice(offset);
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::LiteralString, span)
 }
 
@@ -365,7 +370,7 @@ fn lex_ml_literal_string(stream: &mut Stream<'_>) -> Token {
     }
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::MlLiteralString, span)
 }
 
@@ -479,7 +484,7 @@ fn lex_basic_string(stream: &mut Stream<'_>) -> Token {
     }
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::BasicString, span)
 }
 
@@ -595,7 +600,7 @@ fn lex_ml_basic_string(stream: &mut Stream<'_>) -> Token {
     }
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::MlBasicString, span)
 }
 
@@ -629,6 +634,6 @@ fn lex_atom(stream: &mut Stream<'_>) -> Token {
     stream.next_slice(offset);
 
     let end = stream.previous_token_end();
-    let span = Span::new_unchecked(start, end);
+    let span = Span::from_bounded_offsets(start, end);
     Token::new(TokenKind::Atom, span)
 }
