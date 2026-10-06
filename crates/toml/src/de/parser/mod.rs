@@ -25,6 +25,8 @@ pub(crate) mod inline_table;
 pub(crate) mod key;
 pub(crate) mod value;
 
+const DEFAULT_TABLE_CAPACITY: usize = 7;
+
 pub(crate) fn parse_document<'i>(
     source: toml_parser::Source<'i>,
     errors: &mut dyn prelude::ErrorSink,

@@ -34,6 +34,11 @@ impl Table {
         Default::default()
     }
 
+    #[cfg(feature = "parse")]
+    pub(crate) fn with_capacity(capacity: usize) -> Self {
+        Self::with_pairs(KeyValuePairs::with_capacity(capacity))
+    }
+
     pub(crate) fn with_pos(doc_position: Option<isize>) -> Self {
         Self {
             doc_position,

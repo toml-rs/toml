@@ -31,6 +31,11 @@ impl InlineTable {
         Default::default()
     }
 
+    #[cfg(feature = "parse")]
+    pub(crate) fn with_capacity(capacity: usize) -> Self {
+        Self::with_pairs(KeyValuePairs::with_capacity(capacity))
+    }
+
     pub(crate) fn with_pairs(items: KeyValuePairs) -> Self {
         Self {
             items,

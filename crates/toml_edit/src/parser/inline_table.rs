@@ -21,7 +21,7 @@ pub(crate) fn on_inline_table(
 ) -> Value {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("inline_table::on_inline_table");
-    let mut result = InlineTable::new();
+    let mut result = InlineTable::with_capacity(super::DEFAULT_TABLE_CAPACITY);
     let mut close_span = open_event.span();
 
     let mut state = State::default();
@@ -279,7 +279,7 @@ fn descend_path<'a>(
         );
         table = match table.entry_format(key) {
             crate::InlineEntry::Vacant(entry) => {
-                let mut new_table = InlineTable::new();
+                let mut new_table = InlineTable::with_capacity(super::DEFAULT_TABLE_CAPACITY);
                 new_table.span = key.span();
                 new_table.set_implicit(true);
                 new_table.set_dotted(dotted);

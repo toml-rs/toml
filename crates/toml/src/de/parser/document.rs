@@ -26,7 +26,10 @@ pub(crate) fn document<'i>(
 ) -> Spanned<DeTable<'i>> {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::document");
-    let mut state = State::default();
+    let mut state = State {
+        current_table: DeTable::with_capacity(super::DEFAULT_TABLE_CAPACITY),
+        ..State::default()
+    };
     while let Some(event) = input.next_token() {
         match event.kind() {
             EventKind::InlineTableOpen
@@ -306,6 +309,7 @@ impl<'i> State<'i> {
     }
 
     fn start_table(&mut self, header: TableHeader<'i>, errors: &mut dyn ErrorSink) {
+        let mut current_table = None;
         if !header.is_array {
             // 1. Look up the table on start to ensure the duplicate_key error points to the right line
             // 2. Ensure any child tables from an implicit table are preserved
@@ -316,7 +320,7 @@ impl<'i> State<'i> {
                 if let Some((old_key, old_value)) = parent_table.remove_entry(key) {
                     match old_value.into_inner() {
                         DeValue::Table(t) if t.is_implicit() && !t.is_dotted() => {
-                            self.current_table = t;
+                            current_table = Some(t);
                         }
                         // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
                         old_value => {
@@ -345,7 +349,7 @@ impl<'i> State<'i> {
                             );
 
                             if let DeValue::Table(t) = old_value {
-                                self.current_table = t;
+                                current_table = Some(t);
                             }
                         }
                     }
@@ -353,6 +357,8 @@ impl<'i> State<'i> {
             }
         }
 
+        self.current_table =
+            current_table.unwrap_or_else(|| DeTable::with_capacity(super::DEFAULT_TABLE_CAPACITY));
         self.current_position += 1;
         self.current_table.set_implicit(false);
         self.current_table.set_dotted(false);
@@ -384,7 +390,7 @@ fn descend_path<'t, 'i>(
         );
         table = match table.entry(key.clone()) {
             Entry::Vacant(entry) => {
-                let mut new_table = DeTable::new();
+                let mut new_table = DeTable::with_capacity(super::DEFAULT_TABLE_CAPACITY);
                 new_table.set_implicit(true);
                 new_table.set_dotted(dotted);
 

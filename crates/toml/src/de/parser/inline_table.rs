@@ -23,7 +23,7 @@ pub(crate) fn on_inline_table<'i>(
 ) -> Spanned<DeValue<'i>> {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("inline_table::on_inline_table");
-    let mut result = DeTable::new();
+    let mut result = DeTable::with_capacity(super::DEFAULT_TABLE_CAPACITY);
     result.set_inline(true);
     let mut close_span = open_event.span();
 
@@ -210,7 +210,7 @@ fn descend_path<'a, 'i>(
         );
         table = match table.entry(key.clone()) {
             Entry::Vacant(entry) => {
-                let mut new_table = DeTable::new();
+                let mut new_table = DeTable::with_capacity(super::DEFAULT_TABLE_CAPACITY);
                 new_table.set_implicit(true);
                 new_table.set_dotted(dotted);
                 new_table.set_inline(true);
