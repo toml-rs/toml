@@ -19,8 +19,9 @@ impl std::fmt::Display for Data<'_> {
 
 pub const MANIFESTS: &[Data<'static>] = &[
     Data("0-new", NEW),
-    Data("1-medium", MEDIUM),
-    Data("2-features", FEATURES),
+    Data("1-cargo", CARGO),
+    Data("2-tests", TESTS),
+    Data("3-features", FEATURES),
 ];
 
 const NEW: &str = r#"
@@ -32,7 +33,8 @@ edition = "2018"
 [dependencies]
 "#;
 
-const MEDIUM: &str = include_str!("Cargo.cargo.toml");
+const CARGO: &str = include_str!("Cargo.cargo.toml");
+const TESTS: &str = include_str!("Cargo.tokio.toml");
 const FEATURES: &str = include_str!("Cargo.web-sys.toml");
 
 pub mod manifest {
@@ -46,6 +48,8 @@ pub mod manifest {
         lib: Option<Lib>,
         #[serde(default)]
         bin: Vec<Bin>,
+        #[serde(default)]
+        test: Vec<Test>,
         #[serde(default)]
         features: HashMap<String, Vec<String>>,
         #[serde(default)]
@@ -97,6 +101,14 @@ pub mod manifest {
         test: bool,
         #[serde(default)]
         doc: bool,
+    }
+
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[serde(rename_all = "kebab-case")]
+    pub(crate) struct Test {
+        name: String,
+        #[serde(default)]
+        path: Option<String>,
     }
 
     #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
