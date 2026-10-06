@@ -60,7 +60,8 @@ pub(crate) fn document<'s>(
             }
             EventKind::SimpleKey => {
                 let key_prefix = state.take_trailing();
-                let (path, key) = on_key(event, input, source, errors);
+                let mut path = Vec::new();
+                let (_, key) = on_key(event, input, source, errors, &mut path);
                 let Some(mut key) = key else {
                     break;
                 };
@@ -178,7 +179,8 @@ fn on_table(
             }
             EventKind::SimpleKey => {
                 current_prefix.get_or_insert_with(|| event.span().before());
-                let (path, key) = on_key(event, input, source, errors);
+                let mut path = Vec::new();
+                let (_, key) = on_key(event, input, source, errors, &mut path);
                 current_path = Some(path);
                 current_key = key;
                 current_suffix.get_or_insert_with(|| event.span().after());

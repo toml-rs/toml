@@ -55,7 +55,8 @@ pub(crate) fn document<'i>(
                 state.start_table(header, errors);
             }
             EventKind::SimpleKey => {
-                let (path, key) = on_key(event, input, source, errors);
+                let mut path = Vec::new();
+                let (_, key) = on_key(event, input, source, errors, &mut path);
                 let Some(key) = key else {
                     break;
                 };
@@ -146,7 +147,8 @@ fn on_table<'i>(
                 break;
             }
             EventKind::SimpleKey => {
-                let (path, key) = on_key(event, input, source, errors);
+                let mut path = Vec::new();
+                let (_, key) = on_key(event, input, source, errors, &mut path);
                 current_path = Some(path);
                 current_key = key;
             }

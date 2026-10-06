@@ -51,7 +51,8 @@ pub(crate) fn on_inline_table(
                 continue;
             }
             EventKind::SimpleKey => {
-                let (path, key) = on_key(event, input, source, errors);
+                let mut path = Vec::new();
+                let (_, key) = on_key(event, input, source, errors, &mut path);
                 state.capture_key(event, path, key);
             }
             EventKind::KeyValSep => {

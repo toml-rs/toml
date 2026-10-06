@@ -96,7 +96,9 @@ pub(crate) fn parse_key_path(
                 }
             }
             _ => {
-                let (local_path, local_key) = key::on_key(event, &mut input, source, errors);
+                let mut local_path = Vec::new();
+                let (_, local_key) =
+                    key::on_key(event, &mut input, source, errors, &mut local_path);
                 path = Some(local_path);
                 key = local_key;
             }

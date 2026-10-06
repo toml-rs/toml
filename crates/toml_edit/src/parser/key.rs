@@ -8,15 +8,18 @@ use crate::repr::Repr;
 /// key = simple-key / dotted-key
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 /// ```
+///
+/// Append the path and return its span and the final key.
 pub(crate) fn on_key(
     key_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
     source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
-) -> (Vec<Key>, Option<Key>) {
+    arena: &mut Vec<Key>,
+) -> (toml_parser::Span, Option<Key>) {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_key");
-    let mut result_path = Vec::new();
+    let result_path_start = arena.len();
     let mut result_key = None;
 
     let mut state = State::new(key_event);
@@ -55,21 +58,23 @@ pub(crate) fn on_key(
                     state.whitespace(event);
                 }
                 EventKind::KeySep => {
-                    state.close_key(&mut result_path, &mut result_key, source, errors);
+                    state.close_key(arena, &mut result_key, source, errors);
                 }
             }
         }
     }
 
-    state.close_key(&mut result_path, &mut result_key, source, errors);
+    state.close_key(arena, &mut result_key, source, errors);
+    let result_path_span = toml_parser::Span::new_unchecked(result_path_start, arena.len());
 
     #[cfg(not(feature = "unbounded"))]
-    if super::LIMIT <= result_path.len() as u32 {
+    if super::LIMIT <= result_path_span.len() as u32 {
         errors.report_error(ParseError::new("recursion limit"));
-        return (Vec::new(), None);
+        arena.truncate(result_path_start);
+        return (result_path_span.before(), None);
     }
 
-    (result_path, result_key)
+    (result_path_span, result_key)
 }
 
 fn more_key(input: &Input<'_>) -> bool {
@@ -109,7 +114,7 @@ impl State {
 
     fn close_key(
         &mut self,
-        result_path: &mut Vec<Key>,
+        arena: &mut Vec<Key>,
         result_key: &mut Option<Key>,
         source: toml_parser::Source<'_>,
         errors: &mut dyn ErrorSink,
@@ -140,7 +145,7 @@ impl State {
             .with_repr_unchecked(Repr::new_unchecked(key_raw))
             .with_dotted_decor(Decor::new(prefix, suffix));
         if let Some(last_key) = result_key.replace(key) {
-            result_path.push(last_key);
+            arena.push(last_key);
         }
     }
 }

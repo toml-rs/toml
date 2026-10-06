@@ -8,15 +8,18 @@ use crate::de::parser::prelude::*;
 /// key = simple-key / dotted-key
 /// dotted-key = simple-key 1*( dot-sep simple-key )
 /// ```
+///
+/// Append the path and return its span and the final key.
 pub(crate) fn on_key<'i>(
     key_event: &toml_parser::parser::Event,
     input: &mut Input<'_>,
     source: toml_parser::Source<'i>,
     errors: &mut dyn ErrorSink,
-) -> (Vec<Spanned<DeString<'i>>>, Option<Spanned<DeString<'i>>>) {
+    arena: &mut Vec<Spanned<DeString<'i>>>,
+) -> (toml_parser::Span, Option<Spanned<DeString<'i>>>) {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("key::on_key");
-    let mut result_path = Vec::new();
+    let result_path_start = arena.len();
     let mut result_key = None;
 
     let mut state = State::new(key_event);
@@ -55,21 +58,23 @@ pub(crate) fn on_key<'i>(
                     state.whitespace(event);
                 }
                 EventKind::KeySep => {
-                    state.close_key(&mut result_path, &mut result_key, source, errors);
+                    state.close_key(arena, &mut result_key, source, errors);
                 }
             }
         }
     }
 
-    state.close_key(&mut result_path, &mut result_key, source, errors);
+    state.close_key(arena, &mut result_key, source, errors);
+    let result_path_span = toml_parser::Span::new_unchecked(result_path_start, arena.len());
 
     #[cfg(not(feature = "unbounded"))]
-    if super::LIMIT <= result_path.len() as u32 {
+    if super::LIMIT <= result_path_span.len() as u32 {
         errors.report_error(ParseError::new("recursion limit"));
-        return (Vec::new(), None);
+        arena.truncate(result_path_start);
+        return (result_path_span.before(), None);
     }
 
-    (result_path, result_key)
+    (result_path_span, result_key)
 }
 
 fn more_key(input: &Input<'_>) -> bool {
@@ -99,7 +104,7 @@ impl State {
 
     fn close_key<'i>(
         &mut self,
-        result_path: &mut Vec<Spanned<DeString<'i>>>,
+        arena: &mut Vec<Spanned<DeString<'i>>>,
         result_key: &mut Option<Spanned<DeString<'i>>>,
         source: toml_parser::Source<'i>,
         errors: &mut dyn ErrorSink,
@@ -117,7 +122,7 @@ impl State {
 
         let key = Spanned::new(key_span, decoded);
         if let Some(last_key) = result_key.replace(key) {
-            result_path.push(last_key);
+            arena.push(last_key);
         }
     }
 }
