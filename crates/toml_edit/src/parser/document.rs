@@ -60,8 +60,8 @@ pub(crate) fn document<'s>(
             }
             EventKind::SimpleKey => {
                 let key_prefix = state.take_trailing();
-                let mut path = Vec::new();
-                let (_, key) = on_key(event, input, source, errors, &mut path);
+                state.arena.clear();
+                let (path_span, key) = on_key(event, input, source, errors, &mut state.arena);
                 let Some(mut key) = key else {
                     break;
                 };
@@ -109,7 +109,7 @@ pub(crate) fn document<'s>(
                 decor.set_prefix(value_prefix);
                 decor.set_suffix(value_suffix);
 
-                state.capture_key_value(path, key, value, errors);
+                state.capture_key_value(path_span, key, value, errors);
             }
             EventKind::Whitespace | EventKind::Comment | EventKind::Newline => {
                 state.capture_trailing(event);
@@ -264,6 +264,7 @@ fn ws_comment_newline(input: &mut Input<'_>) -> Option<toml_parser::Span> {
 struct State {
     root: Table,
     current_table: Table,
+    arena: Vec<Key>,
     current_trailing: Option<toml_parser::Span>,
     current_header: Option<TableHeader>,
     current_position: isize,
@@ -277,13 +278,14 @@ impl State {
 
     fn capture_key_value(
         &mut self,
-        path: Vec<Key>,
+        path_span: toml_parser::Span,
         key: Key,
         value: Value,
         errors: &mut dyn ErrorSink,
     ) {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("document::capture_key_value");
+        let path = &self.arena[path_span.start()..path_span.end()];
         #[cfg(feature = "debug")]
         trace(
             &format!(
@@ -304,8 +306,7 @@ impl State {
         );
 
         let dotted = !path.is_empty();
-        let Some(parent_table) = descend_path(&mut self.current_table, &path, dotted, errors)
-        else {
+        let Some(parent_table) = descend_path(&mut self.current_table, path, dotted, errors) else {
             return;
         };
         // "Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed"
