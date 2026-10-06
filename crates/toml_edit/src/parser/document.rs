@@ -50,7 +50,7 @@ pub(crate) fn document<'s>(
                 state.finish_table(errors);
 
                 let prefix = state.take_trailing();
-                let header = on_table(event, input, source, errors);
+                let header = on_table(event, input, source, errors, &mut state.header_arena);
                 let suffix = ws_comment_newline(input)
                     .map(|s| RawString::with_span(s.start()..s.end()))
                     .unwrap_or_default();
@@ -141,6 +141,7 @@ fn on_table(
     input: &mut Input<'_>,
     source: toml_parser::Source<'_>,
     errors: &mut dyn ErrorSink,
+    arena: &mut Vec<Key>,
 ) -> TableHeader {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::on_table");
@@ -179,9 +180,9 @@ fn on_table(
             }
             EventKind::SimpleKey => {
                 current_prefix.get_or_insert_with(|| event.span().before());
-                let mut path = Vec::new();
-                let (_, key) = on_key(event, input, source, errors, &mut path);
-                current_path = Some(path);
+                arena.clear();
+                let (path_span, key) = on_key(event, input, source, errors, arena);
+                current_path = Some(path_span);
                 current_key = key;
                 current_suffix.get_or_insert_with(|| event.span().after());
             }
@@ -209,7 +210,7 @@ fn on_table(
     }
 
     TableHeader {
-        path: current_path.unwrap_or_default(),
+        path_span: current_path.unwrap_or_default(),
         key: current_key,
         span: current_span,
         is_array,
@@ -217,7 +218,7 @@ fn on_table(
 }
 
 struct TableHeader {
-    path: Vec<Key>,
+    path_span: toml_parser::Span,
     key: Option<Key>,
     span: toml_parser::Span,
     is_array: bool,
@@ -265,6 +266,7 @@ struct State {
     root: Table,
     current_table: Table,
     arena: Vec<Key>,
+    header_arena: Vec<Key>,
     current_trailing: Option<toml_parser::Span>,
     current_header: Option<TableHeader>,
     current_position: isize,
@@ -354,7 +356,7 @@ impl State {
             };
             prev_table.span = Some(header.span.start()..header.span.end());
 
-            let parent_key = &header.path;
+            let parent_key = &self.header_arena[header.path_span.start()..header.path_span.end()];
             let dotted = false;
             let Some(parent_table) = descend_path(&mut self.root, parent_key, dotted, errors)
             else {
@@ -411,8 +413,9 @@ impl State {
             // 1. Look up the table on start to ensure the duplicate_key error points to the right line
             // 2. Ensure any child tables from an implicit table are preserved
             let root = &mut self.root;
+            let path = &self.header_arena[header.path_span.start()..header.path_span.end()];
             if let (Some(parent_table), Some(key)) =
-                (descend_path(root, &header.path, false, errors), &header.key)
+                (descend_path(root, path, false, errors), &header.key)
             {
                 if let Some((old_key, old_value)) = parent_table.remove_entry(key.get()) {
                     match old_value {

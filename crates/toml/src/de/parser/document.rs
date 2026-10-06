@@ -50,7 +50,7 @@ pub(crate) fn document<'i>(
             EventKind::StdTableOpen | EventKind::ArrayTableOpen => {
                 state.finish_table(errors);
 
-                let header = on_table(event, input, source, errors);
+                let header = on_table(event, input, source, errors, &mut state.header_arena);
 
                 state.start_table(header, errors);
             }
@@ -112,6 +112,7 @@ fn on_table<'i>(
     input: &mut Input<'_>,
     source: toml_parser::Source<'i>,
     errors: &mut dyn ErrorSink,
+    arena: &mut Vec<Spanned<DeString<'i>>>,
 ) -> TableHeader<'i> {
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::on_table");
@@ -147,9 +148,9 @@ fn on_table<'i>(
                 break;
             }
             EventKind::SimpleKey => {
-                let mut path = Vec::new();
-                let (_, key) = on_key(event, input, source, errors, &mut path);
-                current_path = Some(path);
+                arena.clear();
+                let (path_span, key) = on_key(event, input, source, errors, arena);
+                current_path = Some(path_span);
                 current_key = key;
             }
             EventKind::Whitespace => {}
@@ -157,7 +158,7 @@ fn on_table<'i>(
     }
 
     TableHeader {
-        path: current_path.unwrap_or_default(),
+        path_span: current_path.unwrap_or_default(),
         key: current_key,
         span: current_span,
         is_array,
@@ -165,7 +166,7 @@ fn on_table<'i>(
 }
 
 struct TableHeader<'i> {
-    path: Vec<Spanned<DeString<'i>>>,
+    path_span: toml_parser::Span,
     key: Option<Spanned<DeString<'i>>>,
     span: toml_parser::Span,
     is_array: bool,
@@ -176,6 +177,7 @@ struct State<'i> {
     root: DeTable<'i>,
     current_table: DeTable<'i>,
     arena: Vec<Spanned<DeString<'i>>>,
+    header_arena: Vec<Spanned<DeString<'i>>>,
     current_header: Option<TableHeader<'i>>,
     current_position: usize,
 }
@@ -261,7 +263,7 @@ impl<'i> State<'i> {
             let header_span = header.span.start()..header.span.end();
             let prev_table = Spanned::new(header_span.clone(), DeValue::Table(prev_table));
 
-            let parent_key = &header.path;
+            let parent_key = &self.header_arena[header.path_span.start()..header.path_span.end()];
             let dotted = false;
             let Some(parent_table) = descend_path(&mut self.root, parent_key, dotted, errors)
             else {
@@ -313,8 +315,9 @@ impl<'i> State<'i> {
             // 1. Look up the table on start to ensure the duplicate_key error points to the right line
             // 2. Ensure any child tables from an implicit table are preserved
             let root = &mut self.root;
+            let path = &self.header_arena[header.path_span.start()..header.path_span.end()];
             if let (Some(parent_table), Some(key)) =
-                (descend_path(root, &header.path, false, errors), &header.key)
+                (descend_path(root, path, false, errors), &header.key)
             {
                 if let Some((old_key, old_value)) = parent_table.remove_entry(key) {
                     match old_value.into_inner() {
