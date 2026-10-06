@@ -12,7 +12,7 @@ release = false
 default = []
 alloc-profiler = []
 simd = ["toml_parser/simd"]
-unsafe = ["toml_parser/unsafe"]
+unsafe = ["toml_parser/unsafe", "toml/unsafe", "toml_edit/unsafe"]
 preserve_order = ["serde_json/preserve_order", "toml_old/preserve_order", "toml/preserve_order"]
 fast_hash = ["toml/fast_hash"]
 

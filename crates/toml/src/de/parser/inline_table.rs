@@ -140,6 +140,11 @@ impl<'i> State<'i> {
         if let (Some((path_span, key)), Some(value)) =
             (self.current_key.take(), self.current_value.take())
         {
+            #[cfg(feature = "unsafe")]
+            // SAFETY: on_key produced this span for this arena, and a new key
+            // clears current_key before clearing the arena.
+            let path = unsafe { self.arena.get_unchecked(path_span.start()..path_span.end()) };
+            #[cfg(not(feature = "unsafe"))]
             let path = &self.arena[path_span.start()..path_span.end()];
             let Some(table) = descend_path(result, path, true, errors) else {
                 return;

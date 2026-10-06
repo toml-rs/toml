@@ -35,6 +35,7 @@ parse = ["dep:toml_parser", "dep:winnow"]
 display = ["dep:toml_writer"]
 fast_hash = ["preserve_order", "dep:foldhash"]
 debug = ["std", "toml_parser?/debug", "dep:anstream", "dep:anstyle"]
+unsafe = ["toml_parser?/unsafe"]
 
 # Provide a method disable_recursion_limit to parse arbitrarily deep structures
 # without any consideration for overflowing the stack. Additionally you will

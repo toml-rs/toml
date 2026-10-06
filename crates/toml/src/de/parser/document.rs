@@ -194,6 +194,11 @@ impl<'i> State<'i> {
     ) {
         #[cfg(feature = "debug")]
         let _scope = TraceScope::new("document::capture_key_value");
+        #[cfg(feature = "unsafe")]
+        // SAFETY: on_key produced this span for this arena, which has not
+        // changed since the key was parsed.
+        let path = unsafe { self.arena.get_unchecked(path_span.start()..path_span.end()) };
+        #[cfg(not(feature = "unsafe"))]
         let path = &self.arena[path_span.start()..path_span.end()];
         #[cfg(feature = "debug")]
         trace(
@@ -263,6 +268,14 @@ impl<'i> State<'i> {
             let header_span = header.span.start()..header.span.end();
             let prev_table = Spanned::new(header_span.clone(), DeValue::Table(prev_table));
 
+            #[cfg(feature = "unsafe")]
+            // SAFETY: the header span refers to this arena, which remains
+            // unchanged until the current table is finished.
+            let parent_key = unsafe {
+                self.header_arena
+                    .get_unchecked(header.path_span.start()..header.path_span.end())
+            };
+            #[cfg(not(feature = "unsafe"))]
             let parent_key = &self.header_arena[header.path_span.start()..header.path_span.end()];
             let dotted = false;
             let Some(parent_table) = descend_path(&mut self.root, parent_key, dotted, errors)
@@ -315,6 +328,14 @@ impl<'i> State<'i> {
             // 1. Look up the table on start to ensure the duplicate_key error points to the right line
             // 2. Ensure any child tables from an implicit table are preserved
             let root = &mut self.root;
+            #[cfg(feature = "unsafe")]
+            // SAFETY: on_table produced this span for the header arena, or
+            // used the empty default span when no key was present.
+            let path = unsafe {
+                self.header_arena
+                    .get_unchecked(header.path_span.start()..header.path_span.end())
+            };
+            #[cfg(not(feature = "unsafe"))]
             let path = &self.header_arena[header.path_span.start()..header.path_span.end()];
             if let (Some(parent_table), Some(key)) =
                 (descend_path(root, path, false, errors), &header.key)
