@@ -303,10 +303,21 @@ const BASIC_UNESCAPED: (
     RangeInclusive<u8>,
 ) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
 
+const BASIC_UNESCAPED_TABLE: [bool; 256] = {
+    let mut table = [false; 256];
+    let mut i = 0;
+    while i < table.len() {
+        let b = i as u8;
+        // Non-ASCII UTF-8 bytes are valid here; only ASCII needs exclusions.
+        table[i] = (b >= 0x20 && b != 0x7f && b != b'"' && b != b'\\') || b == b'\t';
+        i += 1;
+    }
+    table
+};
+
 #[inline]
 fn is_basic_unescaped(b: u8) -> bool {
-    // Non-ASCII UTF-8 bytes are valid here; only ASCII needs exclusions.
-    (b >= 0x20 && b != 0x7f && b != b'"' && b != b'\\') || b == b'\t'
+    BASIC_UNESCAPED_TABLE[b as usize]
 }
 
 /// ```abnf
