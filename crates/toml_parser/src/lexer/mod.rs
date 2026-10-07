@@ -616,10 +616,24 @@ fn lex_atom(stream: &mut Stream<'_>) -> Token {
     let start = stream.current_token_start();
 
     // Intentionally leaves off quotes in case the opening quote was missing
-    const TOKEN_START: &[u8] = b".=,[]{} \t#\r\n";
     let offset = stream
         .as_bstr()
-        .offset_for(|b| TOKEN_START.contains_token(b))
+        .offset_for(|b| {
+            matches!(
+                b,
+                b'.' | b'='
+                    | b','
+                    | b'['
+                    | b']'
+                    | b'{'
+                    | b'}'
+                    | b' '
+                    | b'\t'
+                    | b'#'
+                    | b'\r'
+                    | b'\n'
+            )
+        })
         .unwrap_or_else(|| stream.eof_offset());
     #[cfg(feature = "unsafe")] // SAFETY: `TOKEN_START` ensure `offset` is along UTF-8 boundary
     unsafe {
