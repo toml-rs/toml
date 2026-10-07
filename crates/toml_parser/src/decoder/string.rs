@@ -724,7 +724,7 @@ pub(crate) fn decode_unquoted_key<'i>(
         .as_bytes()
         .iter()
         .enumerate()
-        .filter(|(_, b)| !UNQUOTED_CHAR.contains_token(*b))
+        .filter(|(_, b)| !is_unquoted_char(**b))
     {
         if let Some((start, end)) = span {
             if i == end {
@@ -771,13 +771,11 @@ pub(crate) fn decode_unquoted_key<'i>(
 /// ```abnf
 /// unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 /// ```
-const UNQUOTED_CHAR: (
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-    RangeInclusive<u8>,
-    u8,
-    u8,
-) = (b'A'..=b'Z', b'a'..=b'z', b'0'..=b'9', b'-', b'_');
+#[inline]
+fn is_unquoted_char(b: u8) -> bool {
+    // Folding ASCII letters makes upper- and lowercase share one range check.
+    (b | 0x20).is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'_'
+}
 
 #[cfg(test)]
 #[cfg(feature = "std")]
