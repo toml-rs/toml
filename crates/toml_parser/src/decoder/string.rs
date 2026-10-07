@@ -771,10 +771,21 @@ pub(crate) fn decode_unquoted_key<'i>(
 /// ```abnf
 /// unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
 /// ```
+const UNQUOTED_CHAR_TABLE: [bool; 256] = {
+    let mut table = [false; 256];
+    let mut i = 0;
+    while i < table.len() {
+        let b = i as u8;
+        // Folding ASCII letters makes upper- and lowercase share one range check.
+        table[i] = (b | 0x20).is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'_';
+        i += 1;
+    }
+    table
+};
+
 #[inline]
 fn is_unquoted_char(b: u8) -> bool {
-    // Folding ASCII letters makes upper- and lowercase share one range check.
-    (b | 0x20).is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'_'
+    UNQUOTED_CHAR_TABLE[b as usize]
 }
 
 #[cfg(test)]
