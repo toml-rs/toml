@@ -268,7 +268,7 @@ pub(crate) fn decode_basic_string<'i>(
 fn basic_unescaped<'i>(stream: &mut &'i str) -> &'i str {
     let offset = stream
         .as_bytes()
-        .offset_for(|b| !BASIC_UNESCAPED.contains_token(b))
+        .offset_for(|b| !is_basic_unescaped(b))
         .unwrap_or(stream.len());
     #[cfg(feature = "unsafe")] // SAFETY: BASIC_UNESCAPED ensure `offset` is along UTF-8 boundary
     unsafe {
@@ -302,6 +302,12 @@ const BASIC_UNESCAPED: (
     RangeInclusive<u8>,
     RangeInclusive<u8>,
 ) = (WSCHAR, 0x21, 0x23..=0x5B, 0x5D..=0x7E, NON_ASCII);
+
+#[inline]
+fn is_basic_unescaped(b: u8) -> bool {
+    // Non-ASCII UTF-8 bytes are valid here; only ASCII needs exclusions.
+    (b >= 0x20 && b != 0x7f && b != b'"' && b != b'\\') || b == b'\t'
+}
 
 /// ```abnf
 /// escape = %x5C                    ; \
