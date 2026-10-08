@@ -46,7 +46,14 @@ impl<'i> Lexer<'i> {
 
     #[cfg(feature = "alloc")]
     pub fn into_vec(self) -> Vec<Token> {
-        let capacity = self.stream.len().div_ceil(4);
+        let len = self.stream.len();
+        // The 2/7 ratio was determined by looking packaged manifests under a representative set of
+        // packages determined by dependencies of several large, popular projects.
+        //
+        // Divide before multiplying to avoid overflowing for very large inputs.
+        let estimate = (len / 7) * 2;
+        let addressable_limit = isize::MAX as usize / size_of::<Token>();
+        let capacity = estimate.min(addressable_limit);
         let mut vec = Vec::with_capacity(capacity);
         vec.extend(self);
         vec
