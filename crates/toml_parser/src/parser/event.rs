@@ -340,12 +340,7 @@ impl EventReceiver for ValidateWhitespace<'_, '_> {
         self.receiver.value_sep(span, error);
     }
     fn whitespace(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        #[cfg(feature = "unsafe")] // SAFETY: callers must use valid span
-        let raw = unsafe { self.source.get_unchecked(span) };
-        #[cfg(not(feature = "unsafe"))]
-        let raw = self.source.get(span).expect("token spans are valid");
-        raw.decode_whitespace(error);
-
+        // `decode_whitespace` is a no-op, so don't bother
         self.receiver.whitespace(span, error);
     }
     fn comment(&mut self, span: Span, error: &mut dyn ErrorSink) {
