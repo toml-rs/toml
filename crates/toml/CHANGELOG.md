@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- When deserializing to a `Table`, be sure to check for duplicate keys
+
+### Performance
+
+- Reduce cloning
+
 ## [1.1.6] - 2026-09-10
 
 ### Performance
