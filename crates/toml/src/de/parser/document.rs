@@ -27,6 +27,54 @@ pub(crate) fn document<'i>(
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::document");
     let mut state = State::default();
+    let mut next_header = table_body(&mut state, input, source, errors);
+    state.finish_table(errors);
+
+    while let Some(event) = next_header {
+        let header = on_table(&event, input, source, errors);
+        if header.is_array {
+            state.start_table(header, None, errors);
+            next_header = table_body(&mut state, input, source, errors);
+            state.finish_table(errors);
+            continue;
+        }
+
+        let mut root = core::mem::take(&mut state.root);
+        let parent = descend_path(&mut root, &header.path, false, errors);
+        if let (Some(parent), Some(key)) = (parent, &header.key) {
+            let key = key.clone();
+            let placeholder = Spanned::new(0..0, DeValue::Table(DeTable::new()));
+            next_header = parent.replace_entry_with(key, placeholder, |old| {
+                state.start_table(header, old, errors);
+                let next_header = table_body(&mut state, input, source, errors);
+                let header = state.current_header.take().unwrap();
+                let table = core::mem::take(&mut state.current_table);
+                let span = header.span.start()..header.span.end();
+                (
+                    header.key.unwrap(),
+                    Spanned::new(span, DeValue::Table(table)),
+                    next_header,
+                )
+            });
+            state.root = root;
+        } else {
+            state.root = root;
+            state.start_table(header, None, errors);
+            next_header = table_body(&mut state, input, source, errors);
+            state.finish_table(errors);
+        }
+    }
+
+    let span = Default::default();
+    Spanned::new(span, state.root)
+}
+
+fn table_body<'i>(
+    state: &mut State<'i>,
+    input: &mut Input<'_>,
+    source: toml_parser::Source<'i>,
+    errors: &mut dyn ErrorSink,
+) -> Option<toml_parser::parser::Event> {
     while let Some(event) = input.next_token() {
         match event.kind() {
             EventKind::InlineTableOpen
@@ -47,31 +95,18 @@ pub(crate) fn document<'i>(
                 );
                 continue;
             }
-            EventKind::StdTableOpen | EventKind::ArrayTableOpen => {
-                state.finish_table(errors);
-
-                let header = on_table(event, input, source, errors);
-
-                state.start_table(header, errors);
-            }
+            EventKind::StdTableOpen | EventKind::ArrayTableOpen => return Some(*event),
             EventKind::SimpleKey => {
                 let (path, key) = on_key(event, input, source, errors);
-                let Some(key) = key else {
-                    break;
-                };
-                let Some(next_event) = input.next_token() else {
-                    break;
-                };
+                let key = key?;
+                let next_event = input.next_token()?;
                 let keyval_event = if next_event.kind() == EventKind::Whitespace {
-                    let Some(next_event) = input.next_token() else {
-                        break;
-                    };
-                    next_event
+                    input.next_token()?
                 } else {
                     next_event
                 };
                 if keyval_event.kind() != EventKind::KeyValSep {
-                    break;
+                    return None;
                 }
 
                 if input
@@ -91,10 +126,7 @@ pub(crate) fn document<'i>(
         }
     }
 
-    state.finish_table(errors);
-
-    let span = Default::default();
-    Spanned::new(span, state.root)
+    None
 }
 
 /// ```abnf
@@ -305,49 +337,45 @@ impl<'i> State<'i> {
         }
     }
 
-    fn start_table(&mut self, header: TableHeader<'i>, errors: &mut dyn ErrorSink) {
-        if !header.is_array {
-            // 1. Look up the table on start to ensure the duplicate_key error points to the right line
-            // 2. Ensure any child tables from an implicit table are preserved
-            let root = &mut self.root;
-            if let (Some(parent_table), Some(key)) =
-                (descend_path(root, &header.path, false, errors), &header.key)
-            {
-                if let Some((old_key, old_value)) = parent_table.remove_entry(key) {
-                    match old_value.into_inner() {
-                        DeValue::Table(t) if t.is_implicit() && !t.is_dotted() => {
-                            self.current_table = t;
-                        }
-                        // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
-                        old_value => {
-                            #[cfg(feature = "debug")]
-                            if let DeValue::Table(t) = &old_value {
-                                trace(
-                                    &format!("t.dotted={}", t.is_dotted()),
-                                    anstyle::AnsiColor::Red.on_default(),
-                                );
-                                trace(
-                                    &format!("t.is_implicit={}", t.is_implicit()),
-                                    anstyle::AnsiColor::Red.on_default(),
-                                );
-                            } else {
-                                trace(
-                                    &format!("old_value.type_str={}", old_value.type_str()),
-                                    anstyle::AnsiColor::Red.on_default(),
-                                );
-                            }
-                            let old_span = get_key_span(&old_key);
-                            let key_span = get_key_span(key);
-                            errors.report_error(
-                                ParseError::new("duplicate key")
-                                    .with_unexpected(key_span)
-                                    .with_context(old_span),
-                            );
+    fn start_table(
+        &mut self,
+        header: TableHeader<'i>,
+        old: Option<(&Spanned<DeString<'i>>, Spanned<DeValue<'i>>)>,
+        errors: &mut dyn ErrorSink,
+    ) {
+        if let (Some((old_key, old_value)), Some(key)) = (old, &header.key) {
+            match old_value.into_inner() {
+                DeValue::Table(t) if t.is_implicit() && !t.is_dotted() => {
+                    self.current_table = t;
+                }
+                // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
+                old_value => {
+                    #[cfg(feature = "debug")]
+                    if let DeValue::Table(t) = &old_value {
+                        trace(
+                            &format!("t.dotted={}", t.is_dotted()),
+                            anstyle::AnsiColor::Red.on_default(),
+                        );
+                        trace(
+                            &format!("t.is_implicit={}", t.is_implicit()),
+                            anstyle::AnsiColor::Red.on_default(),
+                        );
+                    } else {
+                        trace(
+                            &format!("old_value.type_str={}", old_value.type_str()),
+                            anstyle::AnsiColor::Red.on_default(),
+                        );
+                    }
+                    let old_span = get_key_span(old_key);
+                    let key_span = get_key_span(key);
+                    errors.report_error(
+                        ParseError::new("duplicate key")
+                            .with_unexpected(key_span)
+                            .with_context(old_span),
+                    );
 
-                            if let DeValue::Table(t) = old_value {
-                                self.current_table = t;
-                            }
-                        }
+                    if let DeValue::Table(t) = old_value {
+                        self.current_table = t;
                     }
                 }
             }

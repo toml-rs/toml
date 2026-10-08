@@ -1971,3 +1971,17 @@ fn array_of_tables_replace_out_of_bounds() {
     let t = Table::new();
     array.replace(0, t);
 }
+
+#[test]
+fn explicit_implicit_table_preserves_format_and_order() {
+    let input = "[a.child]\nx = 1\n[z]\nx = 2\n[ 'a' ] # parent\nvalue = 1\n";
+    let document = input.parse::<DocumentMut>().unwrap();
+    assert_eq!(
+        document.to_string(),
+        input.replace("[a.child]", "['a'.child]")
+    );
+    let keys: Vec<_> = document.as_table().iter().map(|(key, _)| key).collect();
+    assert_eq!(keys, ["z", "a"]);
+    assert_eq!(document["a"]["child"]["x"].as_integer(), Some(1));
+    assert_eq!(document["a"]["value"].as_integer(), Some(1));
+}

@@ -26,6 +26,82 @@ pub(crate) fn document<'s>(
     #[cfg(feature = "debug")]
     let _scope = TraceScope::new("document::document");
     let mut state = State::default();
+    let mut next_header = table_body(&mut state, input, source, errors);
+    state.finish_table(errors);
+
+    while let Some(event) = next_header {
+        let prefix = state.take_trailing();
+        let header = on_table(&event, input, source, errors);
+        let suffix = ws_comment_newline(input)
+            .map(|s| RawString::with_span(s.start()..s.end()))
+            .unwrap_or_default();
+        let decor = Decor::new(prefix, suffix);
+        if header.is_array {
+            state.start_table(header, decor, None, errors);
+            next_header = table_body(&mut state, input, source, errors);
+            state.finish_table(errors);
+            continue;
+        }
+
+        let mut root = std::mem::take(&mut state.root);
+        let parent = descend_path(&mut root, &header.path, false, errors);
+        if let (Some(parent), Some(key)) = (parent, &header.key) {
+            let key = key.clone();
+            next_header = replace_table_entry(parent, key, |old| {
+                state.start_table(header, decor, old, errors);
+                let next_header = table_body(&mut state, input, source, errors);
+                let header = state.current_header.take().unwrap();
+                let mut table = std::mem::take(&mut state.current_table);
+                table.span = Some(header.span.start()..header.span.end());
+                (header.key.unwrap(), Item::Table(table), next_header)
+            });
+            state.root = root;
+        } else {
+            state.root = root;
+            state.start_table(header, decor, None, errors);
+            next_header = table_body(&mut state, input, source, errors);
+            state.finish_table(errors);
+        }
+    }
+
+    let trailing = state.take_trailing();
+    Document {
+        root: Item::Table(state.root),
+        trailing,
+        raw: source.input(),
+    }
+}
+
+fn replace_table_entry<R>(
+    parent: &mut Table,
+    key: Key,
+    f: impl FnOnce(Option<(&Key, Item)>) -> (Key, Item, R),
+) -> R {
+    use indexmap::map::{Entry, IndexedEntry, MutableEntryKey};
+    let last = parent.items.len().saturating_sub(1);
+    match parent.items.entry(key) {
+        Entry::Vacant(entry) => {
+            let (_, value, result) = f(None);
+            entry.insert(value);
+            result
+        }
+        Entry::Occupied(mut entry) => {
+            let old = std::mem::take(entry.get_mut());
+            let (key, value, result) = f(Some((entry.key(), old)));
+            entry.insert(value);
+            *entry.key_mut() = key;
+            IndexedEntry::from(entry).move_index(last);
+            result
+        }
+    }
+}
+
+fn table_body(
+    state: &mut State,
+    input: &mut Input<'_>,
+    source: toml_parser::Source<'_>,
+    errors: &mut dyn ErrorSink,
+) -> Option<toml_parser::parser::Event> {
     while let Some(event) = input.next_token() {
         match event.kind() {
             EventKind::InlineTableOpen
@@ -46,41 +122,19 @@ pub(crate) fn document<'s>(
                 );
                 continue;
             }
-            EventKind::StdTableOpen | EventKind::ArrayTableOpen => {
-                state.finish_table(errors);
-
-                let prefix = state.take_trailing();
-                let header = on_table(event, input, source, errors);
-                let suffix = ws_comment_newline(input)
-                    .map(|s| RawString::with_span(s.start()..s.end()))
-                    .unwrap_or_default();
-                let decor = Decor::new(prefix, suffix);
-
-                state.start_table(header, decor, errors);
-            }
+            EventKind::StdTableOpen | EventKind::ArrayTableOpen => return Some(*event),
             EventKind::SimpleKey => {
                 let key_prefix = state.take_trailing();
                 let (path, key) = on_key(event, input, source, errors);
-                let Some(mut key) = key else {
-                    break;
-                };
-                let Some(next_event) = input.next_token() else {
-                    break;
-                };
-                let keyval_event;
-                let key_suffix;
-                if next_event.kind() == EventKind::Whitespace {
-                    key_suffix = Some(next_event);
-                    let Some(next_event) = input.next_token() else {
-                        break;
-                    };
-                    keyval_event = next_event;
+                let mut key = key?;
+                let next_event = input.next_token()?;
+                let (key_suffix, keyval_event) = if next_event.kind() == EventKind::Whitespace {
+                    (Some(next_event), input.next_token()?)
                 } else {
-                    key_suffix = None;
-                    keyval_event = next_event;
-                }
+                    (None, next_event)
+                };
                 if keyval_event.kind() != EventKind::KeyValSep {
-                    break;
+                    return None;
                 }
                 let key_suffix = key_suffix
                     .map(|e| RawString::with_span(e.span().start()..e.span().end()))
@@ -116,14 +170,7 @@ pub(crate) fn document<'s>(
         }
     }
 
-    state.finish_table(errors);
-
-    let trailing = state.take_trailing();
-    Document {
-        root: Item::Table(state.root),
-        trailing,
-        raw: source.input(),
-    }
+    None
 }
 
 /// ```abnf
@@ -403,51 +450,47 @@ impl State {
         }
     }
 
-    fn start_table(&mut self, header: TableHeader, decor: Decor, errors: &mut dyn ErrorSink) {
-        if !header.is_array {
-            // 1. Look up the table on start to ensure the duplicate_key error points to the right line
-            // 2. Ensure any child tables from an implicit table are preserved
-            let root = &mut self.root;
-            if let (Some(parent_table), Some(key)) =
-                (descend_path(root, &header.path, false, errors), &header.key)
-            {
-                if let Some((old_key, old_value)) = parent_table.remove_entry(key.get()) {
-                    match old_value {
-                        Item::Table(t) if t.implicit && !t.is_dotted() => {
-                            self.current_table = t;
-                        }
-                        // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
-                        old_value => {
-                            #[cfg(feature = "debug")]
-                            if let Item::Table(t) = &old_value {
-                                trace(
-                                    &format!("t.dotted={}", t.is_dotted()),
-                                    anstyle::AnsiColor::Red.on_default(),
-                                );
-                                trace(
-                                    &format!("t.is_implicit={}", t.is_implicit()),
-                                    anstyle::AnsiColor::Red.on_default(),
-                                );
-                            } else {
-                                trace(
-                                    &format!("old_value.type_str={}", old_value.type_name()),
-                                    anstyle::AnsiColor::Red.on_default(),
-                                );
-                            }
-                            let old_span = old_key.span().expect("all items have spans");
-                            let old_span =
-                                toml_parser::Span::new_unchecked(old_span.start, old_span.end);
-                            let key_span = get_key_span(key).expect("all keys have spans");
-                            errors.report_error(
-                                ParseError::new("duplicate key")
-                                    .with_unexpected(key_span)
-                                    .with_context(old_span),
-                            );
+    fn start_table(
+        &mut self,
+        header: TableHeader,
+        decor: Decor,
+        old: Option<(&Key, Item)>,
+        errors: &mut dyn ErrorSink,
+    ) {
+        if let (Some((old_key, old_value)), Some(key)) = (old, &header.key) {
+            match old_value {
+                Item::Table(t) if t.implicit && !t.is_dotted() => {
+                    self.current_table = t;
+                }
+                // Since tables cannot be defined more than once, redefining such tables using a [table] header is not allowed. Likewise, using dotted keys to redefine tables already defined in [table] form is not allowed.
+                old_value => {
+                    #[cfg(feature = "debug")]
+                    if let Item::Table(t) = &old_value {
+                        trace(
+                            &format!("t.dotted={}", t.is_dotted()),
+                            anstyle::AnsiColor::Red.on_default(),
+                        );
+                        trace(
+                            &format!("t.is_implicit={}", t.is_implicit()),
+                            anstyle::AnsiColor::Red.on_default(),
+                        );
+                    } else {
+                        trace(
+                            &format!("old_value.type_str={}", old_value.type_name()),
+                            anstyle::AnsiColor::Red.on_default(),
+                        );
+                    }
+                    let old_span = old_key.span().expect("all items have spans");
+                    let old_span = toml_parser::Span::new_unchecked(old_span.start, old_span.end);
+                    let key_span = get_key_span(key).expect("all keys have spans");
+                    errors.report_error(
+                        ParseError::new("duplicate key")
+                            .with_unexpected(key_span)
+                            .with_context(old_span),
+                    );
 
-                            if let Item::Table(t) = old_value {
-                                self.current_table = t;
-                            }
-                        }
+                    if let Item::Table(t) = old_value {
+                        self.current_table = t;
                     }
                 }
             }

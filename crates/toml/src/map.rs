@@ -221,6 +221,45 @@ where
         }
     }
 
+    #[cfg(feature = "parse")]
+    pub(crate) fn replace_entry_with<R>(
+        &mut self,
+        key: K,
+        placeholder: V,
+        f: impl FnOnce(Option<(&K, V)>) -> (K, V, R),
+    ) -> R {
+        #[cfg(not(feature = "preserve_order"))]
+        {
+            let _ = placeholder;
+            let (key, value, result) = match self.map.remove_entry(&key) {
+                Some((old_key, old_value)) => f(Some((&old_key, old_value))),
+                None => f(None),
+            };
+            self.map.insert(key, value);
+            result
+        }
+        #[cfg(feature = "preserve_order")]
+        {
+            use indexmap::map::{Entry, MutableEntryKey};
+            let last = self.map.len().saturating_sub(1);
+            match self.map.entry(key) {
+                Entry::Vacant(entry) => {
+                    let (_, value, result) = f(None);
+                    entry.insert(value);
+                    result
+                }
+                Entry::Occupied(mut entry) => {
+                    let old = core::mem::replace(entry.get_mut(), placeholder);
+                    let (key, value, result) = f(Some((entry.key(), old)));
+                    entry.insert(value);
+                    *entry.key_mut() = key;
+                    indexmap::map::IndexedEntry::from(entry).move_index(last);
+                    result
+                }
+            }
+        }
+    }
+
     /// Returns the number of elements in the map.
     #[inline]
     pub fn len(&self) -> usize {
