@@ -1,5 +1,6 @@
 use core::fmt::Write as _;
 
+use toml_writer::ToTomlKey as _;
 use toml_writer::TomlWrite as _;
 
 use super::Buffer;
@@ -17,7 +18,7 @@ use crate::alloc_prelude::*;
 pub struct SerializeDocumentTable<'d> {
     buf: &'d mut Buffer,
     table: Table,
-    key: Option<String>,
+    encoded_key: Option<String>,
     style: Style,
 }
 
@@ -26,7 +27,7 @@ impl<'d> SerializeDocumentTable<'d> {
         Ok(Self {
             buf,
             table,
-            key: None,
+            encoded_key: None,
             style,
         })
     }
@@ -49,7 +50,7 @@ impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
         input.serialize(KeySerializer {
             dst: &mut encoded_key,
         })?;
-        self.key = Some(encoded_key);
+        self.encoded_key = Some(encoded_key);
         Ok(())
     }
 
@@ -58,7 +59,7 @@ impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
         T: serde_core::ser::Serialize + ?Sized,
     {
         let encoded_key = self
-            .key
+            .encoded_key
             .take()
             .expect("always called after `serialize_key`");
         match SerializationStrategy::from(value) {
@@ -125,13 +126,13 @@ impl<'d> serde_core::ser::SerializeStruct for SerializeDocumentTable<'d> {
                 let value_serializer = ArrayOfTablesSerializer::new(
                     self.buf,
                     self.table.clone(),
-                    key.to_owned(),
+                    key.to_toml_key(),
                     self.style,
                 );
                 value.serialize(value_serializer)?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.buf.child_table(&mut self.table, key.to_owned());
+                let child = self.buf.child_table(&mut self.table, key.to_toml_key());
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }

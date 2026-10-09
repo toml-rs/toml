@@ -2210,25 +2210,15 @@ fn attr_key() {
     assert_data_eq!(
         &toml_str,
         str![[r#"
-[cfg(target_os = "linux")]
+['cfg(target_os = "linux")']
 value = "some value"
 
-[io.containerd.grpc.v1.cri]
+["io.containerd.grpc.v1.cri"]
 value = "other value"
 
 "#]]
     );
 
-    let roundtrip = crate::from_str::<Config>(&toml_str).unwrap_err();
-    assert_data_eq!(
-        roundtrip.to_string(),
-        str![[r#"
-TOML parse error at line 1, column 15
-  |
-1 | [cfg(target_os = "linux")]
-  |               ^
-unclosed table, expected `]`
-
-"#]]
-    );
+    let roundtrip = crate::from_str::<Config>(&toml_str).unwrap();
+    assert_eq!(roundtrip, config);
 }
