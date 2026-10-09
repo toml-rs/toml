@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.5] - 2026-10-09
+
 ### Fixes
 
 - `unsafe`: Remove possile unsoundness
@@ -116,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.4...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.5...HEAD
+[1.1.5]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.4...toml_parser-v1.1.5
 [1.1.4]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.3...toml_parser-v1.1.4
 [1.1.3]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.2...toml_parser-v1.1.3
 [1.1.2]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.1...toml_parser-v1.1.2

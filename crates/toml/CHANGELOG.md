@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.8] - 2026-10-09
+
 ### Fixes
 
 - *(ser)* Ensure keys are always encoded
@@ -552,7 +554,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.1.7...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.1.8...HEAD
+[1.1.8]: https://github.com/toml-rs/toml/compare/toml-v1.1.7...toml-v1.1.8
 [1.1.7]: https://github.com/toml-rs/toml/compare/toml-v1.1.6...toml-v1.1.7
 [1.1.6]: https://github.com/toml-rs/toml/compare/toml-v1.1.5...toml-v1.1.6
 [1.1.5]: https://github.com/toml-rs/toml/compare/toml-v1.1.4...toml-v1.1.5
