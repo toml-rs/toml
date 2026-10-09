@@ -2181,3 +2181,54 @@ key = "value"
 "#]]
     );
 }
+
+#[test]
+fn attr_key() {
+    #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+    struct Config {
+        #[serde(rename = "cfg(target_os = \"linux\")")]
+        target_linux: Inner,
+        #[serde(rename = "io.containerd.grpc.v1.cri")]
+        containerd_cri: Inner,
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+    struct Inner {
+        value: String,
+    }
+
+    let config = Config {
+        target_linux: Inner {
+            value: "some value".to_owned(),
+        },
+        containerd_cri: Inner {
+            value: "other value".to_owned(),
+        },
+    };
+
+    let toml_str = crate::to_string(&config).unwrap();
+    assert_data_eq!(
+        &toml_str,
+        str![[r#"
+[cfg(target_os = "linux")]
+value = "some value"
+
+[io.containerd.grpc.v1.cri]
+value = "other value"
+
+"#]]
+    );
+
+    let roundtrip = crate::from_str::<Config>(&toml_str).unwrap_err();
+    assert_data_eq!(
+        roundtrip.to_string(),
+        str![[r#"
+TOML parse error at line 1, column 15
+  |
+1 | [cfg(target_os = "linux")]
+  |               ^
+unclosed table, expected `]`
+
+"#]]
+    );
+}
