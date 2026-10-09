@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(ser)* Ensure keys are always encoded
+
 ## [1.1.7] - 2026-10-08
 
 ### Fixes
