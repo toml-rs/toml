@@ -579,6 +579,76 @@ StringResults {
 }
 
 #[test]
+fn rust_attribute() {
+    t(
+        "cfg(target_os = \"linux\")",
+        str![[r#"
+StringResults {
+    decoded: "cfg(target_os = \"linux\")",
+    key_default: "'cfg(target_os = \"linux\")'",
+    key_unquoted: None,
+    key_literal: Some(
+        "'cfg(target_os = \"linux\")'",
+    ),
+    key_basic_pretty: None,
+    key_basic: "\"cfg(target_os = \\\"linux\\\")\"",
+    string_default: "'cfg(target_os = \"linux\")'",
+    string_literal: Some(
+        "'cfg(target_os = \"linux\")'",
+    ),
+    string_ml_literal: Some(
+        "'''cfg(target_os = \"linux\")'''",
+    ),
+    string_basic_pretty: None,
+    string_ml_basic_pretty: Some(
+        "\"\"\"cfg(target_os = \"linux\")\"\"\"",
+    ),
+    string_basic: "\"cfg(target_os = \\\"linux\\\")\"",
+    string_ml_basic: "\"\"\"cfg(target_os = \"linux\")\"\"\"",
+}
+
+"#]],
+    );
+}
+
+#[test]
+fn dotted_path() {
+    t(
+        "io.containerd.grpc.v1.cri",
+        str![[r#"
+StringResults {
+    decoded: "io.containerd.grpc.v1.cri",
+    key_default: "\"io.containerd.grpc.v1.cri\"",
+    key_unquoted: None,
+    key_literal: Some(
+        "'io.containerd.grpc.v1.cri'",
+    ),
+    key_basic_pretty: Some(
+        "\"io.containerd.grpc.v1.cri\"",
+    ),
+    key_basic: "\"io.containerd.grpc.v1.cri\"",
+    string_default: "\"io.containerd.grpc.v1.cri\"",
+    string_literal: Some(
+        "'io.containerd.grpc.v1.cri'",
+    ),
+    string_ml_literal: Some(
+        "'''io.containerd.grpc.v1.cri'''",
+    ),
+    string_basic_pretty: Some(
+        "\"io.containerd.grpc.v1.cri\"",
+    ),
+    string_ml_basic_pretty: Some(
+        "\"\"\"io.containerd.grpc.v1.cri\"\"\"",
+    ),
+    string_basic: "\"io.containerd.grpc.v1.cri\"",
+    string_ml_basic: "\"\"\"io.containerd.grpc.v1.cri\"\"\"",
+}
+
+"#]],
+    );
+}
+
+#[test]
 fn many_quotes() {
     t(
         &"\"".repeat(256),
