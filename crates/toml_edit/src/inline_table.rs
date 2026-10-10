@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use crate::key::Key;
 use crate::repr::Decor;
-use crate::table::{Iter, IterMut, KeyValuePairs, TableLike};
+use crate::table::{Iter, IterMut, KeyValuePairs, TableLike, ValueEntries};
 use crate::{Item, KeyMut, RawString, Table, Value};
 
 /// A TOML [`Value`] that contains a collection of [`Key`]/[`Value`] pairs
@@ -52,37 +52,11 @@ impl InlineTable {
     ///
     /// For example, this will return dotted keys
     pub fn get_values(&self) -> Vec<(Vec<&Key>, &Value)> {
-        let mut values = Vec::new();
-        let mut root = Vec::new();
-        self.append_values(&mut root, &mut values);
-        values
+        self.iter_values().into_vec()
     }
 
-    /// Helper for `get_values()`.
-    ///
-    /// `path` is the parent for this table. path is mutable to reuse allocations but no mutations
-    /// should be observable.
-    pub(crate) fn append_values<'s>(
-        &'s self,
-        path: &mut Vec<&'s Key>,
-        values: &mut Vec<(Vec<&'s Key>, &'s Value)>,
-    ) {
-        for (key, value) in self.items.iter() {
-            path.push(key);
-            match value {
-                Item::Value(Value::InlineTable(table)) if table.is_dotted() => {
-                    table.append_values(path, values);
-                }
-                Item::Value(value) => {
-                    values.push((path.clone(), value));
-                }
-                Item::Table(table) => {
-                    table.append_all_values(path, values);
-                }
-                _ => {}
-            }
-            path.pop();
-        }
+    pub(crate) fn iter_values(&self) -> ValueEntries<'_> {
+        ValueEntries::new(&self.items, true)
     }
 
     /// Auto formats the table.
