@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixes
 
-- `unsafe`: Remove possile unsoundness
+- `unsafe`: Remove possible unsoundness
 
 ### Performance
 
