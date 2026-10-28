@@ -235,7 +235,7 @@ fn write_toml_value<W: crate::TomlWrite + ?Sized>(
     };
     let newline_prefix = newline && is_ml;
 
-    write!(writer, "{delimiter}")?;
+    writer.write_str(delimiter)?;
     if newline_prefix {
         writer.newline()?;
     }
@@ -303,7 +303,8 @@ fn write_toml_value<W: crate::TomlWrite + ?Sized>(
             let escaped_str = escaped.unwrap_or("");
             let end = unescaped_end + if escaped.is_some() { 1 } else { 0 };
             stream = &stream[end..];
-            write!(writer, "{unescaped}{escaped_str}")?;
+            writer.write_str(unescaped)?;
+            writer.write_str(escaped_str)?;
             if escaped.is_none() && !stream.is_empty() {
                 let b = stream.as_bytes().first().unwrap();
                 write!(writer, "\\u{:04X}", *b as u32)?;
@@ -311,9 +312,9 @@ fn write_toml_value<W: crate::TomlWrite + ?Sized>(
             }
         }
     } else {
-        write!(writer, "{decoded}")?;
+        writer.write_str(decoded)?;
     }
-    write!(writer, "{delimiter}")?;
+    writer.write_str(delimiter)?;
     Ok(())
 }
 
