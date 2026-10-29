@@ -386,6 +386,22 @@ impl SerializeMap {
             next_key: None,
         }
     }
+
+    fn write_entry<T>(&mut self, key: String, value: &T) -> Result<(), crate::ser::Error>
+    where
+        T: ser::Serialize + ?Sized,
+    {
+        match Value::try_from(value) {
+            Ok(value) => {
+                self.map.insert(key, value);
+            }
+            Err(crate::ser::Error {
+                inner: crate::ser::ErrorInner::UnsupportedNone,
+            }) => {}
+            Err(e) => return Err(e),
+        }
+        Ok(())
+    }
 }
 
 impl ser::SerializeMap for SerializeMap {
@@ -409,16 +425,7 @@ impl ser::SerializeMap for SerializeMap {
     {
         let key = self.next_key.take();
         let key = key.expect("serialize_value called before serialize_key");
-        match Value::try_from(value) {
-            Ok(value) => {
-                self.map.insert(key, value);
-            }
-            Err(crate::ser::Error {
-                inner: crate::ser::ErrorInner::UnsupportedNone,
-            }) => {}
-            Err(e) => return Err(e),
-        }
-        Ok(())
+        self.write_entry(key, value)
     }
 
     fn end(self) -> Result<Table, crate::ser::Error> {

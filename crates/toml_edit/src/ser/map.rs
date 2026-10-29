@@ -156,6 +156,27 @@ impl SerializeInlineTable {
         }
         Self { items, key }
     }
+
+    fn write_entry<T>(&mut self, key: crate::Key, value: &T) -> Result<(), Error>
+    where
+        T: serde_core::ser::Serialize + ?Sized,
+    {
+        let mut is_none = false;
+        let value_serializer = MapValueSerializer::new(&mut is_none);
+        let res = value.serialize(value_serializer);
+        match res {
+            Ok(item) => {
+                let item = crate::Item::Value(item);
+                self.items.insert(key, item);
+            }
+            Err(e) => {
+                if !(e == Error::unsupported_none() && is_none) {
+                    return Err(e);
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 impl serde_core::ser::SerializeMap for SerializeInlineTable {
@@ -174,22 +195,11 @@ impl serde_core::ser::SerializeMap for SerializeInlineTable {
     where
         T: serde_core::ser::Serialize + ?Sized,
     {
-        let mut is_none = false;
-        let value_serializer = MapValueSerializer::new(&mut is_none);
-        let res = value.serialize(value_serializer);
-        match res {
-            Ok(item) => {
-                let key = self.key.take().unwrap();
-                let item = crate::Item::Value(item);
-                self.items.insert(key, item);
-            }
-            Err(e) => {
-                if !(e == Error::unsupported_none() && is_none) {
-                    return Err(e);
-                }
-            }
-        }
-        Ok(())
+        let key = self
+            .key
+            .take()
+            .expect("always called after `serialize_key`");
+        self.write_entry(key, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {

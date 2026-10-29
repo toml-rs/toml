@@ -36,32 +36,11 @@ impl<'d> SerializeDocumentTable<'d> {
         self.buf.push(self.table);
         Ok(self.buf)
     }
-}
 
-impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
-    type Ok = &'d mut Buffer;
-    type Error = Error;
-
-    fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
+    fn write_entry<T>(&mut self, encoded_key: String, value: &T) -> Result<(), Error>
     where
         T: serde_core::ser::Serialize + ?Sized,
     {
-        let mut encoded_key = String::new();
-        input.serialize(KeySerializer {
-            dst: &mut encoded_key,
-        })?;
-        self.encoded_key = Some(encoded_key);
-        Ok(())
-    }
-
-    fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
-    where
-        T: serde_core::ser::Serialize + ?Sized,
-    {
-        let encoded_key = self
-            .encoded_key
-            .take()
-            .expect("always called after `serialize_key`");
         match SerializationStrategy::from(value) {
             SerializationStrategy::Value => {
                 let dst = self.table.body_mut();
@@ -94,6 +73,34 @@ impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
             }
         }
         Ok(())
+    }
+}
+
+impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
+    type Ok = &'d mut Buffer;
+    type Error = Error;
+
+    fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
+    where
+        T: serde_core::ser::Serialize + ?Sized,
+    {
+        let mut encoded_key = String::new();
+        input.serialize(KeySerializer {
+            dst: &mut encoded_key,
+        })?;
+        self.encoded_key = Some(encoded_key);
+        Ok(())
+    }
+
+    fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: serde_core::ser::Serialize + ?Sized,
+    {
+        let encoded_key = self
+            .encoded_key
+            .take()
+            .expect("always called after `serialize_key`");
+        self.write_entry(encoded_key, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
