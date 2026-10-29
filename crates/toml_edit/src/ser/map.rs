@@ -49,6 +49,17 @@ impl serde_core::ser::SerializeMap for SerializeMap {
         }
     }
 
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: serde_core::ser::Serialize + ?Sized,
+        V: serde_core::ser::Serialize + ?Sized,
+    {
+        match self {
+            Self::Datetime(s) => s.serialize_entry(key, value),
+            Self::Table(s) => s.serialize_entry(key, value),
+        }
+    }
+
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self {
             Self::Datetime(s) => s.end().map(|items| items.into()),
@@ -200,6 +211,14 @@ impl serde_core::ser::SerializeMap for SerializeInlineTable {
             .take()
             .expect("always called after `serialize_key`");
         self.write_entry(key, value)
+    }
+
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: serde_core::ser::Serialize + ?Sized,
+        V: serde_core::ser::Serialize + ?Sized,
+    {
+        self.write_entry(key.serialize(KeySerializer)?, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {

@@ -59,6 +59,17 @@ impl<'d> serde_core::ser::SerializeMap for SerializeMap<'d> {
         }
     }
 
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: serde_core::ser::Serialize + ?Sized,
+        V: serde_core::ser::Serialize + ?Sized,
+    {
+        match self {
+            Self::Datetime(s) => s.serialize_entry(key, value),
+            Self::Table(s) => s.serialize_entry(key, value),
+        }
+    }
+
     fn end(self) -> Result<Self::Ok, Self::Error> {
         match self {
             Self::Datetime(s) => s.end(),
@@ -239,6 +250,18 @@ impl<'d> serde_core::ser::SerializeMap for SerializeTable<'d> {
             .key
             .take()
             .expect("always called after `serialize_key`");
+        self.write_entry(&encoded_key, value)
+    }
+
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: serde_core::ser::Serialize + ?Sized,
+        V: serde_core::ser::Serialize + ?Sized,
+    {
+        let mut encoded_key = String::new();
+        key.serialize(KeySerializer {
+            dst: &mut encoded_key,
+        })?;
         self.write_entry(&encoded_key, value)
     }
 

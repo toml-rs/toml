@@ -103,6 +103,18 @@ impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
         self.write_entry(encoded_key, value)
     }
 
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: serde_core::ser::Serialize + ?Sized,
+        V: serde_core::ser::Serialize + ?Sized,
+    {
+        let mut encoded_key = String::new();
+        key.serialize(KeySerializer {
+            dst: &mut encoded_key,
+        })?;
+        self.write_entry(encoded_key, value)
+    }
+
     fn end(self) -> Result<Self::Ok, Self::Error> {
         self.end()
     }

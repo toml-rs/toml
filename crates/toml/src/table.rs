@@ -65,8 +65,7 @@ impl ser::Serialize for Table {
         use serde_core::ser::SerializeMap;
         let mut map = serializer.serialize_map(Some(self.len()))?;
         for (k, v) in self {
-            map.serialize_key(k)?;
-            map.serialize_value(v)?;
+            map.serialize_entry(k, v)?;
         }
         map.end()
     }
@@ -428,6 +427,17 @@ impl ser::SerializeMap for SerializeMap {
         self.write_entry(key, value)
     }
 
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: ser::Serialize + ?Sized,
+        V: ser::Serialize + ?Sized,
+    {
+        let Value::String(key) = Value::try_from(key)? else {
+            return Err(crate::ser::Error::key_not_string());
+        };
+        self.write_entry(key, value)
+    }
+
     fn end(self) -> Result<Table, crate::ser::Error> {
         Ok(self.map)
     }
@@ -441,8 +451,7 @@ impl ser::SerializeStruct for SerializeMap {
     where
         T: ser::Serialize + ?Sized,
     {
-        ser::SerializeMap::serialize_key(self, key)?;
-        ser::SerializeMap::serialize_value(self, value)
+        ser::SerializeMap::serialize_entry(self, key, value)
     }
 
     fn end(self) -> Result<Table, crate::ser::Error> {
