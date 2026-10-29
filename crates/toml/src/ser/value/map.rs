@@ -192,7 +192,11 @@ impl<'d> SerializeTable<'d> {
         Ok(self.dst)
     }
 
-    fn write_entry<T>(&mut self, encoded_key: &str, value: &T) -> Result<(), Error>
+    fn write_entry<T>(
+        &mut self,
+        write_key: impl FnOnce(&mut String) -> Result<(), Error>,
+        value: &T,
+    ) -> Result<(), Error>
     where
         T: serde_core::ser::Serialize + ?Sized,
     {
@@ -210,13 +214,16 @@ impl<'d> SerializeTable<'d> {
                 }
                 self.seen_value = true;
                 self.dst.space()?;
-                write!(self.dst, "{encoded_key}")?;
+                write_key(self.dst)?;
                 self.dst.space()?;
                 self.dst.keyval_sep()?;
                 self.dst.space()?;
                 write!(self.dst, "{encoded_value}")?;
             }
             Err(e) => {
+                // Preserve key errors even when the value fails or is omitted.
+                encoded_value.clear();
+                write_key(&mut encoded_value)?;
                 if !(e == Error::unsupported_none() && is_none) {
                     return Err(e);
                 }
@@ -250,7 +257,13 @@ impl<'d> serde_core::ser::SerializeMap for SerializeTable<'d> {
             .key
             .take()
             .expect("always called after `serialize_key`");
-        self.write_entry(&encoded_key, value)
+        self.write_entry(
+            |dst| {
+                dst.push_str(&encoded_key);
+                Ok(())
+            },
+            value,
+        )
     }
 
     fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
@@ -258,11 +271,7 @@ impl<'d> serde_core::ser::SerializeMap for SerializeTable<'d> {
         K: serde_core::ser::Serialize + ?Sized,
         V: serde_core::ser::Serialize + ?Sized,
     {
-        let mut encoded_key = String::new();
-        key.serialize(KeySerializer {
-            dst: &mut encoded_key,
-        })?;
-        self.write_entry(&encoded_key, value)
+        self.write_entry(|dst| key.serialize(KeySerializer { dst }), value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
