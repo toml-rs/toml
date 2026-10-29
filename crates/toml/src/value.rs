@@ -1136,6 +1136,14 @@ impl ser::SerializeMap for ValueSerializeMap {
         self.ser.serialize_value(value)
     }
 
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: ser::Serialize + ?Sized,
+        V: ser::Serialize + ?Sized,
+    {
+        self.ser.serialize_entry(key, value)
+    }
+
     fn end(self) -> Result<Value, crate::ser::Error> {
         self.ser.end().map(Value::Table)
     }
@@ -1149,8 +1157,7 @@ impl ser::SerializeStruct for ValueSerializeMap {
     where
         T: ser::Serialize + ?Sized,
     {
-        ser::SerializeMap::serialize_key(self, key)?;
-        ser::SerializeMap::serialize_value(self, value)
+        ser::SerializeMap::serialize_entry(self, key, value)
     }
 
     fn end(self) -> Result<Value, crate::ser::Error> {

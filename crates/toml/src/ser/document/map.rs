@@ -1,5 +1,3 @@
-use core::fmt::Write as _;
-
 use toml_writer::ToTomlKey as _;
 use toml_writer::TomlWrite as _;
 
@@ -36,6 +34,53 @@ impl<'d> SerializeDocumentTable<'d> {
         self.buf.push(self.table);
         Ok(self.buf)
     }
+
+    fn write_entry<T>(
+        &mut self,
+        write_key: impl FnOnce(&mut String) -> Result<(), Error>,
+        value: &T,
+    ) -> Result<(), Error>
+    where
+        T: serde_core::ser::Serialize + ?Sized,
+    {
+        match SerializationStrategy::from(value) {
+            SerializationStrategy::Value => {
+                let dst = self.table.body_mut();
+
+                write_key(dst)?;
+                dst.space()?;
+                dst.keyval_sep()?;
+                dst.space()?;
+                let value_serializer = ValueSerializer::with_style(dst, self.style);
+                let dst = value.serialize(value_serializer)?;
+                dst.newline()?;
+            }
+            SerializationStrategy::ArrayOfTables => {
+                let mut encoded_key = String::new();
+                write_key(&mut encoded_key)?;
+                self.table.has_children(true);
+                let value_serializer = ArrayOfTablesSerializer::new(
+                    self.buf,
+                    self.table.clone(),
+                    encoded_key,
+                    self.style,
+                );
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Table | SerializationStrategy::Unknown => {
+                let mut encoded_key = String::new();
+                write_key(&mut encoded_key)?;
+                let child = self.buf.child_table(&mut self.table, encoded_key);
+                let value_serializer = Serializer::with_table(self.buf, child, self.style);
+                value.serialize(value_serializer)?;
+            }
+            SerializationStrategy::Skip => {
+                // Validate the key, then silently drop the key-value pair.
+                write_key(&mut String::new())?;
+            }
+        }
+        Ok(())
+    }
 }
 
 impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
@@ -62,38 +107,25 @@ impl<'d> serde_core::ser::SerializeMap for SerializeDocumentTable<'d> {
             .encoded_key
             .take()
             .expect("always called after `serialize_key`");
-        match SerializationStrategy::from(value) {
-            SerializationStrategy::Value => {
-                let dst = self.table.body_mut();
+        self.write_entry(
+            |dst| {
+                if dst.is_empty() {
+                    *dst = encoded_key;
+                } else {
+                    dst.push_str(&encoded_key);
+                }
+                Ok(())
+            },
+            value,
+        )
+    }
 
-                write!(dst, "{encoded_key}")?;
-                dst.space()?;
-                dst.keyval_sep()?;
-                dst.space()?;
-                let value_serializer = ValueSerializer::with_style(dst, self.style);
-                let dst = value.serialize(value_serializer)?;
-                dst.newline()?;
-            }
-            SerializationStrategy::ArrayOfTables => {
-                self.table.has_children(true);
-                let value_serializer = ArrayOfTablesSerializer::new(
-                    self.buf,
-                    self.table.clone(),
-                    encoded_key,
-                    self.style,
-                );
-                value.serialize(value_serializer)?;
-            }
-            SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.buf.child_table(&mut self.table, encoded_key);
-                let value_serializer = Serializer::with_table(self.buf, child, self.style);
-                value.serialize(value_serializer)?;
-            }
-            SerializationStrategy::Skip => {
-                // silently drop these key-value pairs
-            }
-        }
-        Ok(())
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: serde_core::ser::Serialize + ?Sized,
+        V: serde_core::ser::Serialize + ?Sized,
+    {
+        self.write_entry(|dst| key.serialize(KeySerializer { dst }), value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {

@@ -65,8 +65,7 @@ impl ser::Serialize for Table {
         use serde_core::ser::SerializeMap;
         let mut map = serializer.serialize_map(Some(self.len()))?;
         for (k, v) in self {
-            map.serialize_key(k)?;
-            map.serialize_value(v)?;
+            map.serialize_entry(k, v)?;
         }
         map.end()
     }
@@ -386,6 +385,22 @@ impl SerializeMap {
             next_key: None,
         }
     }
+
+    fn write_entry<T>(&mut self, key: String, value: &T) -> Result<(), crate::ser::Error>
+    where
+        T: ser::Serialize + ?Sized,
+    {
+        match Value::try_from(value) {
+            Ok(value) => {
+                self.map.insert(key, value);
+            }
+            Err(crate::ser::Error {
+                inner: crate::ser::ErrorInner::UnsupportedNone,
+            }) => {}
+            Err(e) => return Err(e),
+        }
+        Ok(())
+    }
 }
 
 impl ser::SerializeMap for SerializeMap {
@@ -409,16 +424,18 @@ impl ser::SerializeMap for SerializeMap {
     {
         let key = self.next_key.take();
         let key = key.expect("serialize_value called before serialize_key");
-        match Value::try_from(value) {
-            Ok(value) => {
-                self.map.insert(key, value);
-            }
-            Err(crate::ser::Error {
-                inner: crate::ser::ErrorInner::UnsupportedNone,
-            }) => {}
-            Err(e) => return Err(e),
-        }
-        Ok(())
+        self.write_entry(key, value)
+    }
+
+    fn serialize_entry<K, V>(&mut self, key: &K, value: &V) -> Result<(), Self::Error>
+    where
+        K: ser::Serialize + ?Sized,
+        V: ser::Serialize + ?Sized,
+    {
+        let Value::String(key) = Value::try_from(key)? else {
+            return Err(crate::ser::Error::key_not_string());
+        };
+        self.write_entry(key, value)
     }
 
     fn end(self) -> Result<Table, crate::ser::Error> {
@@ -434,8 +451,7 @@ impl ser::SerializeStruct for SerializeMap {
     where
         T: ser::Serialize + ?Sized,
     {
-        ser::SerializeMap::serialize_key(self, key)?;
-        ser::SerializeMap::serialize_value(self, value)
+        ser::SerializeMap::serialize_entry(self, key, value)
     }
 
     fn end(self) -> Result<Table, crate::ser::Error> {
