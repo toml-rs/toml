@@ -9,7 +9,7 @@ use crate::alloc_prelude::*;
 pub struct Buffer {
     output: String,
     // Original byte offset and table creation order. Implicit parents can share an offset.
-    insertions: BTreeMap<(usize, Pos), String>,
+    insertions: BTreeMap<(InsertionOffset, Pos), String>,
     next_table_pos: Pos,
 }
 
@@ -66,7 +66,7 @@ impl Buffer {
             if table.array && !table.started {
                 self.ensure_body(table);
             }
-            table.insert_at = Some(self.output.len());
+            table.insert_at = Some(self.insertion_offset());
         }
     }
 
@@ -77,11 +77,11 @@ impl Buffer {
                 offset,
             )
         } else {
-            let offset = self.output.len();
+            let offset = self.insertion_offset();
             (&mut self.output, offset)
         };
         if !table.started {
-            if offset != 0 {
+            if offset != InsertionOffset::start() {
                 dst.push('\n');
             }
             table
@@ -92,6 +92,10 @@ impl Buffer {
         dst
     }
 
+    fn insertion_offset(&self) -> InsertionOffset {
+        InsertionOffset(self.output.len())
+    }
+
     pub(crate) fn push(&mut self, mut table: Table) {
         if required_table(&table) {
             self.ensure_body(&mut table);
@@ -100,10 +104,10 @@ impl Buffer {
 
     pub(crate) fn into_string(mut self) -> String {
         for ((offset, _), mut text) in self.insertions.into_iter().rev() {
-            if offset == 0 && !self.output.is_empty() {
+            if offset == InsertionOffset::start() && !self.output.is_empty() {
                 text.push('\n');
             }
-            self.output.insert_str(offset, &text);
+            self.output.insert_str(offset.0, &text);
         }
         self.output
     }
@@ -111,26 +115,35 @@ impl Buffer {
 
 impl core::fmt::Display for Buffer {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut start = 0;
+        let mut start = InsertionOffset::start();
         let mut leading_section = false;
         for (&(offset, _), text) in &self.insertions {
             if leading_section {
                 f.write_str("\n")?;
             }
-            f.write_str(&self.output[start..offset])?;
+            f.write_str(&self.output[start.0..offset.0])?;
             f.write_str(text)?;
             start = offset;
-            leading_section = offset == 0;
+            leading_section = offset == InsertionOffset::start();
         }
         if leading_section && !self.output.is_empty() {
             f.write_str("\n")?;
         }
-        f.write_str(&self.output[start..])
+        f.write_str(&self.output[start.0..])
     }
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 struct Pos(usize);
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct InsertionOffset(usize);
+
+impl InsertionOffset {
+    const fn start() -> Self {
+        Self(0)
+    }
+}
 
 fn required_table(table: &Table) -> bool {
     // Empty leaf tables are explicit. Empty parents are implied by their children.
@@ -142,7 +155,7 @@ pub(crate) struct Table {
     encoded_key: Vec<String>,
     pos: Pos,
     // Frozen when the first child starts. Later body entries belong at this boundary.
-    insert_at: Option<usize>,
+    insert_at: Option<InsertionOffset>,
     started: bool,
     array: bool,
 }
