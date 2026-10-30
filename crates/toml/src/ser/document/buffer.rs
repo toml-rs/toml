@@ -9,8 +9,8 @@ use crate::alloc_prelude::*;
 pub struct Buffer {
     output: String,
     // Original byte offset and table creation order. Implicit parents can share an offset.
-    insertions: BTreeMap<(usize, usize), String>,
-    next_table_pos: usize,
+    insertions: BTreeMap<(usize, Pos), String>,
+    next_table_pos: Pos,
 }
 
 impl Buffer {
@@ -23,7 +23,7 @@ impl Buffer {
     pub fn clear(&mut self) {
         self.output.clear();
         self.insertions.clear();
-        self.next_table_pos = 0;
+        self.next_table_pos = Pos::default();
     }
 
     pub(crate) fn root_table(&mut self) -> Table {
@@ -54,9 +54,9 @@ impl Buffer {
         }
     }
 
-    fn next_table_pos(&mut self) -> usize {
+    fn next_table_pos(&mut self) -> Pos {
         let pos = self.next_table_pos;
-        self.next_table_pos += 1;
+        self.next_table_pos.0 += 1;
         pos
     }
 
@@ -129,6 +129,9 @@ impl core::fmt::Display for Buffer {
     }
 }
 
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+struct Pos(usize);
+
 fn required_table(table: &Table) -> bool {
     // Empty leaf tables are explicit. Empty parents are implied by their children.
     !table.started && table.insert_at.is_none() && !table.encoded_key.is_empty()
@@ -137,7 +140,7 @@ fn required_table(table: &Table) -> bool {
 #[derive(Clone, Debug)]
 pub(crate) struct Table {
     encoded_key: Vec<String>,
-    pos: usize,
+    pos: Pos,
     // Frozen when the first child starts. Later body entries belong at this boundary.
     insert_at: Option<usize>,
     started: bool,
