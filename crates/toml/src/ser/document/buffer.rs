@@ -16,7 +16,7 @@ impl Buffer {
 
     /// Reset the buffer for serializing another document
     pub fn clear(&mut self) {
-        self.tables.clear();
+        *self = Self::default();
     }
 
     pub(crate) fn root_table(&mut self) -> Table {
