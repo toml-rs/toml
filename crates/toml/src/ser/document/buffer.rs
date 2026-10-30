@@ -32,7 +32,8 @@ impl Buffer {
 
     pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
         self.begin_children(parent);
-        let mut path = parent.encoded_key.clone();
+        let mut path = Vec::with_capacity(parent.encoded_key.len() + 1);
+        path.extend(parent.encoded_key.iter().cloned());
         path.push(encoded_key);
         self.new_table(path)
     }
