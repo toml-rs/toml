@@ -405,11 +405,7 @@ impl KeyMetrics {
     fn calculate(s: &str) -> Self {
         let mut metrics = Self::new();
 
-        // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
-        if !s.is_empty()
-            && s.bytes()
-                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_'))
-        {
+        if !s.is_empty() && s.bytes().all(is_bare_key_byte) {
             return metrics;
         }
         metrics.unquoted = false;
@@ -437,4 +433,9 @@ impl KeyMetrics {
 
         metrics
     }
+}
+
+fn is_bare_key_byte(byte: u8) -> bool {
+    // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
+    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_')
 }
