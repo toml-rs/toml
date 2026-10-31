@@ -30,18 +30,21 @@ impl Buffer {
         self.new_table(String::new())
     }
 
-    pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
+    pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_child_key: String) -> Table {
         self.begin_children(parent);
-        let path = if parent.encoded_key.is_empty() {
-            encoded_key
+        let encoded_key = if parent.encoded_key.is_empty() {
+            encoded_child_key
         } else {
-            let mut path = String::with_capacity(parent.encoded_key.len() + 1 + encoded_key.len());
-            path.push_str(&parent.encoded_key);
-            path.key_sep().expect("writing to a String cannot fail");
-            path.push_str(&encoded_key);
-            path
+            let mut encoded_key =
+                String::with_capacity(parent.encoded_key.len() + 1 + encoded_child_key.len());
+            encoded_key.push_str(&parent.encoded_key);
+            encoded_key
+                .key_sep()
+                .expect("writing to a String cannot fail");
+            encoded_key.push_str(&encoded_child_key);
+            encoded_key
         };
-        self.new_table(path)
+        self.new_table(encoded_key)
     }
 
     pub(crate) fn element_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
