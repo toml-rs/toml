@@ -27,23 +27,40 @@ impl Buffer {
     }
 
     pub(crate) fn root_table(&mut self) -> Table {
-        self.new_table(Vec::new())
+        self.new_table(String::new())
     }
 
-    pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
+    pub(crate) fn child_table(
+        &mut self,
+        parent: &mut Table,
+        write_key: impl FnOnce(&mut String) -> Result<(), super::Error>,
+    ) -> Result<Table, super::Error> {
+        let encoded_key = self.child_encoded_key(parent, write_key)?;
+        Ok(self.new_table(encoded_key))
+    }
+
+    pub(crate) fn child_encoded_key(
+        &mut self,
+        parent: &mut Table,
+        write_key: impl FnOnce(&mut String) -> Result<(), super::Error>,
+    ) -> Result<String, super::Error> {
+        let mut encoded_key = String::new();
+        if !parent.encoded_key.is_empty() {
+            encoded_key.push_str(&parent.encoded_key);
+            encoded_key.key_sep()?;
+        }
+        write_key(&mut encoded_key)?;
         self.begin_children(parent);
-        let mut path = parent.encoded_key.clone();
-        path.push(encoded_key);
-        self.new_table(path)
+        Ok(encoded_key)
     }
 
-    pub(crate) fn element_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
-        let mut table = self.child_table(parent, encoded_key);
+    pub(crate) fn element_table(&mut self, encoded_key: String) -> Table {
+        let mut table = self.new_table(encoded_key);
         table.array = true;
         table
     }
 
-    fn new_table(&mut self, encoded_key: Vec<String>) -> Table {
+    fn new_table(&mut self, encoded_key: String) -> Table {
         let pos = self.next_table_pos();
         Table {
             encoded_key,
@@ -60,7 +77,7 @@ impl Buffer {
         pos
     }
 
-    pub(crate) fn begin_children(&mut self, table: &mut Table) {
+    fn begin_children(&mut self, table: &mut Table) {
         if table.insert_at.is_none() {
             // An array element needs its own header even if it only contains child tables.
             if table.array && !table.started {
@@ -150,9 +167,9 @@ fn required_table(table: &Table) -> bool {
     !table.started && table.insert_at.is_none() && !table.encoded_key.is_empty()
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub(crate) struct Table {
-    encoded_key: Vec<String>,
+    encoded_key: String,
     pos: Pos,
     // Frozen when the first child starts. Later body entries belong at this boundary.
     insert_at: Option<InsertionOffset>,
@@ -162,17 +179,13 @@ pub(crate) struct Table {
 
 impl Table {
     fn write_header(&self, dst: &mut String) -> core::fmt::Result {
-        if let Some((first, rest)) = self.encoded_key.split_first() {
+        if !self.encoded_key.is_empty() {
             if self.array {
                 dst.open_array_of_tables_header()?;
             } else {
                 dst.open_table_header()?;
             }
-            dst.push_str(first);
-            for key in rest {
-                dst.key_sep()?;
-                dst.push_str(key);
-            }
+            dst.push_str(&self.encoded_key);
             if self.array {
                 dst.close_array_of_tables_header()?;
             } else {
