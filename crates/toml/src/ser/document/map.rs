@@ -1,4 +1,3 @@
-use toml_writer::ToTomlKey as _;
 use toml_writer::TomlWrite as _;
 
 use super::Buffer;
@@ -56,21 +55,13 @@ impl<'d> SerializeDocumentTable<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::ArrayOfTables => {
-                let mut encoded_key = String::new();
-                write_key(&mut encoded_key)?;
-                self.buf.begin_children(&mut self.table);
-                let value_serializer = ArrayOfTablesSerializer::new(
-                    self.buf,
-                    self.table.clone(),
-                    encoded_key,
-                    self.style,
-                );
+                let encoded_key = self.buf.child_encoded_key(&mut self.table, write_key)?;
+                let value_serializer =
+                    ArrayOfTablesSerializer::new(self.buf, encoded_key, self.style);
                 value.serialize(value_serializer)?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let mut encoded_key = String::new();
-                write_key(&mut encoded_key)?;
-                let child = self.buf.child_table(&mut self.table, encoded_key);
+                let child = self.buf.child_table(&mut self.table, write_key)?;
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
@@ -154,17 +145,17 @@ impl<'d> serde_core::ser::SerializeStruct for SerializeDocumentTable<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::ArrayOfTables => {
-                self.buf.begin_children(&mut self.table);
-                let value_serializer = ArrayOfTablesSerializer::new(
-                    self.buf,
-                    self.table.clone(),
-                    key.to_toml_key(),
-                    self.style,
-                );
+                let encoded_key = self
+                    .buf
+                    .child_encoded_key(&mut self.table, |dst| dst.key(key).map_err(Error::from))?;
+                let value_serializer =
+                    ArrayOfTablesSerializer::new(self.buf, encoded_key, self.style);
                 value.serialize(value_serializer)?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.buf.child_table(&mut self.table, key.to_toml_key());
+                let child = self
+                    .buf
+                    .child_table(&mut self.table, |dst| dst.key(key).map_err(Error::from))?;
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }

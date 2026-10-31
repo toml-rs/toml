@@ -10,7 +10,6 @@ mod buffer;
 mod map;
 mod strategy;
 
-use toml_writer::ToTomlKey as _;
 use toml_writer::TomlWrite as _;
 
 use super::Error;
@@ -202,7 +201,9 @@ impl<'d> serde_core::ser::Serializer for Serializer<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::Table | SerializationStrategy::Unknown => {
-                let child = self.buf.child_table(&mut self.table, variant.to_toml_key());
+                let child = self
+                    .buf
+                    .child_table(&mut self.table, |dst| dst.key(variant).map_err(Error::from))?;
                 let value_serializer = Serializer::with_table(self.buf, child, self.style);
                 value.serialize(value_serializer)?;
             }
@@ -259,7 +260,9 @@ impl<'d> serde_core::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let child = self.buf.child_table(&mut self.table, variant.to_toml_key());
+        let child = self
+            .buf
+            .child_table(&mut self.table, |dst| dst.key(variant).map_err(Error::from))?;
         self.buf.push(self.table);
         map::SerializeDocumentTable::map(self.buf, child, self.style)
     }

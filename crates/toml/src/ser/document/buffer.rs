@@ -30,25 +30,32 @@ impl Buffer {
         self.new_table(String::new())
     }
 
-    pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_child_key: String) -> Table {
-        self.begin_children(parent);
-        let encoded_key = if parent.encoded_key.is_empty() {
-            encoded_child_key
-        } else {
-            let mut encoded_key =
-                String::with_capacity(parent.encoded_key.len() + 1 + encoded_child_key.len());
-            encoded_key.push_str(&parent.encoded_key);
-            encoded_key
-                .key_sep()
-                .expect("writing to a String cannot fail");
-            encoded_key.push_str(&encoded_child_key);
-            encoded_key
-        };
-        self.new_table(encoded_key)
+    pub(crate) fn child_table(
+        &mut self,
+        parent: &mut Table,
+        write_key: impl FnOnce(&mut String) -> Result<(), super::Error>,
+    ) -> Result<Table, super::Error> {
+        let encoded_key = self.child_encoded_key(parent, write_key)?;
+        Ok(self.new_table(encoded_key))
     }
 
-    pub(crate) fn element_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
-        let mut table = self.child_table(parent, encoded_key);
+    pub(crate) fn child_encoded_key(
+        &mut self,
+        parent: &mut Table,
+        write_key: impl FnOnce(&mut String) -> Result<(), super::Error>,
+    ) -> Result<String, super::Error> {
+        let mut encoded_key = String::new();
+        if !parent.encoded_key.is_empty() {
+            encoded_key.push_str(&parent.encoded_key);
+            encoded_key.key_sep()?;
+        }
+        write_key(&mut encoded_key)?;
+        self.begin_children(parent);
+        Ok(encoded_key)
+    }
+
+    pub(crate) fn element_table(&mut self, encoded_key: String) -> Table {
+        let mut table = self.new_table(encoded_key);
         table.array = true;
         table
     }
@@ -70,7 +77,7 @@ impl Buffer {
         pos
     }
 
-    pub(crate) fn begin_children(&mut self, table: &mut Table) {
+    fn begin_children(&mut self, table: &mut Table) {
         if table.insert_at.is_none() {
             // An array element needs its own header even if it only contains child tables.
             if table.array && !table.started {
@@ -160,7 +167,7 @@ fn required_table(table: &Table) -> bool {
     !table.started && table.insert_at.is_none() && !table.encoded_key.is_empty()
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub(crate) struct Table {
     encoded_key: String,
     pos: Pos,

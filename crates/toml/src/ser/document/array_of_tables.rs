@@ -1,13 +1,11 @@
 use super::Buffer;
 use super::Error;
 use super::Serializer;
-use super::Table;
 use super::style::Style;
 use crate::alloc_prelude::*;
 
 pub(crate) struct ArrayOfTablesSerializer<'d> {
     buf: &'d mut Buffer,
-    parent: Table,
     encoded_key: String,
     style: Style,
 }
@@ -17,15 +15,9 @@ impl<'d> ArrayOfTablesSerializer<'d> {
     ///
     /// The serializer can then be used to serialize a type after which the data
     /// will be present in `dst`.
-    pub(crate) fn new(
-        buf: &'d mut Buffer,
-        parent: Table,
-        encoded_key: String,
-        style: Style,
-    ) -> Self {
+    pub(crate) fn new(buf: &'d mut Buffer, encoded_key: String, style: Style) -> Self {
         Self {
             buf,
-            parent,
             encoded_key,
             style,
         }
@@ -154,7 +146,6 @@ impl<'d> serde_core::ser::Serializer for ArrayOfTablesSerializer<'d> {
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         Ok(SerializeArrayOfTablesSerializer::seq(
             self.buf,
-            self.parent,
             self.encoded_key,
             self.style,
         ))
@@ -208,21 +199,14 @@ impl<'d> serde_core::ser::Serializer for ArrayOfTablesSerializer<'d> {
 #[doc(hidden)]
 pub(crate) struct SerializeArrayOfTablesSerializer<'d> {
     buf: &'d mut Buffer,
-    parent: Table,
     encoded_key: String,
     style: Style,
 }
 
 impl<'d> SerializeArrayOfTablesSerializer<'d> {
-    pub(crate) fn seq(
-        buf: &'d mut Buffer,
-        parent: Table,
-        encoded_key: String,
-        style: Style,
-    ) -> Self {
+    pub(crate) fn seq(buf: &'d mut Buffer, encoded_key: String, style: Style) -> Self {
         Self {
             buf,
-            parent,
             encoded_key,
             style,
         }
@@ -241,9 +225,7 @@ impl<'d> serde_core::ser::SerializeSeq for SerializeArrayOfTablesSerializer<'d> 
     where
         T: serde_core::ser::Serialize + ?Sized,
     {
-        let child = self
-            .buf
-            .element_table(&mut self.parent, self.encoded_key.clone());
+        let child = self.buf.element_table(self.encoded_key.clone());
         let value_serializer = Serializer::with_table(self.buf, child, self.style);
         value.serialize(value_serializer)?;
         Ok(())
