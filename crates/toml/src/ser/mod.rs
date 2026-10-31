@@ -69,7 +69,7 @@ where
     let mut output = Buffer::new();
     let serializer = Serializer::new(&mut output);
     value.serialize(serializer)?;
-    Ok(output.to_string())
+    Ok(output.into_string())
 }
 
 /// Serialize the given data structure as a "pretty" String of TOML.
@@ -89,5 +89,5 @@ where
     let mut output = Buffer::new();
     let serializer = Serializer::pretty(&mut output);
     value.serialize(serializer)?;
-    Ok(output.to_string())
+    Ok(output.into_string())
 }

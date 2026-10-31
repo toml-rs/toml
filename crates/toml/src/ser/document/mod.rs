@@ -191,7 +191,7 @@ impl<'d> serde_core::ser::Serializer for Serializer<'d> {
     {
         match SerializationStrategy::from(value) {
             SerializationStrategy::Value | SerializationStrategy::ArrayOfTables => {
-                let dst = self.table.body_mut();
+                let dst = self.buf.ensure_body(&mut self.table);
 
                 dst.key(variant)?;
                 dst.space()?;

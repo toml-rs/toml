@@ -24,7 +24,7 @@ impl<'d> SerializeDocumentTupleVariant<'d> {
         _len: usize,
         style: Style,
     ) -> Result<Self, Error> {
-        let dst = table.body_mut();
+        let dst = buf.ensure_body(&mut table);
         dst.key(variant)?;
         dst.space()?;
         dst.keyval_sep()?;
@@ -47,7 +47,7 @@ impl<'d> serde_core::ser::SerializeTupleVariant for SerializeDocumentTupleVarian
     where
         T: serde_core::ser::Serialize + ?Sized,
     {
-        let dst = self.table.body_mut();
+        let dst = self.buf.ensure_body(&mut self.table);
 
         if self.style.multiline_array {
             dst.newline()?;
@@ -67,7 +67,7 @@ impl<'d> serde_core::ser::SerializeTupleVariant for SerializeDocumentTupleVarian
     }
 
     fn end(mut self) -> Result<Self::Ok, Self::Error> {
-        let dst = self.table.body_mut();
+        let dst = self.buf.ensure_body(&mut self.table);
         if self.style.multiline_array && self.seen_value {
             dst.newline()?;
         }

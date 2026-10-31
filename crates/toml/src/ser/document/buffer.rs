@@ -1,3 +1,5 @@
+use alloc::collections::BTreeMap;
+
 use toml_writer::TomlWrite as _;
 
 use crate::alloc_prelude::*;
@@ -5,7 +7,10 @@ use crate::alloc_prelude::*;
 /// TOML Document serialization buffer
 #[derive(Debug, Default)]
 pub struct Buffer {
-    tables: Vec<Option<Table>>,
+    output: String,
+    // Original byte offset and table creation order. Implicit parents can share an offset.
+    insertions: BTreeMap<(InsertionOffset, Pos), String>,
+    next_table_pos: Pos,
 }
 
 impl Buffer {
@@ -16,20 +21,20 @@ impl Buffer {
 
     /// Reset the buffer for serializing another document
     pub fn clear(&mut self) {
-        self.tables.clear();
+        self.output.clear();
+        self.insertions.clear();
+        self.next_table_pos = Pos::default();
     }
 
     pub(crate) fn root_table(&mut self) -> Table {
-        self.new_table(None)
+        self.new_table(Vec::new())
     }
 
     pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
-        parent.has_children = true;
-        let mut encoded_key_path = parent.encoded_key.clone();
-        encoded_key_path
-            .get_or_insert_with(Vec::new)
-            .push(encoded_key);
-        self.new_table(encoded_key_path)
+        self.begin_children(parent);
+        let mut path = parent.encoded_key.clone();
+        path.push(encoded_key);
+        self.new_table(path)
     }
 
     pub(crate) fn element_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
@@ -38,96 +43,143 @@ impl Buffer {
         table
     }
 
-    pub(crate) fn new_table(&mut self, encoded_key: Option<Vec<String>>) -> Table {
-        let pos = self.tables.len();
-        let table = Table {
+    fn new_table(&mut self, encoded_key: Vec<String>) -> Table {
+        let pos = self.next_table_pos();
+        Table {
             encoded_key,
-            body: String::new(),
-            has_children: false,
             pos,
+            insert_at: None,
+            started: false,
             array: false,
-        };
-        self.tables.push(None);
-        table
+        }
     }
 
-    pub(crate) fn push(&mut self, table: Table) {
-        let pos = table.pos;
-        self.tables[pos] = Some(table);
+    fn next_table_pos(&mut self) -> Pos {
+        let pos = self.next_table_pos;
+        self.next_table_pos.0 += 1;
+        pos
+    }
+
+    pub(crate) fn begin_children(&mut self, table: &mut Table) {
+        if table.insert_at.is_none() {
+            // An array element needs its own header even if it only contains child tables.
+            if table.array && !table.started {
+                self.ensure_body(table);
+            }
+            table.insert_at = Some(self.insertion_offset());
+        }
+    }
+
+    pub(crate) fn ensure_body(&mut self, table: &mut Table) -> &mut String {
+        let (dst, offset) = if let Some(offset) = table.insert_at {
+            (
+                self.insertions.entry((offset, table.pos)).or_default(),
+                offset,
+            )
+        } else {
+            let offset = self.insertion_offset();
+            (&mut self.output, offset)
+        };
+        if !table.started {
+            if offset != InsertionOffset::start() {
+                dst.push('\n');
+            }
+            table
+                .write_header(dst)
+                .expect("writing to a String cannot fail");
+            table.started = true;
+        }
+        dst
+    }
+
+    fn insertion_offset(&self) -> InsertionOffset {
+        InsertionOffset(self.output.len())
+    }
+
+    pub(crate) fn push(&mut self, mut table: Table) {
+        if required_table(&table) {
+            self.ensure_body(&mut table);
+        }
+    }
+
+    pub(crate) fn into_string(mut self) -> String {
+        for ((offset, _), mut text) in self.insertions.into_iter().rev() {
+            if offset == InsertionOffset::start() && !self.output.is_empty() {
+                text.push('\n');
+            }
+            self.output.insert_str(offset.0, &text);
+        }
+        self.output
     }
 }
 
 impl core::fmt::Display for Buffer {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut tables = self
-            .tables
-            .iter()
-            .filter_map(|t| t.as_ref())
-            .filter(|t| required_table(t));
-        if let Some(table) = tables.next() {
-            table.fmt(f)?;
+        let mut start = InsertionOffset::start();
+        let mut leading_section = false;
+        for (&(offset, _), text) in &self.insertions {
+            if leading_section {
+                f.write_str("\n")?;
+            }
+            f.write_str(&self.output[start.0..offset.0])?;
+            f.write_str(text)?;
+            start = offset;
+            leading_section = offset == InsertionOffset::start();
         }
-        for table in tables {
-            f.newline()?;
-            table.fmt(f)?;
+        if leading_section && !self.output.is_empty() {
+            f.write_str("\n")?;
         }
-        Ok(())
+        f.write_str(&self.output[start.0..])
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+struct Pos(usize);
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct InsertionOffset(usize);
+
+impl InsertionOffset {
+    const fn start() -> Self {
+        Self(0)
     }
 }
 
 fn required_table(table: &Table) -> bool {
-    if table.encoded_key.is_none() {
-        !table.body.is_empty()
-    } else {
-        table.array || !table.body.is_empty() || !table.has_children
-    }
+    // Empty leaf tables are explicit. Empty parents are implied by their children.
+    !table.started && table.insert_at.is_none() && !table.encoded_key.is_empty()
 }
 
 #[derive(Clone, Debug)]
 pub(crate) struct Table {
-    encoded_key: Option<Vec<String>>,
-    body: String,
-    has_children: bool,
+    encoded_key: Vec<String>,
+    pos: Pos,
+    // Frozen when the first child starts. Later body entries belong at this boundary.
+    insert_at: Option<InsertionOffset>,
+    started: bool,
     array: bool,
-    pos: usize,
 }
 
 impl Table {
-    pub(crate) fn body_mut(&mut self) -> &mut String {
-        &mut self.body
-    }
-
-    pub(crate) fn has_children(&mut self, yes: bool) {
-        self.has_children = yes;
-    }
-}
-
-impl core::fmt::Display for Table {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        if let Some(encoded_key) = &self.encoded_key {
+    fn write_header(&self, dst: &mut String) -> core::fmt::Result {
+        if let Some((first, rest)) = self.encoded_key.split_first() {
             if self.array {
-                f.open_array_of_tables_header()?;
+                dst.open_array_of_tables_header()?;
             } else {
-                f.open_table_header()?;
+                dst.open_table_header()?;
             }
-            let mut encoded_keys = encoded_key.iter();
-            if let Some(encoded_key) = encoded_keys.next() {
-                write!(f, "{encoded_key}")?;
-            }
-            for encoded_key in encoded_keys {
-                f.key_sep()?;
-                write!(f, "{encoded_key}")?;
+            dst.push_str(first);
+            for key in rest {
+                dst.key_sep()?;
+                dst.push_str(key);
             }
             if self.array {
-                f.close_array_of_tables_header()?;
+                dst.close_array_of_tables_header()?;
             } else {
-                f.close_table_header()?;
+                dst.close_table_header()?;
             }
-            f.newline()?;
+            dst.newline()?;
         }
-
-        self.body.fmt(f)?;
-
         Ok(())
     }
 }

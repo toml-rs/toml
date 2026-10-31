@@ -45,7 +45,7 @@ impl<'d> SerializeDocumentTable<'d> {
     {
         match SerializationStrategy::from(value) {
             SerializationStrategy::Value => {
-                let dst = self.table.body_mut();
+                let dst = self.buf.ensure_body(&mut self.table);
 
                 write_key(dst)?;
                 dst.space()?;
@@ -58,7 +58,7 @@ impl<'d> SerializeDocumentTable<'d> {
             SerializationStrategy::ArrayOfTables => {
                 let mut encoded_key = String::new();
                 write_key(&mut encoded_key)?;
-                self.table.has_children(true);
+                self.buf.begin_children(&mut self.table);
                 let value_serializer = ArrayOfTablesSerializer::new(
                     self.buf,
                     self.table.clone(),
@@ -143,7 +143,7 @@ impl<'d> serde_core::ser::SerializeStruct for SerializeDocumentTable<'d> {
     {
         match SerializationStrategy::from(value) {
             SerializationStrategy::Value => {
-                let dst = self.table.body_mut();
+                let dst = self.buf.ensure_body(&mut self.table);
 
                 dst.key(key)?;
                 dst.space()?;
@@ -154,7 +154,7 @@ impl<'d> serde_core::ser::SerializeStruct for SerializeDocumentTable<'d> {
                 dst.newline()?;
             }
             SerializationStrategy::ArrayOfTables => {
-                self.table.has_children(true);
+                self.buf.begin_children(&mut self.table);
                 let value_serializer = ArrayOfTablesSerializer::new(
                     self.buf,
                     self.table.clone(),
