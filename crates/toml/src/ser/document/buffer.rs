@@ -27,14 +27,20 @@ impl Buffer {
     }
 
     pub(crate) fn root_table(&mut self) -> Table {
-        self.new_table(Vec::new())
+        self.new_table(String::new())
     }
 
     pub(crate) fn child_table(&mut self, parent: &mut Table, encoded_key: String) -> Table {
         self.begin_children(parent);
-        let mut path = Vec::with_capacity(parent.encoded_key.len() + 1);
-        path.extend(parent.encoded_key.iter().cloned());
-        path.push(encoded_key);
+        let path = if parent.encoded_key.is_empty() {
+            encoded_key
+        } else {
+            let mut path = String::with_capacity(parent.encoded_key.len() + 1 + encoded_key.len());
+            path.push_str(&parent.encoded_key);
+            path.key_sep().expect("writing to a String cannot fail");
+            path.push_str(&encoded_key);
+            path
+        };
         self.new_table(path)
     }
 
@@ -44,7 +50,7 @@ impl Buffer {
         table
     }
 
-    fn new_table(&mut self, encoded_key: Vec<String>) -> Table {
+    fn new_table(&mut self, encoded_key: String) -> Table {
         let pos = self.next_table_pos();
         Table {
             encoded_key,
@@ -153,7 +159,7 @@ fn required_table(table: &Table) -> bool {
 
 #[derive(Clone, Debug)]
 pub(crate) struct Table {
-    encoded_key: Vec<String>,
+    encoded_key: String,
     pos: Pos,
     // Frozen when the first child starts. Later body entries belong at this boundary.
     insert_at: Option<InsertionOffset>,
@@ -163,17 +169,13 @@ pub(crate) struct Table {
 
 impl Table {
     fn write_header(&self, dst: &mut String) -> core::fmt::Result {
-        if let Some((first, rest)) = self.encoded_key.split_first() {
+        if !self.encoded_key.is_empty() {
             if self.array {
                 dst.open_array_of_tables_header()?;
             } else {
                 dst.open_table_header()?;
             }
-            dst.push_str(first);
-            for key in rest {
-                dst.key_sep()?;
-                dst.push_str(key);
-            }
+            dst.push_str(&self.encoded_key);
             if self.array {
                 dst.close_array_of_tables_header()?;
             } else {
