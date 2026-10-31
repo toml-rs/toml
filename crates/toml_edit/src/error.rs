@@ -112,9 +112,12 @@ impl std::fmt::Display for TomlError {
             let col_num = column + 1;
             let gutter = line_num.to_string().len();
             let content = input.split('\n').nth(line).expect("valid line number");
-            let highlight_len = span.end - span.start;
+            let highlight_len = input
+                .get(span.clone())
+                .map(|s| s.chars().count())
+                .unwrap_or_else(|| span.end.saturating_sub(span.start));
             // Allow highlight to go one past the line
-            let highlight_len = highlight_len.min(content.len().saturating_sub(column));
+            let highlight_len = highlight_len.min(content.chars().count().saturating_sub(column));
 
             writeln!(f, "TOML parse error at line {line_num}, column {col_num}")?;
             //   |

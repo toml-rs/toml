@@ -8,5 +8,5 @@ invalid fraction, expected digits
 TOML parse error at line 1, column 20
   |
 1 | arabic-zero-01 = 1.٠
-  |                    ^^
+  |                    ^
 invalid float, expected nothing

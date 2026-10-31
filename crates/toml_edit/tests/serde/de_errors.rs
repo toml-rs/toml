@@ -420,4 +420,22 @@ invalid type: integer `1`, expected a string
 
 "#]],
     );
+
+    #[derive(Deserialize, Debug)]
+    #[allow(dead_code)]
+    struct Issue1120 {
+        num: u32,
+    }
+
+    bad::<Issue1120>(
+        "num = 'åäö'",
+        str![[r#"
+TOML parse error at line 1, column 7
+  |
+1 | num = 'åäö'
+  |       ^^^^^
+invalid type: string "åäö", expected u32
+
+"#]],
+    );
 }
