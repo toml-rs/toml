@@ -72,7 +72,7 @@ pub fn to_string<T>(value: &T) -> Result<String, Error>
 where
     T: serde_core::ser::Serialize + ?Sized,
 {
-    to_document(value).map(|e| e.to_string())
+    to_document(value).map(document_to_string)
 }
 
 /// Serialize the given data structure as a "pretty" String of TOML.
@@ -86,7 +86,16 @@ where
 {
     let mut document = to_document(value)?;
     pretty::Pretty::new().visit_document_mut(&mut document);
-    Ok(document.to_string())
+    Ok(document_to_string(document))
+}
+
+#[cfg(feature = "display")]
+fn document_to_string(document: crate::DocumentMut) -> String {
+    use std::fmt::Write as _;
+
+    let mut output = String::with_capacity(128);
+    write!(output, "{document}").expect("writing to a String cannot fail");
+    output
 }
 
 /// Serialize the given data structure into a TOML document.

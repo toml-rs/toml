@@ -5,12 +5,22 @@ use toml_writer::TomlWrite as _;
 use crate::alloc_prelude::*;
 
 /// TOML Document serialization buffer
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Buffer {
     output: String,
     // Original byte offset and table creation order. Implicit parents can share an offset.
     insertions: BTreeMap<(InsertionOffset, Pos), String>,
     next_table_pos: Pos,
+}
+
+impl Default for Buffer {
+    fn default() -> Self {
+        Self {
+            output: String::with_capacity(128),
+            insertions: BTreeMap::new(),
+            next_table_pos: Pos::default(),
+        }
+    }
 }
 
 impl Buffer {
