@@ -56,6 +56,7 @@ impl<'s> TomlStringBuilder<'s> {
             Some(TomlString {
                 decoded: self.decoded,
                 encoding: Encoding::LiteralString,
+                subset: self.metrics.subset,
                 newline: self.metrics.newline,
             })
         }
@@ -68,6 +69,7 @@ impl<'s> TomlStringBuilder<'s> {
             Some(TomlString {
                 decoded: self.decoded,
                 encoding: Encoding::MlLiteralString,
+                subset: self.metrics.subset,
                 newline: self.metrics.newline,
             })
         }
@@ -100,6 +102,7 @@ impl<'s> TomlStringBuilder<'s> {
         TomlString {
             decoded: self.decoded,
             encoding: Encoding::BasicString,
+            subset: self.metrics.subset,
             newline: self.metrics.newline,
         }
     }
@@ -108,6 +111,7 @@ impl<'s> TomlStringBuilder<'s> {
         TomlString {
             decoded: self.decoded,
             encoding: Encoding::MlBasicString,
+            subset: self.metrics.subset,
             newline: self.metrics.newline,
         }
     }
@@ -117,12 +121,19 @@ impl<'s> TomlStringBuilder<'s> {
 pub struct TomlString<'s> {
     decoded: &'s str,
     encoding: Encoding,
+    subset: bool,
     newline: bool,
 }
 
 impl crate::WriteTomlValue for TomlString<'_> {
     fn write_toml_value<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> core::fmt::Result {
-        write_toml_value(self.decoded, Some(self.encoding), self.newline, writer)
+        write_toml_value(
+            self.decoded,
+            Some(self.encoding),
+            self.subset,
+            self.newline,
+            writer,
+        )
     }
 }
 
@@ -193,8 +204,9 @@ pub struct TomlKey<'s> {
 
 impl crate::WriteTomlKey for TomlKey<'_> {
     fn write_toml_key<W: crate::TomlWrite + ?Sized>(&self, writer: &mut W) -> core::fmt::Result {
+        let subset = false;
         let newline = false;
-        write_toml_value(self.decoded, self.encoding, newline, writer)
+        write_toml_value(self.decoded, self.encoding, subset, newline, writer)
     }
 }
 
@@ -213,6 +225,7 @@ impl Encoding {}
 fn write_toml_value<W: crate::TomlWrite + ?Sized>(
     decoded: &str,
     encoding: Option<Encoding>,
+    subset: bool,
     newline: bool,
     writer: &mut W,
 ) -> core::fmt::Result {
@@ -223,103 +236,113 @@ fn write_toml_value<W: crate::TomlWrite + ?Sized>(
         Some(Encoding::MlBasicString) => "\"\"\"",
         None => "",
     };
-    let escaped = match encoding {
-        Some(Encoding::LiteralString) | Some(Encoding::MlLiteralString) => false,
-        Some(Encoding::BasicString) | Some(Encoding::MlBasicString) => true,
-        None => false,
-    };
-    let is_ml = match encoding {
-        Some(Encoding::LiteralString) | Some(Encoding::BasicString) => false,
-        Some(Encoding::MlLiteralString) | Some(Encoding::MlBasicString) => true,
-        None => false,
-    };
-    let newline_prefix = newline && is_ml;
 
-    writer.write_str(delimiter)?;
-    if newline_prefix {
-        writer.newline()?;
-    }
-    if escaped {
-        // ```bnf
-        // basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
-        // wschar =  %x20  ; Space
-        // wschar =/ %x09  ; Horizontal tab
-        // escape = %x5C                   ; \
-        // ```
-        let max_seq_double_quotes = if is_ml { 2 } else { 0 };
-        let mut stream = decoded;
-        while !stream.is_empty() {
-            let mut unescaped_end = 0;
-            let mut escaped = None;
-            let mut seq_double_quotes = 0;
-            for (i, b) in stream.as_bytes().iter().enumerate() {
-                if *b == b'"' {
-                    seq_double_quotes += 1;
-                    if max_seq_double_quotes < seq_double_quotes {
-                        escaped = Some(r#"\""#);
-                        break;
-                    }
-                } else {
-                    seq_double_quotes = 0;
-                }
+    if subset {
+        writer.write_str(delimiter)?;
+        writer.write_str(decoded)?;
+        writer.write_str(delimiter)?;
+    } else {
+        let escaped = match encoding {
+            Some(Encoding::LiteralString) | Some(Encoding::MlLiteralString) => false,
+            Some(Encoding::BasicString) | Some(Encoding::MlBasicString) => true,
+            None => false,
+        };
+        let is_ml = match encoding {
+            Some(Encoding::LiteralString) | Some(Encoding::BasicString) => false,
+            Some(Encoding::MlLiteralString) | Some(Encoding::MlBasicString) => true,
+            None => false,
+        };
+        let newline_prefix = newline && is_ml;
 
-                match *b {
-                    0x8 => {
-                        escaped = Some(r#"\b"#);
-                        break;
-                    }
-                    0x9 => {
-                        escaped = Some(r#"\t"#);
-                        break;
-                    }
-                    0xa => {
-                        if !is_ml {
-                            escaped = Some(r#"\n"#);
+        writer.write_str(delimiter)?;
+        if newline_prefix {
+            writer.newline()?;
+        }
+        if escaped {
+            // ```bnf
+            // basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+            // wschar =  %x20  ; Space
+            // wschar =/ %x09  ; Horizontal tab
+            // escape = %x5C                   ; \
+            // ```
+            let max_seq_double_quotes = if is_ml { 2 } else { 0 };
+            let mut stream = decoded;
+            while !stream.is_empty() {
+                let mut unescaped_end = 0;
+                let mut escaped = None;
+                let mut seq_double_quotes = 0;
+                for (i, b) in stream.as_bytes().iter().enumerate() {
+                    if *b == b'"' {
+                        seq_double_quotes += 1;
+                        if max_seq_double_quotes < seq_double_quotes {
+                            escaped = Some(r#"\""#);
                             break;
                         }
+                    } else {
+                        seq_double_quotes = 0;
                     }
-                    0xc => {
-                        escaped = Some(r#"\f"#);
-                        break;
-                    }
-                    0xd => {
-                        escaped = Some(r#"\r"#);
-                        break;
-                    }
-                    0x22 => {} // double quote handled earlier
-                    0x5c => {
-                        escaped = Some(r#"\\"#);
-                        break;
-                    }
-                    c if c <= 0x1f || c == 0x7f => {
-                        break;
-                    }
-                    _ => {}
-                }
 
-                unescaped_end = i + 1;
+                    match *b {
+                        0x8 => {
+                            escaped = Some(r#"\b"#);
+                            break;
+                        }
+                        0x9 => {
+                            escaped = Some(r#"\t"#);
+                            break;
+                        }
+                        0xa => {
+                            if !is_ml {
+                                escaped = Some(r#"\n"#);
+                                break;
+                            }
+                        }
+                        0xc => {
+                            escaped = Some(r#"\f"#);
+                            break;
+                        }
+                        0xd => {
+                            escaped = Some(r#"\r"#);
+                            break;
+                        }
+                        0x22 => {} // double quote handled earlier
+                        0x5c => {
+                            escaped = Some(r#"\\"#);
+                            break;
+                        }
+                        c if c <= 0x1f || c == 0x7f => {
+                            break;
+                        }
+                        _ => {}
+                    }
+
+                    unescaped_end = i + 1;
+                }
+                let unescaped = &stream[0..unescaped_end];
+                let escaped_str = escaped.unwrap_or("");
+                let end = unescaped_end + if escaped.is_some() { 1 } else { 0 };
+                stream = &stream[end..];
+                writer.write_str(unescaped)?;
+                writer.write_str(escaped_str)?;
+                if escaped.is_none() && !stream.is_empty() {
+                    let b = stream.as_bytes().first().unwrap();
+                    write!(writer, "\\u{:04X}", *b as u32)?;
+                    stream = &stream[1..];
+                }
             }
-            let unescaped = &stream[0..unescaped_end];
-            let escaped_str = escaped.unwrap_or("");
-            let end = unescaped_end + if escaped.is_some() { 1 } else { 0 };
-            stream = &stream[end..];
-            writer.write_str(unescaped)?;
-            writer.write_str(escaped_str)?;
-            if escaped.is_none() && !stream.is_empty() {
-                let b = stream.as_bytes().first().unwrap();
-                write!(writer, "\\u{:04X}", *b as u32)?;
-                stream = &stream[1..];
-            }
+        } else {
+            writer.write_str(decoded)?;
         }
-    } else {
-        writer.write_str(decoded)?;
+        writer.write_str(delimiter)?;
     }
-    writer.write_str(delimiter)?;
+
     Ok(())
 }
 
 #[derive(Copy, Clone, Debug)]
 struct ValueMetrics {
+    // Subset of all string types
+    subset: bool,
     max_seq_single_quotes: u8,
     max_seq_double_quotes: u8,
     escape_codes: bool,
@@ -330,6 +353,7 @@ struct ValueMetrics {
 impl ValueMetrics {
     fn new() -> Self {
         Self {
+            subset: false,
             max_seq_single_quotes: 0,
             max_seq_double_quotes: 0,
             escape_codes: false,
@@ -340,6 +364,11 @@ impl ValueMetrics {
 
     fn calculate(s: &str) -> Self {
         let mut metrics = Self::new();
+
+        if s.bytes().all(is_bare_key_byte) {
+            metrics.subset = true;
+            return metrics;
+        }
 
         let mut prev_single_quotes = Saturating(0);
         let mut prev_double_quotes = Saturating(0);
@@ -405,16 +434,13 @@ impl KeyMetrics {
     fn calculate(s: &str) -> Self {
         let mut metrics = Self::new();
 
-        metrics.unquoted = !s.is_empty();
+        if !s.is_empty() && s.bytes().all(is_bare_key_byte) {
+            return metrics;
+        }
+        metrics.unquoted = false;
 
         for byte in s.as_bytes() {
-            if !matches!(*byte, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'_') {
-                metrics.unquoted = false;
-            }
-
             // ```bnf
-            // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
-            //
             // literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
             //
             // basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
@@ -436,4 +462,9 @@ impl KeyMetrics {
 
         metrics
     }
+}
+
+fn is_bare_key_byte(byte: u8) -> bool {
+    // unquoted-key = 1*( ALPHA / DIGIT / %x2D / %x5F ) ; A-Z / a-z / 0-9 / - / _
+    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_')
 }
