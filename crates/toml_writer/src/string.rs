@@ -341,6 +341,10 @@ impl ValueMetrics {
     fn calculate(s: &str) -> Self {
         let mut metrics = Self::new();
 
+        if s.bytes().all(is_bare_key_byte) {
+            return metrics;
+        }
+
         let mut prev_single_quotes = Saturating(0);
         let mut prev_double_quotes = Saturating(0);
         for byte in s.as_bytes() {
