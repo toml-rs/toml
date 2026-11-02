@@ -365,7 +365,11 @@ impl ValueMetrics {
     fn calculate(s: &str) -> Self {
         let mut metrics = Self::new();
 
-        if s.bytes().all(is_bare_key_byte) {
+        // Is the string a perfwct subset of all encodings? Only focused on most common characters
+        // for no to be safe against changes to "pretty" formatting that might arise.
+        if s.bytes()
+            .all(|b| is_bare_key_byte(b) || matches!(b, b'.' | b'/' | b' ' | b':'))
+        {
             metrics.subset = true;
             return metrics;
         }
