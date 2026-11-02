@@ -54,7 +54,8 @@ impl Buffer {
         parent: &mut Table,
         write_key: impl FnOnce(&mut String) -> Result<(), super::Error>,
     ) -> Result<String, super::Error> {
-        let mut encoded_key = String::new();
+        const SEP_KEY_ESTIMATE: usize = 20;
+        let mut encoded_key = String::with_capacity(parent.encoded_key.len() + SEP_KEY_ESTIMATE);
         if !parent.encoded_key.is_empty() {
             encoded_key.push_str(&parent.encoded_key);
             encoded_key.key_sep()?;
