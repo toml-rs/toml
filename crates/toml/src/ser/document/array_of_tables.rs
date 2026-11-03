@@ -213,6 +213,7 @@ impl<'d> SerializeArrayOfTablesSerializer<'d> {
     }
 
     fn end(self) -> Result<&'d mut Buffer, Error> {
+        self.buf.recycle_allocation(self.encoded_key);
         Ok(self.buf)
     }
 }
@@ -225,7 +226,7 @@ impl<'d> serde_core::ser::SerializeSeq for SerializeArrayOfTablesSerializer<'d> 
     where
         T: serde_core::ser::Serialize + ?Sized,
     {
-        let child = self.buf.element_table(self.encoded_key.clone());
+        let child = self.buf.element_table(&self.encoded_key);
         let value_serializer = Serializer::with_table(self.buf, child, self.style);
         value.serialize(value_serializer)?;
         Ok(())
