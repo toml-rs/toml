@@ -8,6 +8,7 @@ use crate::alloc_prelude::*;
 #[derive(Debug)]
 pub struct Buffer {
     output: String,
+    allocation_pool: String,
     // Original byte offset and table creation order. Implicit parents can share an offset.
     insertions: BTreeMap<(InsertionOffset, Pos), String>,
     next_table_pos: Pos,
@@ -17,6 +18,7 @@ impl Default for Buffer {
     fn default() -> Self {
         Self {
             output: String::with_capacity(128),
+            allocation_pool: String::new(),
             insertions: BTreeMap::new(),
             next_table_pos: Pos::default(),
         }
@@ -54,7 +56,7 @@ impl Buffer {
         parent: &mut Table,
         write_key: impl FnOnce(&mut String) -> Result<(), super::Error>,
     ) -> Result<String, super::Error> {
-        let mut encoded_key = String::new();
+        let mut encoded_key = core::mem::take(&mut self.allocation_pool);
         if !parent.encoded_key.is_empty() {
             encoded_key.push_str(&parent.encoded_key);
             encoded_key.key_sep()?;
@@ -64,8 +66,10 @@ impl Buffer {
         Ok(encoded_key)
     }
 
-    pub(crate) fn element_table(&mut self, encoded_key: String) -> Table {
-        let mut table = self.new_table(encoded_key);
+    pub(crate) fn element_table(&mut self, encoded_key: &str) -> Table {
+        let mut element_key = core::mem::take(&mut self.allocation_pool);
+        element_key.push_str(encoded_key);
+        let mut table = self.new_table(element_key);
         table.array = true;
         table
     }
@@ -126,6 +130,14 @@ impl Buffer {
     pub(crate) fn push(&mut self, mut table: Table) {
         if required_table(&table) {
             self.ensure_body(&mut table);
+        }
+        self.recycle_allocation(table.encoded_key);
+    }
+
+    pub(crate) fn recycle_allocation(&mut self, mut encoded_key: String) {
+        if self.allocation_pool.capacity() < encoded_key.capacity() {
+            encoded_key.clear();
+            self.allocation_pool = encoded_key;
         }
     }
 
