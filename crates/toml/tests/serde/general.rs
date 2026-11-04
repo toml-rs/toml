@@ -1221,7 +1221,7 @@ Foo {
     );
     println!("Value::try_from(literal)");
     assert_data_eq!(
-        toml::Value::try_from(literal.clone())
+        toml::Value::try_from(literal)
             .unwrap_err()
             .to_string(),
         str!["u64 value was too large"].raw()
@@ -1284,7 +1284,7 @@ Foo {
     );
     println!("Value::try_from(literal)");
     assert_data_eq!(
-        toml::Value::try_from(literal.clone())
+        toml::Value::try_from(literal)
             .unwrap_err()
             .to_string(),
         str!["i128 is not supported"].raw()
@@ -1347,7 +1347,7 @@ Foo {
     );
     println!("Value::try_from(literal)");
     assert_data_eq!(
-        toml::Value::try_from(literal.clone())
+        toml::Value::try_from(literal)
             .unwrap_err()
             .to_string(),
         str!["i128 is not supported"].raw()
@@ -1410,7 +1410,7 @@ Foo {
     );
     println!("Value::try_from(literal)");
     assert_data_eq!(
-        toml::Value::try_from(literal.clone())
+        toml::Value::try_from(literal)
             .unwrap_err()
             .to_string(),
         str!["u128 is not supported"].raw()
