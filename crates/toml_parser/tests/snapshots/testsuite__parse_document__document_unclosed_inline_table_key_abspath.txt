@@ -1,0 +1,451 @@
+EventResults {
+    input: "\n[package]\nname = \"a_name\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\ncrate1 = { version = \"0.1.0\" }\ncrate2 = { version = \"1.0.0\", features=[] }\n\n[patch.crates-io]\ncrate6 = { \"path = \"/somewhere\" }\n",
+    events: [
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 2..9,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 11..15,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 18..26,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 26..27,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 27..34,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 34..35,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 35..36,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 36..37,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 37..44,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 44..45,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 45..52,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 52..53,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 53..54,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 54..55,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 55..61,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 61..62,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 62..63,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 63..64,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 64..76,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 76..77,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 77..78,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 78..84,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 84..85,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 85..86,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 86..87,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 87..88,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 88..89,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 89..96,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 96..97,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 97..98,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 98..99,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 99..106,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 106..107,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 107..108,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 108..109,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 109..115,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 115..116,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 116..117,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 117..118,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 118..119,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 119..120,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 120..127,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 127..128,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 128..129,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 129..130,
+        },
+        Event {
+            kind: Scalar,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 130..137,
+        },
+        Event {
+            kind: ValueSep,
+            encoding: None,
+            span: 137..138,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 138..139,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 139..147,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 147..148,
+        },
+        Event {
+            kind: ArrayOpen,
+            encoding: None,
+            span: 148..149,
+        },
+        Event {
+            kind: ArrayClose,
+            encoding: None,
+            span: 149..150,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 150..151,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 151..152,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 152..153,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 153..154,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 154..155,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 155..160,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 160..161,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 161..170,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 170..171,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 171..172,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 172..178,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 178..179,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 179..180,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 180..181,
+        },
+        Event {
+            kind: InlineTableOpen,
+            encoding: None,
+            span: 181..182,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 182..183,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: Some(
+                BasicString,
+            ),
+            span: 183..192,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 192..203,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 203..204,
+        },
+        Event {
+            kind: InlineTableClose,
+            encoding: None,
+            span: 204..205,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 205..206,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: Some(
+                181..182,
+            ),
+            description: "missing assignment between key-value pairs",
+            expected: Some(
+                [
+                    Literal(
+                        "=",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                192..192,
+            ),
+        },
+        ParseError {
+            context: Some(
+                192..203,
+            ),
+            description: "missing opening quote",
+            expected: Some(
+                [
+                    Literal(
+                        "\"",
+                    ),
+                ],
+            ),
+            unexpected: Some(
+                192..192,
+            ),
+        },
+    ],
+}

@@ -1,0 +1,20 @@
+[package]
+name = "a_name"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crate1 = { version = "0.1.0" }
+crate2 = { version = "1.0.0", features=[] }
+
+[patch.crates-io]
+crate3."path = "../somewhere"
+crate4."path = "/somewhere"
+crate5 = { "path = "../somewhere" }
+crate6 = { "path = "/somewhere" }
+
+[patch.crates-io.crate7]
+"path = "../somewhere"
+
+[patch.crates-io.crate8]
+"path = "/somewhere"
