@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- *(ser)* Pre-allocate serialization buffer
+- *(ser)* Speed up writing of syntax
+- *(ser)* Speed up writing of strings
+- *(ser)* Speed up writing of keys
+
 ## [0.25.17] - 2026-10-09
 
 ## [0.25.16] - 2026-10-08

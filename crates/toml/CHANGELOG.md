@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- *(ser)* Pre-allocate serialization buffer
+- *(ser)* Speed up writing of syntax
+- *(ser)* Speed up writing of strings
+- *(ser)* Speed up writing of keys
+- *(ser)* Reuse key allocations
+- *(ser)* Only allocate per-table serialization buffers when needed (keys and tables are intermixed)
+
 ## [1.1.8] - 2026-10-09
 
 ### Fixes

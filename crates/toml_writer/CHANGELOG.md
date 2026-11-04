@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Speed up writing of syntax
+- Speed up writing of strings
+- Speed up writing of keys
+
 ## [1.1.3] - 2026-10-08
 
 ## [1.1.2] - 2026-07-14
