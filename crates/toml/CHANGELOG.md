@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- *(de)* Report `size_hint`
+
 ## [1.2.0] - 2026-11-04
 
 ### Performance
