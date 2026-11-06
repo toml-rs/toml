@@ -54,6 +54,10 @@ where
             panic!("next_value_seed called before next_key_seed")
         }
     }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(usize::from(self.date.is_some()))
+    }
 }
 
 /// Integrate [`Datetime`][crate::Datetime] into an untagged deserialize

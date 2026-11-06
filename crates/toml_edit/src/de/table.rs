@@ -171,6 +171,10 @@ impl<'de> serde_core::de::MapAccess<'de> for TableMapAccess {
             }
         }
     }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.iter.len())
+    }
 }
 
 impl<'de> serde_core::de::EnumAccess<'de> for TableMapAccess {
