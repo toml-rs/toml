@@ -84,4 +84,8 @@ impl<'de> serde_core::de::SeqAccess<'de> for ArraySeqAccess {
             None => Ok(None),
         }
     }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.iter.len())
+    }
 }

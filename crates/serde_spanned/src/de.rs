@@ -78,4 +78,12 @@ where
             panic!("next_value_seed called before next_key_seed")
         }
     }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(
+            usize::from(self.start.is_some())
+                + usize::from(self.end.is_some())
+                + usize::from(self.value.is_some()),
+        )
+    }
 }
