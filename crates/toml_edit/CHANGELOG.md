@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.19] - 2026-11-06
+
 ### Performance
 
 - *(de)* Report `size_hint`
@@ -1046,7 +1048,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.18...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.19...HEAD
+[0.25.19]: https://github.com/toml-rs/toml/compare/v0.25.18...v0.25.19
 [0.25.18]: https://github.com/toml-rs/toml/compare/v0.25.17...v0.25.18
 [0.25.17]: https://github.com/toml-rs/toml/compare/v0.25.16...v0.25.17
 [0.25.16]: https://github.com/toml-rs/toml/compare/v0.25.15...v0.25.16

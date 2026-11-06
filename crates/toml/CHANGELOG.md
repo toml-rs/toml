@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.2.1] - 2026-11-06
+
 ### Performance
 
 - *(de)* Report `size_hint`
@@ -569,7 +571,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.2.0...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.2.1...HEAD
+[1.2.1]: https://github.com/toml-rs/toml/compare/toml-v1.2.0...toml-v1.2.1
 [1.2.0]: https://github.com/toml-rs/toml/compare/toml-v1.1.8...toml-v1.2.0
 [1.1.8]: https://github.com/toml-rs/toml/compare/toml-v1.1.7...toml-v1.1.8
 [1.1.7]: https://github.com/toml-rs/toml/compare/toml-v1.1.6...toml-v1.1.7
