@@ -530,3 +530,70 @@ impl EventKind {
         }
     }
 }
+
+#[cfg(all(test, feature = "alloc"))]
+mod tests {
+    use super::RecursionGuard;
+
+    #[test]
+    fn recursion_depth_after_rejected_array_with_matching_close() {
+        assert_final_depth("v=[[]]", 0, 0);
+    }
+
+    #[test]
+    fn recursion_depth_after_rejected_inline_table_with_matching_close() {
+        assert_final_depth("v={a={}}", 0, 0);
+    }
+
+    #[test]
+    fn recursion_depth_after_rejected_array_at_eof() {
+        assert_final_depth("v=[", 0, 1);
+    }
+
+    #[test]
+    fn recursion_depth_after_rejected_inline_table_at_eof() {
+        assert_final_depth("v={", 0, 1);
+    }
+
+    #[test]
+    fn recursion_depth_after_unexpected_array_at_eof() {
+        assert_final_depth("v={[", 1, 0);
+    }
+
+    #[test]
+    fn recursion_depth_after_unexpected_inline_table_at_eof() {
+        assert_final_depth("v={{", 1, 0);
+    }
+
+    #[test]
+    fn recursion_depth_after_array_when_key_expected() {
+        assert_final_depth("v={[] a=[1]}", 1, -1);
+    }
+
+    #[test]
+    fn recursion_depth_after_inline_table_when_key_expected() {
+        assert_final_depth("v={{} a={b=1}}", 1, -1);
+    }
+
+    #[test]
+    fn recursion_depth_after_array_when_comma_expected() {
+        assert_final_depth("v={a=1 []}", 1, -1);
+    }
+
+    #[test]
+    fn recursion_depth_after_inline_table_when_comma_expected() {
+        assert_final_depth("v={a=1 {}}", 1, -1);
+    }
+
+    #[track_caller]
+    fn assert_final_depth(input: &str, max_depth: u32, expected: i64) {
+        let source = crate::Source::new(input);
+        let tokens = source.lex().into_vec();
+        let mut receiver = ();
+        let mut guard = RecursionGuard::new(&mut receiver, max_depth);
+
+        crate::parser::parse_document(&tokens, &mut guard, &mut ());
+
+        assert_eq!(guard.depth, expected);
+    }
+}
