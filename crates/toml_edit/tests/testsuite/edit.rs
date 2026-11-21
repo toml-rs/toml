@@ -3,7 +3,9 @@ use std::iter::FromIterator;
 use snapbox::assert_data_eq;
 use snapbox::prelude::*;
 use snapbox::str;
-use toml_edit::{DocumentMut, Item, Key, Table, Value, array, table, value};
+use toml_edit::{
+    DocumentMut, InlineTable, Item, Key, Table, TableLike, Value, array, table, value,
+};
 
 macro_rules! parse_key {
     ($s:expr) => {{
@@ -128,6 +130,113 @@ fn document_display_propagates_write_errors() {
     let mut writer = LimitedWriter(output.len());
     write!(&mut writer, "{document}").unwrap();
     assert_eq!(writer.0, 0);
+}
+
+#[test]
+fn visual_values_skip_empty_and_standard_tables() {
+    let table = table_with_hidden_values();
+    assert_eq!(
+        table.to_string(),
+        "first.a = 1
+second.b = 2
+plain = 3
+"
+    );
+}
+
+#[test]
+fn get_values_skips_empty_and_standard_tables() {
+    let table = table_with_hidden_values();
+    let values = table.get_values();
+    assert_eq!(values.len(), 3);
+    assert_eq!(values[0].0, ["first", "a"]);
+    assert_eq!(values[0].1.as_integer(), Some(1));
+    assert_eq!(values[1].0, ["second", "b"]);
+    assert_eq!(values[1].1.as_integer(), Some(2));
+    assert_eq!(values[2].0, ["plain"]);
+    assert_eq!(values[2].1.as_integer(), Some(3));
+}
+
+fn table_with_hidden_values() -> Table {
+    let input = "first.a = 1
+second.b = 2
+plain = 3
+";
+    let mut table = input.parse::<DocumentMut>().unwrap().into_table();
+    let mut empty = Table::new();
+    empty.set_dotted(true);
+    table.insert("empty", Item::Table(empty));
+    table.insert("none", Item::None);
+    let mut nested = Table::new();
+    nested.insert("not_in_body", value(4));
+    table.insert("header_only", Item::Table(nested));
+    table
+}
+
+#[test]
+fn inline_table_last_visible_value() {
+    let mut table = inline_table_with_hidden_values();
+    assert_eq!(table.to_string(), "{ a = 1 }");
+
+    table.set_trailing_comma(true);
+    table.set_trailing(" ");
+    assert_eq!(table.to_string(), "{ a = 1 , }");
+    table.get_mut("a").unwrap().decor_mut().set_suffix("");
+    assert_eq!(table.to_string(), "{ a = 1, }");
+
+    table.remove("a");
+    table.set_trailing_comma(false);
+    table.set_trailing("");
+    assert_eq!(table.to_string(), "{}");
+}
+
+#[test]
+fn inline_get_values_skips_empty_tables_and_placeholders() {
+    let mut table = inline_table_with_hidden_values();
+    let values = table.get_values();
+    assert_eq!(values.len(), 1);
+    assert_eq!(values[0].0, ["a"]);
+    assert_eq!(values[0].1.as_integer(), Some(1));
+    table.remove("a");
+    assert!(table.get_values().is_empty());
+}
+
+fn inline_table_with_hidden_values() -> InlineTable {
+    let mut table = InlineTable::new();
+    table.insert("a", 1.into());
+    let mut empty = InlineTable::new();
+    empty.set_dotted(true);
+    table.insert("empty", empty.into());
+    TableLike::entry(&mut table, "none").or_insert(Item::None);
+    table
+}
+
+#[test]
+fn inline_table_flattens_standard_table_descendants() {
+    let table = inline_table_with_standard_descendants();
+    assert_eq!(table.to_string(), "{ parent.child.value = 1, last = 2 }");
+}
+
+#[test]
+fn inline_get_values_flattens_standard_table_descendants() {
+    let table = inline_table_with_standard_descendants();
+    let values = table.get_values();
+    assert_eq!(values.len(), 2);
+    assert_eq!(values[0].0, ["parent", "child", "value"]);
+    assert_eq!(values[0].1.as_integer(), Some(1));
+    assert_eq!(values[1].0, ["last"]);
+    assert_eq!(values[1].1.as_integer(), Some(2));
+}
+
+fn inline_table_with_standard_descendants() -> InlineTable {
+    let mut leaf = Table::new();
+    leaf.insert("value", value(1));
+    let mut branch = Table::new();
+    branch.insert("child", Item::Table(leaf));
+    let mut table = InlineTable::new();
+    TableLike::entry(&mut table, "parent").or_insert(Item::Table(branch));
+    table.insert("last", 2.into());
+    table
 }
 
 #[test]
