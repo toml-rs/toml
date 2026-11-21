@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* Handle a stack overflow on invalid TOML files
+
 ## [1.2.1] - 2026-11-06
 
 ### Performance
