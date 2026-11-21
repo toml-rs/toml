@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.2.2] - 2026-11-21
+
 ### Fixes
 
 - *(parser)* Handle a stack overflow on invalid TOML files
@@ -575,7 +577,8 @@ Changes:
 Minor doc fix (#409)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.2.1...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml-v1.2.2...HEAD
+[1.2.2]: https://github.com/toml-rs/toml/compare/toml-v1.2.1...toml-v1.2.2
 [1.2.1]: https://github.com/toml-rs/toml/compare/toml-v1.2.0...toml-v1.2.1
 [1.2.0]: https://github.com/toml-rs/toml/compare/toml-v1.1.8...toml-v1.2.0
 [1.1.8]: https://github.com/toml-rs/toml/compare/toml-v1.1.7...toml-v1.1.8
