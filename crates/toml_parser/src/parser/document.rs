@@ -6,6 +6,7 @@ use super::EventReceiver;
 use crate::ErrorSink;
 use crate::Expected;
 use crate::ParseError;
+use crate::Span;
 #[cfg(feature = "debug")]
 use crate::debug::DebugErrorSink;
 #[cfg(feature = "debug")]
@@ -800,7 +801,11 @@ fn on_array_open(
     error: &mut dyn ErrorSink,
 ) {
     if !receiver.array_open(array_open.span(), error) {
-        ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error);
+        if let Some(span) =
+            ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error)
+        {
+            receiver.array_close(span, error);
+        }
         return;
     }
 
@@ -966,7 +971,11 @@ fn on_inline_table_open(
     error: &mut dyn ErrorSink,
 ) {
     if !receiver.inline_table_open(inline_table_open.span(), error) {
-        ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error);
+        if let Some(span) =
+            ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error)
+        {
+            receiver.inline_table_close(span, error);
+        }
         return;
     }
 
@@ -1055,7 +1064,11 @@ fn on_inline_table_open(
                             .with_unexpected(current_token.span().before()),
                     );
                     receiver.error(current_token.span(), error);
-                    ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error);
+                    if let Some(span) =
+                        ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error)
+                    {
+                        receiver.error(span, error);
+                    }
                 }
                 State::NeedsEquals => {
                     error.report_error(
@@ -1108,7 +1121,14 @@ fn on_inline_table_open(
                             .with_unexpected(current_token.span().before()),
                     );
                     receiver.error(current_token.span(), error);
-                    ignore_to_value_close(tokens, TokenKind::RightSquareBracket, receiver, error);
+                    if let Some(span) = ignore_to_value_close(
+                        tokens,
+                        TokenKind::RightSquareBracket,
+                        receiver,
+                        error,
+                    ) {
+                        receiver.error(span, error);
+                    }
                 }
                 State::NeedsEquals => {
                     error.report_error(
@@ -1477,12 +1497,13 @@ fn ignore_to_newline(
 ///
 /// Attempts to ignore nested `[]`, `{}`.
 #[cold]
+#[must_use]
 fn ignore_to_value_close(
     tokens: &mut Stream<'_>,
     closing_kind: TokenKind,
     receiver: &mut dyn EventReceiver,
     error: &mut dyn ErrorSink,
-) {
+) -> Option<Span> {
     let mut array_count: usize = 0;
     let mut inline_table_count: usize = 0;
     while let Some(current_token) = tokens.next_token() {
@@ -1512,8 +1533,7 @@ fn ignore_to_value_close(
             }
             TokenKind::RightSquareBracket => {
                 if array_count == 0 && current_token.kind() == closing_kind {
-                    receiver.array_close(current_token.span(), error);
-                    break;
+                    return Some(current_token.span());
                 } else {
                     receiver.error(current_token.span(), error);
                     array_count = array_count.saturating_sub(1);
@@ -1525,8 +1545,7 @@ fn ignore_to_value_close(
             }
             TokenKind::RightCurlyBracket => {
                 if inline_table_count == 0 && current_token.kind() == closing_kind {
-                    receiver.inline_table_close(current_token.span(), error);
-                    break;
+                    return Some(current_token.span());
                 } else {
                     receiver.error(current_token.span(), error);
                     inline_table_count = inline_table_count.saturating_sub(1);
@@ -1537,6 +1556,7 @@ fn ignore_to_value_close(
             }
         }
     }
+    None
 }
 
 #[cold]
