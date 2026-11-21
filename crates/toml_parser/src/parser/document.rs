@@ -1067,7 +1067,7 @@ fn on_inline_table_open(
                     if let Some(span) =
                         ignore_to_value_close(tokens, TokenKind::RightCurlyBracket, receiver, error)
                     {
-                        receiver.inline_table_close(span, error);
+                        receiver.error(span, error);
                     }
                 }
                 State::NeedsEquals => {
@@ -1127,7 +1127,7 @@ fn on_inline_table_open(
                         receiver,
                         error,
                     ) {
-                        receiver.array_close(span, error);
+                        receiver.error(span, error);
                     }
                 }
                 State::NeedsEquals => {

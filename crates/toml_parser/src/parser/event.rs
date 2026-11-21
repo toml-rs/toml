@@ -567,22 +567,22 @@ mod tests {
 
     #[test]
     fn recursion_depth_after_array_when_key_expected() {
-        assert_final_depth("v={[] a=[1]}", 1, -1);
+        assert_final_depth("v={[] a=[1]}", 1, 0);
     }
 
     #[test]
     fn recursion_depth_after_inline_table_when_key_expected() {
-        assert_final_depth("v={{} a={b=1}}", 1, -1);
+        assert_final_depth("v={{} a={b=1}}", 1, 0);
     }
 
     #[test]
     fn recursion_depth_after_array_when_comma_expected() {
-        assert_final_depth("v={a=1 []}", 1, -1);
+        assert_final_depth("v={a=1 []}", 1, 0);
     }
 
     #[test]
     fn recursion_depth_after_inline_table_when_comma_expected() {
-        assert_final_depth("v={a=1 {}}", 1, -1);
+        assert_final_depth("v={a=1 {}}", 1, 0);
     }
 
     #[track_caller]
