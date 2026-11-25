@@ -7,12 +7,12 @@ EventResults {
             span: 0..1,
         },
         Event {
-            kind: KeySep,
+            kind: Error,
             encoding: None,
             span: 1..2,
         },
         Event {
-            kind: SimpleKey,
+            kind: Error,
             encoding: None,
             span: 2..3,
         },
@@ -27,5 +27,14 @@ EventResults {
             span: 4..5,
         },
     ],
-    errors: [],
+    errors: [
+        ParseError {
+            context: None,
+            description: "cannot recurse further; max recursion depth met",
+            expected: None,
+            unexpected: Some(
+                2..3,
+            ),
+        },
+    ],
 }

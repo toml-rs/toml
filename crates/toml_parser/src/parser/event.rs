@@ -364,6 +364,7 @@ pub struct RecursionGuard<'r> {
     receiver: &'r mut dyn EventReceiver,
     max_depth: u32,
     depth: i64,
+    key_depth: u64,
 }
 
 impl<'r> RecursionGuard<'r> {
@@ -372,6 +373,7 @@ impl<'r> RecursionGuard<'r> {
             receiver,
             max_depth,
             depth: 0,
+            key_depth: 0,
         }
     }
 
@@ -385,12 +387,14 @@ impl EventReceiver for RecursionGuard<'_> {
         self.receiver.std_table_open(span, error);
     }
     fn std_table_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.key_depth = 0;
         self.receiver.std_table_close(span, error);
     }
     fn array_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) {
         self.receiver.array_table_open(span, error);
     }
     fn array_table_close(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.key_depth = 0;
         self.receiver.array_table_close(span, error);
     }
     fn inline_table_open(&mut self, span: Span, error: &mut dyn ErrorSink) -> bool {
@@ -420,12 +424,26 @@ impl EventReceiver for RecursionGuard<'_> {
         self.receiver.array_close(span, error);
     }
     fn simple_key(&mut self, span: Span, encoding: Option<Encoding>, error: &mut dyn ErrorSink) {
-        self.receiver.simple_key(span, encoding, error);
+        let depth = self.key_depth;
+        self.key_depth += 1;
+        if depth <= u64::from(self.max_depth) {
+            self.receiver.simple_key(span, encoding, error);
+        } else {
+            if depth == u64::from(self.max_depth) + 1 {
+                report_depth_error(span, error);
+            }
+            self.receiver.error(span, error);
+        }
     }
     fn key_sep(&mut self, span: Span, error: &mut dyn ErrorSink) {
-        self.receiver.key_sep(span, error);
+        if self.key_depth <= u64::from(self.max_depth) {
+            self.receiver.key_sep(span, error);
+        } else {
+            self.receiver.error(span, error);
+        }
     }
     fn key_val_sep(&mut self, span: Span, error: &mut dyn ErrorSink) {
+        self.key_depth = 0;
         self.receiver.key_val_sep(span, error);
     }
     fn scalar(&mut self, span: Span, encoding: Option<Encoding>, error: &mut dyn ErrorSink) {
