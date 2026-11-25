@@ -1,0 +1,80 @@
+EventResults {
+    input: "[[a.b.c]]\n[x.y]",
+    events: [
+        Event {
+            kind: ArrayTableOpen,
+            encoding: None,
+            span: 0..2,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: Error,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: ArrayTableClose,
+            encoding: None,
+            span: 7..9,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: StdTableOpen,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: StdTableClose,
+            encoding: None,
+            span: 14..15,
+        },
+    ],
+    errors: [
+        ParseError {
+            context: None,
+            description: "cannot recurse further; max recursion depth met",
+            expected: None,
+            unexpected: Some(
+                6..7,
+            ),
+        },
+    ],
+}

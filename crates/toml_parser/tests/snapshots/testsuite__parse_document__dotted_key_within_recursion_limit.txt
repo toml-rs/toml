@@ -1,0 +1,63 @@
+EventResults {
+    input: "a . 'b.c' . d=1",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: Some(
+                LiteralString,
+            ),
+            span: 4..9,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 9..10,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 10..11,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 11..12,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 14..15,
+        },
+    ],
+    errors: [],
+}
