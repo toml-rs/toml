@@ -412,6 +412,36 @@ fn document_invalid_cr() {
 }
 
 #[test]
+fn dotted_key_at_zero_limit() {
+    t_recurse("a.b=1", 0, file![_].raw());
+}
+
+#[test]
+fn dotted_key_within_recursion_limit() {
+    t_recurse("a . 'b.c' . d=1", 2, file![_].raw());
+}
+
+#[test]
+fn dotted_key_outside_recursion_limit() {
+    t_recurse("a . b . long.d=1\nx.y=2", 1, file![_].raw());
+}
+
+#[test]
+fn dotted_key_table_header_outside_recursion_limit() {
+    t_recurse("[a.b.c]\nx.y=1", 1, file![_].raw());
+}
+
+#[test]
+fn dotted_key_array_table_header_outside_recursion_limit() {
+    t_recurse("[[a.b.c]]\n[x.y]", 1, file![_].raw());
+}
+
+#[test]
+fn dotted_key_inline_table_outside_recursion_limit() {
+    t_recurse("v={a.b.c=1,x.y=2}", 1, file![_].raw());
+}
+
+#[test]
 fn inline_table_within_recursion_limit() {
     t_recurse(
         "

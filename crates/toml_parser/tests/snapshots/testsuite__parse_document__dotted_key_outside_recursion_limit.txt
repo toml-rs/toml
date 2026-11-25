@@ -1,0 +1,101 @@
+EventResults {
+    input: "a . b . long.d=1\nx.y=2",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 4..5,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 5..6,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 6..7,
+        },
+        Event {
+            kind: Whitespace,
+            encoding: None,
+            span: 7..8,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 8..12,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 12..13,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 13..14,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 14..15,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 15..16,
+        },
+        Event {
+            kind: Newline,
+            encoding: None,
+            span: 16..17,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 17..18,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 18..19,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 19..20,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 20..21,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 21..22,
+        },
+    ],
+    errors: [],
+}

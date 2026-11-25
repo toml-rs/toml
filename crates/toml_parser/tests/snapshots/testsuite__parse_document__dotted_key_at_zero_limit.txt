@@ -1,0 +1,31 @@
+EventResults {
+    input: "a.b=1",
+    events: [
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 0..1,
+        },
+        Event {
+            kind: KeySep,
+            encoding: None,
+            span: 1..2,
+        },
+        Event {
+            kind: SimpleKey,
+            encoding: None,
+            span: 2..3,
+        },
+        Event {
+            kind: KeyValSep,
+            encoding: None,
+            span: 3..4,
+        },
+        Event {
+            kind: Scalar,
+            encoding: None,
+            span: 4..5,
+        },
+    ],
+    errors: [],
+}
