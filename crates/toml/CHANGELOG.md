@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- *(parser)* Error, rather than stack overflow in serde, for many dotted keys
+
 ## [1.2.2] - 2026-11-21
 
 ### Fixes
