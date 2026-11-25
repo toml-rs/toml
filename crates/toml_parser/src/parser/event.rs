@@ -398,10 +398,7 @@ impl EventReceiver for RecursionGuard<'_> {
         self.depth += 1;
         let within_depth = self.within_depth();
         if allowed && !within_depth {
-            error.report_error(
-                ParseError::new("cannot recurse further; max recursion depth met")
-                    .with_unexpected(span),
-            );
+            report_depth_error(span, error);
         }
         allowed && within_depth
     }
@@ -414,10 +411,7 @@ impl EventReceiver for RecursionGuard<'_> {
         self.depth += 1;
         let within_depth = self.within_depth();
         if allowed && !within_depth {
-            error.report_error(
-                ParseError::new("cannot recurse further; max recursion depth met")
-                    .with_unexpected(span),
-            );
+            report_depth_error(span, error);
         }
         allowed && within_depth
     }
@@ -452,6 +446,12 @@ impl EventReceiver for RecursionGuard<'_> {
     fn error(&mut self, span: Span, error: &mut dyn ErrorSink) {
         self.receiver.error(span, error);
     }
+}
+
+fn report_depth_error(span: Span, error: &mut dyn ErrorSink) {
+    error.report_error(
+        ParseError::new("cannot recurse further; max recursion depth met").with_unexpected(span),
+    );
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
