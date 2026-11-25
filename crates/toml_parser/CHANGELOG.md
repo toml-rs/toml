@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.1.7] - 2026-11-25
+
 ### Fixes
 
 - Error, rather than stack overflow in serde, for many dotted keys
@@ -128,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2025-07-08
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.6...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.7...HEAD
+[1.1.7]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.6...toml_parser-v1.1.7
 [1.1.6]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.5...toml_parser-v1.1.6
 [1.1.5]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.4...toml_parser-v1.1.5
 [1.1.4]: https://github.com/toml-rs/toml/compare/toml_parser-v1.1.3...toml_parser-v1.1.4

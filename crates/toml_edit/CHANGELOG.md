@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.25.21] - 2026-11-25
+
 ### Fixes
 
 - *(parser)* Error, rather than stack overflow in serde, for many dotted keys
@@ -1058,7 +1060,8 @@ This release was sponsored by Futurewei
 - `array.push` now returns a `Result`.
 
 <!-- next-url -->
-[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.20...HEAD
+[Unreleased]: https://github.com/toml-rs/toml/compare/v0.25.21...HEAD
+[0.25.21]: https://github.com/toml-rs/toml/compare/v0.25.20...v0.25.21
 [0.25.20]: https://github.com/toml-rs/toml/compare/v0.25.19...v0.25.20
 [0.25.19]: https://github.com/toml-rs/toml/compare/v0.25.18...v0.25.19
 [0.25.18]: https://github.com/toml-rs/toml/compare/v0.25.17...v0.25.18
